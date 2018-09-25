@@ -4,6 +4,7 @@ import (
 	"strings"
 	"fmt"
 	"os"
+	"time"
 )
 
 var mahjong = [...]string{
@@ -111,7 +112,8 @@ func checkTing1(cnt []int, recur bool) needTiles {
 
 // 14张牌，一向听，何切
 // 检查能进入一向听的牌，对比 1.进张数，2.是否能改良
-func checkTing1Discard(cnt []int) {
+func checkTing1Discard(cnt []int) bool {
+	ok := false
 	for i := range mahjong {
 		if cnt[i] >= 1 {
 			cnt[i]-- // 切牌
@@ -120,10 +122,12 @@ func checkTing1Discard(cnt []int) {
 				fmt.Printf(" 切 %s %v\n", mahjong[i], ans)
 				fmt.Println(buffer.String())
 				buffer.Reset()
+				ok = true
 			}
 			cnt[i]++
 		}
 	}
+	return ok
 }
 
 func analysis(raw string) {
@@ -143,7 +147,10 @@ func analysis(raw string) {
 		if checkWin(cnt) {
 			fmt.Println("已胡牌")
 		} else {
-			checkTing1Discard(cnt)
+			if !checkTing1Discard(cnt) {
+				fmt.Println("尚未一向听")
+				// TODO
+			}
 		}
 	default:
 		_errorExit("参数错误")
@@ -155,5 +162,7 @@ func main() {
 		_errorExit("参数错误")
 	}
 	raw := strings.Join(os.Args[1:], " ")
+	t0 := time.Now()
 	analysis(raw)
+	fmt.Printf("耗时 %.2f 秒", float64(time.Now().UnixNano()-t0.UnixNano())/float64(time.Second))
 }
