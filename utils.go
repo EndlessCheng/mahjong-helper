@@ -67,7 +67,7 @@ func _getAttr(n float64) []color.Attribute {
 	switch {
 	case n < 14:
 		colors = append(colors, color.FgBlue)
-	case n <= 16:
+	case n <= 18:
 		colors = append(colors, color.FgYellow)
 	case n < 24:
 		colors = append(colors, color.FgHiRed)
