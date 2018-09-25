@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"github.com/fatih/color"
 )
 
 func _errorExit(args ...interface{}) {
@@ -59,4 +60,27 @@ func in(a string, arr []string) bool {
 		}
 	}
 	return false
+}
+
+func _getAttr(n float64) []color.Attribute {
+	var colors []color.Attribute
+	switch {
+	case n < 14:
+		colors = append(colors, color.FgBlue)
+	case n <= 16:
+		colors = append(colors, color.FgYellow)
+	case n < 24:
+		colors = append(colors, color.FgHiRed)
+	default:
+		colors = append(colors, color.FgRed)
+	}
+	return colors
+}
+
+func colorNumber(n int) {
+	color.New(_getAttr(float64(n))...).Printf("%d", n)
+}
+
+func colorNumberF(n float64) {
+	color.New(_getAttr(n)...).Printf("%.2f", n)
 }
