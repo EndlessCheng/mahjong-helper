@@ -68,8 +68,11 @@ func checkTing1(cnt []int, recur bool) needTiles {
 
 	// TODO: 振听?
 	if allCount, tiles := needs.parse(); allCount > 0 {
-		improveScore := 0
-		weight := 0
+		improveCount := make([]int, len(mahjong))
+		for i := range mahjong {
+			improveCount[i] = allCount
+		}
+		impWay := 0
 		for discardIdx, tmpNeedsMap := range betterNeedsMap {
 			for drawIdx, betterNeeds := range tmpNeedsMap {
 				if in(mahjong[drawIdx], tiles) {
@@ -78,17 +81,27 @@ func checkTing1(cnt []int, recur bool) needTiles {
 				}
 				if betterAllCount, betterTiles := betterNeeds.parse(); betterAllCount > allCount {
 					// 进张数变多，则为一向听的改良
-					w := 4 - cnt[drawIdx]
-					improveScore += w * betterAllCount
-					weight += w
+					impWay++
+					if betterAllCount > improveCount[drawIdx] {
+						improveCount[drawIdx] = betterAllCount
+					}
 					buffer.WriteString(fmt.Sprintln(fmt.Sprintf("\t摸 %s 切 %s 改良:", mahjong[drawIdx], mahjong[discardIdx]), betterAllCount, betterTiles, ))
 				}
 			}
 		}
-		if weight > 0 {
+
+		if buffer.Len() > 0 {
+			improveScore := 0
+			weight := 0
+			for i := range mahjong {
+				w := 4 - cnt[i]
+				improveScore += w * improveCount[i]
+				weight += w
+			}
+
 			s := buffer.String()
 			buffer.Reset()
-			buffer.WriteString(fmt.Sprintf("\t[平均改良值: %.2f]\n", float64(improveScore)/float64(weight)))
+			buffer.WriteString(fmt.Sprintf("\t[%d 变化，平均改良值: %.2f]\n", impWay, float64(improveScore)/float64(weight)))
 			buffer.WriteString(s)
 		}
 	}
@@ -127,7 +140,11 @@ func analysis(raw string) {
 			buffer.Reset()
 		}
 	case 14:
-		checkTing1Discard(cnt)
+		if checkWin(cnt) {
+			fmt.Println("已胡牌")
+		} else {
+			checkTing1Discard(cnt)
+		}
 	default:
 		_errorExit("参数错误")
 	}
