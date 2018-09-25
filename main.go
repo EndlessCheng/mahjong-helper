@@ -17,8 +17,6 @@ var mahjong = [...]string{
 	"zhong", "bai", "fa",
 }
 
-var buffer = strings.Builder{}
-
 // 13张牌，检查是否听牌，返回听牌的名称
 func checkTing0(cnt []int) needTiles {
 	needs := needTiles{}
@@ -35,10 +33,17 @@ func checkTing0(cnt []int) needTiles {
 	return needs
 }
 
+var (
+	buffer       = strings.Builder{}
+	detailBuffer = strings.Builder{}
+)
+
 // 13张牌，检查一向听
 func checkTing1(cnt []int, recur bool) needTiles {
 	needs := needTiles{}
 	betterNeedsMap := map[int]map[int]needTiles{}
+	tingCntMap := map[int]int{} // map[摸到idx]听多少张牌
+
 	for i := range mahjong {
 		if cnt[i] >= 1 {
 			tmpNeedsMap := map[int]needTiles{}
@@ -55,6 +60,13 @@ func checkTing1(cnt []int, recur bool) needTiles {
 					// 若能听牌，则换的这张牌为一向听的进张
 					if _, ok := needs[j]; !ok {
 						needs[j] = 4 - (cnt[j] - 1)
+					} else {
+						// 比如说 57m22566s，切 5s/6s 来 8m 都听牌，但是听牌的数量有区别
+					}
+					tingCnt, _ := nd.parse()
+					if tingCnt > tingCntMap[j] {
+						// 听牌一般听数量最多的
+						tingCntMap[j] = tingCnt
 					}
 				} else if recur {
 					if betterNeeds := checkTing1(cnt, false); len(betterNeeds) > 0 {
@@ -68,6 +80,9 @@ func checkTing1(cnt []int, recur bool) needTiles {
 			betterNeedsMap[i] = tmpNeedsMap
 		}
 	}
+
+	buffer.Reset()
+	detailBuffer.Reset()
 
 	// TODO: 振听?
 	if allCount, tiles := needs.parse(); allCount > 0 {
@@ -88,25 +103,34 @@ func checkTing1(cnt []int, recur bool) needTiles {
 					if betterAllCount > improveCount[drawIdx] {
 						improveCount[drawIdx] = betterAllCount
 					}
-					buffer.WriteString(fmt.Sprintln(fmt.Sprintf("\t摸 %s 切 %s 改良:", mahjong[drawIdx], mahjong[discardIdx]), betterAllCount, betterTiles))
+					detailBuffer.WriteString(fmt.Sprintln(fmt.Sprintf("    摸 %s 切 %s 改良:", mahjong[drawIdx], mahjong[discardIdx]), betterAllCount, betterTiles))
 				}
 			}
 		}
 
-		if buffer.Len() > 0 {
+		avgTingSum := 0
+		weight := 0
+		for idx, c := range tingCntMap {
+			w := 4 - cnt[idx]
+			avgTingSum += w * c
+			weight += w
+		}
+		avgTingNum := float64(avgTingSum) / float64(weight)
+		avgTingStr := fmt.Sprintf("  %.2f 听牌数\n", avgTingNum)
+
+		if detailBuffer.Len() > 0 {
 			improveScore := 0
-			weight := 0
+			weight = 0
 			for i := range mahjong {
 				w := 4 - cnt[i]
 				improveScore += w * improveCount[i]
 				weight += w
 			}
-
-			s := buffer.String()
-			buffer.Reset()
-			buffer.WriteString(fmt.Sprintf("%.2f [%d 变化]\n", float64(improveScore)/float64(weight), impWay))
-			buffer.WriteString(s)
+			avgImproveNum := float64(improveScore) / float64(weight)
+			buffer.WriteString(fmt.Sprintf("%.2f [%d 变化]\n", avgImproveNum, impWay))
 		}
+
+		buffer.WriteString(avgTingStr)
 	}
 
 	return needs
@@ -122,19 +146,12 @@ func checkTing1Discard(cnt []int) bool {
 			if allCount, ans := checkTing1(cnt, true).parse(); allCount > 0 {
 				colorNumber(allCount)
 				fmt.Printf("    切 %s %v\n", mahjong[i], ans)
-
-				text := buffer.String()
+				fmt.Print(buffer.String())
 				if detailFlag {
-					fmt.Println(text)
-				} else {
-					if text != "" {
-						lines := strings.Split(text, "\n")
-						fmt.Println(lines[0])
-					}
-					fmt.Println()
+					fmt.Print(detailBuffer.String())
 				}
+				fmt.Println()
 
-				buffer.Reset()
 				ok = true
 			}
 			cnt[i]++
