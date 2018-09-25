@@ -4,6 +4,7 @@ import (
 	"strings"
 	"fmt"
 	"os"
+	"sort"
 )
 
 var mahjong = [...]string{
@@ -20,95 +21,50 @@ func _convert(single string) int {
 			return i
 		}
 	}
+	fmt.Fprintln(os.Stderr, "参数错误:", single)
+	os.Exit(1)
 	return -1
 }
 
 func convert(raw string) []int {
-	var result []int
+	cnt := make([]int, 34)
 
 	raw = strings.TrimSpace(raw)
 	splits := strings.Split(raw, " ")
 
+	var result []int
 	for _, split := range splits {
 		if split[0] >= '1' && split[0] <= '9' {
 			for i := range split[:len(split)-1] {
 				single := split[i:i+1] + split[len(split)-1:]
-				r := _convert(single)
-				if r == -1 {
-					return nil
-				}
-				result = append(result, r)
+				result = append(result, _convert(single))
 			}
 		} else {
-			r := _convert(split)
-			if r == -1 {
-				return nil
-			}
-			result = append(result, r)
+			result = append(result, _convert(split))
 		}
 	}
 
-	return result
+	for _, m := range result {
+		cnt[m]++
+		if cnt[m] > 4 {
+			fmt.Fprintln(os.Stderr, "参数错误: 超过4张一样的牌！")
+			os.Exit(1)
+		}
+	}
+
+	return cnt
 }
 
 var cnt = make([]int, 34)
 
-func search(dep int) bool {
-	for i := range mahjong {
-		if cnt[i] >= 3 { // 刻子
-			if dep == 3 { // 4组面子
-				return true
-			}
-			cnt[i] -= 3
-			ok := search(dep + 1)
-			cnt[i] += 3
-			if ok {
-				return true
-			}
-		}
-		for i := 0; i <= 24; i++ { // 一直到 7s
-			if i%9 <= 6 && cnt[i] >= 1 && cnt[i+1] >= 1 && cnt[i+2] >= 1 { // 顺子
-				if dep == 3 { // 4组面子
-					return true
-				}
-				cnt[i]--
-				cnt[i+1]--
-				cnt[i+2]--
-				ok := search(dep + 1)
-				cnt[i+2]++
-				cnt[i+1]++
-				cnt[i]++
-				if ok {
-					return true
-				}
-			}
-		}
-	}
-	return false
-}
-
-// 检查是否和牌
-func checkWin() bool {
-	for i := range mahjong {
-		if cnt[i] >= 2 { // 雀头
-			cnt[i] -= 2
-			ok := search(0)
-			cnt[i] += 2
-			if ok {
-				return true
-			}
-		}
-	}
-	return false
-}
-
+// 13张牌，检查是否听牌
 func checkTing0() (ans []string) {
 	for i := range mahjong {
 		if cnt[i] == 4 {
 			continue
 		}
 		cnt[i]++ // 摸牌
-		if checkWin() { // 和牌
+		if checkWin(cnt) { // 和牌
 			ans = append(ans, mahjong[i])
 		}
 		cnt[i]--
@@ -116,40 +72,48 @@ func checkTing0() (ans []string) {
 	return ans
 }
 
-// 一向听，13张牌
-// 切掉其中一张牌，换成其他牌，若能听牌，则为一向听的进张
-// 切掉其中一张牌，换成其他牌，若依然为一向听，但进张数变多，则为一向听的改良
+// 13张牌，检查一向听的进张数，进张名称
 func checkTing1() (allCount int, ans []string) {
+	cards := map[int]int{}
 	for i := range mahjong {
 		if cnt[i] >= 1 {
-
-			fmt.Println("i=",i)
-
 			cnt[i]-- // 切掉其中一张牌
-			for j := range mahjong { // 换成其他牌
+			for j := range mahjong {
 				if j == i {
 					continue
 				}
 				if cnt[j] == 4 {
 					continue
 				}
-
-				fmt.Println("j=",j)
-
-				cnt[j]++
+				cnt[j]++ // 换成其他牌
 				if ting := checkTing0(); len(ting) > 0 {
-					allCount += 4 - (cnt[j] - 1)
-					ans = append(ans, mahjong[j])
-					fmt.Println(allCount, ans)
+					// 若能听牌，则换的这张牌为一向听的进张
+					if _, ok := cards[j]; !ok {
+						cards[j] = 4 - (cnt[j] - 1)
+					}
 				} else {
-					//anotherAllCount,anotherAns:=checkTing1()
+					// 若依然为一向听，但进张数变多，则为一向听的改良
+					// TODO anotherAllCount,anotherAns:=checkTing1()
 				}
 				cnt[j]--
 			}
 			cnt[i]++
 		}
 	}
-	return
+
+	idxAns := make([]int, 0, len(cards))
+	for k, v := range cards {
+		idxAns = append(idxAns, k)
+		allCount += v
+	}
+	sort.Ints(idxAns)
+
+	ans = make([]string, len(idxAns))
+	for i, idx := range idxAns {
+		ans[i] = mahjong[idx]
+	}
+
+	return allCount, ans
 }
 
 // 一向听，何切，14张牌
@@ -166,24 +130,11 @@ func main() {
 	//raw := os.Args[1]
 	//raw := "11222333789s fa fa"
 	raw := "2355789p 356778s"
-	mj := convert(raw)
-	if mj == nil {
-		fmt.Fprintln(os.Stderr, "参数错误")
-		os.Exit(1)
-	}
-	for _, m := range mj {
-		cnt[m]++
-		if cnt[m] > 4 {
-			fmt.Fprintln(os.Stderr, "超过4张一样的牌！")
-			os.Exit(1)
-		}
-	}
+	cnt = convert(raw)
 
-	ans := checkTing0()
-	if len(ans) > 0 {
+	if ans := checkTing0(); len(ans) > 0 {
 		fmt.Println(strings.Join(ans, " "))
 	} else {
-		checkTing1()
-
+		fmt.Println(checkTing1())
 	}
 }
