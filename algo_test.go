@@ -5,7 +5,8 @@ import (
 )
 
 func TestCheckWin(t *testing.T) {
-	if !checkWin(convert("111234678m dong dong dong xi xi")) {
+	_, cnt := convert("111234678m dong dong dong xi xi")
+	if !checkWin(cnt) {
 		t.Error("checkWin")
 	}
 }

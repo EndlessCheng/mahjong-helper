@@ -3,6 +3,7 @@ package main
 import (
 	"strings"
 	"fmt"
+	"os"
 )
 
 var mahjong = [...]string{
@@ -99,7 +100,7 @@ func checkTing1Discard(cnt []int) {
 		if cnt[i] >= 1 {
 			cnt[i]-- // 切牌
 			if allCount, ans := checkTing1(cnt, true).parse(); allCount > 0 {
-				fmt.Println(fmt.Sprintf("切 %s:", mahjong[i]), allCount, ans)
+				fmt.Println(fmt.Sprintf("{%d} 切 %s", allCount, mahjong[i]), ans)
 				fmt.Println(buffer.String())
 				buffer.Reset()
 			}
@@ -108,14 +109,9 @@ func checkTing1Discard(cnt []int) {
 	}
 }
 
-func main() {
-	//if len(os.Args) <= 1 {
-	//	_errorExit("参数错误")
-	//}
-	//raw := os.Args[1]
-	//raw := "11222333789s fa fa"
-	//raw := "2355789p 356778s"
-	raw := "4578999m 45p 11145s"
+func analysis(raw string) {
+	fmt.Println(raw)
+	fmt.Println(strings.Repeat("=", len(raw)))
 	num, cnt := convert(raw)
 	switch num {
 	case 13:
@@ -124,10 +120,20 @@ func main() {
 		} else {
 			allCount, ans := checkTing1(cnt, true).parse()
 			fmt.Println("一向听:", allCount, ans)
+			fmt.Println(buffer.String())
+			buffer.Reset()
 		}
 	case 14:
 		checkTing1Discard(cnt)
 	default:
 		_errorExit("参数错误")
 	}
+}
+
+func main() {
+	if len(os.Args) <= 1 {
+		_errorExit("参数错误")
+	}
+	raw := strings.Join(os.Args[1:], " ")
+	analysis(raw)
 }

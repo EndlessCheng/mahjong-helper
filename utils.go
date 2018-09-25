@@ -31,6 +31,7 @@ func convert(tiles string) (num int, cnt []int) {
 
 	var result []int
 	for _, split := range splits {
+		split = strings.TrimSpace(split)
 		if split[0] >= '1' && split[0] <= '9' {
 			for i := range split[:len(split)-1] {
 				single := split[i:i+1] + split[len(split)-1:]
