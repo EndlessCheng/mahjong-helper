@@ -1,16 +1,20 @@
 package main
 
-import "sort"
+import (
+	"sort"
+	"fmt"
+)
 
+// map[mahjong下标]数量
 type needTiles map[int]int
 
-func (t needTiles) parse() (allCount int, tiles []string) {
-	if len(t) == 0 {
+func (nt needTiles) parse() (allCount int, tiles []string) {
+	if len(nt) == 0 {
 		return 0, nil
 	}
 
-	tileIndexes := make([]int, 0, len(t))
-	for idx, cnt := range t {
+	tileIndexes := make([]int, 0, len(nt))
+	for idx, cnt := range nt {
 		tileIndexes = append(tileIndexes, idx)
 		allCount += cnt
 	}
@@ -22,4 +26,12 @@ func (t needTiles) parse() (allCount int, tiles []string) {
 	}
 
 	return allCount, tiles
+}
+
+func (nt needTiles) String() string {
+	tiles := make([]string, 0, len(nt))
+	for k := range nt {
+		tiles = append(tiles, mahjong[k])
+	}
+	return fmt.Sprint(tiles)
 }

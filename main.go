@@ -17,18 +17,19 @@ var mahjong = [...]string{
 var buffer = strings.Builder{}
 
 // 13张牌，检查是否听牌，返回听牌的名称
-func checkTing0(cnt []int) (tiles []string) {
+func checkTing0(cnt []int) needTiles {
+	needs := needTiles{}
 	for i := range mahjong {
 		if cnt[i] == 4 {
 			continue
 		}
 		cnt[i]++ // 摸牌
 		if checkWin(cnt) { // 和牌
-			tiles = append(tiles, mahjong[i])
+			needs[i] = 4 - (cnt[i] - 1)
 		}
 		cnt[i]--
 	}
-	return tiles
+	return needs
 }
 
 // 13张牌，检查一向听
@@ -47,7 +48,7 @@ func checkTing1(cnt []int, recur bool) needTiles {
 					continue
 				}
 				cnt[j]++ // 换成其他牌
-				if ting := checkTing0(cnt); len(ting) > 0 {
+				if nd := checkTing0(cnt); len(nd) > 0 {
 					// 若能听牌，则换的这张牌为一向听的进张
 					if _, ok := needs[j]; !ok {
 						needs[j] = 4 - (cnt[j] - 1)
@@ -67,26 +68,28 @@ func checkTing1(cnt []int, recur bool) needTiles {
 
 	// TODO: 振听?
 	if allCount, tiles := needs.parse(); allCount > 0 {
-		maxBetterAllCount := -1
-		for _, tmpNeedsMap := range betterNeedsMap {
+		improveScore := 0
+		weight := 0
+		for discardIdx, tmpNeedsMap := range betterNeedsMap {
 			for drawIdx, betterNeeds := range tmpNeedsMap {
-				if betterAllCount, _ := betterNeeds.parse(); betterAllCount > maxBetterAllCount && !in(mahjong[drawIdx], tiles) {
-					maxBetterAllCount = betterAllCount
+				if in(mahjong[drawIdx], tiles) {
+					// 跳过改良牌就是一向听的进张的情况
+					continue
+				}
+				if betterAllCount, betterTiles := betterNeeds.parse(); betterAllCount > allCount {
+					// 进张数变多，则为一向听的改良
+					w := 4 - cnt[drawIdx]
+					improveScore += w * betterAllCount
+					weight += w
+					buffer.WriteString(fmt.Sprintln(fmt.Sprintf("\t摸 %s 切 %s 改良:", mahjong[drawIdx], mahjong[discardIdx]), betterAllCount, betterTiles, ))
 				}
 			}
 		}
-		if maxBetterAllCount > allCount {
-			// 进张数变多，则为一向听的改良
-			for discardIdx, tmpNeedsMap := range betterNeedsMap {
-				for drawIdx, betterNeeds := range tmpNeedsMap {
-					if in(mahjong[drawIdx], tiles) {
-						continue
-					}
-					if betterAllCount, betterTiles := betterNeeds.parse(); betterAllCount == maxBetterAllCount {
-						buffer.WriteString(fmt.Sprintln(fmt.Sprintf("\t摸 %s 切 %s 改良:", mahjong[drawIdx], mahjong[discardIdx]), betterAllCount, betterTiles, ))
-					}
-				}
-			}
+		if weight > 0 {
+			s := buffer.String()
+			buffer.Reset()
+			buffer.WriteString(fmt.Sprintf("\t[平均改良值: %.2f]\n", float64(improveScore)/float64(weight)))
+			buffer.WriteString(s)
 		}
 	}
 
@@ -100,7 +103,8 @@ func checkTing1Discard(cnt []int) {
 		if cnt[i] >= 1 {
 			cnt[i]-- // 切牌
 			if allCount, ans := checkTing1(cnt, true).parse(); allCount > 0 {
-				fmt.Println(fmt.Sprintf("{%d} 切 %s", allCount, mahjong[i]), ans)
+				colorNumber(allCount)
+				fmt.Printf(" 切 %s %v\n", mahjong[i], ans)
 				fmt.Println(buffer.String())
 				buffer.Reset()
 			}
@@ -112,11 +116,10 @@ func checkTing1Discard(cnt []int) {
 func analysis(raw string) {
 	fmt.Println(raw)
 	fmt.Println(strings.Repeat("=", len(raw)))
-	num, cnt := convert(raw)
-	switch num {
+	switch num, cnt := convert(raw); num {
 	case 13:
-		if ans := checkTing0(cnt); len(ans) > 0 {
-			fmt.Println("听牌:", strings.Join(ans, " "))
+		if needs := checkTing0(cnt); len(needs) > 0 {
+			fmt.Println("已听牌:", needs.String())
 		} else {
 			allCount, ans := checkTing1(cnt, true).parse()
 			fmt.Println("一向听:", allCount, ans)
