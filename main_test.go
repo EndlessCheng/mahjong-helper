@@ -6,7 +6,7 @@ import (
 
 func TestName(t *testing.T) {
 	var raw string
-	raw = "11222333789s fa fa"
+	raw = "11222333789s fa fa" //
 	raw = "2355789p 356778s"
 	raw = "4578999m 45p 11145s"
 	raw = "123345567m 34p 345s"
@@ -18,5 +18,7 @@ func TestName(t *testing.T) {
 	raw = "123m 2378p 234999s"
 	raw = "45689m 1189p 22256s" //
 	raw = "12367m 123667p 556s"
+	raw = "12378m 12378p 123s"
+	raw = "123557m 678p 22667s"
 	analysis(raw)
 }
