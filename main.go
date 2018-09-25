@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+var detailFlag = false
+
 var mahjong = [...]string{
 	"1m", "2m", "3m", "4m", "5m", "6m", "7m", "8m", "9m",
 	"1p", "2p", "3p", "4p", "5p", "6p", "7p", "8p", "9p",
@@ -86,7 +88,7 @@ func checkTing1(cnt []int, recur bool) needTiles {
 					if betterAllCount > improveCount[drawIdx] {
 						improveCount[drawIdx] = betterAllCount
 					}
-					buffer.WriteString(fmt.Sprintln(fmt.Sprintf("\t摸 %s 切 %s 改良:", mahjong[drawIdx], mahjong[discardIdx]), betterAllCount, betterTiles, ))
+					buffer.WriteString(fmt.Sprintln(fmt.Sprintf("\t摸 %s 切 %s 改良:", mahjong[drawIdx], mahjong[discardIdx]), betterAllCount, betterTiles))
 				}
 			}
 		}
@@ -102,7 +104,7 @@ func checkTing1(cnt []int, recur bool) needTiles {
 
 			s := buffer.String()
 			buffer.Reset()
-			buffer.WriteString(fmt.Sprintf("\t[%d 变化，平均改良值: %.2f]\n", impWay, float64(improveScore)/float64(weight)))
+			buffer.WriteString(fmt.Sprintf("%.2f [%d 变化]\n", float64(improveScore)/float64(weight), impWay))
 			buffer.WriteString(s)
 		}
 	}
@@ -119,8 +121,19 @@ func checkTing1Discard(cnt []int) bool {
 			cnt[i]-- // 切牌
 			if allCount, ans := checkTing1(cnt, true).parse(); allCount > 0 {
 				colorNumber(allCount)
-				fmt.Printf(" 切 %s %v\n", mahjong[i], ans)
-				fmt.Println(buffer.String())
+				fmt.Printf("    切 %s %v\n", mahjong[i], ans)
+
+				text := buffer.String()
+				if detailFlag {
+					fmt.Println(text)
+				} else {
+					if text != "" {
+						lines := strings.Split(text, "\n")
+						fmt.Println(lines[0])
+					}
+					fmt.Println()
+				}
+
 				buffer.Reset()
 				ok = true
 			}
@@ -161,7 +174,13 @@ func main() {
 	if len(os.Args) <= 1 {
 		_errorExit("参数错误")
 	}
+
 	raw := strings.Join(os.Args[1:], " ")
+	if os.Args[len(os.Args)-1] == "-d" {
+		detailFlag = true
+		raw = strings.Join(os.Args[1:len(os.Args)-1], " ")
+	}
+
 	t0 := time.Now()
 	analysis(raw)
 	fmt.Printf("耗时 %.2f 秒", float64(time.Now().UnixNano()-t0.UnixNano())/float64(time.Second))
