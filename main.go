@@ -8,6 +8,7 @@ import (
 )
 
 var detailFlag = false
+var interactFlag = false // 交互模式
 
 var mahjong = [...]string{
 	"1m", "2m", "3m", "4m", "5m", "6m", "7m", "8m", "9m",
@@ -169,18 +170,29 @@ func checkTing1Discard(cnt []int) bool {
 	return ok
 }
 
-func analysis(raw string) {
+func analysis(raw string) (num int, cnt []int, err error) {
 	fmt.Println(raw)
 	fmt.Println(strings.Repeat("=", len(raw)))
-	switch num, cnt := convert(raw); num {
+
+	num, cnt, err = convert(raw)
+	if err != nil {
+		return
+	}
+
+	switch num {
 	case 13:
 		if needs := checkTing0(cnt); len(needs) > 0 {
 			fmt.Println("已听牌:", needs.String())
 		} else {
 			allCount, ans := checkTing1(cnt, true).parse()
-			fmt.Println("一向听:", allCount, ans)
-			fmt.Println(buffer.String())
-			buffer.Reset()
+			if allCount > 0 {
+				fmt.Println("一向听:", allCount, ans)
+				fmt.Println(buffer.String())
+				buffer.Reset()
+			} else {
+				fmt.Println("尚未一向听")
+				// TODO
+			}
 		}
 	case 14:
 		if checkWin(cnt) {
@@ -192,10 +204,59 @@ func analysis(raw string) {
 			}
 		}
 	default:
-		_errorExit("参数错误")
+		err = fmt.Errorf("参数错误: %s（%d 张牌）", raw, num)
+		return
 	}
 
 	//fmt.Println("checkWin", checkWinCount)
+
+	return
+}
+
+func interact(raw string) {
+	_, cnt, err := analysis(raw)
+	if err != nil {
+		_errorExit(err.Error())
+	}
+
+	var tile string
+	for {
+		for {
+			fmt.Print("> 切 ")
+			fmt.Scanf("%s", &tile)
+			idx, err := _convert(tile)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err.Error())
+			} else {
+				if cnt[idx] == 0 {
+					fmt.Fprintln(os.Stderr, "切掉的牌不存在")
+				} else {
+					cnt[idx]--
+					break
+				}
+			}
+		}
+
+		for {
+			fmt.Print("> 摸 ")
+			fmt.Scanf("%s", &tile)
+			idx, err := _convert(tile)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err.Error())
+			} else {
+				if cnt[idx] == 4 {
+					fmt.Fprintln(os.Stderr, "不可能摸更多的牌了")
+				} else {
+					cnt[idx]++
+					break
+				}
+			}
+		}
+
+		if _, _, err := analysis(raw); err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+		}
+	}
 }
 
 func main() {
@@ -203,8 +264,17 @@ func main() {
 		_errorExit("参数错误")
 	}
 
+	if os.Args[len(os.Args)-1] == "-i" {
+		// （一向听）交互模式
+		interactFlag = true
+
+		raw := strings.Join(os.Args[1:len(os.Args)-1], " ")
+		interact(raw)
+	}
+
 	raw := strings.Join(os.Args[1:], " ")
 	if os.Args[len(os.Args)-1] == "-d" {
+		// 显示改良细节
 		detailFlag = true
 		raw = strings.Join(os.Args[1:len(os.Args)-1], " ")
 	}
