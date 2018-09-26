@@ -6,6 +6,7 @@ import (
 	"strings"
 	"github.com/fatih/color"
 	"sort"
+	"strconv"
 )
 
 func _errorExit(args ...interface{}) {
@@ -14,18 +15,17 @@ func _errorExit(args ...interface{}) {
 }
 
 // e.g. "3m" => 2
-func _convert(tile string) int {
+func _convert(tile string) (int, error) {
 	for i, m := range mahjong {
 		if m == tile {
-			return i
+			return i, nil
 		}
 	}
-	_errorExit("参数错误:", tile)
-	return -1
+	return -1, fmt.Errorf("参数错误: %s", tile)
 }
 
 // e.g. "13m 24p" => (4, [0, 2, 10, 12])
-func convert(tiles string) (num int, cnt []int) {
+func convert(tiles string) (num int, cnt []int, err error) {
 	cnt = make([]int, 34)
 
 	tiles = strings.TrimSpace(tiles)
@@ -37,10 +37,18 @@ func convert(tiles string) (num int, cnt []int) {
 		if split[0] >= '1' && split[0] <= '9' {
 			for i := range split[:len(split)-1] {
 				single := split[i:i+1] + split[len(split)-1:]
-				result = append(result, _convert(single))
+				tile, err := _convert(single)
+				if err != nil {
+					return -1, nil, err
+				}
+				result = append(result, tile)
 			}
 		} else {
-			result = append(result, _convert(split))
+			tile, err := _convert(split)
+			if err != nil {
+				return -1, nil, err
+			}
+			result = append(result, tile)
 		}
 	}
 
@@ -51,7 +59,29 @@ func convert(tiles string) (num int, cnt []int) {
 		}
 	}
 
-	return len(result), cnt
+	return len(result), cnt, nil
+}
+
+func countToString(cnt []int) string {
+	sb := strings.Builder{}
+	for i, type_ := range [...]string{"m", "p", "s"} {
+		wrote := false
+		for j := 0; j < 9; j++ {
+			for k := 0; k < cnt[9*i+j]; k++ {
+				sb.WriteString(strconv.Itoa(j + 1))
+				wrote = true
+			}
+		}
+		if wrote {
+			sb.WriteString(type_ + " ")
+		}
+	}
+	for i := 27; i < len(mahjong); i++ {
+		for k := 0; k < cnt[i]; k++ {
+			sb.WriteString(mahjong[i] + " ")
+		}
+	}
+	return strings.TrimSpace(sb.String())
 }
 
 func in(a string, arr []string) bool {
