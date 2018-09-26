@@ -28,8 +28,8 @@ func checkWin(cnt []int) bool {
 
 	for i := 0; i < 3; i++ { // 数牌
 		for j := 0; j < 9; j++ {
-			idx := i*9 + j
-			if cnt[idx] == 0 {
+			c := cnt[i*9+j]
+			if c == 0 {
 				if setFlag {
 					setFlag = false
 					key |= 0x1 << uint(bitPos)
@@ -38,7 +38,7 @@ func checkWin(cnt []int) bool {
 			} else {
 				bitPos++
 				setFlag = true
-				switch cnt[idx] {
+				switch c {
 				case 2:
 					key |= 0x3 << uint(bitPos)
 					bitPos += 2
@@ -57,7 +57,7 @@ func checkWin(cnt []int) bool {
 			bitPos++
 		}
 	}
-	for i := 27; i < len(mahjong); i++ { // 字牌
+	for i := 27; i < 34; i++ { // 字牌
 		if cnt[i] >= 1 {
 			bitPos++
 			switch cnt[i] {

@@ -4,7 +4,14 @@ import (
 	"testing"
 )
 
-func TestName(t *testing.T) {
+func BenchmarkCheckTing0(b *testing.B) {
+	_, cnt, _ := convert("11222333789s fa fa")
+	for i := 0; i < b.N; i++ {
+		checkTing0(cnt)
+	}
+}
+
+func TestAnalysis(t *testing.T) {
 	var raw string
 	raw = "11222333789s fa fa" //
 	raw = "2355789p 356778s"
