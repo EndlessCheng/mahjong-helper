@@ -112,6 +112,20 @@ func checkTing1(cnt []int, recur bool) needTiles {
 			}
 		}
 
+		if detailBuffer.Len() > 0 {
+			improveScore := 0
+			weight := 0
+			for i := range mahjong {
+				w := 4 - cnt[i]
+				improveScore += w * improveCount[i]
+				weight += w
+			}
+			avgImproveNum := float64(improveScore) / float64(weight)
+			buffer.WriteString(fmt.Sprintf("%.2f [%d 变化]", avgImproveNum, impWay))
+		} else {
+			buffer.WriteString(strings.Repeat(" ", 14))
+		}
+
 		avgTingSum := 0
 		weight := 0
 		for idx, c := range tingCntMap {
@@ -120,21 +134,8 @@ func checkTing1(cnt []int, recur bool) needTiles {
 			weight += w
 		}
 		avgTingNum := float64(avgTingSum) / float64(weight)
-		avgTingStr := fmt.Sprintf("  %.2f 听牌数\n", avgTingNum)
-
-		if detailBuffer.Len() > 0 {
-			improveScore := 0
-			weight = 0
-			for i := range mahjong {
-				w := 4 - cnt[i]
-				improveScore += w * improveCount[i]
-				weight += w
-			}
-			avgImproveNum := float64(improveScore) / float64(weight)
-			buffer.WriteString(fmt.Sprintf("%.2f [%d 变化]\n", avgImproveNum, impWay))
-		}
-
-		buffer.WriteString(avgTingStr)
+		avgTingStr := fmt.Sprintf("%.2f 听牌数", avgTingNum)
+		buffer.WriteString("  " + avgTingStr + "\n")
 	}
 
 	return needs
@@ -210,5 +211,5 @@ func main() {
 
 	t0 := time.Now()
 	analysis(raw)
-	fmt.Printf("耗时 %.2f 秒", float64(time.Now().UnixNano()-t0.UnixNano())/float64(time.Second))
+	fmt.Printf("耗时 %.2f 秒\n", float64(time.Now().UnixNano()-t0.UnixNano())/float64(time.Second))
 }
