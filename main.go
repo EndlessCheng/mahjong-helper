@@ -17,7 +17,7 @@ var mahjong = [...]string{
 	"zhong", "bai", "fa",
 }
 
-// 13张牌，检查是否听牌，返回听牌的名称
+// 13张牌，检查是否听牌，返回听牌的具体情况
 func checkTing0(cnt []int) needTiles {
 	needs := needTiles{}
 	for i := range mahjong {
@@ -81,6 +81,10 @@ func checkTing1(cnt []int, recur bool) needTiles {
 		}
 	}
 
+	if !recur {
+		return needs
+	}
+
 	buffer.Reset()
 	detailBuffer.Reset()
 
@@ -136,8 +140,12 @@ func checkTing1(cnt []int, recur bool) needTiles {
 	return needs
 }
 
-// 14张牌，一向听，何切
-// 检查能进入一向听的牌，对比 1.进张数，2.是否能改良
+// 14张牌，可以一向听，何切
+// 检查能一向听的切牌，对比：
+// 1. 进张数
+// 2. 改良之后的（加权）平均进张数
+// 3. 听牌后的（加权）平均听牌数
+// 4. 听牌后所听牌的名称（就是一向听的进张名称）（一般来说 14m 优于 25m。不过还是要根据场况来判断）
 func checkTing1Discard(cnt []int) bool {
 	ok := false
 	for i := range mahjong {
@@ -185,6 +193,8 @@ func analysis(raw string) {
 	default:
 		_errorExit("参数错误")
 	}
+
+	//fmt.Println("checkWin", checkWinCount)
 }
 
 func main() {

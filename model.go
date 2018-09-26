@@ -28,10 +28,14 @@ func (nt needTiles) parse() (allCount int, tiles []string) {
 	return allCount, tiles
 }
 
-func (nt needTiles) String() string {
+func (nt needTiles) tiles() []string {
 	tiles := make([]string, 0, len(nt))
 	for k := range nt {
 		tiles = append(tiles, mahjong[k])
 	}
-	return fmt.Sprint(tiles)
+	return tiles
+}
+
+func (nt needTiles) String() string {
+	return fmt.Sprint(nt.tiles())
 }
