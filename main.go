@@ -19,6 +19,7 @@ var mahjong = [...]string{
 }
 
 // 13张牌，检查是否听牌，返回听牌的具体情况
+// （不考虑国士无双）
 func checkTing0(cnt []int) needTiles {
 	needs := needTiles{}
 
@@ -61,6 +62,7 @@ func checkTing0(cnt []int) needTiles {
 		}
 	}
 
+	// TODO: go
 	for i := range mahjong {
 		if cnt[i] == 4 {
 			continue
@@ -285,6 +287,7 @@ func interact(raw string) {
 			}
 		}
 
+		// 交互模式时，13张牌的一向听分析显示改良具体情况
 		detailFlag = true
 		raw = countToString(cnt)
 		if _, _, err := analysis(raw); err != nil {
