@@ -125,10 +125,10 @@ func _getAttr(n float64) []color.Attribute {
 	return colors
 }
 
-func colorNumber(n int) {
+func colorNumber1(n int) {
 	color.New(_getAttr(float64(n))...).Printf("%d", n)
 }
 
-func colorNumberF(n float64) {
-	color.New(_getAttr(n)...).Printf("%.2f", n)
+func colorNumber2(n int) {
+	color.New(_getAttr(float64(n) / 2)...).Printf("%d", n)
 }

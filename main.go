@@ -242,7 +242,7 @@ func checkTing1Discard(cnt []int) bool {
 		if cnt[i] >= 1 {
 			cnt[i]-- // 切牌
 			if allCount, ans := checkTing1(cnt, true).parse(); allCount > 0 {
-				colorNumber(allCount)
+				colorNumber1(allCount)
 				fmt.Printf("    切 %s %v\n", mahjong[i], ans)
 				flushBuffer()
 
@@ -319,7 +319,7 @@ func checkTing2Discard(cnt []int) bool {
 		if cnt[i] >= 1 {
 			cnt[i]-- // 切牌
 			if allCount, ans := checkTing2(cnt).parse(); allCount > 0 {
-				colorNumber(allCount)
+				colorNumber2(allCount)
 				fmt.Printf("   切 %s %v\n", mahjong[i], ans)
 
 				ok = true
@@ -349,8 +349,13 @@ func analysis(raw string) (num int, cnt []int, err error) {
 				fmt.Println("一向听:", allCount, ans)
 				flushBuffer()
 			} else {
-				fmt.Println("尚未一向听")
-				// TODO
+				allCount, ans := checkTing2(cnt).parse()
+				if allCount > 0 {
+					fmt.Println("两向听:", allCount, ans)
+					flushBuffer()
+				} else {
+					fmt.Println("尚未两向听")
+				}
 			}
 		}
 	case 14:
@@ -377,13 +382,17 @@ func interact(raw string) {
 	num, cnt, err := analysis(raw)
 	if err != nil {
 		_errorExit(err.Error())
-	} else if num != 14 {
-		_errorExit("交互模式需要14张牌")
 	}
+	printed := true
 
 	var tile string
 	for {
 		for {
+			if num < 14 {
+				num = 999
+				break
+			}
+			printed = false
 			fmt.Print("> 切 ")
 			fmt.Scanf("%s\n", &tile)
 			idx, err := _convert(tile)
@@ -399,15 +408,21 @@ func interact(raw string) {
 			}
 		}
 
-		// 交互模式时，13张牌的一向听分析显示改良具体情况
-		detailFlag = true
-		raw = countToString(cnt)
-		if _, _, err := analysis(raw); err != nil {
-			fmt.Fprintln(os.Stderr, err.Error())
+		if !printed {
+			// 交互模式时，13张牌的一向听分析显示改良具体情况
+			detailFlag = true
+			raw = countToString(cnt)
+			if _, _, err := analysis(raw); err != nil {
+				fmt.Fprintln(os.Stderr, err.Error())
+			}
+			detailFlag = false
+
+			printed = true
 		}
-		detailFlag = false
 
 		for {
+			printed = false
+
 			fmt.Print("> 摸 ")
 			fmt.Scanf("%s\n", &tile)
 			idx, err := _convert(tile)
@@ -423,9 +438,13 @@ func interact(raw string) {
 			}
 		}
 
-		raw = countToString(cnt)
-		if _, _, err := analysis(raw); err != nil {
-			fmt.Fprintln(os.Stderr, err.Error())
+		if !printed {
+			raw = countToString(cnt)
+			if _, _, err := analysis(raw); err != nil {
+				fmt.Fprintln(os.Stderr, err.Error())
+			}
+
+			printed = true
 		}
 	}
 }
