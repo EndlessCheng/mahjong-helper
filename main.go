@@ -39,6 +39,16 @@ var (
 	detailBuffer = strings.Builder{}
 )
 
+func flushBuffer() {
+	fmt.Print(buffer.String())
+	if detailFlag {
+		fmt.Print(detailBuffer.String())
+	}
+	fmt.Println()
+	buffer.Reset()
+	detailBuffer.Reset()
+}
+
 // 13张牌，检查一向听
 func checkTing1(cnt []int, recur bool) needTiles {
 	needs := needTiles{}
@@ -156,11 +166,7 @@ func checkTing1Discard(cnt []int) bool {
 			if allCount, ans := checkTing1(cnt, true).parse(); allCount > 0 {
 				colorNumber(allCount)
 				fmt.Printf("    切 %s %v\n", mahjong[i], ans)
-				fmt.Print(buffer.String())
-				if detailFlag {
-					fmt.Print(detailBuffer.String())
-				}
-				fmt.Println()
+				flushBuffer()
 
 				ok = true
 			}
@@ -187,8 +193,7 @@ func analysis(raw string) (num int, cnt []int, err error) {
 			allCount, ans := checkTing1(cnt, true).parse()
 			if allCount > 0 {
 				fmt.Println("一向听:", allCount, ans)
-				fmt.Println(buffer.String())
-				buffer.Reset()
+				flushBuffer()
 			} else {
 				fmt.Println("尚未一向听")
 				// TODO
@@ -236,6 +241,13 @@ func interact(raw string) {
 				}
 			}
 		}
+
+		detailFlag = true
+		raw = countToString(cnt)
+		if _, _, err := analysis(raw); err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+		}
+		detailFlag = false
 
 		for {
 			fmt.Print("> 摸 ")
