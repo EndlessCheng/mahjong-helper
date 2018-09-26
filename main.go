@@ -121,7 +121,7 @@ func checkTing1(cnt []int, recur bool) needTiles {
 				weight += w
 			}
 			avgImproveNum := float64(improveScore) / float64(weight)
-			buffer.WriteString(fmt.Sprintf("%.2f [%d 变化]", avgImproveNum, impWay))
+			buffer.WriteString(fmt.Sprintf("%.2f [%d 改良]", avgImproveNum, impWay))
 		} else {
 			buffer.WriteString(strings.Repeat(" ", 14))
 		}
