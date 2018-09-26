@@ -16,9 +16,9 @@ func TestName(t *testing.T) {
 	raw = "123m 22378p 345899s"
 	raw = "1234m 22277p 3456s"
 	raw = "123m 2378p 234999s"
-	raw = "45689m 1189p 22256s" //
+	raw = "45689m 1189p 22256s" // 41775557
 	raw = "12367m 123667p 556s"
 	raw = "12378m 12378p 123s"
-	raw = "123557m 678p 22667s"
+	raw = "123557m 678p 22667s" // 42813319
 	analysis(raw)
 }

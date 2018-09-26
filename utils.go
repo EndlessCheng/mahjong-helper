@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 	"github.com/fatih/color"
+	"sort"
 )
 
 func _errorExit(args ...interface{}) {
@@ -61,6 +62,23 @@ func in(a string, arr []string) bool {
 	}
 	return false
 }
+
+func uniqueStrings(strings []string) []string {
+	u := make([]string, 0, len(strings))
+	mp := make(map[string]struct{}, len(strings))
+
+	for _, val := range strings {
+		if _, ok := mp[val]; !ok {
+			mp[val] = struct{}{}
+			u = append(u, val)
+		}
+	}
+
+	sort.Strings(u)
+	return u
+}
+
+//
 
 func _getAttr(n float64) []color.Attribute {
 	var colors []color.Attribute

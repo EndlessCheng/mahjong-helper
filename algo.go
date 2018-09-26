@@ -6,6 +6,8 @@ func init() {
 	initAutoGen()
 }
 
+//var checkWinCount = 0
+
 // 14张牌，检查是否和牌
 /*
 「１」 →「０」
@@ -18,6 +20,8 @@ func init() {
 「４０」→「１１１１１１１０」
 */
 func checkWin(cnt []int) bool {
+	//checkWinCount++
+
 	key := 0
 	bitPos := -1
 	setFlag := false
