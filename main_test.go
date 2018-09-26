@@ -4,10 +4,13 @@ import (
 	"testing"
 )
 
-func BenchmarkCheckTing0(b *testing.B) {
-	_, cnt, _ := convert("11222333789s fa fa")
-	for i := 0; i < b.N; i++ {
-		checkTing0(cnt)
+func BenchmarkCheckTing1Discard(b *testing.B) {
+	_, cnt, err := convert("123m 22378p 345899s")
+	if err != nil {
+		b.Error(err)
+	}
+	for i := 0; i < 10; i++ {
+		checkTing1Discard(cnt)
 	}
 }
 
