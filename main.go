@@ -21,6 +21,46 @@ var mahjong = [...]string{
 // 13张牌，检查是否听牌，返回听牌的具体情况
 func checkTing0(cnt []int) needTiles {
 	needs := needTiles{}
+
+	// 剪枝：检测浮牌
+	// 此处优化提升了 7-10 倍的性能
+	for i := 0; i < 3; i++ {
+		for j := 0; j < 9; {
+			idx := 9*i + j
+			switch {
+			case cnt[idx] == 0:
+				j++
+			case cnt[idx] == 1:
+				if cnt[idx+1] > 0 {
+					j += 3
+				} else if cnt[idx+2] > 0 {
+					j += 5
+				} else {
+					// 这是一张浮牌，要想和牌只能单骑这一张
+					cnt[idx]++ // 摸牌
+					if checkWin(cnt) { // 单骑和牌
+						needs[idx] = 4 - (cnt[idx] - 1)
+					}
+					cnt[idx]--
+					return needs
+				}
+			case cnt[idx] >= 2:
+				j += 3
+			}
+		}
+	}
+	for i := 27; i < len(mahjong); i++ {
+		if cnt[i] == 1 {
+			// 这是一张浮牌，要想和牌只能单骑这一张
+			cnt[i]++ // 摸牌
+			if checkWin(cnt) { // 单骑和牌
+				needs[i] = 4 - (cnt[i] - 1)
+			}
+			cnt[i]--
+			return needs
+		}
+	}
+
 	for i := range mahjong {
 		if cnt[i] == 4 {
 			continue
@@ -220,9 +260,11 @@ func analysis(raw string) (num int, cnt []int, err error) {
 }
 
 func interact(raw string) {
-	_, cnt, err := analysis(raw)
+	num, cnt, err := analysis(raw)
 	if err != nil {
 		_errorExit(err.Error())
+	} else if num != 14 {
+		_errorExit("交互模式需要14张牌")
 	}
 
 	var tile string
