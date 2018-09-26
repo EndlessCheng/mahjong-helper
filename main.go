@@ -45,6 +45,7 @@ func flushBuffer() {
 		fmt.Print(detailBuffer.String())
 	}
 	fmt.Println()
+
 	buffer.Reset()
 	detailBuffer.Reset()
 }
