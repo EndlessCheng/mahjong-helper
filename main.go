@@ -253,6 +253,7 @@ func interact(raw string) {
 			}
 		}
 
+		raw = countToString(cnt)
 		if _, _, err := analysis(raw); err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
 		}
