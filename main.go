@@ -271,7 +271,7 @@ func interact(raw string) {
 	for {
 		for {
 			fmt.Print("> 切 ")
-			fmt.Scanf("%s", &tile)
+			fmt.Scanf("%s\n", &tile)
 			idx, err := _convert(tile)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
@@ -294,7 +294,7 @@ func interact(raw string) {
 
 		for {
 			fmt.Print("> 摸 ")
-			fmt.Scanf("%s", &tile)
+			fmt.Scanf("%s\n", &tile)
 			idx, err := _convert(tile)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
