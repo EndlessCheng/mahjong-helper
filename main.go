@@ -254,6 +254,82 @@ func checkTing1Discard(cnt []int) bool {
 	return ok
 }
 
+// 13张牌，检查一向听（简化版）
+func _simpleCheckTing1(cnt []int) needTiles {
+	needs := needTiles{}
+	for i := range mahjong {
+		if cnt[i] >= 1 {
+			cnt[i]-- // 切掉其中一张牌
+			for j := range mahjong {
+				if j == i {
+					continue
+				}
+				if cnt[j] == 4 {
+					continue
+				}
+				cnt[j]++ // 换成其他牌
+				if nd := checkTing0(cnt); len(nd) > 0 {
+					// 若能听牌，则换的这张牌为一向听的进张
+					if _, ok := needs[j]; !ok {
+						needs[j] = 4 - (cnt[j] - 1)
+					} else {
+						// 比如说 57m22566s，切 5s/6s 来 8m 都听牌
+					}
+				}
+				cnt[j]--
+			}
+			cnt[i]++
+		}
+	}
+	return needs
+}
+
+// 13张牌，检查两向听
+func checkTing2(cnt []int) needTiles {
+	needs := needTiles{}
+	for i := range mahjong {
+		if cnt[i] >= 1 {
+			cnt[i]-- // 切掉其中一张牌
+			for j := range mahjong {
+				if j == i {
+					continue
+				}
+				if cnt[j] == 4 {
+					continue
+				}
+				cnt[j]++ // 换成其他牌
+				if nd := _simpleCheckTing1(cnt); len(nd) > 0 {
+					// 若能一向听，则换的这张牌为两向听的进张
+					if _, ok := needs[j]; !ok {
+						needs[j] = 4 - (cnt[j] - 1)
+					}
+				}
+				cnt[j]--
+			}
+			cnt[i]++
+		}
+	}
+	return needs
+}
+
+// 14张牌，可以两向听，何切
+func checkTing2Discard(cnt []int) bool {
+	ok := false
+	for i := range mahjong {
+		if cnt[i] >= 1 {
+			cnt[i]-- // 切牌
+			if allCount, ans := checkTing2(cnt).parse(); allCount > 0 {
+				colorNumber(allCount)
+				fmt.Printf("   切 %s %v\n", mahjong[i], ans)
+
+				ok = true
+			}
+			cnt[i]++
+		}
+	}
+	return ok
+}
+
 func analysis(raw string) (num int, cnt []int, err error) {
 	fmt.Println(raw)
 	fmt.Println(strings.Repeat("=", len(raw)))
@@ -282,8 +358,9 @@ func analysis(raw string) (num int, cnt []int, err error) {
 			fmt.Println("已胡牌")
 		} else {
 			if !checkTing1Discard(cnt) {
-				fmt.Println("尚未一向听")
-				// TODO
+				if !checkTing2Discard(cnt) {
+					fmt.Println("尚未两向听")
+				}
 			}
 		}
 	default:

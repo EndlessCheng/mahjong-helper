@@ -30,5 +30,16 @@ func TestAnalysis(t *testing.T) {
 	raw = "12367m 123667p 556s"
 	raw = "12378m 12378p 123s"
 	raw = "123m 2378p 34599s bei" // 5180198 => 416416
+
+	// http://blog.sina.com.cn/s/blog_7f78b76f0100s0nl.html
+	raw = "11379m 347p 277s zhong zhong zhong"
+	raw = "334578m 11468p 235s"
+	raw = "478m 33588p 457899s"
+	raw = "2233688m 1234p 378s"
+	raw = "1233347m 23699p 88s"
+
+	raw = "56778m 1245s 23388p"
+	raw = "23m 22456p 1156899s"
+	//raw = "2379m 22399s 23479p"
 	analysis(raw)
 }
