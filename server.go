@@ -24,12 +24,17 @@ func (h *echoHandler) interact(c echo.Context) error {
 	defer func() { h.analysing = false }()
 
 	d := struct {
-		Tiles string `json:"tiles"`
+		Tiles      string `json:"tiles"`
+		ShowDetail bool   `json:"show_detail"`
 	}{}
 	if err := c.Bind(&d); err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
+	if d.ShowDetail {
+		detailFlag = true
+		defer func() { detailFlag = false }()
+	}
 	if _, _, err := analysis(d.Tiles); err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
