@@ -94,5 +94,7 @@ func runServer() {
 	e.GET("/", h.index)
 	e.POST("/interact", h.interact)
 
-	e.Start(":12121")
+	if err := e.Start(":12121"); err != nil {
+		_errorExit(err.Error())
+	}
 }
