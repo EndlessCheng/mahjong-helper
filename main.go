@@ -326,6 +326,7 @@ func checkTing2Discard(cnt []int) bool {
 			cnt[i]++
 		}
 	}
+	fmt.Println()
 	return ok
 }
 
@@ -450,7 +451,9 @@ func interact(raw string) {
 
 func main() {
 	if len(os.Args) <= 1 {
-		_errorExit("参数错误")
+		// 服务器模式
+		runServer()
+		return
 	}
 
 	if os.Args[len(os.Args)-1] == "-i" {
