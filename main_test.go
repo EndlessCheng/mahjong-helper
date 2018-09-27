@@ -48,5 +48,6 @@ func TestAnalysis(t *testing.T) {
 	raw = "13579m 1357p 44789s"
 
 	raw = "4589m 1345677p 458s"
+	raw = "233m 11335p 44789s"
 	analysis(raw)
 }

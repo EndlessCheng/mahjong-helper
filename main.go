@@ -341,6 +341,10 @@ func analysis(raw string) (num int, cnt []int, err error) {
 		return
 	}
 
+	if countDui(cnt) >= 4 {
+		alert("对子手可能")
+	}
+
 	switch num {
 	case 13:
 		if needs := checkTing0(cnt); len(needs) > 0 {
