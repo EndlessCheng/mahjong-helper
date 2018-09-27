@@ -10,6 +10,20 @@ import (
 	"errors"
 )
 
+var mahjong = [...]string{
+	"1m", "2m", "3m", "4m", "5m", "6m", "7m", "8m", "9m",
+	"1p", "2p", "3p", "4p", "5p", "6p", "7p", "8p", "9p",
+	"1s", "2s", "3s", "4s", "5s", "6s", "7s", "8s", "9s",
+	"1z", "2z", "3z", "4z", "5z", "6z", "7z",
+}
+
+var mahjongZH = [...]string{
+	"1m", "2m", "3m", "4m", "5m", "6m", "7m", "8m", "9m",
+	"1p", "2p", "3p", "4p", "5p", "6p", "7p", "8p", "9p",
+	"1s", "2s", "3s", "4s", "5s", "6s", "7s", "8s", "9s",
+	"东", "南", "西", "北", "白", "发", "中",
+}
+
 func _errorExit(args ...interface{}) {
 	fmt.Fprintln(os.Stderr, args...)
 	os.Exit(1)

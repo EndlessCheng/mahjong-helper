@@ -10,12 +10,7 @@ import (
 var detailFlag = false
 var interactFlag = false // 交互模式
 
-var mahjong = [...]string{
-	"1m", "2m", "3m", "4m", "5m", "6m", "7m", "8m", "9m",
-	"1p", "2p", "3p", "4p", "5p", "6p", "7p", "8p", "9p",
-	"1s", "2s", "3s", "4s", "5s", "6s", "7s", "8s", "9s",
-	"1z", "2z", "3z", "4z", "5z", "6z", "7z",
-}
+
 
 // 13张牌，检查是否听牌，返回听牌的具体情况
 // （不考虑国士无双）
@@ -195,7 +190,7 @@ func checkTing1(cnt []int, recur bool) needTiles {
 					if betterAllCount > improveCount[drawIdx] {
 						improveCount[drawIdx] = betterAllCount
 					}
-					detailBuffer.WriteString(fmt.Sprintln(fmt.Sprintf("    摸 %s 切 %s 改良:", mahjong[drawIdx], mahjong[discardIdx]), betterAllCount, betterTiles))
+					detailBuffer.WriteString(fmt.Sprintln(fmt.Sprintf("    摸 %s 切 %s 改良:", mahjongZH[drawIdx], mahjongZH[discardIdx]), betterAllCount, betterTiles))
 				}
 			}
 		}
@@ -242,7 +237,7 @@ func checkTing1Discard(cnt []int) bool {
 			cnt[i]-- // 切牌
 			if allCount, ans := checkTing1(cnt, true).parse(); allCount > 0 {
 				colorNumber1(allCount)
-				fmt.Printf("    切 %s %v\n", mahjong[i], ans)
+				fmt.Printf("    切 %s %v\n", mahjongZH[i], ans)
 				flushBuffer()
 
 				ok = true
@@ -319,7 +314,7 @@ func checkTing2Discard(cnt []int) bool {
 			cnt[i]-- // 切牌
 			if allCount, ans := checkTing2(cnt).parse(); allCount > 0 {
 				colorNumber2(allCount)
-				fmt.Printf("   切 %s %v\n", mahjong[i], ans)
+				fmt.Printf("   切 %s %v\n", mahjongZH[i], ans)
 
 				ok = true
 			}
