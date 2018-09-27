@@ -24,11 +24,16 @@ func (h *echoHandler) interact(c echo.Context) error {
 	defer func() { h.analysing = false }()
 
 	d := struct {
+		Reset      bool   `json:"reset"`
 		Tiles      string `json:"tiles"`
 		ShowDetail bool   `json:"show_detail"`
 	}{}
 	if err := c.Bind(&d); err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
+	}
+
+	if d.Reset {
+		reset()
 	}
 
 	if d.ShowDetail {

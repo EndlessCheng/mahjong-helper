@@ -307,6 +307,10 @@ func checkTing2(cnt []int) needTiles {
 // 交互模式下，两向听的最低值
 var ting2MinCount = -1
 
+func reset() {
+	ting2MinCount = -1
+}
+
 // 14张牌，可以两向听，何切
 func checkTing2Discard(cnt []int) bool {
 	ok := false
@@ -352,6 +356,7 @@ func analysis(raw string) (num int, cnt []int, err error) {
 					fmt.Println("两向听:", allCount, ans)
 					flushBuffer()
 
+					// 13设置
 					ting2MinCount = allCount
 				} else {
 					fmt.Println("尚未两向听")
@@ -366,9 +371,10 @@ func analysis(raw string) (num int, cnt []int, err error) {
 				if !checkTing2Discard(cnt) {
 					fmt.Println("尚未两向听")
 				}
-				ting2MinCount = -1
 			}
 		}
+		// 14失效
+		reset()
 	default:
 		err = fmt.Errorf("参数错误: %s（%d 张牌）", raw, num)
 		return
