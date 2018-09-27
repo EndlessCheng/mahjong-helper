@@ -7,6 +7,7 @@ import (
 	"github.com/fatih/color"
 	"sort"
 	"strconv"
+	"errors"
 )
 
 func _errorExit(args ...interface{}) {
@@ -26,13 +27,13 @@ func _convert(tile string) (int, error) {
 
 // e.g. "13m 24p" => (4, [0, 2, 10, 12])
 func convert(tiles string) (num int, cnt []int, err error) {
-	cnt = make([]int, 34)
-
 	tiles = strings.TrimSpace(tiles)
-	splits := strings.Split(tiles, " ")
+	if tiles == "" {
+		return 0, nil, errors.New("参数错误: 处理的手牌不能为空")
+	}
 
 	var result []int
-	for _, split := range splits {
+	for _, split := range strings.Split(tiles, " ") {
 		split = strings.TrimSpace(split)
 		for i := range split[:len(split)-1] {
 			single := split[i:i+1] + split[len(split)-1:]
@@ -44,6 +45,7 @@ func convert(tiles string) (num int, cnt []int, err error) {
 		}
 	}
 
+	cnt = make([]int, 34)
 	for _, m := range result {
 		cnt[m]++
 		if cnt[m] > 4 {
