@@ -115,6 +115,16 @@ func uniqueStrings(strings []string) []string {
 	return u
 }
 
+func countDui(cnt []int) int {
+	dui := 0
+	for i := 0; i < len(mahjong); i++ {
+		if cnt[i] >= 2 {
+			dui++
+		}
+	}
+	return dui
+}
+
 //
 
 func _getAttr(n float64) []color.Attribute {
@@ -138,4 +148,9 @@ func colorNumber1(n int) {
 
 func colorNumber2(n int) {
 	color.New(_getAttr(float64(n) / 2)...).Printf("%d", n)
+}
+
+func alert(s string) {
+	color.Yellow(s)
+	fmt.Println()
 }

@@ -58,9 +58,10 @@ func checkWin(cnt []int) bool {
 		}
 	}
 	for i := 27; i < 34; i++ { // 字牌
-		if cnt[i] >= 1 {
+		c := cnt[i]
+		if c >= 1 {
 			bitPos++
-			switch cnt[i] {
+			switch c {
 			case 2:
 				key |= 0x3 << uint(bitPos)
 				bitPos += 2
