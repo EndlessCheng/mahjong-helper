@@ -10,8 +10,6 @@ import (
 var detailFlag = false
 var interactFlag = false // 交互模式
 
-
-
 // 13张牌，检查是否听牌，返回听牌的具体情况
 // （不考虑国士无双）
 func checkTing0(cnt []int) needTiles {
@@ -236,11 +234,11 @@ func checkTing1Discard(cnt []int) bool {
 		if cnt[i] >= 1 {
 			cnt[i]-- // 切牌
 			if allCount, ans := checkTing1(cnt, true).parse(); allCount > 0 {
+				ok = true
+
 				colorNumber1(allCount)
 				fmt.Printf("    切 %s %v\n", mahjongZH[i], ans)
 				flushBuffer()
-
-				ok = true
 			}
 			cnt[i]++
 		}
@@ -306,6 +304,9 @@ func checkTing2(cnt []int) needTiles {
 	return needs
 }
 
+// 交互模式下，两向听的最低值
+var ting2MinCount = -1
+
 // 14张牌，可以两向听，何切
 func checkTing2Discard(cnt []int) bool {
 	ok := false
@@ -313,10 +314,12 @@ func checkTing2Discard(cnt []int) bool {
 		if cnt[i] >= 1 {
 			cnt[i]-- // 切牌
 			if allCount, ans := checkTing2(cnt).parse(); allCount > 0 {
-				colorNumber2(allCount)
-				fmt.Printf("   切 %s %v\n", mahjongZH[i], ans)
-
 				ok = true
+
+				if allCount >= ting2MinCount {
+					colorNumber2(allCount)
+					fmt.Printf("   切 %s %v\n", mahjongZH[i], ans)
+				}
 			}
 			cnt[i]++
 		}
@@ -348,6 +351,8 @@ func analysis(raw string) (num int, cnt []int, err error) {
 				if allCount > 0 {
 					fmt.Println("两向听:", allCount, ans)
 					flushBuffer()
+
+					ting2MinCount = allCount
 				} else {
 					fmt.Println("尚未两向听")
 				}
@@ -361,6 +366,7 @@ func analysis(raw string) (num int, cnt []int, err error) {
 				if !checkTing2Discard(cnt) {
 					fmt.Println("尚未两向听")
 				}
+				ting2MinCount = -1
 			}
 		}
 	default:
