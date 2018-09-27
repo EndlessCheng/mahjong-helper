@@ -34,17 +34,9 @@ func convert(tiles string) (num int, cnt []int, err error) {
 	var result []int
 	for _, split := range splits {
 		split = strings.TrimSpace(split)
-		if split[0] >= '1' && split[0] <= '9' {
-			for i := range split[:len(split)-1] {
-				single := split[i:i+1] + split[len(split)-1:]
-				tile, err := _convert(single)
-				if err != nil {
-					return -1, nil, err
-				}
-				result = append(result, tile)
-			}
-		} else {
-			tile, err := _convert(split)
+		for i := range split[:len(split)-1] {
+			single := split[i:i+1] + split[len(split)-1:]
+			tile, err := _convert(single)
 			if err != nil {
 				return -1, nil, err
 			}
@@ -64,21 +56,20 @@ func convert(tiles string) (num int, cnt []int, err error) {
 
 func countToString(cnt []int) string {
 	sb := strings.Builder{}
-	for i, type_ := range [...]string{"m", "p", "s"} {
+	for i, type_ := range [...]string{"m", "p", "s", "z"} {
 		wrote := false
 		for j := 0; j < 9; j++ {
-			for k := 0; k < cnt[9*i+j]; k++ {
+			idx := 9*i + j
+			if idx >= len(mahjong) {
+				break
+			}
+			for k := 0; k < cnt[idx]; k++ {
 				sb.WriteString(strconv.Itoa(j + 1))
 				wrote = true
 			}
 		}
 		if wrote {
 			sb.WriteString(type_ + " ")
-		}
-	}
-	for i := 27; i < len(mahjong); i++ {
-		for k := 0; k < cnt[i]; k++ {
-			sb.WriteString(mahjong[i] + " ")
 		}
 	}
 	return strings.TrimSpace(sb.String())
