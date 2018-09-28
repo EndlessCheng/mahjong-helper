@@ -49,6 +49,9 @@ func convert(tiles string) (num int, cnt []int, err error) {
 	var result []int
 	for _, split := range strings.Split(tiles, " ") {
 		split = strings.TrimSpace(split)
+		if len(split) <= 1 {
+			return 0, nil, errors.New("参数错误: " + split)
+		}
 		for i := range split[:len(split)-1] {
 			single := split[i:i+1] + split[len(split)-1:]
 			tile, err := _convert(single)
@@ -63,7 +66,7 @@ func convert(tiles string) (num int, cnt []int, err error) {
 	for _, m := range result {
 		cnt[m]++
 		if cnt[m] > 4 {
-			_errorExit("参数错误: 超过4张一样的牌！")
+			return 0, nil, errors.New("参数错误: 超过4张一样的牌！")
 		}
 	}
 
