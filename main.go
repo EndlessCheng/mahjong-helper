@@ -216,6 +216,7 @@ func checkTing1(cnt []int, recur bool) needTiles {
 		}
 		avgTingNum := float64(avgTingSum) / float64(weight)
 		avgTingStr := fmt.Sprintf("%.2f 听牌数", avgTingNum)
+		// TODO: 根据1-9的牌来计算综合和牌率
 		buffer.WriteString("  " + avgTingStr + "\n")
 	}
 
