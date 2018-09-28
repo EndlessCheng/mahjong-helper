@@ -422,7 +422,7 @@ func interact(raw string) {
 		if !printed {
 			// 交互模式时，13张牌的一向听分析显示改良具体情况
 			detailFlag = true
-			raw = countToString(cnt)
+			raw, _ = countToString(cnt)
 			if _, _, err := analysis(raw); err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
 			}
@@ -450,7 +450,7 @@ func interact(raw string) {
 		}
 
 		if !printed {
-			raw = countToString(cnt)
+			raw, _ = countToString(cnt)
 			if _, _, err := analysis(raw); err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
 			}

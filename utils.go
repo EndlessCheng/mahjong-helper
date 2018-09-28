@@ -62,7 +62,7 @@ func convert(tiles string) (num int, cnt []int, err error) {
 		}
 	}
 
-	cnt = make([]int, 34)
+	cnt = make([]int, len(mahjong))
 	for _, m := range result {
 		cnt[m]++
 		if cnt[m] > 4 {
@@ -73,7 +73,11 @@ func convert(tiles string) (num int, cnt []int, err error) {
 	return len(result), cnt, nil
 }
 
-func countToString(cnt []int) string {
+func countToString(cnt []int) (string, error) {
+	if len(cnt) != len(mahjong) {
+		return "", fmt.Errorf("cnt 长度必须为 %d", len(mahjong))
+	}
+
 	sb := strings.Builder{}
 	for i, type_ := range [...]string{"m", "p", "s", "z"} {
 		wrote := false
@@ -91,7 +95,7 @@ func countToString(cnt []int) string {
 			sb.WriteString(type_ + " ")
 		}
 	}
-	return strings.TrimSpace(sb.String())
+	return strings.TrimSpace(sb.String()), nil
 }
 
 func in(a string, arr []string) bool {
