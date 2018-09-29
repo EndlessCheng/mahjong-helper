@@ -18,27 +18,33 @@ func checkTing0(cnt []int) needTiles {
 	// 剪枝：检测浮牌
 	// 此处优化提升了 7-10 倍的性能
 	for i := 0; i < 3; i++ {
-		for j := 0; j < 9; {
+		cnt0 := 0
+		for j := 0; j < 9; j++ {
 			idx := 9*i + j
+			c := cnt[idx]
 			switch {
-			case cnt[idx] == 0:
-				j++
-			case cnt[idx] == 1:
-				if cnt[idx+1] > 0 {
-					j += 3
-				} else if cnt[idx+2] > 0 {
-					j += 5
-				} else {
-					// 这是一张浮牌，要想和牌只能单骑这一张
-					cnt[idx]++ // 摸牌
-					if checkWin(cnt) { // 单骑和牌
-						needs[idx] = 4 - (cnt[idx] - 1)
+			case c == 0:
+				cnt0++
+			case c == 1:
+				if cnt0 >= 2 {
+					if j+1 < 9 && cnt[idx+1] > 0 {
+						j++
+						cnt0 = 0
+					} else if j+2 < 9 && cnt[idx+2] > 0 {
+						j += 2
+						cnt0 = 0
+					} else {
+						// 这是一张浮牌，要想和牌只能单骑这一张
+						cnt[idx]++ // 摸牌
+						if checkWin(cnt) { // 单骑和牌
+							needs[idx] = 4 - (cnt[idx] - 1)
+						}
+						cnt[idx]--
+						return needs
 					}
-					cnt[idx]--
-					return needs
 				}
-			case cnt[idx] >= 2:
-				j += 3
+			case c >= 2:
+				cnt0 = 0
 			}
 		}
 	}
@@ -144,10 +150,12 @@ func checkTing1(cnt []int, recur bool) needTiles {
 					} else {
 						// 比如说 57m22566s，切 5s/6s 来 8m 都听牌，但是听牌的数量有区别
 					}
-					tingCnt, _ := nd.parse()
-					if tingCnt > tingCntMap[j] {
-						// 听牌一般听数量最多的
-						tingCntMap[j] = tingCnt
+					if recur {
+						tingCnt, _ := nd.parse()
+						if tingCnt > tingCntMap[j] {
+							// 听牌一般听数量最多的
+							tingCntMap[j] = tingCnt
+						}
 					}
 				} else if recur {
 					if betterNeeds := checkTing1(cnt, false); len(betterNeeds) > 0 {
