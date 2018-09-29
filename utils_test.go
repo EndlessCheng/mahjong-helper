@@ -25,7 +25,7 @@ func TestCountToString(t *testing.T) {
 		0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 1, 1, 0, 0,
 	}
-	raw := countToString(cnt)
+	raw, _ := countToString(cnt)
 	if raw != "11234m 2345567p 45z" {
 		t.Error(raw)
 	}
