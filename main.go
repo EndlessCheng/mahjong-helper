@@ -190,7 +190,7 @@ func checkTing1(cnt []int, recur bool) needTiles {
 					// 跳过改良牌就是一向听的进张的情况
 					continue
 				}
-				if betterAllCount, betterTiles := betterNeeds.parse(); betterAllCount > allCount {
+				if betterAllCount, betterTiles := betterNeeds.parseZH(); betterAllCount > allCount {
 					// 进张数变多，则为一向听的改良
 					impWay++
 					if betterAllCount > improveCount[drawIdx] {
@@ -242,7 +242,7 @@ func checkTing1Discard(cnt []int) bool {
 	for i := range mahjong {
 		if cnt[i] >= 1 {
 			cnt[i]-- // 切牌
-			if allCount, ans := checkTing1(cnt, true).parse(); allCount > 0 {
+			if allCount, ans := checkTing1(cnt, true).parseZH(); allCount > 0 {
 				ok = true
 
 				colorNumber1(allCount)
@@ -359,12 +359,12 @@ func analysis(raw string) (num int, cnt []int, err error) {
 		if needs := checkTing0(cnt); len(needs) > 0 {
 			fmt.Println("已听牌:", needs.String())
 		} else {
-			allCount, ans := checkTing1(cnt, true).parse()
+			allCount, ans := checkTing1(cnt, true).parseZH()
 			if allCount > 0 {
 				fmt.Println("一向听:", allCount, ans)
 				flushBuffer()
 			} else {
-				allCount, ans := checkTing2(cnt).parse()
+				allCount, ans := checkTing2(cnt).parseZH()
 				if allCount > 0 {
 					fmt.Println("两向听:", allCount, ans)
 					flushBuffer()
