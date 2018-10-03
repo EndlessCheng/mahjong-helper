@@ -112,6 +112,22 @@ func checkTing0(cnt []int) needTiles {
 	return needs
 }
 
+// 检查切掉某张牌后是否听牌
+func checkTing0Discard(cnt []int) bool {
+	ok := false
+	for i := range mahjong {
+		if cnt[i] >= 1 {
+			cnt[i]-- // 切牌
+			if needs := checkTing0(cnt); len(needs) > 0 {
+				ok = true
+				fmt.Println("【已听牌！】 切", mahjongZH[i], needs.String())
+			}
+			cnt[i]++
+		}
+	}
+	return ok
+}
+
 var (
 	buffer       = strings.Builder{}
 	detailBuffer = strings.Builder{}
@@ -383,9 +399,11 @@ func analysis(raw string) (num int, cnt []int, err error) {
 		if checkWin(cnt) {
 			fmt.Println("已胡牌")
 		} else {
-			if !checkTing1Discard(cnt) {
-				if !checkTing2Discard(cnt) {
-					fmt.Println("尚未两向听")
+			if !checkTing0Discard(cnt) {
+				if !checkTing1Discard(cnt) {
+					if !checkTing2Discard(cnt) {
+						fmt.Println("尚未两向听")
+					}
 				}
 			}
 		}
