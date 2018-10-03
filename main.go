@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"time"
+	"github.com/fatih/color"
 )
 
 var detailFlag = false
@@ -120,7 +121,9 @@ func checkTing0Discard(cnt []int) bool {
 			cnt[i]-- // 切牌
 			if needs := checkTing0(cnt); len(needs) > 0 {
 				ok = true
-				fmt.Println("【已听牌！】 切", mahjongZH[i], needs.String())
+
+				color.Red("【已听牌！】 切 %s %s", mahjongZH[i], needs.String())
+				fmt.Println()
 			}
 			cnt[i]++
 		}
@@ -370,7 +373,8 @@ func analysis(raw string) (num int, cnt []int, err error) {
 	}
 
 	if countDui(cnt) >= 4 {
-		alert("对子手可能")
+		color.Yellow("对子手可能")
+		fmt.Println()
 	}
 
 	switch num {
@@ -399,11 +403,11 @@ func analysis(raw string) (num int, cnt []int, err error) {
 		if checkWin(cnt) {
 			fmt.Println("已胡牌")
 		} else {
-			if !checkTing0Discard(cnt) {
-				if !checkTing1Discard(cnt) {
-					if !checkTing2Discard(cnt) {
-						fmt.Println("尚未两向听")
-					}
+			checkTing0Discard(cnt)
+
+			if !checkTing1Discard(cnt) {
+				if !checkTing2Discard(cnt) {
+					fmt.Println("尚未两向听")
 				}
 			}
 		}

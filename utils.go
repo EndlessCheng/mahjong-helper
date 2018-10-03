@@ -156,8 +156,3 @@ func colorNumber1(n int) {
 func colorNumber2(n int) {
 	color.New(_getAttr(float64(n) / 2)...).Printf("%d", n)
 }
-
-func alert(s string) {
-	color.Yellow(s)
-	fmt.Println()
-}
