@@ -18,7 +18,7 @@ func checkTing0(cnt []int) needTiles {
 	// 剪枝：检测浮牌
 	// 此处优化提升了 7-10 倍的性能
 	for i := 0; i < 3; i++ {
-		cnt0 := 0
+		cnt0 := 2
 		for j := 0; j < 9; j++ {
 			idx := 9*i + j
 			c := cnt[idx]
@@ -26,7 +26,9 @@ func checkTing0(cnt []int) needTiles {
 			case c == 0:
 				cnt0++
 			case c == 1:
-				if cnt0 >= 2 {
+				if cnt0 < 2 {
+					cnt0 = 0
+				} else {
 					if j+1 < 9 && cnt[idx+1] > 0 {
 						j++
 						cnt0 = 0
@@ -61,6 +63,7 @@ func checkTing0(cnt []int) needTiles {
 	}
 
 	// 剪枝：下面这段可以加快 35%~40%
+	// 只计算可能胡的牌，对于 345m ... 这样的牌来说，摸到 1m 是肯定不能胡牌的
 	needChecks := make([]int, 0, len(mahjong))
 	for i := 0; i < 3; i++ {
 		for j := 0; j < 9; j++ {
