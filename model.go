@@ -48,14 +48,14 @@ func (nt needTiles) parseZH() (allCount int, tilesZH []string) {
 	return allCount, tilesZH
 }
 
-func (nt needTiles) tiles() []string {
+func (nt needTiles) tilesZH() []string {
 	tiles := make([]string, 0, len(nt))
 	for k := range nt {
-		tiles = append(tiles, mahjong[k])
+		tiles = append(tiles, mahjongZH[k])
 	}
 	return tiles
 }
 
 func (nt needTiles) String() string {
-	return fmt.Sprint(nt.tiles())
+	return fmt.Sprint(nt.tilesZH())
 }
