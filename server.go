@@ -15,7 +15,7 @@ func (h *echoHandler) index(c echo.Context) error {
 	return c.String(http.StatusOK, time.Now().Format("2006-01-02 15:04:05"))
 }
 
-func (h *echoHandler) interact(c echo.Context) error {
+func (h *echoHandler) analysis(c echo.Context) error {
 	if h.analysing {
 		return c.NoContent(http.StatusForbidden)
 	}
@@ -54,7 +54,7 @@ func runServer() {
 	e.Use(middleware.Recover())
 
 	e.GET("/", h.index)
-	e.POST("/interact", h.interact)
+	e.POST("/analysis", h.analysis)
 
 	if err := e.Start(":12121"); err != nil {
 		_errorExit(err.Error())
