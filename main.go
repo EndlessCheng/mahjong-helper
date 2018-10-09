@@ -335,7 +335,7 @@ func checkTing2(cnt []int) needTiles {
 	return needs
 }
 
-// 交互模式下，两向听的最低值
+// 交互模式下，两向听进张的最低值
 var ting2MinCount = -1
 
 func reset() {
