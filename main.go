@@ -17,7 +17,7 @@ func checkTing0(cnt []int) needTiles {
 	needs := needTiles{}
 
 	// 剪枝：检测浮牌
-	// 此处优化提升了 7-10 倍的性能
+	// 此处优化提升了 3-5 倍的性能
 	for i := 0; i < 3; i++ {
 		cnt0 := 2
 		for j := 0; j < 9; j++ {
