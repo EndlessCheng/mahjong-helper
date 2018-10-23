@@ -59,3 +59,12 @@ func (nt needTiles) tilesZH() []string {
 func (nt needTiles) String() string {
 	return fmt.Sprint(nt.tilesZH())
 }
+
+func (nt needTiles) containAllIndexes(anotherNeeds needTiles) bool {
+	for k := range anotherNeeds {
+		if _, ok := nt[k]; !ok {
+			return false
+		}
+	}
+	return true
+}

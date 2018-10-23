@@ -98,7 +98,16 @@ func countToString(cnt []int) (string, error) {
 	return strings.TrimSpace(sb.String()), nil
 }
 
-func in(a string, arr []string) bool {
+func inStrSlice(a string, arr []string) bool {
+	for _, _a := range arr {
+		if _a == a {
+			return true
+		}
+	}
+	return false
+}
+
+func inIntSlice(a int, arr []int) bool {
 	for _, _a := range arr {
 		if _a == a {
 			return true
