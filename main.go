@@ -113,6 +113,34 @@ func checkTing0(cnt []int) needTiles {
 	return needs
 }
 
+// 默听时的改良情况
+func checkTing0Improve(cnt []int, tings needTiles) bool {
+	ok := false
+	for i := range mahjong {
+		if cnt[i] == 4 {
+			continue
+		}
+		if _, ok := tings[i]; ok {
+			continue
+		}
+		cnt[i]++ // 摸牌
+		for j := range mahjong {
+			if cnt[j] == 0 || j == i {
+				continue
+			}
+			cnt[j]-- // 切牌
+			if needs := checkTing0(cnt); len(needs) > 0 && !tings.containAllIndexes(needs) {
+				ok = true
+
+				fmt.Printf("摸 %s 切 %s，听 %s\n", mahjongZH[i], mahjongZH[j], needs.String())
+			}
+			cnt[j]++
+		}
+		cnt[i]--
+	}
+	return ok
+}
+
 // 检查切掉某张牌后是否听牌
 func checkTing0Discard(cnt []int) bool {
 	ok := false
@@ -121,6 +149,8 @@ func checkTing0Discard(cnt []int) bool {
 			cnt[i]-- // 切牌
 			if needs := checkTing0(cnt); len(needs) > 0 {
 				ok = true
+
+				// TODO: 切掉这张后的默听改良率？
 
 				color.Red("【已听牌！】 切 %s %s", mahjongZH[i], needs.String())
 				fmt.Println()
@@ -208,7 +238,7 @@ func checkTing1(cnt []int, recur bool) needTiles {
 		impWay := 0
 		for discardIdx, tmpNeedsMap := range betterNeedsMap {
 			for drawIdx, betterNeeds := range tmpNeedsMap {
-				if in(mahjong[drawIdx], tiles) {
+				if inStrSlice(mahjong[drawIdx], tiles) {
 					// 跳过改良牌就是一向听的进张的情况
 					continue
 				}
@@ -381,6 +411,9 @@ func analysis(raw string) (num int, cnt []int, err error) {
 	case 13:
 		if needs := checkTing0(cnt); len(needs) > 0 {
 			fmt.Println("已听牌:", needs.String())
+			if !checkTing0Improve(cnt, needs) {
+				fmt.Println("没有合适的改良")
+			}
 		} else {
 			allCount, ans := checkTing1(cnt, true).parseZH()
 			if allCount > 0 {
