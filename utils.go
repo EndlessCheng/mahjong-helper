@@ -165,3 +165,16 @@ func colorNumber1(n int) {
 func colorNumber2(n int) {
 	color.New(_getAttr(float64(n) / 2)...).Printf("%d", n)
 }
+
+func getTingCountColor(count float64) color.Attribute {
+	switch {
+	case count <= 4:
+		return color.FgBlue
+	case count <= 6:
+		return color.FgYellow
+	case count <= 8:
+		return color.FgHiRed
+	default:
+		return color.FgRed
+	}
+}

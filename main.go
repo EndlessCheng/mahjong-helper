@@ -132,7 +132,9 @@ func checkTing0Improve(cnt []int, tings needTiles) bool {
 			if needs := checkTing0(cnt); len(needs) > 0 && !tings.containAllIndexes(needs) {
 				ok = true
 
-				fmt.Printf("摸 %s 切 %s，听 %s\n", mahjongZH[i], mahjongZH[j], needs.String())
+				count, tiles := needs.parseZH()
+				text := fmt.Sprintf("摸 %s 切 %s，听 %v, %d 张", mahjongZH[i], mahjongZH[j], tiles, count)
+				color.New(getTingCountColor(float64(count))).Println(text)
 			}
 			cnt[j]++
 		}
@@ -152,7 +154,8 @@ func checkTing0Discard(cnt []int) bool {
 
 				// TODO: 切掉这张后的默听改良率？
 
-				color.Red("【已听牌！】 切 %s %s", mahjongZH[i], needs.String())
+				count, tiles := needs.parseZH()
+				color.Red("【已听牌！】 切 %s, 听 %v, %d 张", mahjongZH[i], tiles, count)
 				fmt.Println()
 			}
 			cnt[i]++
@@ -275,7 +278,7 @@ func checkTing1(cnt []int, recur bool) needTiles {
 			weight += w
 		}
 		avgTingNum := float64(avgTingSum) / float64(weight)
-		avgTingStr := fmt.Sprintf("%.2f 听牌数", avgTingNum)
+		avgTingStr := fmt.Sprintf("%.2f 听牌数", avgTingNum) // TODO: color this!
 		// TODO: 根据1-9的牌来计算综合和牌率
 		buffer.WriteString("  " + avgTingStr + "\n")
 	}
@@ -298,7 +301,29 @@ func checkTing1Discard(cnt []int) bool {
 				ok = true
 
 				colorNumber1(allCount)
-				fmt.Printf("    切 %s %v\n", mahjongZH[i], ans)
+				fmt.Print("    切 ")
+				var fgColor color.Attribute
+				if i > 27 {
+					fgColor = color.FgBlue
+				} else {
+					_i := i%9 + 1
+					switch _i {
+					case 1, 9:
+						fgColor = color.FgBlue
+					case 2, 8:
+						fgColor = color.FgHiBlue
+					case 3, 7:
+						fgColor = color.FgYellow
+					case 4, 6:
+						fgColor = color.FgHiRed
+					case 5:
+						fgColor = color.FgRed
+					default:
+						_errorExit("代码有误: _i = ", _i)
+					}
+				}
+				color.New(fgColor).Print(mahjongZH[i])
+				fmt.Printf(" %v\n", ans)
 				flushBuffer()
 			}
 			cnt[i]++
@@ -338,6 +363,7 @@ func _simpleCheckTing1(cnt []int) needTiles {
 }
 
 // 13张牌，检查两向听
+// TODO: 两向听时计算一向听的平均进张
 func checkTing2(cnt []int) needTiles {
 	needs := needTiles{}
 	for i := range mahjong {
@@ -414,6 +440,7 @@ func analysis(raw string) (num int, cnt []int, err error) {
 			if !checkTing0Improve(cnt, needs) {
 				fmt.Println("没有合适的改良")
 			}
+			fmt.Println()
 		} else {
 			allCount, ans := checkTing1(cnt, true).parseZH()
 			if allCount > 0 {
@@ -429,6 +456,7 @@ func analysis(raw string) (num int, cnt []int, err error) {
 					ting2MinCount = allCount
 				} else {
 					fmt.Println("尚未两向听")
+					fmt.Println()
 				}
 			}
 		}
