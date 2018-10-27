@@ -16,11 +16,11 @@ func BenchmarkCheckTing1Discard(b *testing.B) {
 
 func TestAnalysis(t *testing.T) {
 	var raw string
-	raw = "11222333789s fa fa" //
+	raw = "11222333789s 11z"
 	raw = "2355789p 356778s"
 	raw = "4578999m 45p 11145s"
 	raw = "123345567m 34p 345s"
-	raw = "123m 2378p 34599s bei"
+	raw = "123m 2378p 34599s 1z"
 	raw = "2334567788s 5699p"
 	raw = "123m 22378p 345899s"
 	raw = "123m 22378p 345899s"
@@ -29,10 +29,10 @@ func TestAnalysis(t *testing.T) {
 	raw = "45689m 1189p 22256s" // 41775557 => 7800426
 	raw = "12367m 123667p 556s"
 	raw = "12378m 12378p 123s"
-	raw = "123m 2378p 34599s bei" // 5180198 => 416416
+	raw = "123m 2378p 34599s 1z" // 5180198 => 416416
 
 	// http://blog.sina.com.cn/s/blog_7f78b76f0100s0nl.html
-	raw = "11379m 347p 277s zhong zhong zhong"
+	raw = "11379m 347p 277s 777z"
 	raw = "334578m 11468p 235s"
 	raw = "478m 33588p 457899s"
 	raw = "2233688m 1234p 378s"
@@ -54,5 +54,7 @@ func TestAnalysis(t *testing.T) {
 
 	raw = "123345m 234p 24s 44z"
 	raw = "123345m 23468p 44z"
+
+	raw = "24567m 24456p 229s"
 	analysis(raw)
 }
