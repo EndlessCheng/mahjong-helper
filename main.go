@@ -172,23 +172,18 @@ func checkTing0Discard(cnt []int) bool {
 }
 
 var (
-	buffer       = strings.Builder{}
 	detailBuffer = strings.Builder{}
 )
 
 func flushBuffer() {
-	fmt.Print(buffer.String())
 	if detailFlag {
 		fmt.Print(detailBuffer.String())
 	}
-	fmt.Println()
-
-	buffer.Reset()
 	detailBuffer.Reset()
 }
 
 // 13张牌，检查一向听
-func checkTing1(cnt []int, recur bool) needTiles {
+func checkTing1(cnt []int, recur bool) (needTiles, *checkTing1Result) {
 	needs := needTiles{}
 	betterNeedsMap := map[int]map[int]needTiles{}
 	tingCntMap := map[int]int{} // map[摸到idx]听多少张牌
@@ -220,7 +215,7 @@ func checkTing1(cnt []int, recur bool) needTiles {
 						}
 					}
 				} else if recur {
-					if betterNeeds := checkTing1(cnt, false); len(betterNeeds) > 0 {
+					if betterNeeds, _ := checkTing1(cnt, false); len(betterNeeds) > 0 {
 						// 换成这张牌也是一向听，可能是改良型，记录一下
 						tmpNeedsMap[j] = betterNeeds
 					}
@@ -233,10 +228,10 @@ func checkTing1(cnt []int, recur bool) needTiles {
 	}
 
 	if !recur {
-		return needs
+		return needs, nil
 	}
 
-	buffer.Reset()
+	ting1Result := checkTing1Result{}
 	detailBuffer.Reset()
 
 	// TODO: 振听?
@@ -245,7 +240,6 @@ func checkTing1(cnt []int, recur bool) needTiles {
 		for i := range mahjong {
 			improveCount[i] = allCount
 		}
-		impWay := 0
 		for discardIdx, tmpNeedsMap := range betterNeedsMap {
 			for drawIdx, betterNeeds := range tmpNeedsMap {
 				if inStrSlice(mahjong[drawIdx], tiles) {
@@ -254,7 +248,7 @@ func checkTing1(cnt []int, recur bool) needTiles {
 				}
 				if betterAllCount, betterTiles := betterNeeds.parseZH(); betterAllCount > allCount {
 					// 进张数变多，则为一向听的改良
-					impWay++
+					ting1Result.improveWayCount++
 					if betterAllCount > improveCount[drawIdx] {
 						improveCount[drawIdx] = betterAllCount
 					}
@@ -263,7 +257,7 @@ func checkTing1(cnt []int, recur bool) needTiles {
 			}
 		}
 
-		if detailBuffer.Len() > 0 {
+		if ting1Result.improveWayCount > 0 {
 			improveScore := 0
 			weight := 0
 			for i := range mahjong {
@@ -271,10 +265,7 @@ func checkTing1(cnt []int, recur bool) needTiles {
 				improveScore += w * improveCount[i]
 				weight += w
 			}
-			avgImproveNum := float64(improveScore) / float64(weight)
-			buffer.WriteString(fmt.Sprintf("%.2f [%d 改良]", avgImproveNum, impWay))
-		} else {
-			buffer.WriteString(strings.Repeat(" ", 14))
+			ting1Result.avgImproveNum = float64(improveScore) / float64(weight)
 		}
 
 		avgTingSum := 0
@@ -284,13 +275,11 @@ func checkTing1(cnt []int, recur bool) needTiles {
 			avgTingSum += w * c
 			weight += w
 		}
-		avgTingNum := float64(avgTingSum) / float64(weight)
-		avgTingStr := fmt.Sprintf("%.2f 听牌数", avgTingNum) // TODO: color this!
 		// TODO: 根据1-9的牌来计算综合和牌率
-		buffer.WriteString("  " + avgTingStr + "\n")
+		ting1Result.avgTingCount = float64(avgTingSum) / float64(weight)
 	}
 
-	return needs
+	return needs, &ting1Result
 }
 
 // 14张牌，可以一向听，何切
@@ -304,7 +293,8 @@ func checkTing1Discard(cnt []int) bool {
 	for i := range mahjong {
 		if cnt[i] >= 1 {
 			cnt[i]-- // 切牌
-			if allCount, ans := checkTing1(cnt, true).parseZH(); allCount > 0 {
+			needs, result := checkTing1(cnt, true)
+			if allCount, ans := needs.parseZH(); allCount > 0 {
 				ok = true
 
 				colorNumber1(allCount)
@@ -331,7 +321,9 @@ func checkTing1Discard(cnt []int) bool {
 				}
 				color.New(riskFgColor).Print(mahjongZH[i])
 				fmt.Printf(" %v\n", ans)
+				result.Print()
 				flushBuffer()
+				fmt.Println()
 			}
 			cnt[i]++
 		}
@@ -422,7 +414,6 @@ func checkTing2Discard(cnt []int) bool {
 			cnt[i]++
 		}
 	}
-	fmt.Println()
 	return ok
 }
 
@@ -447,29 +438,29 @@ func analysis(raw string) (num int, cnt []int, err error) {
 			if !checkTing0Improve(cnt, needs) {
 				fmt.Println("没有合适的改良")
 			}
-			fmt.Println()
 		} else {
-			allCount, ans := checkTing1(cnt, true).parseZH()
-			if allCount > 0 {
+			needs, result := checkTing1(cnt, true)
+			if allCount, ans := needs.parseZH(); allCount > 0 {
 				fmt.Println("一向听:", allCount, ans)
+				result.Print()
 				flushBuffer()
 			} else {
 				allCount, ans := checkTing2(cnt).parseZH()
 				if allCount > 0 {
 					fmt.Println("两向听:", allCount, ans)
-					flushBuffer()
 
-					// 13设置
+					// 设置两向听的最低显示进张
 					ting2MinCount = allCount
 				} else {
 					fmt.Println("尚未两向听")
-					fmt.Println()
 				}
 			}
 		}
+		fmt.Println()
 	case 14:
 		if checkWin(cnt) {
 			fmt.Println("已胡牌")
+			fmt.Println()
 		} else {
 			checkTing0Discard(cnt)
 
@@ -477,6 +468,7 @@ func analysis(raw string) (num int, cnt []int, err error) {
 				if !checkTing2Discard(cnt) {
 					fmt.Println("尚未两向听")
 				}
+				fmt.Println()
 			}
 		}
 		// 14失效
