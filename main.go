@@ -134,7 +134,14 @@ func checkTing0Improve(cnt []int, tings needTiles) bool {
 
 				count, tiles := needs.parseZH()
 				text := fmt.Sprintf("摸 %s 切 %s，听 %v, %d 张", mahjongZH[i], mahjongZH[j], tiles, count)
-				color.New(getTingCountColor(float64(count))).Println(text)
+				var ting0Color color.Attribute
+				if needs.containZi() {
+					// 听字牌算良型听牌
+					ting0Color = color.FgHiRed
+				} else {
+					ting0Color = getTingCountColor(float64(count))
+				}
+				color.New(ting0Color).Println(text)
 			}
 			cnt[j]++
 		}
@@ -302,27 +309,27 @@ func checkTing1Discard(cnt []int) bool {
 
 				colorNumber1(allCount)
 				fmt.Print("    切 ")
-				var fgColor color.Attribute
-				if i > 27 {
-					fgColor = color.FgBlue
+				var riskFgColor color.Attribute
+				if i >= 27 {
+					riskFgColor = color.FgBlue
 				} else {
 					_i := i%9 + 1
 					switch _i {
 					case 1, 9:
-						fgColor = color.FgBlue
+						riskFgColor = color.FgBlue
 					case 2, 8:
-						fgColor = color.FgHiBlue
+						riskFgColor = color.FgHiBlue
 					case 3, 7:
-						fgColor = color.FgYellow
+						riskFgColor = color.FgYellow
 					case 4, 6:
-						fgColor = color.FgHiRed
+						riskFgColor = color.FgHiRed
 					case 5:
-						fgColor = color.FgRed
+						riskFgColor = color.FgRed
 					default:
 						_errorExit("代码有误: _i = ", _i)
 					}
 				}
-				color.New(fgColor).Print(mahjongZH[i])
+				color.New(riskFgColor).Print(mahjongZH[i])
 				fmt.Printf(" %v\n", ans)
 				flushBuffer()
 			}
