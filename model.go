@@ -8,6 +8,20 @@ import (
 // map[mahjong下标]数量
 type needTiles map[int]int
 
+func (nt needTiles) indexes() []int {
+	if len(nt) == 0 {
+		return nil
+	}
+
+	tileIndexes := make([]int, 0, len(nt))
+	for idx := range nt {
+		tileIndexes = append(tileIndexes, idx)
+	}
+	sort.Ints(tileIndexes)
+
+	return tileIndexes
+}
+
 func (nt needTiles) _parse(template [34]string) (allCount int, tiles []string) {
 	if len(nt) == 0 {
 		return 0, nil
@@ -52,4 +66,13 @@ func (nt needTiles) containAllIndexes(anotherNeeds needTiles) bool {
 		}
 	}
 	return true
+}
+
+// 是否包含字牌
+func (nt needTiles) containZi() bool {
+	indexes := nt.indexes()
+	if len(indexes) == 0 {
+		return false
+	}
+	return indexes[len(indexes)-1] >= 27
 }
