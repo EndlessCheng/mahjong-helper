@@ -14,13 +14,13 @@ type checkTing1Result struct {
 
 func (r *checkTing1Result) Print() {
 	if r.improveWayCount > 0 {
-		fmt.Printf("%.2f [%d 改良]", r.avgImproveNum, r.improveWayCount)
+		fmt.Printf("%5.2f [%2d 改良]", r.avgImproveNum, r.improveWayCount)
 	} else {
 		fmt.Print(strings.Repeat(" ", 15))
 	}
 
-	fmt.Print("  ")
-	color.New(getTingCountColor(r.avgTingCount)).Printf("%.2f", r.avgTingCount)
+	fmt.Print(" ")
+	color.New(getTingCountColor(r.avgTingCount)).Printf("%5.2f", r.avgTingCount)
 	fmt.Print(" 听牌数")
 
 	fmt.Println()
