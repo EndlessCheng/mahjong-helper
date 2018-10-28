@@ -168,7 +168,7 @@ func colorNumber2(n int) {
 
 func getTingCountColor(count float64) color.Attribute {
 	switch {
-	case count < 4.75:
+	case count < 5:
 		return color.FgBlue
 	case count <= 6:
 		return color.FgYellow
