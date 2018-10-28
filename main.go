@@ -297,7 +297,7 @@ func checkTing1Discard(cnt []int) bool {
 			if allCount, ans := needs.parseZH(); allCount > 0 {
 				ok = true
 
-				colorNumber1(allCount)
+				colorTing1Count(allCount)
 				fmt.Print("    切 ")
 				var riskFgColor color.Attribute
 				if i >= 27 {
@@ -407,7 +407,7 @@ func checkTing2Discard(cnt []int) bool {
 				ok = true
 
 				if allCount >= ting2MinCount {
-					colorNumber2(allCount)
+					colorTing2Count(allCount)
 					fmt.Printf("   切 %s %v\n", mahjongZH[i], ans)
 				}
 			}
