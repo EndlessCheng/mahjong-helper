@@ -162,7 +162,8 @@ func checkTing0Discard(cnt []int) bool {
 				// TODO: 切掉这张后的默听改良率？
 
 				count, tiles := needs.parseZH()
-				color.Red("【已听牌！】 切 %s, 听 %v, %d 张", mahjongZH[i], tiles, count)
+				color.New(color.FgRed).Print("【已听牌！】")
+				color.New(getTingCountColor(float64(count))).Printf(" 切 %s, 听 %v, %d 张\n", mahjongZH[i], tiles, count)
 				fmt.Println()
 			}
 			cnt[i]++
