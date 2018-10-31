@@ -299,7 +299,7 @@ func checkTing1Discard(cnt []int) bool {
 				ok = true
 
 				colorTing1Count(allCount)
-				fmt.Print("    切 ")
+				fmt.Print("切 ")
 				var riskFgColor color.Attribute
 				if i >= 27 {
 					riskFgColor = color.FgBlue

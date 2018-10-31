@@ -159,7 +159,7 @@ func _getAttr(n float64) []color.Attribute {
 }
 
 func colorTing1Count(n int) {
-	color.New(_getAttr(float64(n))...).Printf("%2d", n)
+	color.New(_getAttr(float64(n))...).Printf("%-6d", n)
 }
 
 func colorTing2Count(n int) {
