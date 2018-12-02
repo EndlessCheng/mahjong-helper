@@ -13,6 +13,7 @@ type checkTing1Result struct {
 }
 
 // TODO: 提醒切这张牌可以断幺！
+// TODO: 赤牌改良提醒！！
 func (r *checkTing1Result) Print() {
 	if r.improveWayCount > 0 {
 		if r.improveWayCount >= 100 {
