@@ -209,8 +209,7 @@ func checkTing1(cnt []int, recur bool) (needTiles, *checkTing1Result) {
 						// 比如说 57m22566s，切 5s/6s 来 8m 都听牌，但是听牌的数量有区别
 					}
 					if recur {
-						tingCnt, _ := nd.parse()
-						if tingCnt > tingCntMap[j] {
+						if tingCnt := nd.allCount(); tingCnt > tingCntMap[j] {
 							// 听牌一般听数量最多的
 							tingCntMap[j] = tingCnt
 						}
@@ -295,33 +294,19 @@ func checkTing1Discard(cnt []int) bool {
 		if cnt[i] >= 1 {
 			cnt[i]-- // 切牌
 			needs, result := checkTing1(cnt, true)
-			if allCount, ans := needs.parseZH(); allCount > 0 {
+			if allCount, indexes := needs.parseIndex(); allCount > 0 {
 				ok = true
 
 				colorTing1Count(allCount)
 				fmt.Print("切 ")
-				var riskFgColor color.Attribute
-				if i >= 27 {
-					riskFgColor = color.FgBlue
-				} else {
-					_i := i%9 + 1
-					switch _i {
-					case 1, 9:
-						riskFgColor = color.FgBlue
-					case 2, 8:
-						riskFgColor = color.FgHiBlue
-					case 3, 7:
-						riskFgColor = color.FgYellow
-					case 4, 6:
-						riskFgColor = color.FgHiRed
-					case 5:
-						riskFgColor = color.FgRed
-					default:
-						_errorExit("代码有误: _i = ", _i)
-					}
+				color.New(getRiskColor(i)).Print(mahjongZH[i])
+				fmt.Print(" [")
+				color.New(getSafeColor(indexes[0])).Print(mahjongZH[indexes[0]])
+				for _, index := range indexes[1:] {
+					fmt.Print(", ")
+					color.New(getSafeColor(index)).Print(mahjongZH[index])
 				}
-				color.New(riskFgColor).Print(mahjongZH[i])
-				fmt.Printf(" %v\n", ans)
+				fmt.Print("]\n")
 				result.Print()
 				flushBuffer()
 				fmt.Println()

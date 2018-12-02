@@ -178,3 +178,45 @@ func getTingCountColor(count float64) color.Attribute {
 		return color.FgRed
 	}
 }
+
+func getRiskColor(index int) color.Attribute {
+	if index >= 27 {
+		return color.FgBlue
+	} else {
+		_i := index%9 + 1
+		switch _i {
+		case 1, 9:
+			return color.FgBlue
+		case 2, 8:
+			return color.FgHiBlue
+		case 3, 7:
+			return color.FgYellow
+		case 4, 5, 6:
+			return color.FgRed
+		default:
+			_errorExit("代码有误: _i = ", _i)
+		}
+	}
+	return -1
+}
+
+func getSafeColor(index int) color.Attribute {
+	if index >= 27 {
+		return color.FgRed
+	} else {
+		_i := index%9 + 1
+		switch _i {
+		case 1, 9:
+			return color.FgHiRed
+		case 2, 8:
+			return color.FgYellow
+		case 3, 7:
+			return color.FgHiYellow
+		case 4, 5, 6:
+			return color.FgBlue
+		default:
+			_errorExit("代码有误: _i = ", _i)
+		}
+	}
+	return -1
+}
