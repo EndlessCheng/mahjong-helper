@@ -181,16 +181,16 @@ func getTingCountColor(count float64) color.Attribute {
 
 func getRiskColor(index int) color.Attribute {
 	if index >= 27 {
-		return color.FgBlue
+		return color.FgHiBlue
 	} else {
 		_i := index%9 + 1
 		switch _i {
 		case 1, 9:
 			return color.FgBlue
 		case 2, 8:
-			return color.FgHiBlue
-		case 3, 7:
 			return color.FgYellow
+		case 3, 7:
+			return color.FgHiYellow
 		case 4, 5, 6:
 			return color.FgRed
 		default:
@@ -207,7 +207,7 @@ func getSafeColor(index int) color.Attribute {
 		_i := index%9 + 1
 		switch _i {
 		case 1, 9:
-			return color.FgHiRed
+			return color.FgRed
 		case 2, 8:
 			return color.FgHiYellow
 		case 3, 7:
