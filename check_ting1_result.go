@@ -12,6 +12,7 @@ type checkTing1Result struct {
 	avgTingCount    float64
 }
 
+// TODO: 提醒切这张牌可以断幺！
 func (r *checkTing1Result) Print() {
 	if r.improveWayCount > 0 {
 		if r.improveWayCount >= 100 {

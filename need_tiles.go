@@ -8,6 +8,13 @@ import (
 // map[mahjong下标]数量
 type needTiles map[int]int
 
+func (nt needTiles) allCount() (count int) {
+	for _, cnt := range nt {
+		count += cnt
+	}
+	return count
+}
+
 func (nt needTiles) indexes() []int {
 	if len(nt) == 0 {
 		return nil
@@ -20,6 +27,10 @@ func (nt needTiles) indexes() []int {
 	sort.Ints(tileIndexes)
 
 	return tileIndexes
+}
+
+func (nt needTiles) parseIndex() (allCount int, indexes []int) {
+	return nt.allCount(), nt.indexes()
 }
 
 func (nt needTiles) _parse(template [34]string) (allCount int, tiles []string) {
