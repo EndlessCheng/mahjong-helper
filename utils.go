@@ -209,9 +209,9 @@ func getSafeColor(index int) color.Attribute {
 		case 1, 9:
 			return color.FgHiRed
 		case 2, 8:
-			return color.FgYellow
-		case 3, 7:
 			return color.FgHiYellow
+		case 3, 7:
+			return color.FgYellow
 		case 4, 5, 6:
 			return color.FgBlue
 		default:
