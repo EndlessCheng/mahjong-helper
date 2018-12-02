@@ -288,6 +288,7 @@ func checkTing1(cnt []int, recur bool) (needTiles, *checkTing1Result) {
 // 2. 改良之后的（加权）平均进张数
 // 3. 听牌后的（加权）平均听牌数
 // 4. 听牌后所听牌的名称（就是一向听的进张名称）（一般来说 14m 优于 25m。不过还是要根据场况来判断）
+// // TODO: 赤牌改良提醒！！
 func checkTing1Discard(cnt []int) bool {
 	ok := false
 	for i := range mahjong {
