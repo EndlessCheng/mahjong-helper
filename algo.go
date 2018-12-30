@@ -26,16 +26,10 @@ func checkWin(cnt []int) bool {
 	bitPos := -1
 	setFlag := false
 
-	for i := 0; i < 3; i++ { // 数牌
+	// 数牌
+	for i := 0; i < 3; i++ {
 		for j := 0; j < 9; j++ {
-			c := cnt[i*9+j]
-			if c == 0 {
-				if setFlag {
-					setFlag = false
-					key |= 0x1 << uint(bitPos)
-					bitPos++
-				}
-			} else {
+			if c := cnt[i*9+j]; c > 0 {
 				bitPos++
 				setFlag = true
 				switch c {
@@ -49,6 +43,12 @@ func checkWin(cnt []int) bool {
 					key |= 0x3F << uint(bitPos)
 					bitPos += 6
 				}
+			} else {
+				if setFlag {
+					setFlag = false
+					key |= 0x1 << uint(bitPos)
+					bitPos++
+				}
 			}
 		}
 		if setFlag {
@@ -57,9 +57,10 @@ func checkWin(cnt []int) bool {
 			bitPos++
 		}
 	}
-	for i := 27; i < 34; i++ { // 字牌
-		c := cnt[i]
-		if c >= 1 {
+
+	// 字牌
+	for i := 27; i < 34; i++ {
+		if c := cnt[i]; c > 0 {
 			bitPos++
 			switch c {
 			case 2:
