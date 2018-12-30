@@ -473,7 +473,7 @@ func analysis(raw string) (num int, cnt []int, err error) {
 func interact(raw string) {
 	num, cnt, err := analysis(raw)
 	if err != nil {
-		_errorExit(err.Error())
+		_errorExit(err)
 	}
 	printed := true
 

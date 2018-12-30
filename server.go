@@ -7,15 +7,15 @@ import (
 	"github.com/labstack/echo/middleware"
 )
 
-type echoHandler struct {
+type mjHandler struct {
 	analysing bool
 }
 
-func (h *echoHandler) index(c echo.Context) error {
+func (h *mjHandler) index(c echo.Context) error {
 	return c.String(http.StatusOK, time.Now().Format("2006-01-02 15:04:05"))
 }
 
-func (h *echoHandler) analysis(c echo.Context) error {
+func (h *mjHandler) analysis(c echo.Context) error {
 	if h.analysing {
 		return c.NoContent(http.StatusForbidden)
 	}
@@ -48,15 +48,14 @@ func (h *echoHandler) analysis(c echo.Context) error {
 }
 
 func runServer() {
-	h := &echoHandler{}
-
 	e := echo.New()
 	e.Use(middleware.Recover())
 
+	h := &mjHandler{}
 	e.GET("/", h.index)
 	e.POST("/analysis", h.analysis)
 
 	if err := e.Start(":12121"); err != nil {
-		_errorExit(err.Error())
+		_errorExit(err)
 	}
 }
