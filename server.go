@@ -33,7 +33,7 @@ func (h *mjHandler) analysis(c echo.Context) error {
 	}
 
 	if d.Reset {
-		reset()
+		resetTing2MinCount()
 	}
 
 	if d.ShowDetail {
