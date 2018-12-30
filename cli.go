@@ -14,6 +14,25 @@ type ting0Improve struct {
 
 type ting0ImproveList []ting0Improve
 
+// 13 张牌，计算默听改良
+func (l ting0ImproveList) calcGoodImprove(counts []int) needTiles {
+	goodTiles := needTiles{}
+	for _, improve := range l {
+		if _, ok := goodTiles[improve.drawIndex]; ok {
+			continue
+		}
+
+		if improve.needs.containHonors() {
+			goodTiles[improve.drawIndex] = 4 - counts[improve.drawIndex]
+		} else {
+			if count := improve.needs.allCount(); count > 4 {
+				goodTiles[improve.drawIndex] = 4 - counts[improve.drawIndex]
+			}
+		}
+	}
+	return goodTiles
+}
+
 func (l ting0ImproveList) print() {
 	if len(l) == 0 {
 		fmt.Println("没有合适的改良")
@@ -39,6 +58,7 @@ func (l ting0ImproveList) print() {
 type ting0Discard struct {
 	discardIndex int
 	needs        needTiles
+	improveTiles needTiles
 }
 
 type ting0DiscardList []ting0Discard
@@ -46,7 +66,9 @@ type ting0DiscardList []ting0Discard
 func (l ting0DiscardList) print() {
 	for _, discard := range l {
 		count, tiles := discard.needs.parseZH()
-		color.New(getTingCountColor(float64(count))).Printf(" 切 %s, 听 %v, %d 张\n", mahjongZH[discard.discardIndex], tiles, count)
+		improveCount := discard.improveTiles.allCount()
+		color.New(getTingCountColor(float64(count))).
+			Printf(" 切 %s, 听 %v, %d 张 (%d 张默改，改良率 %.2f)\n", mahjongZH[discard.discardIndex], tiles, count, improveCount, float64(improveCount)/float64(count))
 	}
 }
 
@@ -90,11 +112,13 @@ type ting1Discard struct {
 type ting1DiscardList []ting1Discard
 
 func (l ting1DiscardList) print() {
-	for i, discard := range l {
+	for _, discard := range l {
 		count, indexes := discard.needs.parseIndex()
 		if inIntSlice(discard.discardIndex, indexes) {
 			continue
 		}
+
+		fmt.Println()
 		colorTing1Count(count)
 		fmt.Print("切 ")
 		color.New(getRiskColor(discard.discardIndex)).Print(mahjongZH[discard.discardIndex])
@@ -108,10 +132,6 @@ func (l ting1DiscardList) print() {
 		fmt.Println()
 		discard.ting1Detail.print()
 		//flushBuffer()
-
-		if i < len(l)-1 {
-			fmt.Println()
-		}
 	}
 }
 

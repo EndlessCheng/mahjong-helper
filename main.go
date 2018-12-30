@@ -149,9 +149,10 @@ func checkTing0Discard(counts []int) ting0DiscardList {
 		if counts[i] >= 1 {
 			counts[i]-- // 切牌
 			if needs := checkTing0(counts); len(needs) > 0 {
-				ting0DiscardList = append(ting0DiscardList, ting0Discard{i, needs})
-
-				// TODO: 切掉这张后的默听改良率？
+				// 切掉这张后的默听改良率
+				ting0ImproveList := checkTing0Improve(counts, needs)
+				goodTiles := ting0ImproveList.calcGoodImprove(counts)
+				ting0DiscardList = append(ting0DiscardList, ting0Discard{i, needs, goodTiles})
 			}
 			counts[i]++
 		}
@@ -382,8 +383,13 @@ func analysis(raw string) (num int, counts []int, err error) {
 	switch num {
 	case 13:
 		if needs := checkTing0(counts); len(needs) > 0 {
-			fmt.Println("已听牌:", needs.String())
+			count, tiles := needs.parseZH()
+			fmt.Printf("已听牌: %v, %d 张", tiles, count)
 			improve := checkTing0Improve(counts, needs)
+			goodTiles := improve.calcGoodImprove(counts)
+			improveCount := goodTiles.allCount()
+			fmt.Printf(" (%d 默听改良, %.2f 改良率)", improveCount, float64(improveCount)/float64(count))
+			fmt.Println()
 			improve.print()
 			break
 		}
