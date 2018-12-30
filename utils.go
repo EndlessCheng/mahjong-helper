@@ -39,14 +39,14 @@ func _convert(tile string) (int, error) {
 	return -1, fmt.Errorf("参数错误: %s", tile)
 }
 
-// e.g. "13m 24p" => (4, [0, 2, 10, 12])
-func convert(tiles string) (num int, cnt []int, err error) {
+// e.g. "22m 24p" => (4, [0, 2, 0, 0, ...,0, 10, 12])
+func convert(tiles string) (num int, counts []int, err error) {
 	tiles = strings.TrimSpace(tiles)
 	if tiles == "" {
 		return 0, nil, errors.New("参数错误: 处理的手牌不能为空")
 	}
 
-	var result []int
+	var indexes []int
 	for _, split := range strings.Split(tiles, " ") {
 		split = strings.TrimSpace(split)
 		if len(split) <= 1 {
@@ -58,24 +58,24 @@ func convert(tiles string) (num int, cnt []int, err error) {
 			if err != nil {
 				return -1, nil, err
 			}
-			result = append(result, tile)
+			indexes = append(indexes, tile)
 		}
 	}
 
-	cnt = make([]int, len(mahjong))
-	for _, m := range result {
-		cnt[m]++
-		if cnt[m] > 4 {
+	counts = make([]int, len(mahjong))
+	for _, index := range indexes {
+		counts[index]++
+		if counts[index] > 4 {
 			return 0, nil, errors.New("参数错误: 超过4张一样的牌！")
 		}
 	}
 
-	return len(result), cnt, nil
+	return len(indexes), counts, nil
 }
 
-func countToString(cnt []int) (string, error) {
-	if len(cnt) != len(mahjong) {
-		return "", fmt.Errorf("cnt 长度必须为 %d", len(mahjong))
+func countsToString(counts []int) (string, error) {
+	if len(counts) != len(mahjong) {
+		return "", fmt.Errorf("counts 长度必须为 %d", len(mahjong))
 	}
 
 	sb := strings.Builder{}
@@ -86,7 +86,7 @@ func countToString(cnt []int) (string, error) {
 			if idx >= len(mahjong) {
 				break
 			}
-			for k := 0; k < cnt[idx]; k++ {
+			for k := 0; k < counts[idx]; k++ {
 				sb.WriteString(strconv.Itoa(j + 1))
 				wrote = true
 			}
@@ -131,10 +131,10 @@ func uniqueStrings(strings []string) []string {
 	return u
 }
 
-func countDui(cnt []int) int {
+func countDui(counts []int) int {
 	dui := 0
 	for i := 0; i < len(mahjong); i++ {
-		if cnt[i] >= 2 {
+		if counts[i] >= 2 {
 			dui++
 		}
 	}
