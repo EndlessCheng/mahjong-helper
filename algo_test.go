@@ -7,7 +7,7 @@ import (
 func TestCheckWin(t *testing.T) {
 	_, cnt, err := convert("111234678m 11122z")
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if !checkWin(cnt) {
 		t.Error("checkWin")
