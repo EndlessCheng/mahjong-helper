@@ -131,14 +131,14 @@ func uniqueStrings(strings []string) []string {
 	return u
 }
 
-func countDui(counts []int) int {
-	dui := 0
+func countPairs(counts []int) int {
+	pairs := 0
 	for i := 0; i < len(mahjong); i++ {
 		if counts[i] >= 2 {
-			dui++
+			pairs++
 		}
 	}
-	return dui
+	return pairs
 }
 
 //

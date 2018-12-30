@@ -80,7 +80,7 @@ func (nt needTiles) containAllIndexes(anotherNeeds needTiles) bool {
 }
 
 // 是否包含字牌
-func (nt needTiles) containZi() bool {
+func (nt needTiles) containHonors() bool {
 	indexes := nt.indexes()
 	if len(indexes) == 0 {
 		return false
