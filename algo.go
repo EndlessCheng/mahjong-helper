@@ -22,16 +22,16 @@ func init() {
 func checkWin(cnt []int) bool {
 	//checkWinCount++
 
-	key := 0
-	bitPos := -1
 	setFlag := false
+	bitPos := -1
+	key := 0
 
 	// 数牌
 	for i := 0; i < 3; i++ {
 		for j := 0; j < 9; j++ {
 			if c := cnt[i*9+j]; c > 0 {
-				bitPos++
 				setFlag = true
+				bitPos++
 				switch c {
 				case 2:
 					key |= 0x3 << uint(bitPos)
