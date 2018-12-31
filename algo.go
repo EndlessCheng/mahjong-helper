@@ -19,7 +19,7 @@ func init() {
 「３０」→「１１１１１０」
 「４０」→「１１１１１１１０」
 */
-func checkWin(cnt []int) bool {
+func checkWin(counts []int) bool {
 	//checkWinCount++
 
 	setFlag := false
@@ -29,7 +29,7 @@ func checkWin(cnt []int) bool {
 	// 数牌
 	for i := 0; i < 3; i++ {
 		for j := 0; j < 9; j++ {
-			if c := cnt[i*9+j]; c > 0 {
+			if c := counts[i*9+j]; c > 0 {
 				setFlag = true
 				bitPos++
 				switch c {
@@ -60,7 +60,7 @@ func checkWin(cnt []int) bool {
 
 	// 字牌
 	for i := 27; i < 34; i++ {
-		if c := cnt[i]; c > 0 {
+		if c := counts[i]; c > 0 {
 			bitPos++
 			switch c {
 			case 2:
