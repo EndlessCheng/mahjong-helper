@@ -222,7 +222,6 @@ func checkTing1(counts []int, recur bool) (needTiles, *ting1Detail) {
 	ting1Detail := ting1Detail{}
 	//detailBuffer.Reset()
 
-	// TODO: 振听?
 	if allCount, tiles := needs.parse(); allCount > 0 {
 		improveCount := make([]int, len(mahjong))
 		for i := range mahjong {
@@ -276,7 +275,8 @@ func checkTing1(counts []int, recur bool) (needTiles, *ting1Detail) {
 // 2. 改良之后的（加权）平均进张数
 // 3. 听牌后的（加权）平均听牌数
 // 4. 听牌后所听牌的名称（就是一向听的进张名称）（一般来说 14m 优于 25m。不过还是要根据场况来判断）
-// // TODO: 赤牌改良提醒！！
+// TODO: 赤牌改良提醒
+// TODO: 如果有出牌历史的话，可以提醒下振听
 func checkTing1Discard(counts []int) ting1DiscardList {
 	ting1DiscardList := ting1DiscardList{}
 	for i := range mahjong {
@@ -406,13 +406,13 @@ func analysis(raw string) (num int, counts []int, err error) {
 			count, tiles := needs.parseZH()
 			fmt.Println("两向听:", count, tiles)
 
-			setTing2MinCount(count)
+			//setTing2MinCount(count)
 			break
 		}
 
 		fmt.Println("尚未两向听")
 	case 14:
-		defer resetTing2MinCount()
+		//defer resetTing2MinCount()
 
 		if checkWin(counts) {
 			fmt.Println("已胡牌")
@@ -423,18 +423,29 @@ func analysis(raw string) (num int, counts []int, err error) {
 			color.New(color.FgRed).Print("【已听牌！】")
 			fmt.Println()
 			ting0DiscardList.print()
-
-			// 这里不 break，保留倒退回一向听的选择
+			// 这里不 break，保留向听倒退的选择
 		}
 
 		if ting1DiscardList := checkTing1Discard(counts); len(ting1DiscardList) > 0 {
 			ting1DiscardList.print()
-			// TODO: 倒退回两向听的选择？
-			break
+
+			if ting1DiscardList.isGood() {
+				break
+			}
+
+			// 非完全一向听，保留倒退回两向听的选择
+			fmt.Println()
 		}
 
-		if ting2DiscardList := checkTing2Discard(counts); len(ting2DiscardList) > 0 {
-			ting2DiscardList.print()
+		if rawTing2DiscardList := checkTing2Discard(counts); len(rawTing2DiscardList) > 0 {
+			// 过滤掉一向听的舍牌
+			newTing2DiscardList := ting2DiscardList{}
+			for _, d := range rawTing2DiscardList {
+				if d.needs.allCount() < 123 {
+					newTing2DiscardList = append(newTing2DiscardList, d)
+				}
+			}
+			newTing2DiscardList.print()
 			break
 		}
 
