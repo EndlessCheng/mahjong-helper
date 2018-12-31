@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"github.com/fatih/color"
+	"sort"
 )
 
 type ting0Improve struct {
@@ -80,8 +81,8 @@ type ting1Detail struct {
 	avgTingCount    float64
 }
 
-// TODO: 提醒切这张牌可以断幺！
-// TODO: 赤牌改良提醒！！
+// TODO: 提醒切这张牌可以断幺
+// TODO: 赤牌改良提醒
 // TODO: 5万(赤)
 func (r *ting1Detail) print() {
 	if r.improveWayCount > 0 {
@@ -111,12 +112,28 @@ type ting1Discard struct {
 
 type ting1DiscardList []ting1Discard
 
+func (l ting1DiscardList) maxAvgTing1Count() float64 {
+	maxAvg := 0.0
+	for _, discard := range l {
+		maxAvg = maxFloat64(maxAvg, discard.ting1Detail.avgImproveNum)
+	}
+	return maxAvg
+}
+
+// 是否为完全一向听
+func (l ting1DiscardList) isGood() bool {
+	return l.maxAvgTing1Count() >= 16
+}
+
 func (l ting1DiscardList) print() {
 	for _, discard := range l {
 		count, indexes := discard.needs.parseIndex()
 		if inIntSlice(discard.discardIndex, indexes) {
 			continue
 		}
+
+		// 8     切 3索 [2万, 7万]
+		// 9.20  [20 改良]  4.00 听牌数
 
 		fmt.Println()
 		colorTing1Count(count)
@@ -138,15 +155,15 @@ func (l ting1DiscardList) print() {
 //
 
 // 交互模式下，两向听进张的最低值
-var _ting2MinCount = -1
-
-func setTing2MinCount(count int) {
-	_ting2MinCount = count
-}
-
-func resetTing2MinCount() {
-	_ting2MinCount = -1
-}
+//var _ting2MinCount = -1
+//
+//func setTing2MinCount(count int) {
+//	_ting2MinCount = count
+//}
+//
+//func resetTing2MinCount() {
+//	_ting2MinCount = -1
+//}
 
 type ting2Discard struct {
 	discardIndex int
@@ -155,9 +172,30 @@ type ting2Discard struct {
 
 type ting2DiscardList []ting2Discard
 
-func (l ting2DiscardList) print() {
+func (l ting2DiscardList) maxTing2Count() int {
+	maxTing2Count := 0
 	for _, discard := range l {
-		if count, tiles := discard.needs.parse(); count >= _ting2MinCount {
+		maxTing2Count = maxInt(maxTing2Count, discard.needs.allCount())
+	}
+	return maxTing2Count
+}
+
+// 按照 needs.allCount() 从大到小排序
+func (l ting2DiscardList) sort() {
+	sort.Slice(l, func(i, j int) bool {
+		return l[i].needs.allCount() > l[j].needs.allCount()
+	})
+}
+
+func (l ting2DiscardList) print() {
+	const printLimitExceptMax = 5
+	printCount := 0
+
+	l.sort()
+	maxTing2Count := l[0].needs.allCount()
+	for _, discard := range l {
+		if count, tiles := discard.needs.parse(); count == maxTing2Count || printCount < printLimitExceptMax {
+			printCount++
 			colorTing2Count(count)
 			fmt.Printf("   切 %s %v\n", mahjongZH[discard.discardIndex], tiles)
 		}
