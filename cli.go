@@ -115,7 +115,11 @@ type ting1DiscardList []ting1Discard
 func (l ting1DiscardList) maxAvgTing1Count() float64 {
 	maxAvg := 0.0
 	for _, discard := range l {
-		maxAvg = maxFloat64(maxAvg, discard.ting1Detail.avgImproveNum)
+		if discard.ting1Detail.improveWayCount > 0 {
+			maxAvg = maxFloat64(maxAvg, discard.ting1Detail.avgImproveNum)
+		} else {
+			maxAvg = maxFloat64(maxAvg, float64(discard.needs.allCount()))
+		}
 	}
 	return maxAvg
 }

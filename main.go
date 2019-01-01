@@ -377,7 +377,6 @@ func analysis(raw string) (num int, counts []int, err error) {
 
 	if countPairs(counts) >= 4 {
 		color.Yellow("对子手可能")
-		fmt.Println()
 	}
 
 	switch num {
