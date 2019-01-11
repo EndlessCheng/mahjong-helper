@@ -6,7 +6,12 @@ import (
 	"os"
 	"time"
 	"github.com/fatih/color"
+	"math/rand"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 var detailFlag = false
 var interactFlag = false // 交互模式
@@ -178,93 +183,99 @@ func checkTing1(counts []int, recur bool) (needTiles, *ting1Detail) {
 	tingCntMap := map[int]int{} // map[摸到idx]听多少张牌
 
 	for i := range mahjong {
-		if counts[i] >= 1 {
-			tmpNeedsMap := map[int]needTiles{}
-			counts[i]-- // 切掉其中一张牌
-			for j := range mahjong {
-				if j == i {
-					continue
-				}
-				if counts[j] == 4 {
-					continue
-				}
-				counts[j]++ // 换成其他牌
-				if nd := checkTing0(counts); len(nd) > 0 {
-					// 若能听牌，则换的这张牌为一向听的进张
-					if _, ok := needs[j]; !ok {
-						needs[j] = 4 - (counts[j] - 1)
-					} else {
-						// 比如说 57m22566s，切 5s/6s 来 8m 都听牌，但是听牌的数量有区别
-					}
-					if recur {
-						if tingCnt := nd.allCount(); tingCnt > tingCntMap[j] {
-							// 听牌一般听数量最多的
-							tingCntMap[j] = tingCnt
-						}
-					}
-				} else if recur {
-					if betterNeeds, _ := checkTing1(counts, false); len(betterNeeds) > 0 {
-						// 换成这张牌也是一向听，可能是改良型，记录一下
-						tmpNeedsMap[j] = betterNeeds
-					}
-				}
-				counts[j]--
-			}
-			counts[i]++
-			betterNeedsMap[i] = tmpNeedsMap
+		if counts[i] == 0 {
+			continue
 		}
+		tmpNeedsMap := map[int]needTiles{}
+		counts[i]-- // 切掉其中一张牌
+		for j := range mahjong {
+			if j == i {
+				continue
+			}
+			if counts[j] == 4 {
+				continue
+			}
+			counts[j]++ // 换成其他牌
+			if nd := checkTing0(counts); len(nd) > 0 {
+				// 若能听牌，则换的这张牌为一向听的进张
+				if _, ok := needs[j]; !ok {
+					needs[j] = 4 - (counts[j] - 1)
+				} else {
+					// 比如说 57m22566s，切 5s/6s 来 8m 都听牌，但是听牌的数量有区别
+				}
+				if recur {
+					if tingCnt := nd.allCount(); tingCnt > tingCntMap[j] {
+						// 听牌一般听数量最多的
+						tingCntMap[j] = tingCnt
+					}
+				}
+			} else if recur {
+				if betterNeeds, _ := checkTing1(counts, false); len(betterNeeds) > 0 {
+					// 换成这张牌也是一向听，可能是改良型，记录一下
+					tmpNeedsMap[j] = betterNeeds
+				}
+			}
+			counts[j]--
+		}
+		counts[i]++
+		betterNeedsMap[i] = tmpNeedsMap
 	}
 
 	if !recur {
 		return needs, nil
 	}
 
-	ting1Detail := ting1Detail{}
+	ting1Detail := ting1Detail{needs: needs}
 	//detailBuffer.Reset()
 
-	if allCount, tiles := needs.parse(); allCount > 0 {
-		improveCount := make([]int, len(mahjong))
-		for i := range mahjong {
-			improveCount[i] = allCount
-		}
-		for _, tmpNeedsMap := range betterNeedsMap {
-			for drawIdx, betterNeeds := range tmpNeedsMap {
-				if inStrSlice(mahjong[drawIdx], tiles) {
-					// 跳过改良牌就是一向听的进张的情况
-					continue
+	baseTing1Count, tiles := needs.parse()
+	if baseTing1Count == 0 {
+		return needs, nil
+	}
+
+	improveTing1Counts := make([]int, len(mahjong))
+	// 先初始化成基本一向听进张
+	for i := range mahjong {
+		improveTing1Counts[i] = baseTing1Count
+	}
+	for _, tmpNeedsMap := range betterNeedsMap {
+		for drawIdx, betterNeeds := range tmpNeedsMap {
+			if inStrSlice(mahjong[drawIdx], tiles) {
+				// 跳过改良牌就是一向听进张的情况
+				// 也就是说，后面计算出来的 avgImproveTing1Count 是在没有摸到一向听进张时的一向听进张数的期望值
+				continue
+			}
+			if betterTing1Count := betterNeeds.allCount(); betterTing1Count > baseTing1Count {
+				// 进张数变多，则为一向听的改良
+				ting1Detail.improveWayCount++
+				if betterTing1Count > improveTing1Counts[drawIdx] {
+					improveTing1Counts[drawIdx] = betterTing1Count
 				}
-				if betterAllCount := betterNeeds.allCount(); betterAllCount > allCount {
-					// 进张数变多，则为一向听的改良
-					ting1Detail.improveWayCount++
-					if betterAllCount > improveCount[drawIdx] {
-						improveCount[drawIdx] = betterAllCount
-					}
-					//detailBuffer.WriteString(fmt.Sprintln(fmt.Sprintf("    摸 %s 切 %s 改良:", mahjongZH[drawIdx], mahjongZH[discardIdx]), betterAllCount, betterTiles))
-				}
+				//detailBuffer.WriteString(fmt.Sprintln(fmt.Sprintf("    摸 %s 切 %s 改良:", mahjongZH[drawIdx], mahjongZH[discardIdx]), betterTing1Count, betterTiles))
 			}
 		}
+	}
 
-		if ting1Detail.improveWayCount > 0 {
-			improveScore := 0
-			weight := 0
-			for i := range mahjong {
-				w := 4 - counts[i]
-				improveScore += w * improveCount[i]
-				weight += w
-			}
-			ting1Detail.avgImproveNum = float64(improveScore) / float64(weight)
-		}
-
-		avgTingSum := 0
+	if ting1Detail.improveWayCount > 0 {
+		improveScore := 0
 		weight := 0
-		for idx, c := range tingCntMap {
-			w := 4 - counts[idx]
-			avgTingSum += w * c
+		for i := range mahjong {
+			w := 4 - counts[i]
+			improveScore += w * improveTing1Counts[i]
 			weight += w
 		}
-		// TODO: 根据1-9的牌来计算综合和牌率
-		ting1Detail.avgTingCount = float64(avgTingSum) / float64(weight)
+		ting1Detail.avgImproveTing1Count = float64(improveScore) / float64(weight)
 	}
+
+	avgTingSum := 0
+	weight := 0
+	for idx, c := range tingCntMap {
+		w := 4 - counts[idx]
+		avgTingSum += w * c
+		weight += w
+	}
+	// TODO: 根据1-9的牌来计算综合和牌率
+	ting1Detail.avgTingCount = float64(avgTingSum) / float64(weight)
 
 	return needs, &ting1Detail
 }
@@ -282,8 +293,7 @@ func checkTing1Discard(counts []int) ting1DiscardList {
 	for i := range mahjong {
 		if counts[i] >= 1 {
 			counts[i]-- // 切牌
-			needs, ting1Detail := checkTing1(counts, true)
-			if len(needs) > 0 {
+			if needs, ting1Detail := checkTing1(counts, true); len(needs) > 0 {
 				ting1DiscardList = append(ting1DiscardList, ting1Discard{i, needs, ting1Detail})
 			}
 			counts[i]++
@@ -440,7 +450,7 @@ func analysis(raw string) (num int, counts []int, err error) {
 			// 过滤掉一向听的舍牌
 			newTing2DiscardList := ting2DiscardList{}
 			for _, d := range rawTing2DiscardList {
-				if d.needs.allCount() < 123 {
+				if d.needs.allCount() < 120 { // TODO: 更好的判断条件？
 					newTing2DiscardList = append(newTing2DiscardList, d)
 				}
 			}

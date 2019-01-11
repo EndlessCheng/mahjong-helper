@@ -76,9 +76,11 @@ func (l ting0DiscardList) print() {
 //
 
 type ting1Detail struct {
-	avgImproveNum   float64
-	improveWayCount int
-	avgTingCount    float64
+	needs needTiles
+
+	avgImproveTing1Count float64
+	improveWayCount      int
+	avgTingCount         float64
 }
 
 // TODO: 提醒切这张牌可以断幺
@@ -86,10 +88,10 @@ type ting1Detail struct {
 // TODO: 5万(赤)
 func (r *ting1Detail) print() {
 	if r.improveWayCount > 0 {
-		if r.improveWayCount >= 100 {
-			fmt.Printf("%-6.2f[%3d改良]", r.avgImproveNum, r.improveWayCount)
+		if r.improveWayCount >= 100 { // 三位数
+			fmt.Printf("%-6.2f[%3d改良]", r.avgImproveTing1Count, r.improveWayCount)
 		} else {
-			fmt.Printf("%-6.2f[%2d 改良]", r.avgImproveNum, r.improveWayCount)
+			fmt.Printf("%-6.2f[%2d 改良]", r.avgImproveTing1Count, r.improveWayCount)
 		}
 	} else {
 		fmt.Print(strings.Repeat(" ", 15))
@@ -116,7 +118,7 @@ func (l ting1DiscardList) maxAvgTing1Count() float64 {
 	maxAvg := 0.0
 	for _, discard := range l {
 		if discard.ting1Detail.improveWayCount > 0 {
-			maxAvg = maxFloat64(maxAvg, discard.ting1Detail.avgImproveNum)
+			maxAvg = maxFloat64(maxAvg, discard.ting1Detail.avgImproveTing1Count)
 		} else {
 			maxAvg = maxFloat64(maxAvg, float64(discard.needs.allCount()))
 		}
