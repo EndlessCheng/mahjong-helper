@@ -67,9 +67,16 @@ type ting0DiscardList []ting0Discard
 func (l ting0DiscardList) print() {
 	for _, discard := range l {
 		count, tiles := discard.needs.parseZH()
+		printer := color.New(getTingCountColor(float64(count)))
+
 		improveCount := discard.improveTiles.allCount()
-		color.New(getTingCountColor(float64(count))).
-			Printf(" 切 %s, 听 %v, %d 张 (%d 张默改, %.2f 改良率)\n", mahjongZH[discard.discardIndex], tiles, count, improveCount, float64(improveCount)/float64(count))
+		printer.Printf(" 切 %s, 听 %v, %d 张 (%d 张默改, %.2f 改良比)", mahjongZH[discard.discardIndex], tiles, count, improveCount, float64(improveCount)/float64(count))
+
+		if agariRate := calcAgariRate(discard.needs); agariRate > 0 {
+			printer.Printf(" (%.2f%% 和了率)", agariRate)
+		}
+
+		fmt.Println()
 	}
 }
 
@@ -134,7 +141,9 @@ func (l ting1DiscardList) isGood() bool {
 func (l ting1DiscardList) print() {
 	for _, discard := range l {
 		count, indexes := discard.needs.parseIndex()
-		if inIntSlice(discard.discardIndex, indexes) {
+
+		// 过滤掉不算改良的向听倒退
+		if inIntSlice(discard.discardIndex, indexes) && (count <= 24 || count > 100) {
 			continue
 		}
 
