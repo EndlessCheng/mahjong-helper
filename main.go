@@ -249,6 +249,7 @@ func checkTing1(counts []int, recur bool) (needTiles, *ting1Detail) {
 			}
 			if betterTing1Count := betterNeeds.allCount(); betterTing1Count > baseTing1Count {
 				// 进张数变多，则为一向听的改良
+				// TODO: 也可以检测赤5的情况
 				ting1Detail.improveWayCount++
 				if betterTing1Count > improveTing1Counts[drawIdx] {
 					improveTing1Counts[drawIdx] = betterTing1Count
