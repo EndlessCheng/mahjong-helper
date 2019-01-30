@@ -13,6 +13,8 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
+var debug = false
+
 var detailFlag = false
 var interactFlag = false // 交互模式
 
@@ -238,7 +240,7 @@ func checkTing1(counts []int, recur bool) (needTiles, *ting1Detail) {
 	for i := range mahjong {
 		improveTing1Counts[i] = baseTing1Count
 	}
-	for _, tmpNeedsMap := range betterNeedsMap {
+	for discardIdx, tmpNeedsMap := range betterNeedsMap {
 		for drawIdx, betterNeeds := range tmpNeedsMap {
 			if inStrSlice(mahjong[drawIdx], tiles) {
 				// 跳过改良牌就是一向听进张的情况
@@ -252,6 +254,9 @@ func checkTing1(counts []int, recur bool) (needTiles, *ting1Detail) {
 					improveTing1Counts[drawIdx] = betterTing1Count
 				}
 				//detailBuffer.WriteString(fmt.Sprintln(fmt.Sprintf("    摸 %s 切 %s 改良:", mahjongZH[drawIdx], mahjongZH[discardIdx]), betterTing1Count, betterTiles))
+				if debug {
+					fmt.Println(fmt.Sprintf("    摸 %s 切 %s 改良:", mahjongZH[drawIdx], mahjongZH[discardIdx]), betterTing1Count, betterNeeds.tilesZH())
+				}
 			}
 		}
 	}
