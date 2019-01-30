@@ -4,6 +4,10 @@ import (
 	"testing"
 )
 
+func init() {
+	debug = true
+}
+
 func BenchmarkCheckTing1Discard(b *testing.B) {
 	_, cnt, err := convert("123m 22378p 345899s")
 	if err != nil {
@@ -56,5 +60,8 @@ func TestAnalysis(t *testing.T) {
 	raw = "123345m 23468p 44z"
 
 	raw = "24567m 24456p 229s"
+
+	raw = "3456667m 345566p"
+	raw = "3456667m 34566p 5s"
 	analysis(raw)
 }
