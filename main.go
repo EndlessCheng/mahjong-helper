@@ -280,7 +280,6 @@ func checkTing1(counts []int, recur bool) (needTiles, *ting1Detail) {
 		avgTingSum += w * c
 		weight += w
 	}
-	// TODO: 根据1-9的牌来计算综合和牌率
 	ting1Detail.avgTingCount = float64(avgTingSum) / float64(weight)
 
 	return needs, &ting1Detail
@@ -292,6 +291,7 @@ func checkTing1(counts []int, recur bool) (needTiles, *ting1Detail) {
 // 2. 改良之后的（加权）平均进张数
 // 3. 听牌后的（加权）平均听牌数
 // 4. 听牌后所听牌的名称（就是一向听的进张名称）（一般来说 14m 优于 25m。不过还是要根据场况来判断）
+// TODO: 计算和牌率均值
 // TODO: 赤牌改良提醒
 // TODO: 如果有出牌历史的话，可以提醒下振听
 func checkTing1Discard(counts []int) ting1DiscardList {
