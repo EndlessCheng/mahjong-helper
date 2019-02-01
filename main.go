@@ -427,8 +427,6 @@ func analysis(raw string) (num int, counts []int, err error) {
 
 		fmt.Println("尚未两向听")
 	case 14:
-		//defer resetTing2MinCount()
-
 		if checkWin(counts) {
 			fmt.Println("已胡牌")
 			break
