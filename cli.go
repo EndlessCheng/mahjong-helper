@@ -196,17 +196,6 @@ func (l ting1DiscardList) print() {
 
 //
 
-// 交互模式下，两向听进张的最低值
-//var _ting2MinCount = -1
-//
-//func setTing2MinCount(count int) {
-//	_ting2MinCount = count
-//}
-//
-//func resetTing2MinCount() {
-//	_ting2MinCount = -1
-//}
-
 type ting2Discard struct {
 	discardIndex int
 	needs        needTiles

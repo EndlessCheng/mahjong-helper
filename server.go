@@ -32,10 +32,6 @@ func (h *mjHandler) analysis(c echo.Context) error {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	//if d.Reset {
-	//	resetTing2MinCount()
-	//}
-
 	if d.ShowDetail {
 		detailFlag = true
 		defer func() { detailFlag = false }()
