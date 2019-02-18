@@ -18,6 +18,8 @@ func BenchmarkCheckTing1Discard(b *testing.B) {
 	}
 }
 
+// TODO 修改代码，要做到“验证”无雀头鸣牌会降低听牌数
+
 func TestAnalysis(t *testing.T) {
 	var raw string
 	raw = "11222333789s 11z"
