@@ -382,15 +382,7 @@ func checkTing2Discard(counts []int) ting2DiscardList {
 	return ting2DiscardList
 }
 
-func analysis(raw string) (num int, counts []int, err error) {
-	fmt.Println(raw)
-	fmt.Println(strings.Repeat("=", len(raw)))
-
-	num, counts, err = convert(raw)
-	if err != nil {
-		return
-	}
-
+func _analysis(num int, counts []int) error {
 	if countPairs(counts) >= 4 {
 		color.Yellow("对子手可能")
 	}
@@ -466,13 +458,26 @@ func analysis(raw string) (num int, counts []int, err error) {
 
 		fmt.Println("尚未两向听")
 	default:
-		err = fmt.Errorf("参数错误: %s（%d 张牌）", raw, num)
-		return
+		err := fmt.Errorf("参数错误: %d 张牌", num)
+		return err
 	}
 
 	//fmt.Println("checkWin", checkWinCount)
 	fmt.Println()
 
+	return nil
+}
+
+func analysis(raw string) (num int, counts []int, err error) {
+	fmt.Println(raw)
+	fmt.Println(strings.Repeat("=", len(raw)))
+
+	num, counts, err = convert(raw)
+	if err != nil {
+		return
+	}
+
+	err = _analysis(num, counts)
 	return
 }
 
