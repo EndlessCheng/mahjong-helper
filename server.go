@@ -5,6 +5,9 @@ import (
 	"net/http"
 	"time"
 	"github.com/labstack/echo/middleware"
+	"io/ioutil"
+	"os"
+	"github.com/labstack/gommon/log"
 )
 
 type mjHandler struct {
@@ -12,6 +15,13 @@ type mjHandler struct {
 }
 
 func (h *mjHandler) index(c echo.Context) error {
+	data, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		c.Logger().Error("[mjHandler.index.ioutil.ReadAll]")
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	c.Logger().Info(string(data))
 	return c.String(http.StatusOK, time.Now().Format("2006-01-02 15:04:05"))
 }
 
@@ -52,11 +62,25 @@ func runServer() {
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 
+
+	// 默认是 log.ERROR
+	e.Logger.SetLevel(log.INFO)
+	go func() {
+		// 等待服务启动再设置输出
+		time.Sleep(time.Second)
+		logFile, err := os.OpenFile("gamedata.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+		if err != nil {
+			panic(err)
+		}
+		e.Logger.SetOutput(logFile)
+	}()
+
 	h := &mjHandler{}
 	e.GET("/", h.index)
+	e.POST("/", h.index)
 	e.POST("/analysis", h.analysis)
 
-	if err := e.Start(":12121"); err != nil {
+	if err := e.StartTLS(":12121", "server.crt", "server.key"); err != nil {
 		_errorExit(err)
 	}
 }
