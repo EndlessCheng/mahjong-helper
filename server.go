@@ -50,6 +50,7 @@ func (h *mjHandler) analysis(c echo.Context) error {
 func runServer() {
 	e := echo.New()
 	e.Use(middleware.Recover())
+	e.Use(middleware.CORS())
 
 	h := &mjHandler{}
 	e.GET("/", h.index)
