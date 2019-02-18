@@ -62,7 +62,6 @@ func runServer() {
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 
-
 	// 默认是 log.ERROR
 	e.Logger.SetLevel(log.INFO)
 	go func() {
@@ -80,7 +79,8 @@ func runServer() {
 	e.POST("/", h.index)
 	e.POST("/analysis", h.analysis)
 
-	if err := e.StartTLS(":12121", "server.crt", "server.key"); err != nil {
+	// "server.crt", "server.key"
+	if err := e.Start(":12121"); err != nil {
 		_errorExit(err)
 	}
 }
