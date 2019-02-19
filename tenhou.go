@@ -88,6 +88,11 @@ type tenhouMessage struct {
 type playerInfo struct {
 	name string // 自家 下家 对家 上家
 
+	// 副露
+	meldTiles            []int
+	meldDiscardsAtGlobal []int
+	meldDiscardsAt       []int
+
 	// 全局舍牌
 	globalDiscardTiles *[]int
 	discardTiles       []int
@@ -111,6 +116,9 @@ func newPlayerInfo(name string, globalDiscardTiles *[]int) playerInfo {
 
 type tenhouRoundData struct {
 	msg *tenhouMessage
+
+	// 宝牌指示牌
+	doraIndicators []int
 
 	// 自家手牌
 	counts []int
@@ -139,6 +147,7 @@ func newTenhouRoundData() *tenhouRoundData {
 
 func (d *tenhouRoundData) reset() {
 	newData := newTenhouRoundData()
+	d.doraIndicators = newData.doraIndicators
 	d.counts = newData.counts
 	d.globalDiscardTiles = newData.globalDiscardTiles
 	d.players = newData.players
@@ -222,10 +231,22 @@ func (d *tenhouRoundData) _parseTenhouMeld(data string) (meldType int, tiles []i
 	}
 }
 
+// TODO: 临时用
+func (d *tenhouRoundData) _fillZi() {
+	for i, c := range d.counts[27:] {
+		if c == 0 {
+			d.counts[i+27] = 3
+			break
+		}
+	}
+}
+
 // 分析各个牌的铳率
 func (d *tenhouRoundData) analysisSafeTiles() map[int]float64 {
 	table := map[int]float64{}
 	for _, player := range d.players[1:] {
+		// TODO: 根据该玩家的副露情况、手切数、巡目计算其听牌率
+
 		if !player.isReached {
 			continue
 		}
@@ -288,6 +309,7 @@ func (d *tenhouRoundData) analysis() error {
 		}
 		doraIndicator := d._parseTenhouTile(splits[5])
 		color.Yellow("宝牌指示牌是 %s", mahjongZH[doraIndicator])
+		d.doraIndicators = []int{doraIndicator}
 
 		for _, pai := range strings.Split(msg.Hai, ",") {
 			tile := d._parseTenhouTile(pai)
@@ -295,10 +317,29 @@ func (d *tenhouRoundData) analysis() error {
 		}
 		return _analysis(13, d.counts)
 	case "N":
-		// 某人副露
-		if msg.Who == "0" {
-			//meldType, tiles, calledTile := d._parseTenhouMeld(msg.Meld)
+		// 某人已副露
+		who, _ := strconv.Atoi(msg.Who)
+		meldType, meldTiles, calledTile := d._parseTenhouMeld(msg.Meld)
+		if meldType == meldTypeKakan {
+			// TODO: 修改副露情况
+			break
+		}
 
+		// TODO: 添加副露
+		//d.players[who].meldTiles = append(d.players[who].meldTiles, meldTiles...)
+
+		if who == 0 {
+			// 简化，修改副露牌为字牌
+			if meldType == meldTypeKan && d.counts[meldTiles[0]] == 4 { // 也可以判断手牌是否为 14 张
+				// 暗杠
+				d.counts[meldTiles[0]] = 0
+			} else {
+				d.counts[calledTile]++
+				for _, tile := range meldTiles {
+					d.counts[tile]--
+				}
+			}
+			d._fillZi()
 		}
 	case "DORA":
 		// 杠宝牌
@@ -306,6 +347,7 @@ func (d *tenhouRoundData) analysis() error {
 		// 2. 打点提高
 		kanDoraIndicator := d._parseTenhouTile(msg.Hai)
 		color.Yellow("杠宝牌指示牌是 %s", mahjongZH[kanDoraIndicator])
+		d.doraIndicators = append(d.doraIndicators, kanDoraIndicator)
 	case "REACH":
 		// 如果是他家立直，进入攻守判断模式
 		if msg.Step == "1" {
@@ -358,9 +400,7 @@ func (d *tenhouRoundData) analysis() error {
 
 			// 何切
 			d.counts[tile]++
-			if err := _analysis(14, d.counts); err != nil {
-				return err
-			}
+			return _analysis(14, d.counts)
 		case 'D':
 			// 自家舍牌
 			d.globalDiscardTiles = append(d.globalDiscardTiles, tile)
@@ -380,7 +420,7 @@ func (d *tenhouRoundData) analysis() error {
 			d.globalDiscardTiles = append(d.globalDiscardTiles, disTile)
 			d.players[who].discardTiles = append(d.players[who].discardTiles, disTile)
 
-			if d.players[who].isReached && d.players[who].reachTileAt == -1 {
+			if d.players[who].isReached && d.players[who].reachTileAtGlobal == -1 {
 				// 标记立直宣言牌
 				d.players[who].reachTileAtGlobal = len(d.globalDiscardTiles) - 1
 				d.players[who].reachTileAt = len(d.players[who].discardTiles) - 1
@@ -391,6 +431,8 @@ func (d *tenhouRoundData) analysis() error {
 			}
 
 			if msg.T != "" { // 是否副露
+				// TODO: 消除海底/避免河底/型听提醒
+
 				// TODO: 若有危险牌信息，则排序后输出
 				if dangerousTable := d.analysisSafeTiles(); len(dangerousTable) > 0 {
 
@@ -398,7 +440,9 @@ func (d *tenhouRoundData) analysis() error {
 
 				// 何切
 				d.counts[tile]++
-				return _analysis(14, d.counts)
+				err := _analysis(14, d.counts)
+				d.counts[tile]--
+				return err
 			}
 		default:
 		}

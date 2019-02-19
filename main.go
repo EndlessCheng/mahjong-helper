@@ -383,6 +383,13 @@ func checkTing2Discard(counts []int) ting2DiscardList {
 }
 
 func _analysis(num int, counts []int) error {
+	raw, err := countsToString(counts)
+	if err != nil {
+		return err
+	}
+	fmt.Println(raw)
+	fmt.Println(strings.Repeat("=", len(raw)))
+
 	if countPairs(counts) >= 4 {
 		color.Yellow("对子手可能")
 	}
@@ -467,9 +474,6 @@ func _analysis(num int, counts []int) error {
 }
 
 func analysis(raw string) (num int, counts []int, err error) {
-	fmt.Println(raw)
-	fmt.Println(strings.Repeat("=", len(raw)))
-
 	num, counts, err = convert(raw)
 	if err != nil {
 		return
