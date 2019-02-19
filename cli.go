@@ -80,6 +80,16 @@ func (l ting0DiscardList) print() {
 	}
 }
 
+func (l ting0DiscardList) printWithLeftCounts(leftCounts []int) {
+	if leftCounts != nil {
+		for _, discard := range l {
+			discard.needs.fixCountsWithLeftCounts(leftCounts)
+			discard.improveTiles.fixCountsWithLeftCounts(leftCounts)
+		}
+	}
+	l.print()
+}
+
 //
 
 type ting1Detail struct {

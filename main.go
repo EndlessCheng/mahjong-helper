@@ -382,7 +382,7 @@ func checkTing2Discard(counts []int) ting2DiscardList {
 	return ting2DiscardList
 }
 
-func _analysis(num int, counts []int) error {
+func _analysis(num int, counts []int, leftCounts []int) error {
 	raw, err := countsToString(counts)
 	if err != nil {
 		return err
@@ -434,7 +434,7 @@ func _analysis(num int, counts []int) error {
 		if ting0DiscardList := checkTing0Discard(counts); len(ting0DiscardList) > 0 {
 			color.New(color.FgRed).Print("【已听牌！】")
 			fmt.Println()
-			ting0DiscardList.print()
+			ting0DiscardList.printWithLeftCounts(leftCounts)
 			// 这里不 break，保留向听倒退的选择
 		}
 
@@ -479,7 +479,7 @@ func analysis(raw string) (num int, counts []int, err error) {
 		return
 	}
 
-	err = _analysis(num, counts)
+	err = _analysis(num, counts, nil)
 	return
 }
 
