@@ -157,6 +157,7 @@ func (d *tenhouRoundData) reset() {
 	newData := newTenhouRoundData()
 	d.doraIndicators = newData.doraIndicators
 	d.counts = newData.counts
+	d.leftCounts = newData.leftCounts
 	d.globalDiscardTiles = newData.globalDiscardTiles
 	d.players = newData.players
 }
@@ -336,6 +337,7 @@ func (d *tenhouRoundData) analysis() error {
 			d.counts[tile]++
 			d.leftCounts[tile]--
 		}
+		//fmt.Println("剩余", d.leftCounts)
 	case "N":
 		// 某人已副露
 		who, _ := strconv.Atoi(msg.Who)
@@ -352,9 +354,11 @@ func (d *tenhouRoundData) analysis() error {
 		// TODO: 添加副露
 		//d.players[who].meldTiles = append(d.players[who].meldTiles, meldTiles...)
 		// FIXME: 处理他家暗杠的情况
-		d.leftCounts[calledTile]++
-		for _, tile := range meldTiles {
-			d.leftCounts[tile]--
+		if who != 0 {
+			d.leftCounts[calledTile]++
+			for _, tile := range meldTiles {
+				d.leftCounts[tile]--
+			}
 		}
 
 		if who == 0 {
@@ -370,6 +374,8 @@ func (d *tenhouRoundData) analysis() error {
 			}
 			d._fillZi()
 		}
+
+		//fmt.Println("剩余", d.leftCounts)
 	case "DORA":
 		// 杠宝牌
 		// 1. 能摸的牌减少
@@ -378,6 +384,7 @@ func (d *tenhouRoundData) analysis() error {
 		color.Yellow("杠宝牌指示牌是 %s", mahjongZH[kanDoraIndicator])
 		d.doraIndicators = append(d.doraIndicators, kanDoraIndicator)
 		d.leftCounts[kanDoraIndicator]--
+		//fmt.Println("剩余", d.leftCounts)
 	case "REACH":
 		// 如果是他家立直，进入攻守判断模式
 		if msg.Step == "1" {
@@ -408,6 +415,7 @@ func (d *tenhouRoundData) analysis() error {
 		case 'T':
 			// 自家摸牌
 			d.leftCounts[tile]--
+			//fmt.Println("剩余", d.leftCounts)
 
 			// 他家舍牌信息
 			// TODO: 高亮不合理的舍牌或危险舍牌，如
@@ -448,6 +456,7 @@ func (d *tenhouRoundData) analysis() error {
 		case 'E', 'F', 'G', 'e', 'f', 'g':
 			// 他家舍牌, e=下家, f=对家, g=上家
 			d.leftCounts[tile]--
+			//fmt.Println("剩余", d.leftCounts)
 
 			who := lower(msg.Tag[0]) - 'd'
 			isTsumogiri := msg.Tag[0] >= 'a' // 是否摸切
