@@ -15,7 +15,9 @@ import (
 type mjHandler struct {
 	analysing bool
 
-	tenhouRoundData *tenhouRoundData
+	tenhouMessageQueue chan *tenhouMessage
+	tenhouRoundData    *tenhouRoundData
+
 	//majsoulRoundData *majsoulRoundData
 }
 
@@ -68,13 +70,17 @@ func (h *mjHandler) analysisTenhou(c echo.Context) error {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	h.tenhouRoundData.msg = &d
-	if err := h.tenhouRoundData.analysis(); err != nil {
-		fmt.Println(err)
-		return c.String(http.StatusInternalServerError, err.Error())
-	}
-
+	h.tenhouMessageQueue <- &d
 	return c.NoContent(http.StatusOK)
+}
+
+func (h *mjHandler) runAnalysisTenhouMessageTask() {
+	for msg := range h.tenhouMessageQueue {
+		h.tenhouRoundData.msg = msg
+		if err := h.tenhouRoundData.analysis(); err != nil {
+			fmt.Println("错误：", err)
+		}
+	}
 }
 
 // 分析雀魂 WebSocket 数据
@@ -101,13 +107,16 @@ func runServer() {
 	}()
 
 	h := &mjHandler{
-		tenhouRoundData: newTenhouRoundData(),
+		tenhouMessageQueue: make(chan *tenhouMessage, 100),
+		tenhouRoundData:    newTenhouRoundData(),
 	}
 	e.GET("/", h.index)
 	e.POST("/", h.analysisTenhou) // h.index h.analysisTenhou h.analysisMajsoul
 	e.POST("/analysis", h.analysis)
 	e.POST("/tenhou", h.analysisTenhou)
 	e.POST("/majsoul", h.analysisMajsoul)
+
+	go h.runAnalysisTenhouMessageTask()
 
 	// "server.crt", "server.key"
 	if err := e.Start(":12121"); err != nil {

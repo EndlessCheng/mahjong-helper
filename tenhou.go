@@ -294,8 +294,19 @@ func (d *tenhouRoundData) analysisSafeTiles() map[int]float64 {
 }
 
 func (d *tenhouRoundData) analysis() error {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println("内部错误：", err)
+		}
+	}()
+
 	msg := d.msg
-	fmt.Println("收到", msg.Tag)
+	//fmt.Println("收到", msg.Tag)
+
+	// 若自家立直，则进入看戏模式
+	if msg.Tag != "INIT" && msg.Tag != "REINIT" && d.players[0].isReached {
+		return nil
+	}
 
 	switch msg.Tag {
 	case "INIT", "REINIT":
@@ -304,7 +315,7 @@ func (d *tenhouRoundData) analysis() error {
 		d.reset()
 
 		splits := strings.Split(msg.Seed, ",")
-		if len(splits) != 5 {
+		if len(splits) != 6 {
 			panic(fmt.Sprintln("seed 解析失败", msg.Seed))
 		}
 		doraIndicator := d._parseTenhouTile(splits[5])
@@ -355,7 +366,7 @@ func (d *tenhouRoundData) analysis() error {
 			who, _ := strconv.Atoi(msg.Who)
 			d.players[who].isReached = true
 		} else {
-			// 立直成功，扣1000点
+			// (立直成功，扣1000点)
 		}
 	case "AGARI", "RYUUKYOKU":
 		// round 结束
@@ -369,7 +380,7 @@ func (d *tenhouRoundData) analysis() error {
 		// 振听
 	case "U", "V", "W":
 		//（下家,对家,上家 不要其上家的牌）摸牌
-	case "TAIKYOKU", "UN", "LN":
+	case "HELO", "RANKING", "TAIKYOKU", "UN", "LN":
 		// 其他
 	default:
 		rawTile := msg.Tag[1:]
@@ -379,15 +390,22 @@ func (d *tenhouRoundData) analysis() error {
 			// 自家摸牌
 
 			// 他家舍牌信息
+			// TODO: 高亮不合理的舍牌或危险舍牌，如
+			// - 一开始就切中张
+			// - 开始切中张后，手切了幺九牌（也有可能是有人碰了牌，比如 133m 有人碰了 2m）
+			// - 切了 dora，提醒一下
+			// - 切了赤宝牌
+			// - 有人立直的情况下，多次切出危险度高的牌（有可能是对方读准了牌，或者对方手里的牌与牌河加起来产生了安牌）
 			for _, player := range d.players[1:] {
-				fmt.Printf("%s:", player.name)
+				fmt.Printf("%s: ", player.name)
 				for _, disTile := range player.discardTiles {
+					// TODO: 显示 dora, 赤宝牌
 					if disTile >= 0 {
 						// 手切
-						fmt.Printf(mahjongZH[disTile] + " ")
+						fmt.Printf(mahjong[disTile] + " ")
 					} else {
 						// 摸切
-						fmt.Printf("- ")
+						fmt.Printf("-- ")
 					}
 				}
 				fmt.Println()
@@ -407,7 +425,6 @@ func (d *tenhouRoundData) analysis() error {
 			d.players[0].discardTiles = append(d.players[0].discardTiles, tile)
 
 			d.counts[tile]--
-			return _analysis(13, d.counts)
 		case 'E', 'F', 'G', 'e', 'f', 'g':
 			// 他家舍牌, e=下家, f=对家, g=上家
 			who := lower(msg.Tag[0]) - 'd'
