@@ -123,6 +123,9 @@ type tenhouRoundData struct {
 	// 自家手牌
 	counts []int
 
+	// 牌山剩余牌量
+	leftCounts []int
+
 	// 全局舍牌
 	// 按舍牌顺序，负数表示摸切(-)，非负数表示手切(+)
 	// 可以理解成：- 表示不要/暗色，+ 表示进张/亮色
@@ -133,8 +136,9 @@ type tenhouRoundData struct {
 
 func newTenhouRoundData() *tenhouRoundData {
 	globalDiscardTiles := []int{}
-	return &tenhouRoundData{
+	d := &tenhouRoundData{
 		counts:             make([]int, 34),
+		leftCounts:         make([]int, 34),
 		globalDiscardTiles: globalDiscardTiles,
 		players: [4]playerInfo{
 			newPlayerInfo("自家", &globalDiscardTiles),
@@ -143,6 +147,10 @@ func newTenhouRoundData() *tenhouRoundData {
 			newPlayerInfo("上家", &globalDiscardTiles),
 		},
 	}
+	for i := range d.leftCounts {
+		d.leftCounts[i] = 4
+	}
+	return d
 }
 
 func (d *tenhouRoundData) reset() {
@@ -321,23 +329,33 @@ func (d *tenhouRoundData) analysis() error {
 		doraIndicator := d._parseTenhouTile(splits[5])
 		color.Yellow("宝牌指示牌是 %s", mahjongZH[doraIndicator])
 		d.doraIndicators = []int{doraIndicator}
+		d.leftCounts[doraIndicator]--
 
 		for _, pai := range strings.Split(msg.Hai, ",") {
 			tile := d._parseTenhouTile(pai)
 			d.counts[tile]++
+			d.leftCounts[tile]--
 		}
-		return _analysis(13, d.counts)
 	case "N":
 		// 某人已副露
 		who, _ := strconv.Atoi(msg.Who)
 		meldType, meldTiles, calledTile := d._parseTenhouMeld(msg.Meld)
 		if meldType == meldTypeKakan {
 			// TODO: 修改副露情况
+			d.leftCounts[calledTile]--
+			if d.leftCounts[calledTile] != 0 {
+				fmt.Printf("数据异常: %s 数量为 %d\n", mahjongZH[calledTile], d.leftCounts[calledTile])
+			}
 			break
 		}
 
 		// TODO: 添加副露
 		//d.players[who].meldTiles = append(d.players[who].meldTiles, meldTiles...)
+		// FIXME: 处理他家暗杠的情况
+		d.leftCounts[calledTile]++
+		for _, tile := range meldTiles {
+			d.leftCounts[tile]--
+		}
 
 		if who == 0 {
 			// 简化，修改副露牌为字牌
@@ -359,6 +377,7 @@ func (d *tenhouRoundData) analysis() error {
 		kanDoraIndicator := d._parseTenhouTile(msg.Hai)
 		color.Yellow("杠宝牌指示牌是 %s", mahjongZH[kanDoraIndicator])
 		d.doraIndicators = append(d.doraIndicators, kanDoraIndicator)
+		d.leftCounts[kanDoraIndicator]--
 	case "REACH":
 		// 如果是他家立直，进入攻守判断模式
 		if msg.Step == "1" {
@@ -388,6 +407,7 @@ func (d *tenhouRoundData) analysis() error {
 		switch msg.Tag[0] {
 		case 'T':
 			// 自家摸牌
+			d.leftCounts[tile]--
 
 			// 他家舍牌信息
 			// TODO: 高亮不合理的舍牌或危险舍牌，如
@@ -418,7 +438,7 @@ func (d *tenhouRoundData) analysis() error {
 
 			// 何切
 			d.counts[tile]++
-			return _analysis(14, d.counts)
+			return _analysis(14, d.counts, d.leftCounts)
 		case 'D':
 			// 自家舍牌
 			d.globalDiscardTiles = append(d.globalDiscardTiles, tile)
@@ -427,6 +447,8 @@ func (d *tenhouRoundData) analysis() error {
 			d.counts[tile]--
 		case 'E', 'F', 'G', 'e', 'f', 'g':
 			// 他家舍牌, e=下家, f=对家, g=上家
+			d.leftCounts[tile]--
+
 			who := lower(msg.Tag[0]) - 'd'
 			isTsumogiri := msg.Tag[0] >= 'a' // 是否摸切
 
@@ -457,7 +479,7 @@ func (d *tenhouRoundData) analysis() error {
 
 				// 何切
 				d.counts[tile]++
-				err := _analysis(14, d.counts)
+				err := _analysis(14, d.counts, d.leftCounts)
 				d.counts[tile]--
 				return err
 			}

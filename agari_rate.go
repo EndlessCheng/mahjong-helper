@@ -13,11 +13,14 @@ var agariTable = [...][4]float64{
 	{26.3, 41.6, 50.1, 55.0},
 }
 
-// 字牌的和率暂不考虑，返回 -1
 func calcAgariRate(needs needTiles) float64 {
 	agariRate := 0.0
 	for idx, num := range needs {
+		if num == 0 {
+			continue
+		}
 		if idx > 27 {
+			// 字牌的和率暂不考虑，返回 -1
 			return -1
 		}
 		idx %= 9

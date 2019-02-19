@@ -87,3 +87,9 @@ func (nt needTiles) containHonors() bool {
 	}
 	return indexes[len(indexes)-1] >= 27
 }
+
+func (nt needTiles) fixCountsWithLeftCounts(leftCounts []int) {
+	for k := range nt {
+		nt[k] = leftCounts[k]
+	}
+}
