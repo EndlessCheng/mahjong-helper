@@ -15,7 +15,8 @@ import (
 type mjHandler struct {
 	analysing bool
 
-	hands []int
+	tenhouRoundData tenhouRoundData
+	//majsoulRoundData majsoulRoundData
 }
 
 func (h *mjHandler) index(c echo.Context) error {
@@ -67,7 +68,8 @@ func (h *mjHandler) analysisTenhou(c echo.Context) error {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	if err := d.analysis(h.hands); err != nil {
+	h.tenhouRoundData.msg = &d
+	if err := h.tenhouRoundData.analysis(); err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -99,7 +101,9 @@ func runServer() {
 	}()
 
 	h := &mjHandler{
-		hands: make([]int, 34),
+		tenhouRoundData: tenhouRoundData{
+			counts: make([]int, 34),
+		},
 	}
 	e.GET("/", h.index)
 	e.POST("/", h.analysisTenhou) // h.index h.analysisTenhou h.analysisMajsoul
