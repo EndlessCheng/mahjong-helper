@@ -15,7 +15,7 @@
 
 1. 打开开发者工具，找到相关 JS 文件，保存到本地
 2. 搜索 `WebSocket`, `socket`，找到 `message`, `onmessage` 等函数
-3. 修改代码，使用 `XMLHttpRequest` 将收发的消息发送到（在 localhost 开启的）mahjong-helper 服务器，服务器收到消息后会自动进行相关分析（牌效、攻防、模切等等）
+3. 修改代码，使用 `XMLHttpRequest` 将收发的消息发送到（在 localhost 开启的）mahjong-helper 服务器，服务器收到消息后会自动进行相关分析（牌效、攻防、摸切等等）
 4. 将修改后的 JS 代码传至个人的 github.io 项目，拿到该 JS 文件地址
 5. 安装浏览器扩展 Header Editor，重定向原 JS 文件地址到上一步中拿到的地址，具体操作可以参考[这篇](https://tieba.baidu.com/p/5956122477)
 6. 刷新网页

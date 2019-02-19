@@ -236,3 +236,17 @@ func maxFloat64(a, b float64) float64 {
 	}
 	return b
 }
+
+func lower(c byte) byte {
+	if c >= 'A' && c <= 'Z' {
+		c += 32
+	}
+	return c
+}
+
+func upper(c byte) byte {
+	if c >= 'a' && c <= 'z' {
+		c -= 32
+	}
+	return c
+}

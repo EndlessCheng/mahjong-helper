@@ -15,8 +15,8 @@ import (
 type mjHandler struct {
 	analysing bool
 
-	tenhouRoundData tenhouRoundData
-	//majsoulRoundData majsoulRoundData
+	tenhouRoundData *tenhouRoundData
+	//majsoulRoundData *majsoulRoundData
 }
 
 func (h *mjHandler) index(c echo.Context) error {
@@ -101,9 +101,7 @@ func runServer() {
 	}()
 
 	h := &mjHandler{
-		tenhouRoundData: tenhouRoundData{
-			counts: make([]int, 34),
-		},
+		tenhouRoundData: newTenhouRoundData(),
 	}
 	e.GET("/", h.index)
 	e.POST("/", h.analysisTenhou) // h.index h.analysisTenhou h.analysisMajsoul
