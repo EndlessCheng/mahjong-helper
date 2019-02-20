@@ -143,7 +143,7 @@ func countPairs(counts []int) int {
 
 //
 
-func _getAttr(n float64) []color.Attribute {
+func _getTingCountAttr(n float64) []color.Attribute {
 	var colors []color.Attribute
 	switch {
 	case n < 14:
@@ -159,11 +159,11 @@ func _getAttr(n float64) []color.Attribute {
 }
 
 func colorTing1Count(n int) {
-	color.New(_getAttr(float64(n))...).Printf("%-6d", n)
+	color.New(_getTingCountAttr(float64(n))...).Printf("%-6d", n)
 }
 
 func colorTing2Count(n int) {
-	color.New(_getAttr(float64(n) / 2)...).Printf("%2d", n)
+	color.New(_getTingCountAttr(float64(n) / 2)...).Printf("%2d", n)
 }
 
 func getTingCountColor(count float64) color.Attribute {
@@ -179,7 +179,7 @@ func getTingCountColor(count float64) color.Attribute {
 	}
 }
 
-func getRiskColor(index int) color.Attribute {
+func getSimpleRiskColor(index int) color.Attribute {
 	if index >= 27 {
 		return color.FgHiBlue
 	} else {
@@ -243,6 +243,23 @@ func getSafeColor(index int) color.Attribute {
 	return -1
 }
 
+func getNumRiskColor(risk float64) color.Attribute {
+	switch {
+	case risk < 3:
+		return color.FgHiBlue
+	case risk < 5:
+		return color.FgBlue
+	case risk < 7.5:
+		return color.FgYellow
+	case risk < 10:
+		return color.FgHiYellow
+	case risk < 15:
+		return color.FgHiRed
+	default:
+		return color.FgRed
+	}
+}
+
 //
 
 func maxInt(a, b int) int {
@@ -254,6 +271,13 @@ func maxInt(a, b int) int {
 
 func maxFloat64(a, b float64) float64 {
 	if a > b {
+		return a
+	}
+	return b
+}
+
+func minInt(a, b int) int {
+	if a < b {
 		return a
 	}
 	return b
@@ -271,4 +295,11 @@ func upper(c byte) byte {
 		c -= 32
 	}
 	return c
+}
+
+func boolToInt(b bool) int {
+	if b {
+		return 1
+	}
+	return 0
 }

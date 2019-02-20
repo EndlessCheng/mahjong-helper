@@ -21,10 +21,10 @@ type tenhouMessage struct {
 	//G string `json:"g"`
 
 	// round 开始 tag=INIT
-	Seed string `json:"seed"` // 本局信息：场数，连庄棒数，立直棒数，骰子A减一，骰子B减一，宝牌指示牌 1,0,0,3,2,92
-	Ten  string `json:"ten"`  // 各家点数 280,230,240,250
-	Oya  string `json:"oya"`  // 庄家 0=自家, 1=下家, 2=对家, 3=上家
-	Hai  string `json:"hai"`  // 初始手牌 30,114,108,31,78,107,25,23,2,14,122,44,49
+	Seed   string `json:"seed"` // 本局信息：场数，连庄棒数，立直棒数，骰子A减一，骰子B减一，宝牌指示牌 1,0,0,3,2,92
+	Ten    string `json:"ten"`  // 各家点数 280,230,240,250
+	Dealer string `json:"oya"`  // 庄家 0=自家, 1=下家, 2=对家, 3=上家
+	Hai    string `json:"hai"`  // 初始手牌 30,114,108,31,78,107,25,23,2,14,122,44,49
 
 	// 摸牌 tag=T编号，如 T68
 
@@ -88,6 +88,8 @@ type tenhouMessage struct {
 type playerInfo struct {
 	name string // 自家 下家 对家 上家
 
+	selfWindTile int
+
 	// 副露
 	melds                [][]int
 	meldDiscardsAtGlobal []int
@@ -103,9 +105,10 @@ type playerInfo struct {
 	reachTileAt       int
 }
 
-func newPlayerInfo(name string, globalDiscardTiles *[]int) playerInfo {
+func newPlayerInfo(name string, selfWindTile int, globalDiscardTiles *[]int) playerInfo {
 	return playerInfo{
 		name:               name,
+		selfWindTile:       selfWindTile,
 		globalDiscardTiles: globalDiscardTiles,
 		reachTileAtGlobal:  -1,
 		reachTileAt:        -1,
@@ -148,6 +151,11 @@ func (p *playerInfo) printDiscards() {
 type tenhouRoundData struct {
 	msg *tenhouMessage
 
+	roundNumber int
+
+	// 场风
+	roundWindTile int
+
 	// 宝牌指示牌
 	doraIndicators []int
 
@@ -165,17 +173,24 @@ type tenhouRoundData struct {
 	players [4]playerInfo
 }
 
-func newTenhouRoundData() *tenhouRoundData {
+func newTenhouRoundData(roundNumber int, dealer int) *tenhouRoundData {
+	roundWindTile := 27 + roundNumber/4
+	playerWindTile := make([]int, 4)
+	for i := 0; i < 4; i++ {
+		playerWindTile[i] = 27 + (4-dealer+i)%4
+	}
 	globalDiscardTiles := []int{}
 	d := &tenhouRoundData{
+		roundNumber:        roundNumber,
+		roundWindTile:      roundWindTile,
 		counts:             make([]int, 34),
 		leftCounts:         make([]int, 34),
 		globalDiscardTiles: globalDiscardTiles,
 		players: [4]playerInfo{
-			newPlayerInfo("自家", &globalDiscardTiles),
-			newPlayerInfo("下家", &globalDiscardTiles),
-			newPlayerInfo("对家", &globalDiscardTiles),
-			newPlayerInfo("上家", &globalDiscardTiles),
+			newPlayerInfo("自家", playerWindTile[0], &globalDiscardTiles),
+			newPlayerInfo("下家", playerWindTile[1], &globalDiscardTiles),
+			newPlayerInfo("对家", playerWindTile[2], &globalDiscardTiles),
+			newPlayerInfo("上家", playerWindTile[3], &globalDiscardTiles),
 		},
 	}
 	for i := range d.leftCounts {
@@ -184,8 +199,8 @@ func newTenhouRoundData() *tenhouRoundData {
 	return d
 }
 
-func (d *tenhouRoundData) reset() {
-	newData := newTenhouRoundData()
+func (d *tenhouRoundData) reset(roundNumber int, dealer int) {
+	newData := newTenhouRoundData(roundNumber, dealer)
 	*d = *newData
 }
 
@@ -280,7 +295,7 @@ func (d *tenhouRoundData) _fillZi() {
 // 分析34种牌的危险度，可以用来判断自家手牌的安全度，以及他家是否在进攻（多次切出危险度高的牌）
 func (d *tenhouRoundData) analysisTilesRisk() (tables riskTables) {
 	tables = make([]riskTable, 3)
-	for i, player := range d.players[1:] {
+	for who, player := range d.players[1:] {
 		// TODO: 对于副露者，根据他的副露情况、手切数、巡目计算其听牌率
 		// 目前暂时简化成「三副露 = 立直」（暗杠算副露）
 		if !player.isReached && len(player.melds) < 3 {
@@ -290,28 +305,57 @@ func (d *tenhouRoundData) analysisTilesRisk() (tables riskTables) {
 		table := make([]float64, 34)
 
 		// 该玩家的巡目 = 为其切过的牌的数目
-		_ = len(player.discardTiles)
+		turns := minInt(len(player.discardTiles), 19)
+		turns = 9 // TODO
 
 		// 收集安牌
-		safeTiles := make([]bool, 34)
+		safeTiles := make([]uint8, 34)
 		for _, tile := range player.discardTiles {
-			safeTiles[tile] = true
+			safeTiles[tile] = 0
 		}
-		for _, tile := range d.globalDiscardTiles[player.reachTileAtGlobal+1:] {
-			safeTiles[tile] = true
+		for _, tile := range d.globalDiscardTiles[player.reachTileAtGlobal:] {
+			safeTiles[tile] = 1
 		}
 
 		// 利用安牌计算双筋、筋、半筋、无筋等
-		// - 需要单独处理宣言牌的筋牌、宣言牌的同色牌的危险度
+		// TODO: 单独处理宣言牌的筋牌、宣言牌的同色牌的危险度
+		for i := 0; i < 3; i++ {
+			for j := 0; j < 3; j++ {
+				t := tileTypeTable[j][safeTiles[9*i+j+3]]
+				table[9*i+j] = riskData[turns][t]
+			}
+			for j := 3; j < 6; j++ {
+				mixSafeTile := safeTiles[9*i+j-3]<<1 | safeTiles[9*i+j+3]
+				t := tileTypeTable[j][mixSafeTile]
+				table[9*i+j] = riskData[turns][t]
+			}
+			for j := 6; j < 9; j++ {
+				t := tileTypeTable[j][safeTiles[9*i+j-3]]
+				table[9*i+j] = riskData[turns][t]
+			}
+		}
+		for i := 27; i < 34; i++ {
+			if d.leftCounts[i] > 0 {
+				isYakuHai := i == d.roundWindTile || i == player.selfWindTile || i >= 31
+				t := ziTileType[boolToInt(isYakuHai)][d.leftCounts[i]-1]
+				table[i] = riskData[turns][t]
+			}
+		}
+
 		// 利用剩余牌是否为 0 或者 1 计算 No Chance, One Chance, Double One Chance, Double Two Chance(待定) 等
-		// 利用剩余牌计算字牌的危险度
 		// 利用舍牌计算无筋早外
 		//（待定）有早外的半筋（早巡打过8m时，3m的半筋6m）
 		//（待定）利用赤宝牌计算危险度
 		// 宝牌周边牌的危险度要增加一点
 		//（待定）切过5的情况
 
-		tables[i] = table
+		for i, isSafe := range safeTiles {
+			if isSafe == 1 {
+				table[i] = 0
+			}
+		}
+
+		tables[who] = table
 	}
 	return tables
 }
@@ -334,13 +378,16 @@ func (d *tenhouRoundData) analysis() error {
 	switch msg.Tag {
 	case "INIT", "REINIT":
 		// round 开始/重连
-		fmt.Println("new round")
-		d.reset()
-
 		splits := strings.Split(msg.Seed, ",")
 		if len(splits) != 6 {
 			panic(fmt.Sprintln("seed 解析失败", msg.Seed))
 		}
+		roundNumber, _ := strconv.Atoi(splits[0])
+		dealer, _ := strconv.Atoi(msg.Dealer)
+		d.reset(roundNumber, dealer)
+
+		fmt.Printf("%s%d局开始，自风为%s\n", mahjongZH[d.roundWindTile], roundNumber%4+1, mahjongZH[d.players[0].selfWindTile])
+
 		doraIndicator := d._parseTenhouTile(splits[5])
 		color.Yellow("宝牌指示牌是 %s", mahjongZH[doraIndicator])
 		d.doraIndicators = []int{doraIndicator}
