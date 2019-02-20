@@ -155,11 +155,7 @@ func newTenhouRoundData() *tenhouRoundData {
 
 func (d *tenhouRoundData) reset() {
 	newData := newTenhouRoundData()
-	d.doraIndicators = newData.doraIndicators
-	d.counts = newData.counts
-	d.leftCounts = newData.leftCounts
-	d.globalDiscardTiles = newData.globalDiscardTiles
-	d.players = newData.players
+	*d = *newData
 }
 
 // 0-35 m
