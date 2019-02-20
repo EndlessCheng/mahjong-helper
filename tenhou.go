@@ -426,7 +426,7 @@ func (d *tenhouRoundData) analysis() error {
 			}
 
 			// 何切
-			// TODO: 根据是否听牌/一向听、和牌率、巡目进行攻守判断
+			// TODO: 根据是否听牌/完全一向听、和牌率、巡目进行攻守判断
 			d.counts[tile]++
 			return _analysis(14, d.counts, d.leftCounts)
 		case 'D':
