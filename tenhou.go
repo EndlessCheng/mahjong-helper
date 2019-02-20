@@ -96,6 +96,7 @@ type playerInfo struct {
 	meldDiscardsAt       []int
 
 	// 全局舍牌
+	// 注意负数要^
 	globalDiscardTiles *[]int
 	discardTiles       []int
 
@@ -127,6 +128,7 @@ func (p *playerInfo) printDiscards() {
 	for _, disTile := range p.discardTiles {
 		fmt.Printf(" ")
 		// TODO: 显示 dora, 赤宝牌
+		// FIXME: 颜色需要调整
 		if disTile >= 0 { // 手切
 			if len(p.melds) == 0 {
 				// 未副露
@@ -297,6 +299,7 @@ func (d *tenhouRoundData) analysisTilesRisk() (tables riskTables) {
 	tables = make([]riskTable, 3)
 	for who, player := range d.players[1:] {
 		// TODO: 对于副露者，根据他的副露情况、手切数、巡目计算其听牌率
+		// TODO: 若某人一直摸切，然后突然切了一张字牌，那他很有可能听牌了（含默听）
 		// 目前暂时简化成「三副露 = 立直」（暗杠算副露）
 		if !player.isReached && len(player.melds) < 3 {
 			continue
@@ -306,14 +309,25 @@ func (d *tenhouRoundData) analysisTilesRisk() (tables riskTables) {
 
 		// 该玩家的巡目 = 为其切过的牌的数目
 		turns := minInt(len(player.discardTiles), 19)
+		if turns == 0 {
+			continue
+		}
 
 		// 收集安牌
 		safeTiles := make([]uint8, 34)
 		for _, tile := range player.discardTiles {
-			safeTiles[tile] = 0
-		}
-		for _, tile := range d.globalDiscardTiles[player.reachTileAtGlobal:] {
+			if tile < 0 {
+				tile = ^tile
+			}
 			safeTiles[tile] = 1
+		}
+		if player.reachTileAtGlobal != -1 {
+			for _, tile := range d.globalDiscardTiles[player.reachTileAtGlobal:] {
+				if tile < 0 {
+					tile = ^tile
+				}
+				safeTiles[tile] = 1
+			}
 		}
 
 		// 利用安牌计算双筋、筋、半筋、无筋等
@@ -360,11 +374,11 @@ func (d *tenhouRoundData) analysisTilesRisk() (tables riskTables) {
 }
 
 func (d *tenhouRoundData) analysis() error {
-	defer func() {
-		if err := recover(); err != nil {
-			fmt.Println("内部错误：", err)
-		}
-	}()
+	//defer func() {
+	//	if err := recover(); err != nil {
+	//		fmt.Println("内部错误：", err)
+	//	}
+	//}()
 
 	msg := d.msg
 	//fmt.Println("收到", msg.Tag)
@@ -466,7 +480,7 @@ func (d *tenhouRoundData) analysis() error {
 		// 振听
 	case "U", "V", "W":
 		//（下家,对家,上家 不要其上家的牌）摸牌
-	case "HELO", "RANKING", "TAIKYOKU", "UN", "LN":
+	case "HELO", "RANKING", "TAIKYOKU", "UN", "LN", "SAIKAI":
 		// 其他
 	default:
 		rawTile := msg.Tag[1:]
@@ -480,7 +494,7 @@ func (d *tenhouRoundData) analysis() error {
 
 			// 安全度分析
 			riskTables := d.analysisTilesRisk()
-			riskTables.printWithHands(d.counts)
+			riskTables.printWithHands(d.counts, d.leftCounts)
 
 			// 何切
 			// TODO: 根据是否听牌/完全一向听、和牌率、巡目进行攻守判断
@@ -521,6 +535,7 @@ func (d *tenhouRoundData) analysis() error {
 			for _, player := range d.players[1:] {
 				player.printDiscards()
 			}
+			fmt.Println()
 
 			if msg.T != "" { // 是否副露
 				d.counts[tile]++
@@ -529,9 +544,10 @@ func (d *tenhouRoundData) analysis() error {
 
 				// 安全度分析
 				riskTables := d.analysisTilesRisk()
-				riskTables.printWithHands(d.counts)
+				riskTables.printWithHands(d.counts, d.leftCounts)
 
 				// 何切
+				fmt.Printf("副露? ")
 				err := _analysis(14, d.counts, d.leftCounts)
 				d.counts[tile]--
 				return err
