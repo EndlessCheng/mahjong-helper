@@ -258,12 +258,14 @@ type handsRisk struct {
 type riskTable []float64
 
 func (t riskTable) printWithHands(counts []int) {
-	fmt.Printf("安牌:")
+	tab := "   "
+	fmt.Printf(tab)
 	for i, c := range counts {
 		if c > 0 && t[i] == 0 {
-			fmt.Printf(" " + mahjongZH[i])
+			color.New(color.FgHiBlue).Printf(" " + mahjongZH[i])
 		}
 	}
+	fmt.Println()
 
 	handsRisks := []handsRisk{}
 	for i, c := range counts {
@@ -274,8 +276,7 @@ func (t riskTable) printWithHands(counts []int) {
 	sort.Slice(handsRisks, func(i, j int) bool {
 		return handsRisks[i].risk < handsRisks[j].risk
 	})
-
-	fmt.Printf("\n其他:")
+	fmt.Printf(tab)
 	for _, hr := range handsRisks {
 		color.New(getNumRiskColor(hr.risk)).Printf(" " + mahjongZH[hr.tile])
 	}
@@ -284,12 +285,27 @@ func (t riskTable) printWithHands(counts []int) {
 
 type riskTables []riskTable
 
-func (ts riskTables) printWithHands(counts []int) {
+func (ts riskTables) printWithHands(counts []int, leftCounts []int) {
+	printed := false
 	names := []string{"下家", "对家", "上家"}
 	for i, table := range ts {
 		if len(table) > 0 {
+			printed = true
 			fmt.Println(names[i] + "安牌:")
 			table.printWithHands(counts)
+		}
+	}
+	if printed {
+		printedNC := false
+		for i, c := range leftCounts {
+			if c > 0 {
+				continue
+			}
+			if !printedNC {
+				printedNC = true
+				fmt.Printf("壁:")
+			}
+			fmt.Printf(" " + mahjongZH[i])
 		}
 	}
 }

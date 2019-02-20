@@ -41,11 +41,11 @@ func TestAnalysisTilesRisk(t *testing.T) {
 
 	d.players[1].isReached = true
 	d.players[1].reachTileAtGlobal = 0
-	d.players[1].discardTiles = []int{1, 1, 1, 1, 1}
+	d.players[1].discardTiles = []int{1, 1, 1, 1, 12, 4, 5, 6}
 	d.players[2].isReached = true
 	d.players[2].reachTileAtGlobal = 7
 	d.players[2].discardTiles = []int{1, 1, 1, 1, 1}
 
 	table := d.analysisTilesRisk()
-	table.printWithHands(counts)
+	table.printWithHands(counts, d.leftCounts)
 }
