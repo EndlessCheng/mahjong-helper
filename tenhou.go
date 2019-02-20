@@ -306,7 +306,6 @@ func (d *tenhouRoundData) analysisTilesRisk() (tables riskTables) {
 
 		// 该玩家的巡目 = 为其切过的牌的数目
 		turns := minInt(len(player.discardTiles), 19)
-		turns = 9 // TODO
 
 		// 收集安牌
 		safeTiles := make([]uint8, 34)
