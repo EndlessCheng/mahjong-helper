@@ -454,8 +454,9 @@ func (d *tenhouRoundData) analysis() error {
 				d.players[who].reachTileAtGlobal = len(d.globalDiscardTiles) - 1
 				d.players[who].reachTileAt = len(d.players[who].discardTiles) - 1
 
+				// 若该玩家摸切立直，打印提示信息
 				if isTsumogiri {
-					color.Yellow("%s 模切立直！", d.players[who].name)
+					color.Yellow("%s 摸切立直！", d.players[who].name)
 				}
 			}
 
