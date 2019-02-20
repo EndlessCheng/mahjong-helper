@@ -247,3 +247,12 @@ func (l ting2DiscardList) print() {
 		}
 	}
 }
+
+//
+
+type dangerousTable []float64
+
+func (t dangerousTable) printWithHands(counts []int) {
+	// TODO: 若有危险牌信息，则排序后输出
+
+}
