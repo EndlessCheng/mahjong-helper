@@ -108,7 +108,7 @@ func runServer() {
 
 	h := &mjHandler{
 		tenhouMessageQueue: make(chan *tenhouMessage, 100),
-		tenhouRoundData:    newTenhouRoundData(),
+		tenhouRoundData:    newTenhouRoundData(0, 0),
 	}
 	e.GET("/", h.index)
 	e.POST("/", h.analysisTenhou) // h.index h.analysisTenhou h.analysisMajsoul
