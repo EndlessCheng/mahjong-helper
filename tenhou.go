@@ -112,6 +112,37 @@ func newPlayerInfo(name string, globalDiscardTiles *[]int) playerInfo {
 	}
 }
 
+func (p *playerInfo) printDiscards() {
+	// TODO: 高亮不合理的舍牌或危险舍牌，如
+	// - 一开始就切中张
+	// - 开始切中张后，手切了幺九牌（也有可能是有人碰了牌，比如 133m 有人碰了 2m）
+	// - 切了 dora，提醒一下
+	// - 切了赤宝牌
+	// - 有人立直的情况下，多次切出危险度高的牌（有可能是对方读准了牌，或者对方手里的牌与牌河加起来产生了安牌）
+
+	fmt.Printf(p.name + ":")
+	for _, disTile := range p.discardTiles {
+		fmt.Printf(" ")
+		// TODO: 显示 dora, 赤宝牌
+		if disTile >= 0 { // 手切
+			if len(p.meldTiles) == 0 {
+				// 未副露
+				if disTile >= 27 {
+					color.New(color.FgYellow).Printf(mahjong[disTile])
+				} else {
+					fmt.Printf(mahjong[disTile])
+				}
+			} else {
+				// 副露者高亮摸切
+				color.New(getDiscardAlertColor(disTile)).Printf(mahjong[disTile])
+			}
+		} else { // 摸切
+			fmt.Printf("--")
+		}
+	}
+	fmt.Println()
+}
+
 //
 
 type tenhouRoundData struct {
@@ -335,7 +366,7 @@ func (d *tenhouRoundData) analysis() error {
 		}
 
 		// TODO: 添加副露
-		//d.players[who].meldTiles = append(d.players[who].meldTiles, meldTiles...)
+		d.players[who].meldTiles = append(d.players[who].meldTiles, meldTiles...)
 		// FIXME: 处理他家暗杠的情况
 		if who != 0 {
 			d.leftCounts[calledTile]++
@@ -400,28 +431,7 @@ func (d *tenhouRoundData) analysis() error {
 			d.leftCounts[tile]--
 			//fmt.Println("剩余", d.leftCounts)
 
-			// 他家舍牌信息
-			// TODO: 高亮不合理的舍牌或危险舍牌，如
-			// - 一开始就切中张
-			// - 开始切中张后，手切了幺九牌（也有可能是有人碰了牌，比如 133m 有人碰了 2m）
-			// - 切了 dora，提醒一下
-			// - 切了赤宝牌
-			// - 有人立直的情况下，多次切出危险度高的牌（有可能是对方读准了牌，或者对方手里的牌与牌河加起来产生了安牌）
-			for _, player := range d.players[1:] {
-				fmt.Printf("%s: ", player.name)
-				for _, disTile := range player.discardTiles {
-					// TODO: 显示 dora, 赤宝牌
-					if disTile >= 0 {
-						// 手切
-						fmt.Printf(mahjong[disTile] + " ")
-					} else {
-						// 摸切
-						fmt.Printf("-- ")
-					}
-				}
-				fmt.Println()
-			}
-
+			// 安全度分析
 			if dangerousTable := d.analysisTileDangerous(); len(dangerousTable) > 0 {
 				dangerousTable.printWithHands(d.counts)
 			}
@@ -460,6 +470,11 @@ func (d *tenhouRoundData) analysis() error {
 				if isTsumogiri {
 					color.Yellow("%s 摸切立直！", d.players[who].name)
 				}
+			}
+
+			// 打印他家舍牌信息
+			for _, player := range d.players[1:] {
+				player.printDiscards()
 			}
 
 			if msg.T != "" { // 是否副露

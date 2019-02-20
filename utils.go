@@ -200,6 +200,28 @@ func getRiskColor(index int) color.Attribute {
 	return -1
 }
 
+func getDiscardAlertColor(index int) color.Attribute {
+	if index >= 27 {
+		// 中后盘手切字牌是一种危险的信号
+		return color.FgHiYellow
+	} else {
+		_i := index%9 + 1
+		switch _i {
+		case 1, 9:
+			return color.FgWhite
+		case 2, 8:
+			return color.FgYellow
+		case 3, 7:
+			return color.FgHiYellow
+		case 4, 5, 6:
+			return color.FgRed
+		default:
+			_errorExit("代码有误: _i = ", _i)
+		}
+	}
+	return -1
+}
+
 func getSafeColor(index int) color.Attribute {
 	if index >= 27 {
 		return color.FgRed
