@@ -246,15 +246,17 @@ func (d *tenhouRoundData) _fillZi() {
 	}
 }
 
-// 分析各个牌的危险度，可以用来判断自家手牌的安全度，以及他家是否在进攻（多次切出危险度高的牌）
-func (d *tenhouRoundData) analysisTileDangerous() []float64 {
-	// 34种牌的危险度
-	table := make([]float64, 34)
+// 分析34种牌的危险度，可以用来判断自家手牌的安全度，以及他家是否在进攻（多次切出危险度高的牌）
+func (d *tenhouRoundData) analysisTileDangerous() (table dangerousTable) {
 	for _, player := range d.players[1:] {
 		// TODO: 对于副露者，根据他的副露情况、手切数、巡目计算其听牌率
 
 		if !player.isReached {
 			continue
+		}
+
+		if len(table) == 0 {
+			table = make([]float64, 34)
 		}
 
 		// 该玩家的巡目 = 为其切过的牌的数目
@@ -271,11 +273,11 @@ func (d *tenhouRoundData) analysisTileDangerous() []float64 {
 
 		// 利用安牌计算双筋、筋、半筋、无筋等（需要注意宣言牌的筋牌）
 		// 利用剩余牌是否为 0 或者 1 计算 No Chance, One Chance, Double One Chance, Double Two Chance(待定) 等
-		// 利用剩余牌计算字牌的安全度
+		// 利用剩余牌计算字牌的危险度
 		// 利用舍牌计算早外
 		//（待定）有早外的半筋（早巡打过8m时，3m的半筋6m）
-		//（待定）利用赤宝牌计算安全度
-
+		//（待定）利用赤宝牌计算危险度
+		// 宝牌周边牌的危险度要增加一点
 
 		// TODO: 多人立直的判断
 		break
@@ -420,9 +422,8 @@ func (d *tenhouRoundData) analysis() error {
 				fmt.Println()
 			}
 
-			// TODO: 若有危险牌信息，则排序后输出
 			if dangerousTable := d.analysisTileDangerous(); len(dangerousTable) > 0 {
-
+				dangerousTable.printWithHands(d.counts)
 			}
 
 			// 何切
@@ -464,9 +465,8 @@ func (d *tenhouRoundData) analysis() error {
 			if msg.T != "" { // 是否副露
 				// TODO: 消除海底/避免河底/型听提醒
 
-				// TODO: 若有危险牌信息，则排序后输出
 				if dangerousTable := d.analysisTileDangerous(); len(dangerousTable) > 0 {
-
+					dangerousTable.printWithHands(d.counts)
 				}
 
 				// 何切
