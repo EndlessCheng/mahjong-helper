@@ -250,9 +250,21 @@ func (l ting2DiscardList) print() {
 
 //
 
-type dangerousTable []float64
+type riskTable []float64
 
-func (t dangerousTable) printWithHands(counts []int) {
+func (t riskTable) printWithHands(counts []int) {
 	// TODO: 若有危险牌信息，则排序后输出
 
+}
+
+type riskTables []riskTable
+
+func (ts riskTables) printWithHands(counts []int) {
+	names := []string{"下家", "对家", "上家"}
+	for i, table := range ts {
+		if len(table) > 0 {
+			fmt.Println(names[i] + "安牌分析:")
+			table.printWithHands(counts)
+		}
+	}
 }
