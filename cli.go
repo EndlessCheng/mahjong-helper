@@ -317,15 +317,32 @@ func (ts riskTables) printWithHands(counts []int, leftCounts []int) {
 	}
 	if printed {
 		printedNC := false
-		for i, c := range leftCounts {
-			if c > 0 {
+		for i, c := range leftCounts[:27] {
+			if c != 0 {
 				continue
 			}
 			if !printedNC {
 				printedNC = true
-				fmt.Printf("壁:")
+				fmt.Printf("NC:")
 			}
 			fmt.Printf(" " + mahjongZH[i])
+		}
+		if printedNC {
+			fmt.Println()
+		}
+		printedOC := false
+		for i, c := range leftCounts[:27] {
+			if c != 1 {
+				continue
+			}
+			if !printedOC {
+				printedOC = true
+				fmt.Printf("OC:")
+			}
+			fmt.Printf(" " + mahjongZH[i])
+		}
+		if printedOC {
+			fmt.Println()
 		}
 	}
 }

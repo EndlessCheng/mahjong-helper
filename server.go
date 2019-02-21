@@ -118,7 +118,6 @@ func runServer() {
 
 	go h.runAnalysisTenhouMessageTask()
 
-	// "server.crt", "server.key"
 	if err := e.Start(":12121"); err != nil {
 		_errorExit(err)
 	}

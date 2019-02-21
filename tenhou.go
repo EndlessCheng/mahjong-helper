@@ -305,8 +305,6 @@ func (d *tenhouRoundData) analysisTilesRisk() (tables riskTables) {
 			continue
 		}
 
-		table := make([]float64, 34)
-
 		// 该玩家的巡目 = 为其切过的牌的数目
 		turns := minInt(len(player.discardTiles), 19)
 		if turns == 0 {
@@ -329,6 +327,8 @@ func (d *tenhouRoundData) analysisTilesRisk() (tables riskTables) {
 				safeTiles[tile] = 1
 			}
 		}
+
+		table := make([]float64, 34)
 
 		// 利用安牌计算双筋、筋、半筋、无筋等
 		// TODO: 单独处理宣言牌的筋牌、宣言牌的同色牌的危险度
@@ -384,6 +384,7 @@ func (d *tenhouRoundData) analysis() error {
 	//fmt.Println("收到", msg.Tag)
 
 	// 若自家立直，则进入看戏模式
+	// TODO: 见逃判断
 	if msg.Tag != "INIT" && msg.Tag != "REINIT" && d.players[0].isReached {
 		return nil
 	}
@@ -453,7 +454,7 @@ func (d *tenhouRoundData) analysis() error {
 		//fmt.Println("剩余", d.leftCounts)
 	case "DORA":
 		// 杠宝牌
-		// 1. 能摸的牌减少
+		// 1. 剩余牌减少
 		// 2. 打点提高
 		kanDoraIndicator := d._parseTenhouTile(msg.Hai)
 		color.Yellow("杠宝牌指示牌是 %s", mahjongZH[kanDoraIndicator])
