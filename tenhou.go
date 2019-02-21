@@ -494,6 +494,12 @@ func (d *tenhouRoundData) analysis() error {
 			//fmt.Println("剩余", d.leftCounts)
 			d.counts[tile]++
 
+			// 打印他家舍牌信息
+			for _, player := range d.players[1:] {
+				player.printDiscards()
+			}
+			fmt.Println()
+
 			// 安全度分析
 			riskTables := d.analysisTilesRisk()
 			riskTables.printWithHands(d.counts, d.leftCounts)
