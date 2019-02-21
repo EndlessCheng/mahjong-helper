@@ -516,11 +516,15 @@ func (d *tenhouRoundData) analysis() error {
 			d.players[0].discardTiles = append(d.players[0].discardTiles, tile)
 		case 'E', 'F', 'G', 'e', 'f', 'g':
 			// 他家舍牌, e=下家, f=对家, g=上家
-			clearConsole()
 			d.leftCounts[tile]--
 			//fmt.Println("剩余", d.leftCounts)
 
 			who := lower(msg.Tag[0]) - 'd'
+			if who != 3 {
+				// 为防止先收到自家摸牌，然后收到上家摸牌，上家舍牌时不刷新
+				clearConsole()
+			}
+
 			isTsumogiri := msg.Tag[0] >= 'a' // 是否摸切
 
 			disTile := tile
@@ -542,10 +546,12 @@ func (d *tenhouRoundData) analysis() error {
 			}
 
 			// 打印他家舍牌信息
-			for _, player := range d.players[1:] {
-				player.printDiscards()
+			if who != 3 {
+				for _, player := range d.players[1:] {
+					player.printDiscards()
+				}
+				fmt.Println()
 			}
-			fmt.Println()
 
 			if msg.T != "" { // 是否副露
 				d.counts[tile]++
