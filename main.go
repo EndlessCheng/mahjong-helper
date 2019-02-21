@@ -439,7 +439,7 @@ func _analysis(num int, counts []int, leftCounts []int) error {
 		}
 
 		if ting1DiscardList := checkTing1Discard(counts); len(ting1DiscardList) > 0 {
-			ting1DiscardList.print()
+			ting1DiscardList.printWithLeftCounts(leftCounts)
 
 			if ting1DiscardList.isGood() {
 				break
@@ -453,11 +453,11 @@ func _analysis(num int, counts []int, leftCounts []int) error {
 			// 过滤掉一向听的舍牌
 			newTing2DiscardList := ting2DiscardList{}
 			for _, d := range rawTing2DiscardList {
-				if d.needs.allCount() < 120 { // TODO: 更好的判断条件？
+				if d.needs.allCount() < 100 { // TODO: 更好的判断条件？
 					newTing2DiscardList = append(newTing2DiscardList, d)
 				}
 			}
-			newTing2DiscardList.print()
+			newTing2DiscardList.printWithLeftCounts(leftCounts)
 			break
 		}
 
