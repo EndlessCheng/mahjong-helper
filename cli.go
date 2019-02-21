@@ -318,7 +318,7 @@ func (ts riskTables) printWithHands(counts []int, leftCounts []int) {
 	if printed {
 		printedNC := false
 		for i, c := range leftCounts[:27] {
-			if c != 0 {
+			if c != 0 || i%9 == 0 || i%9 == 8 {
 				continue
 			}
 			if !printedNC {
@@ -332,7 +332,7 @@ func (ts riskTables) printWithHands(counts []int, leftCounts []int) {
 		}
 		printedOC := false
 		for i, c := range leftCounts[:27] {
-			if c != 1 {
+			if c != 1 || i%9 == 0 || i%9 == 8 {
 				continue
 			}
 			if !printedOC {
