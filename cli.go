@@ -315,6 +315,8 @@ func (ts riskTables) printWithHands(counts []int, leftCounts []int) {
 			table.printWithHands(counts)
 		}
 	}
+
+	// NC OC
 	if printed {
 		printedNC := false
 		for i, c := range leftCounts[:27] {
