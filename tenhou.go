@@ -505,7 +505,7 @@ func (d *tenhouRoundData) analysis() error {
 			riskTables.printWithHands(d.counts, d.leftCounts)
 
 			// 何切
-			// TODO: 根据是否听牌/完全一向听、和牌率、巡目进行攻守判断
+			// TODO: 根据是否听牌/完全一向听、和牌率、打点、巡目进行攻守判断
 			return _analysis(14, d.counts, d.leftCounts)
 		case 'D':
 			// 自家（从手牌 d.counts）舍牌（至牌河 d.globalDiscardTiles）
