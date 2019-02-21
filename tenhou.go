@@ -556,7 +556,6 @@ func (d *tenhouRoundData) analysis() error {
 				riskTables.printWithHands(d.counts, d.leftCounts)
 
 				// 何切
-				fmt.Printf("副露? ")
 				err := _analysis(14, d.counts, d.leftCounts)
 				d.counts[tile]--
 				return err
