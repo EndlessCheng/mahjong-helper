@@ -391,6 +391,7 @@ func (d *tenhouRoundData) analysis() error {
 	switch msg.Tag {
 	case "INIT", "REINIT":
 		// round 开始/重连
+		clearConsole()
 		splits := strings.Split(msg.Seed, ",")
 		if len(splits) != 6 {
 			panic(fmt.Sprintln("seed 解析失败", msg.Seed))
@@ -487,6 +488,7 @@ func (d *tenhouRoundData) analysis() error {
 		tile := d._parseTenhouTile(rawTile)
 		switch msg.Tag[0] {
 		case 'T':
+			clearConsole()
 			// 自家（从牌山 d.leftCounts）摸牌（至手牌 d.counts）
 			d.leftCounts[tile]--
 			//fmt.Println("剩余", d.leftCounts)
@@ -507,6 +509,7 @@ func (d *tenhouRoundData) analysis() error {
 			d.players[0].discardTiles = append(d.players[0].discardTiles, tile)
 		case 'E', 'F', 'G', 'e', 'f', 'g':
 			// 他家舍牌, e=下家, f=对家, g=上家
+			clearConsole()
 			d.leftCounts[tile]--
 			//fmt.Println("剩余", d.leftCounts)
 
