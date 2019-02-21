@@ -204,6 +204,17 @@ func (l ting1DiscardList) print() {
 	}
 }
 
+func (l ting1DiscardList) printWithLeftCounts(leftCounts []int) {
+	if leftCounts != nil {
+		for _, discard := range l {
+			discard.needs.fixCountsWithLeftCounts(leftCounts)
+			// TODO: discard.ting1Detail
+			// TODO: 也就是说处理数据的过程移到此处
+		}
+	}
+	l.print()
+}
+
 //
 
 type ting2Discard struct {
@@ -246,6 +257,15 @@ func (l ting2DiscardList) print() {
 			fmt.Printf("   切 %s %v\n", mahjongZH[discard.discardIndex], tiles)
 		}
 	}
+}
+
+func (l ting2DiscardList) printWithLeftCounts(leftCounts []int) {
+	if leftCounts != nil {
+		for _, discard := range l {
+			discard.needs.fixCountsWithLeftCounts(leftCounts)
+		}
+	}
+	l.print()
 }
 
 //
