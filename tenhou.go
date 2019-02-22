@@ -92,7 +92,7 @@ type playerInfo struct {
 
 	selfWindTile int
 
-	// 副露
+	// 副露，鸣牌时的舍牌
 	melds                [][]int
 	meldDiscardsAtGlobal []int
 	meldDiscardsAt       []int
@@ -108,8 +108,8 @@ type playerInfo struct {
 	reachTileAt       int
 }
 
-func newPlayerInfo(name string, selfWindTile int, globalDiscardTiles *[]int) playerInfo {
-	return playerInfo{
+func newPlayerInfo(name string, selfWindTile int, globalDiscardTiles *[]int) *playerInfo {
+	return &playerInfo{
 		name:               name,
 		selfWindTile:       selfWindTile,
 		globalDiscardTiles: globalDiscardTiles,
@@ -134,7 +134,7 @@ func (p *playerInfo) printDiscards() {
 	//      吃牌时候打出来的牌的颜色是危险的；碰之后全部的牌都是危险的
 
 	fmt.Printf(p.name + ":")
-	for _, disTile := range p.discardTiles {
+	for i, disTile := range p.discardTiles {
 		fmt.Printf(" ")
 		// TODO: 显示 dora, 赤宝牌
 		if disTile >= 0 { // 手切
@@ -148,8 +148,12 @@ func (p *playerInfo) printDiscards() {
 			} else { // 副露
 				// 高亮中张和字牌的手切
 				c := color.New(getDiscardAlertColor(disTile))
-				c.Printf(mahjong[disTile])
-				// TODO: 鸣牌时切的那张牌要大写
+				if i == p.meldDiscardsAt[len(p.meldDiscardsAt)-1] {
+					// 上一次鸣牌时切的那张牌要大写
+					c.Printf(mahjongU[disTile])
+				} else {
+					c.Printf(mahjong[disTile])
+				}
 			}
 		} else { // 摸切
 			fmt.Printf("--")
@@ -182,7 +186,7 @@ type tenhouRoundData struct {
 	// 可以理解成：- 表示不要/暗色，+ 表示进张/亮色
 	globalDiscardTiles []int
 	// 0=自家, 1=下家, 2=对家, 3=上家
-	players [4]playerInfo
+	players [4]*playerInfo
 }
 
 func newTenhouRoundData(roundNumber int, dealer int) *tenhouRoundData {
@@ -198,7 +202,7 @@ func newTenhouRoundData(roundNumber int, dealer int) *tenhouRoundData {
 		counts:             make([]int, 34),
 		leftCounts:         make([]int, 34),
 		globalDiscardTiles: globalDiscardTiles,
-		players: [4]playerInfo{
+		players: [4]*playerInfo{
 			newPlayerInfo("自家", playerWindTile[0], &globalDiscardTiles),
 			newPlayerInfo("下家", playerWindTile[1], &globalDiscardTiles),
 			newPlayerInfo("对家", playerWindTile[2], &globalDiscardTiles),
@@ -581,6 +585,7 @@ func (d *tenhouRoundData) analysis() error {
 			d.descLeftCounts(tile)
 
 			who := lower(msg.Tag[0]) - 'd'
+			player := d.players[who]
 			if who != 3 {
 				// 为防止先收到自家摸牌，然后收到上家摸牌，上家舍牌时不刷新
 				if !debugMode {
@@ -595,17 +600,24 @@ func (d *tenhouRoundData) analysis() error {
 				disTile = ^disTile
 			}
 			d.globalDiscardTiles = append(d.globalDiscardTiles, disTile)
-			d.players[who].discardTiles = append(d.players[who].discardTiles, disTile)
+			player.discardTiles = append(player.discardTiles, disTile)
 
-			if d.players[who].isReached && d.players[who].reachTileAtGlobal == -1 {
+			if player.isReached && player.reachTileAtGlobal == -1 {
 				// 标记立直宣言牌
-				d.players[who].reachTileAtGlobal = len(d.globalDiscardTiles) - 1
-				d.players[who].reachTileAt = len(d.players[who].discardTiles) - 1
+				player.reachTileAtGlobal = len(d.globalDiscardTiles) - 1
+				player.reachTileAt = len(player.discardTiles) - 1
 
 				// 若该玩家摸切立直，打印提示信息
 				if isTsumogiri {
 					color.Yellow("%s 摸切立直！", d.players[who].name)
 				}
+			} else if len(player.meldDiscardsAt) != len(player.melds) {
+				// 标记鸣牌的舍牌
+				if len(player.meldDiscardsAt)+1 != len(player.melds) {
+					fmt.Printf("玩家数据异常 %#v", *player)
+				}
+				player.meldDiscardsAt = append(player.meldDiscardsAt, len(player.discardTiles)-1)
+				player.meldDiscardsAtGlobal = append(player.meldDiscardsAtGlobal, len(d.globalDiscardTiles)-1)
 			}
 
 			// 打印他家舍牌信息
