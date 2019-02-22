@@ -341,8 +341,8 @@ func (d *tenhouRoundData) analysisTilesRisk() (tables riskTables) {
 	for who, player := range d.players[1:] {
 		// TODO: 对于副露者，根据他的副露情况、手切数、巡目计算其听牌率
 		// TODO: 若某人一直摸切，然后突然手切了一张字牌，那他很有可能在默听，或者进入了完全一向听
-		// 目前暂时简化成「三副露 = 立直」（暗杠算副露）
-		if !player.isReached && len(player.melds) < 3 {
+		// 目前暂时简化成「三副露=听牌，晚巡两副露=听牌」（暗杠算副露）
+		if !player.isReached && (len(player.melds) < 2 || len(player.melds) == 2 && len(player.discardTiles) < 13) {
 			continue
 		}
 
