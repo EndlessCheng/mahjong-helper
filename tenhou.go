@@ -7,6 +7,8 @@ import (
 	"github.com/fatih/color"
 )
 
+var debugMode = false
+
 type tenhouMessage struct {
 	Tag string `json:"tag"`
 
@@ -406,7 +408,9 @@ func (d *tenhouRoundData) analysis() error {
 	//}()
 
 	msg := d.msg
-	//fmt.Println("收到", msg.Tag)
+	if debugMode {
+		fmt.Println("收到", msg.Tag)
+	}
 
 	// 若自家立直，则进入看戏模式
 	// TODO: 见逃判断
@@ -417,7 +421,9 @@ func (d *tenhouRoundData) analysis() error {
 	switch msg.Tag {
 	case "INIT", "REINIT":
 		// round 开始/重连
-		clearConsole()
+		if !debugMode {
+			clearConsole()
+		}
 		splits := strings.Split(msg.Seed, ",")
 		if len(splits) != 6 {
 			panic(fmt.Sprintln("seed 解析失败", msg.Seed))
@@ -433,8 +439,8 @@ func (d *tenhouRoundData) analysis() error {
 		d.doraIndicators = []int{doraIndicator}
 		d.descLeftCounts(doraIndicator)
 
-		for _, pai := range strings.Split(msg.Hai, ",") {
-			tile := d._parseTenhouTile(pai)
+		for _, tenhouTile := range strings.Split(msg.Hai, ",") {
+			tile := d._parseTenhouTile(tenhouTile)
 			d.counts[tile]++
 			d.descLeftCounts(tile)
 		}
@@ -491,7 +497,7 @@ func (d *tenhouRoundData) analysis() error {
 			// (立直成功，扣1000点)
 		}
 	case "AGARI", "RYUUKYOKU":
-		// round 结束
+		// 某人和牌或流局，round 结束
 	case "PROF":
 		// 游戏结束
 	case "BYE":
@@ -500,6 +506,7 @@ func (d *tenhouRoundData) analysis() error {
 		// 重连
 	case "FURITEN":
 		// 振听
+		color.Yellow("振听")
 	case "U", "V", "W":
 		//（下家,对家,上家 不要其上家的牌）摸牌
 	case "HELO", "RANKING", "TAIKYOKU", "UN", "LN", "SAIKAI":
@@ -509,7 +516,9 @@ func (d *tenhouRoundData) analysis() error {
 		tile := d._parseTenhouTile(rawTile)
 		switch msg.Tag[0] {
 		case 'T':
-			clearConsole()
+			if !debugMode {
+				clearConsole()
+			}
 			// 自家（从牌山 d.leftCounts）摸牌（至手牌 d.counts）
 			// FIXME: 有一定概率在自己坐庄时，会先收到摸牌的消息，然后收到本局开始的消息
 			d.descLeftCounts(tile)
@@ -526,7 +535,7 @@ func (d *tenhouRoundData) analysis() error {
 			riskTables.printWithHands(d.counts, d.leftCounts)
 
 			// 何切
-			// TODO: 根据是否听牌/完全一向听、和牌率、打点、巡目进行攻守判断
+			// TODO: 根据是否听牌/一向听、打点、巡目、和率等进行攻守判断
 			return _analysis(14, d.counts, d.leftCounts)
 		case 'D':
 			// 自家（从手牌 d.counts）舍牌（至牌河 d.globalDiscardTiles）
@@ -541,7 +550,9 @@ func (d *tenhouRoundData) analysis() error {
 			who := lower(msg.Tag[0]) - 'd'
 			if who != 3 {
 				// 为防止先收到自家摸牌，然后收到上家摸牌，上家舍牌时不刷新
-				clearConsole()
+				if !debugMode {
+					clearConsole()
+				}
 			}
 
 			isTsumogiri := msg.Tag[0] >= 'a' // 是否摸切
