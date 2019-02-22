@@ -93,9 +93,9 @@ type playerInfo struct {
 	selfWindTile int
 
 	// 副露
-	melds [][]int
-	// TODO meldDiscardsAtGlobal []int
-	// TODO meldDiscardsAt       []int
+	melds                [][]int
+	meldDiscardsAtGlobal []int
+	meldDiscardsAt       []int
 
 	// 全局舍牌
 	// 注意负数要^
@@ -125,6 +125,13 @@ func (p *playerInfo) printDiscards() {
 	// - 切了 dora，提醒一下
 	// - 切了赤宝牌
 	// - 有人立直的情况下，多次切出危险度高的牌（有可能是对方读准了牌，或者对方手里的牌与牌河加起来产生了安牌）
+	// - 其余可以参考贴吧的《魔神之眼》翻译 https://tieba.baidu.com/p/3311909701
+	//      举个简单的例子,如果出现手切了一个对子的情况的话那么基本上就不可能是七对子。
+	//      如果对方早巡手切了一个两面搭子的话，那么就可以推理出他在做染手或者牌型是对子型，如果他立直或者鸣牌的话，也比较容易读出他的手牌。
+	// https://tieba.baidu.com/p/3311909701
+	//      鸣牌之后和终盘的手切牌要尽量记下来，别人手切之前的安牌应该先切掉
+	// https://tieba.baidu.com/p/3372239806
+	//      吃牌时候打出来的牌的颜色是危险的；碰之后全部的牌都是危险的
 
 	fmt.Printf(p.name + ":")
 	for _, disTile := range p.discardTiles {
@@ -133,13 +140,16 @@ func (p *playerInfo) printDiscards() {
 		if disTile >= 0 { // 手切
 			if len(p.melds) == 0 { // 未副露
 				if disTile >= 27 {
+					// 关注字牌的手切
 					fmt.Printf(mahjongU[disTile])
 				} else {
 					fmt.Printf(mahjong[disTile])
 				}
 			} else { // 副露
-				// 高亮中张
-				color.New(getDiscardAlertColor(disTile)).Printf(mahjong[disTile])
+				// 高亮中张和字牌的手切
+				c := color.New(getDiscardAlertColor(disTile))
+				c.Printf(mahjong[disTile])
+				// TODO: 鸣牌时切的那张牌要大写
 			}
 		} else { // 摸切
 			fmt.Printf("--")
@@ -326,7 +336,7 @@ func (d *tenhouRoundData) analysisTilesRisk() (tables riskTables) {
 	tables = make([]riskTable, 3)
 	for who, player := range d.players[1:] {
 		// TODO: 对于副露者，根据他的副露情况、手切数、巡目计算其听牌率
-		// TODO: 若某人一直摸切，然后突然切了一张字牌，那他很有可能听牌了（含默听）
+		// TODO: 若某人一直摸切，然后突然手切了一张字牌，那他很有可能在默听，或者进入了完全一向听
 		// 目前暂时简化成「三副露 = 立直」（暗杠算副露）
 		if !player.isReached && len(player.melds) < 3 {
 			continue
@@ -341,18 +351,41 @@ func (d *tenhouRoundData) analysisTilesRisk() (tables riskTables) {
 		// 收集安牌
 		safeTiles := make([]uint8, 34)
 		for _, tile := range player.discardTiles {
+			// 该玩家的舍牌
 			if tile < 0 {
 				tile = ^tile
 			}
 			safeTiles[tile] = 1
 		}
 		if player.reachTileAtGlobal != -1 {
+			// 立直后其他家切出的牌
 			for _, tile := range d.globalDiscardTiles[player.reachTileAtGlobal:] {
 				if tile < 0 {
 					tile = ^tile
 				}
 				safeTiles[tile] = 1
 			}
+		} else {
+			// TODO: 副露者三副露之后，其上家的舍牌大概率是安牌
+
+			// https://tieba.baidu.com/p/3418094524
+			// 副露家的上家的舍牌是重要的提示，副露家不鸣的牌也可以成为读牌的线索：
+			// ① 副露家的上家切过的牌高概率能通过
+			// ② 对于上一巡被切出来的牌（a）无反应，然后这一巡鸣牌后打牌（a）的情况，牌（a）的跨筋比较安全。
+			// 举个例子，对于被切出来的7p毫无反应的对手，34s鸣2s后打7p。假定他听69p或者58p，那么之前的形状就是778p切7p和677p切7p，这样的话，7p被打出来的时候就应该被碰了，所以不会是听69p或者58p。
+			// 顺带一提，这种情况并不限于鸣牌打7p的场合，其实在普通的手切7p的场合也是可以通用的。如果拿着677p或者778p这样的搭子的话，7p被切出来的时候就应该鸣了，如果是拿着67p或者78p的话，摸7p也不会特意手切一张7p来让别人注意防守7p的周边。（但是有的人可能会故意这样切牌，所以还是需要注意一下的）。
+			// ③ 副露家鸣牌之后将上家切过的牌的周边牌切出来了
+			// 鸣牌家的东家没有鸣北家切的7s，然后碰了南家的8p之后切8s。顺带一提，上家碰白打8m，吃4m打3m，3s是手切的。
+			// 这样的例子从舍牌和副露看，并不能推理出他的待牌，但是上家没有鸣7s是一个线索，而且这个线索十分关键。
+			// 东家2巡前切3s，上一巡摸切北，然后打的是8s。重视孤立牌靠张的话应该留3s，如果是需要安全牌的话应该留北才对，所以留8s的原因是他手里有和8s相关的搭子。
+			// 然后我们知道他没鸣7s，而且和8s有关又鸣不了7s的搭子只有78s和788s（和8s有关的搭子有468s，688s，668s，68s，778s，788s，78s，889s，899s，89s）。仔细想一下的话，如果他拿着78s的搭子就不会特意鸣8p变成7s单骑了，所以能够推断出他鸣8p之前手里的搭子是788s。
+			// 由此可知，东家是788s碰8p打8s听69s。像这样副露家不鸣哪一些牌也是一条挺重要的线索，所以请大家打牌的时候务必注意一下。
+
+			// 空切·振替 https://tieba.baidu.com/p/3471413696
+			//
+
+			// 食延的情况 https://tieba.baidu.com/p/3688516724
+
 		}
 
 		table := make([]float64, 34)
