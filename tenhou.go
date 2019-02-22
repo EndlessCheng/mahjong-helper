@@ -91,9 +91,9 @@ type playerInfo struct {
 	selfWindTile int
 
 	// 副露
-	melds                [][]int
-	meldDiscardsAtGlobal []int
-	meldDiscardsAt       []int
+	melds [][]int
+	// TODO meldDiscardsAtGlobal []int
+	// TODO meldDiscardsAt       []int
 
 	// 全局舍牌
 	// 注意负数要^
@@ -128,17 +128,15 @@ func (p *playerInfo) printDiscards() {
 	for _, disTile := range p.discardTiles {
 		fmt.Printf(" ")
 		// TODO: 显示 dora, 赤宝牌
-		// FIXME: 颜色需要调整
 		if disTile >= 0 { // 手切
-			if len(p.melds) == 0 {
-				// 未副露
+			if len(p.melds) == 0 { // 未副露
 				if disTile >= 27 {
-					color.New(color.FgYellow).Printf(mahjong[disTile])
+					fmt.Printf(mahjongU[disTile])
 				} else {
 					fmt.Printf(mahjong[disTile])
 				}
-			} else {
-				// 副露者高亮摸切
+			} else { // 副露
+				// 高亮中张
 				color.New(getDiscardAlertColor(disTile)).Printf(mahjong[disTile])
 			}
 		} else { // 摸切
@@ -206,6 +204,16 @@ func (d *tenhouRoundData) reset(roundNumber int, dealer int) {
 	*d = *newData
 }
 
+//func (d *tenhouRoundData) mergeCachedTile() {
+//	if cachedTile == -1 {
+//		return
+//	}
+//
+//
+//
+//	cachedTile = -1
+//}
+
 // 0-35 m
 // 36-71 p
 // 72-107 s
@@ -219,13 +227,15 @@ func (*tenhouRoundData) _parseTenhouTile(tile string) int {
 }
 
 const (
-	meldTypeChi = iota
-	meldTypePon
-	meldTypeKan
-	meldTypeKakan
+	meldTypeChi    = iota // 吃
+	meldTypePon           // 碰
+	meldTypeAnKan         // 暗杠
+	meldTypeMinKan        // 明杠
+	meldTypeKakan         // 加杠
 )
 
 func (*tenhouRoundData) _parseChi(data int) (meldType int, tiles []int, calledTile int) {
+	// 吃
 	meldType = meldTypeChi
 	t0, t1, t2 := (data>>3)&0x3, (data>>5)&0x3, (data>>7)&0x3
 	baseAndCalled := data >> 10
@@ -256,12 +266,20 @@ func (*tenhouRoundData) _parsePon(data int) (meldType int, tiles []int, calledTi
 	return
 }
 
-func (*tenhouRoundData) _parseKan(data int) (meldType int, tiles []int, calledTile int) {
-	meldType = meldTypeKan
+func (d *tenhouRoundData) _parseKan(data int) (meldType int, tiles []int, calledTile int) {
 	baseAndCalled := data >> 8
 	base, called := baseAndCalled/4, baseAndCalled%4
 	tiles = []int{(4 * base) / 4, (1 + 4*base) / 4, (2 + 4*base) / 4, (3 + 4*base) / 4}
 	calledTile = tiles[called]
+
+	// 通过判断 calledTile 的来源来是否为上一张舍牌，来判断是明杠还是暗杠
+	if len(d.globalDiscardTiles) > 0 && calledTile == d.globalDiscardTiles[len(d.globalDiscardTiles)-1] {
+		// 明杠
+		meldType = meldTypeMinKan
+	} else {
+		// 暗杠
+		meldType = meldTypeAnKan
+	}
 	return
 }
 
@@ -291,6 +309,13 @@ func (d *tenhouRoundData) _fillZi() {
 			d.counts[i+27] = 3
 			break
 		}
+	}
+}
+
+func (d *tenhouRoundData) descLeftCounts(tile int) {
+	d.leftCounts[tile]--
+	if d.leftCounts[tile] < 0 {
+		fmt.Printf("数据异常: %s 数量为 %d\n", mahjongZH[tile], d.leftCounts[tile])
 	}
 }
 
@@ -406,41 +431,39 @@ func (d *tenhouRoundData) analysis() error {
 		doraIndicator := d._parseTenhouTile(splits[5])
 		color.Yellow("宝牌指示牌是 %s", mahjongZH[doraIndicator])
 		d.doraIndicators = []int{doraIndicator}
-		d.leftCounts[doraIndicator]--
+		d.descLeftCounts(doraIndicator)
 
 		for _, pai := range strings.Split(msg.Hai, ",") {
 			tile := d._parseTenhouTile(pai)
 			d.counts[tile]++
-			d.leftCounts[tile]--
+			d.descLeftCounts(tile)
 		}
-		//fmt.Println("剩余", d.leftCounts)
 	case "N":
-		// 某人已副露
+		// 某家进行副露操作（含暗杠、加杠）
 		who, _ := strconv.Atoi(msg.Who)
 		meldType, meldTiles, calledTile := d._parseTenhouMeld(msg.Meld)
 		if meldType == meldTypeKakan {
 			// TODO: 修改副露情况
-			d.leftCounts[calledTile]--
-			if d.leftCounts[calledTile] != 0 {
-				fmt.Printf("数据异常: %s 数量为 %d\n", mahjongZH[calledTile], d.leftCounts[calledTile])
-			}
+			d.descLeftCounts(calledTile)
 			break
 		}
 
-		// TODO: 添加 calledTile
+		// TODO: 添加 calledTile 等
 		d.players[who].melds = append(d.players[who].melds, meldTiles)
-		// FIXME: 处理他家暗杠的情况
 		if who != 0 {
-			d.leftCounts[calledTile]++
+			// 处理牌山剩余量
+			if meldType != meldTypeAnKan {
+				d.leftCounts[calledTile]++
+			}
 			for _, tile := range meldTiles {
-				d.leftCounts[tile]--
+				d.descLeftCounts(tile)
 			}
 		}
 
 		if who == 0 {
+			// 自家副露
 			// 简化，修改副露牌为字牌
-			if meldType == meldTypeKan && d.counts[meldTiles[0]] == 4 { // 也可以判断手牌是否为 14 张
-				// 暗杠
+			if meldType == meldTypeAnKan {
 				d.counts[meldTiles[0]] = 0
 			} else {
 				d.counts[calledTile]++
@@ -450,8 +473,6 @@ func (d *tenhouRoundData) analysis() error {
 			}
 			d._fillZi()
 		}
-
-		//fmt.Println("剩余", d.leftCounts)
 	case "DORA":
 		// 杠宝牌
 		// 1. 剩余牌减少
@@ -459,8 +480,7 @@ func (d *tenhouRoundData) analysis() error {
 		kanDoraIndicator := d._parseTenhouTile(msg.Hai)
 		color.Yellow("杠宝牌指示牌是 %s", mahjongZH[kanDoraIndicator])
 		d.doraIndicators = append(d.doraIndicators, kanDoraIndicator)
-		d.leftCounts[kanDoraIndicator]--
-		//fmt.Println("剩余", d.leftCounts)
+		d.descLeftCounts(kanDoraIndicator)
 	case "REACH":
 		// 如果是他家立直，进入攻守判断模式
 		if msg.Step == "1" {
@@ -491,8 +511,8 @@ func (d *tenhouRoundData) analysis() error {
 		case 'T':
 			clearConsole()
 			// 自家（从牌山 d.leftCounts）摸牌（至手牌 d.counts）
-			d.leftCounts[tile]--
-			//fmt.Println("剩余", d.leftCounts)
+			// FIXME: 有一定概率在自己坐庄时，会先收到摸牌的消息，然后收到本局开始的消息
+			d.descLeftCounts(tile)
 			d.counts[tile]++
 
 			// 打印他家舍牌信息
@@ -516,8 +536,7 @@ func (d *tenhouRoundData) analysis() error {
 			d.players[0].discardTiles = append(d.players[0].discardTiles, tile)
 		case 'E', 'F', 'G', 'e', 'f', 'g':
 			// 他家舍牌, e=下家, f=对家, g=上家
-			d.leftCounts[tile]--
-			//fmt.Println("剩余", d.leftCounts)
+			d.descLeftCounts(tile)
 
 			who := lower(msg.Tag[0]) - 'd'
 			if who != 3 {
