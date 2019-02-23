@@ -11,6 +11,7 @@ var agariTable = [...][4]float64{
 	{14.8, 25.5, 32.0, 36.8},
 	{19.2, 31.7, 38.2, 42.0},
 	{26.3, 41.6, 50.1, 55.0},
+	// TODO: 添加筋牌数据
 }
 
 func calcAgariRate(needs needTiles) float64 {
