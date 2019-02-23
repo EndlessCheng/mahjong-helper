@@ -335,6 +335,12 @@ func (d *tenhouRoundData) descLeftCounts(tile int) {
 	}
 }
 
+func (d *tenhouRoundData) printDiscards() {
+	for i := 3; i > 0; i-- {
+		d.players[i].printDiscards()
+	}
+}
+
 // 分析34种牌的危险度，可以用来判断自家手牌的安全度，以及他家是否在进攻（多次切出危险度高的牌）
 func (d *tenhouRoundData) analysisTilesRisk() (tables riskTables) {
 	tables = make([]riskTable, 3)
@@ -562,9 +568,7 @@ func (d *tenhouRoundData) analysis() error {
 			d.counts[tile]++
 
 			// 打印他家舍牌信息
-			for _, player := range d.players[1:] {
-				player.printDiscards()
-			}
+			d.printDiscards()
 			fmt.Println()
 
 			// 安全度分析
@@ -622,9 +626,7 @@ func (d *tenhouRoundData) analysis() error {
 
 			// 打印他家舍牌信息
 			if who != 3 {
-				for _, player := range d.players[1:] {
-					player.printDiscards()
-				}
+				d.printDiscards()
 				fmt.Println()
 			}
 
