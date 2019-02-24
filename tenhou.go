@@ -148,8 +148,8 @@ func (p *playerInfo) printDiscards() {
 			} else { // 副露
 				// 高亮中张和字牌的手切
 				c := color.New(getDiscardAlertColor(disTile))
-				if i == p.meldDiscardsAt[len(p.meldDiscardsAt)-1] {
-					// 上一次鸣牌时切的那张牌要大写
+				if in(i, p.meldDiscardsAt) {
+					// 鸣牌时切的那张牌要大写
 					c.Printf(mahjongU[disTile])
 				} else {
 					c.Printf(mahjong[disTile])
