@@ -209,8 +209,7 @@ func getSimpleRiskColor(index int) color.Attribute {
 
 func getDiscardAlertColor(index int) color.Attribute {
 	if index >= 27 {
-		// 中后盘手切字牌是一种危险的信号
-		return color.FgHiYellow
+		return color.FgWhite
 	} else {
 		_i := index%9 + 1
 		switch _i {
@@ -309,4 +308,13 @@ func boolToInt(b bool) int {
 		return 1
 	}
 	return 0
+}
+
+func in(e int, arr []int) bool {
+	for _, _e := range arr {
+		if e == _e {
+			return true
+		}
+	}
+	return false
 }
