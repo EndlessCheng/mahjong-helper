@@ -159,7 +159,8 @@ func checkTing0Discard(counts []int) ting0DiscardList {
 				// 切掉这张后的默听改良率
 				ting0ImproveList := checkTing0Improve(counts, needs)
 				goodTiles := ting0ImproveList.calcGoodImprove(counts)
-				ting0DiscardList = append(ting0DiscardList, ting0Discard{i, needs, goodTiles})
+				agariRate := calcAgariRate(needs)
+				ting0DiscardList = append(ting0DiscardList, ting0Discard{i, needs, goodTiles, agariRate})
 			}
 			counts[i]++
 		}
