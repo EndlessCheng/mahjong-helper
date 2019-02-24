@@ -60,11 +60,29 @@ type ting0Discard struct {
 	discardIndex int
 	needs        needTiles
 	improveTiles needTiles
+	agariRate    float64
 }
 
 type ting0DiscardList []ting0Discard
 
+func (l ting0DiscardList) sort() {
+	sort.Slice(l, func(i, j int) bool {
+		li := l[i]
+		lj := l[j]
+
+		if li.agariRate == -1 {
+			return true
+		}
+		if lj.agariRate == -1 {
+			return false
+		}
+
+		return li.agariRate > lj.agariRate
+	})
+}
+
 func (l ting0DiscardList) print() {
+	l.sort()
 	for _, discard := range l {
 		count, tiles := discard.needs.parseZH()
 		printer := color.New(getTingCountColor(float64(count)))
@@ -72,8 +90,8 @@ func (l ting0DiscardList) print() {
 		improveCount := discard.improveTiles.allCount()
 		printer.Printf(" 切 %s, 听 %v, %d 张 (%d 张默改, %.2f 改良比)", mahjongZH[discard.discardIndex], tiles, count, improveCount, float64(improveCount)/float64(count))
 
-		if agariRate := calcAgariRate(discard.needs); agariRate > 0 {
-			printer.Printf(" (%.2f%% 和了率)", agariRate)
+		if discard.agariRate > 0 {
+			printer.Printf(" (%.2f%% 和了率)", discard.agariRate)
 		}
 
 		fmt.Println()
@@ -346,5 +364,6 @@ func (ts riskTables) printWithHands(counts []int, leftCounts []int) {
 		if printedOC {
 			fmt.Println()
 		}
+		fmt.Println()
 	}
 }
