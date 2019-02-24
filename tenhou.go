@@ -574,6 +574,7 @@ func (d *tenhouRoundData) analysis() error {
 			// 安全度分析
 			riskTables := d.analysisTilesRisk()
 			riskTables.printWithHands(d.counts, d.leftCounts)
+			fmt.Println()
 
 			// 何切
 			// TODO: 根据是否听牌/一向听、打点、巡目、和率等进行攻守判断
@@ -638,6 +639,7 @@ func (d *tenhouRoundData) analysis() error {
 				// 安全度分析
 				riskTables := d.analysisTilesRisk()
 				riskTables.printWithHands(d.counts, d.leftCounts)
+				fmt.Println()
 
 				// 何切
 				err := _analysis(14, d.counts, d.leftCounts)
