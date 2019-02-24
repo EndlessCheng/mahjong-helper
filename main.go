@@ -157,10 +157,11 @@ func checkTing0Discard(counts []int) ting0DiscardList {
 			counts[i]-- // 切牌
 			if needs := checkTing0(counts); len(needs) > 0 {
 				// 切掉这张后的默听改良率
+				// TODO: 考虑剩余枚数
 				ting0ImproveList := checkTing0Improve(counts, needs)
 				goodTiles := ting0ImproveList.calcGoodImprove(counts)
-				agariRate := calcAgariRate(needs)
-				ting0DiscardList = append(ting0DiscardList, ting0Discard{i, needs, goodTiles, agariRate})
+				agariRate := calcAgariRate(needs, nil)
+				ting0DiscardList = append(ting0DiscardList, ting0Discard{discardIndex: i, needs: needs, improveTiles: goodTiles, agariRate: agariRate})
 			}
 			counts[i]++
 		}
@@ -436,6 +437,7 @@ func _analysis(num int, counts []int, leftCounts []int) error {
 			color.New(color.FgRed).Print("【已听牌！】")
 			fmt.Println()
 			ting0DiscardList.printWithLeftCounts(leftCounts)
+			fmt.Println()
 			// 这里不 break，保留向听倒退的选择
 		}
 

@@ -67,17 +67,7 @@ type ting0DiscardList []ting0Discard
 
 func (l ting0DiscardList) sort() {
 	sort.Slice(l, func(i, j int) bool {
-		li := l[i]
-		lj := l[j]
-
-		if li.agariRate == -1 {
-			return true
-		}
-		if lj.agariRate == -1 {
-			return false
-		}
-
-		return li.agariRate > lj.agariRate
+		return l[i].agariRate > l[j].agariRate
 	})
 }
 
@@ -85,16 +75,11 @@ func (l ting0DiscardList) print() {
 	l.sort()
 	for _, discard := range l {
 		count, tiles := discard.needs.parseZH()
-		printer := color.New(getTingCountColor(float64(count)))
+		//printer := color.New(getTingCountColor(float64(count)))
 
 		improveCount := discard.improveTiles.allCount()
-		printer.Printf(" 切 %s, 听 %v, %d 张 (%d 张默改, %.2f 改良比)", mahjongZH[discard.discardIndex], tiles, count, improveCount, float64(improveCount)/float64(count))
-
-		if discard.agariRate > 0 {
-			printer.Printf(" (%.2f%% 和了率)", discard.agariRate)
-		}
-
-		fmt.Println()
+		fmt.Printf(" 切 %s, 听 %v, %d 张 (%d 张默改, %.2f 改良比)", mahjongZH[discard.discardIndex], tiles, count, improveCount, float64(improveCount)/float64(count))
+		fmt.Printf(" (%.2f%% 和了率)\n", discard.agariRate)
 	}
 }
 
@@ -159,8 +144,7 @@ type ting1DiscardList []ting1Discard
 // 5. TODO: 切牌的危险度（好牌先打，或者先打安全点的牌）
 func (l ting1DiscardList) sort() {
 	sort.Slice(l, func(i, j int) bool {
-		li := l[i]
-		lj := l[j]
+		li, lj := l[i], l[j]
 
 		if li.needs.allCount() != lj.needs.allCount() {
 			return li.needs.allCount() > lj.needs.allCount()
