@@ -624,20 +624,20 @@ func (d *tenhouRoundData) analysis() error {
 				player.meldDiscardsAtGlobal = append(player.meldDiscardsAtGlobal, len(d.globalDiscardTiles)-1)
 			}
 
-			// 打印他家舍牌信息
 			if who != 3 {
+				// 打印他家舍牌信息
 				d.printDiscards()
 				fmt.Println()
+
+				// 安全度分析
+				riskTables := d.analysisTilesRisk()
+				riskTables.printWithHands(d.counts, d.leftCounts)
 			}
 
 			if msg.T != "" { // 是否副露
 				d.counts[tile]++
 
 				// TODO: 消除海底/避免河底/型听提醒
-
-				// 安全度分析
-				riskTables := d.analysisTilesRisk()
-				riskTables.printWithHands(d.counts, d.leftCounts)
 
 				// 何切
 				err := _analysis(14, d.counts, d.leftCounts)
