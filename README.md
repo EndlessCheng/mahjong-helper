@@ -45,8 +45,6 @@ req.open("POST", "http://localhost:12121/");
 req.send(a.data);
 ```
 
-TODO: 消息的解释
-
 ### 雀魂 (majsoul)
 
 1. 搜索 `WebSocket`，找到下方的 `onmessage` 函数，函数入参对象 `e` 中的 `data` 就是 WebSocket 收到的数据
