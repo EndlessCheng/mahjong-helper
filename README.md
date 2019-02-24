@@ -1,17 +1,29 @@
 # mahjong-helper
 
+## 安装
+
+`dep ensure -v` 之后 `go build` 编译，运行生成的文件
+
 ## 服务端脚本说明
 
-（该条目待更新）
+分为两种模式
 
-[客户端点我](https://github.com/EndlessCheng/mahjong-helper-gui)
+### 手动档
 
-![Jh6eTL.md.png](https://t1.picb.cc/uploads/2018/09/26/Jh6eTL.md.png)
+安装[手动档客户端](https://github.com/EndlessCheng/mahjong-helper-gui)，可用于牌谱分析
 
-![Jh687j.md.png](https://t1.picb.cc/uploads/2018/09/26/Jh687j.md.png)
+### 自动挡
+
+按照[如何获取 WebSocket 收发的消息](#如何获取WebSocket收发的消息)操作
+
+## CLI
+
+![](img/example1.png)
+
+![](img/example2.png)
 
 
-## 如何获取 WebSocket 收发的消息
+## 如何获取WebSocket收发的消息
 
 1. 打开开发者工具，找到相关 JS 文件，保存到本地
 2. 搜索 `WebSocket`, `socket`，找到 `message`, `onmessage` 等函数
