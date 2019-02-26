@@ -559,14 +559,15 @@ func interact(raw string) {
 
 func main() {
 	if len(os.Args) <= 1 {
-		// HTTP 服务器模式
-		runServer(false)
-		return
-	}
-
-	if os.Args[len(os.Args)-1] == "-s" {
-		// HTTPS 服务器模式
-		runServer(true)
+		// 服务器模式
+		fmt.Println("使用前，请确认相关配置已完成，详见 https://github.com/EndlessCheng/mahjong-helper")
+		fmt.Println("请输入数字，以选择对应的平台：")
+		fmt.Println("0 - 天凤")
+		fmt.Println("1 - 雀魂")
+		choose := 1
+		fmt.Scanf("%d", &choose)
+		isHTTPS := choose == 1
+		runServer(isHTTPS)
 		return
 	}
 
