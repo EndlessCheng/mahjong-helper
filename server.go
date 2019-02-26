@@ -144,13 +144,11 @@ func runServer(isHTTPS bool) {
 
 	addr := ":12121"
 	if !isHTTPS {
-		fmt.Printf("天凤 ")
 		e.POST("/", h.analysisTenhou)
 		if err := e.Start(addr); err != nil {
 			_errorExit(err)
 		}
 	} else {
-		fmt.Printf("雀魂 ")
 		e.POST("/", h.analysisMajsoul)
 		if err := e.StartTLS(addr, "selfsigned.crt", "selfsigned.key"); err != nil {
 			_errorExit(err)
