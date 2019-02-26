@@ -128,8 +128,10 @@ func runServer(isHTTPS bool) {
 	}()
 
 	h := &mjHandler{
-		tenhouMessageQueue: make(chan *tenhouMessage, 100),
-		tenhouRoundData:    newTenhouRoundData(0, 0),
+		tenhouMessageQueue:  make(chan *tenhouMessage, 100),
+		tenhouRoundData:     &tenhouRoundData{},
+		majsoulMessageQueue: make(chan *majsoulMessage, 100),
+		majsoulRoundData:    &majsoulRoundData{},
 	}
 
 	go h.runAnalysisTenhouMessageTask()
