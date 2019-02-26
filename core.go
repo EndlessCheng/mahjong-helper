@@ -381,7 +381,10 @@ func (d *roundData) analysis() error {
 
 				return nil
 			} else {
-				dealer = (d.dealer + roundNumber) % 4
+				dealer = d.dealer
+				if roundNumber > 0 && roundNumber != d.roundNumber {
+					dealer = (dealer + 1) % 4
+				}
 				d.reset(roundNumber, dealer)
 			}
 		default:

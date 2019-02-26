@@ -29,6 +29,13 @@ func (d *majsoulRoundData) _parseMajsoulTile(tile string) (int, error) {
 	return _convert(tile)
 }
 
+func (d *majsoulRoundData) _parseWho(majsoulWho int) int {
+	// majsoulWho 0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
+	// 转换成 0=自家, 1=下家, 2=对家, 3=上家
+	who := (majsoulWho + d.dealer - d.roundNumber%4 + 4) % 4
+	return who
+}
+
 func (d *majsoulRoundData) GetDataSourceType() int {
 	return dataSourceTypeMajsoul
 }
@@ -112,10 +119,11 @@ func (d *majsoulRoundData) ParseDiscard() (who int, tile int, isTsumogiri bool, 
 
 	//splits := strings.Split(msg, "ActionDiscardTile")
 
-	// 0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
 	majsoulWho := int(msg[48])
-	// 转换成 0=自家, 1=下家, 2=对家, 3=上家
-	who = (majsoulWho + d.dealer - d.roundNumber) % 4
+	if majsoulWho > 4 {
+		majsoulWho = int(msg[49])
+	}
+	who = d._parseWho(majsoulWho)
 
 	var err error
 	shift := 0
@@ -163,10 +171,11 @@ func (d *majsoulRoundData) ParseOpen() (who int, meldType int, meldTiles []int, 
 	msg := string(*d.msg)
 
 	if strings.Contains(msg, "ActionAnGangAddGan") {
-		// 0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
 		majsoulWho := int(msg[50])
-		// 转换成 0=自家, 1=下家, 2=对家, 3=上家
-		who = (majsoulWho + d.dealer - d.roundNumber) % 4
+		if majsoulWho > 4 {
+			majsoulWho = int(msg[51])
+		}
+		who = d._parseWho(majsoulWho)
 
 		calledTile = d._mustParseMajsoulTile(msg[len(msg)-2:])
 		if d.leftCounts[calledTile] == 4 {
@@ -177,10 +186,11 @@ func (d *majsoulRoundData) ParseOpen() (who int, meldType int, meldTiles []int, 
 		return
 	}
 
-	// 0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
 	majsoulWho := int(msg[48])
-	// 转换成 0=自家, 1=下家, 2=对家, 3=上家
-	who = (majsoulWho + d.dealer - d.roundNumber) % 4
+	if majsoulWho > 4 {
+		majsoulWho = int(msg[49])
+	}
+	who = d._parseWho(majsoulWho)
 
 	var rawMeldTiles string
 	if msg[63] == '"' {
