@@ -374,6 +374,11 @@ func (d *roundData) analysis() error {
 		case dataSourceTypeMajsoul:
 			if dealer != -1 {
 				d.dealer = dealer
+
+				fmt.Printf("游戏即将开始，您分配到的座位是：")
+				windTile := 27 + (4-dealer)%4
+				color.Yellow(mahjongZH[windTile])
+
 				return nil
 			} else {
 				dealer = (d.dealer + roundNumber) % 4
