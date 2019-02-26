@@ -102,9 +102,11 @@ func (d *majsoulRoundData) ParseSelfDraw() (tile int) {
 	msg := string(*d.msg)
 	// 含有摸到的牌，若有加杠、暗杠选项会更长
 	var err error
-	tile, err = d._parseMajsoulTile(msg[48:50])
-	if err != nil {
-		tile = d._mustParseMajsoulTile(msg[49:51])
+	for i := 48; i+2 < len(msg); i++ {
+		tile, err = d._parseMajsoulTile(msg[i : i+2])
+		if err == nil {
+			break
+		}
 	}
 	return
 }
@@ -192,6 +194,7 @@ func (d *majsoulRoundData) ParseOpen() (who int, meldType int, meldTiles []int, 
 	}
 	who = d._parseWho(majsoulWho)
 
+	// FIXME: 65 也可能
 	var rawMeldTiles string
 	if msg[63] == '"' {
 		rawMeldTiles = msg[53:63]
