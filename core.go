@@ -346,7 +346,12 @@ func (d *roundData) analysis() error {
 	//}()
 
 	if debugMode {
-		fmt.Println("收到", d.parser.GetMessage())
+		msg := d.parser.GetMessage()
+		fmt.Println("收到", msg)
+		if d.parser.GetDataSourceType() == dataSourceTypeMajsoul {
+			fmt.Println(len(msg))
+			fmt.Println([]byte(msg))
+		}
 	}
 
 	// 若自家立直，则进入看戏模式
@@ -363,7 +368,20 @@ func (d *roundData) analysis() error {
 		}
 
 		roundNumber, dealer, doraIndicator, hands := d.parser.ParseInit()
-		d.reset(roundNumber, dealer)
+		switch d.parser.GetDataSourceType() {
+		case dataSourceTypeTenhou:
+			d.reset(roundNumber, dealer)
+		case dataSourceTypeMajsoul:
+			if dealer != -1 {
+				d.dealer = dealer
+				return nil
+			} else {
+				dealer = (d.dealer + roundNumber) % 4
+				d.reset(roundNumber, dealer)
+			}
+		default:
+			panic("not impl!")
+		}
 
 		fmt.Printf("%s%d局开始，自风为%s\n", mahjongZH[d.roundWindTile], roundNumber%4+1, mahjongZH[d.players[0].selfWindTile])
 
