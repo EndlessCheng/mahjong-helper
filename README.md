@@ -4,6 +4,7 @@
 
 `dep ensure -v` 之后 `go build` 编译，运行生成的文件
 
+
 ## 服务端脚本说明
 
 分为两种模式
@@ -15,6 +16,7 @@
 ### 自动挡
 
 按照[如何获取 WebSocket 收发的消息](#如何获取WebSocket收发的消息)操作
+
 
 ## CLI
 
@@ -47,12 +49,20 @@ req.send(a.data);
 
 ### 雀魂 (majsoul)
 
-1. 搜索 `WebSocket`，找到下方的 `onmessage` 函数，函数入参对象 `e` 中的 `data` 就是 WebSocket 收到的数据
-2. 雀魂使用了 HTTPS，修改的代码也要发送给 HTTPS 服务器，可以使用[阿里云提供的免费证书](https://common-buy.aliyun.com/?commodityCode=cas#/buy)（Symantec - 增强型OV SSL - 免费型DV SSL）开启本地服务器
-3. 在该函数末尾添加如下代码（注意地址是 HTTPS 协议）
+1\. 搜索 `WebSocket`，找到下方的 `onmessage` 函数，函数入参对象 `e` 中的 `data` 就是 WebSocket 收到的数据
+
+2\. 在该函数末尾添加如下代码（注意地址是 HTTPS 协议）
 
 ```javascript
 var req = new XMLHttpRequest();
 req.open("POST", "https://localhost:12121/");
 req.send(e.data);
 ```
+
+3\. 允许本地证书通过浏览器，在浏览器（仅限 Chrome 内核）中输入
+```
+chrome://flags/#allow-insecure-localhost
+```
+然后把高亮那一项的 Disabled 改成 Enabled（不同浏览器/版本的描述可能不一样，如果是中文的话点击「启用」按钮）
+
+4\. 重启浏览器

@@ -18,7 +18,8 @@ type mjHandler struct {
 	tenhouMessageQueue chan *tenhouMessage
 	tenhouRoundData    *tenhouRoundData
 
-	//majsoulRoundData *majsoulRoundData
+	majsoulMessageQueue chan *majsoulMessage
+	majsoulRoundData    *majsoulRoundData
 }
 
 func (h *mjHandler) index(c echo.Context) error {
@@ -85,12 +86,33 @@ func (h *mjHandler) runAnalysisTenhouMessageTask() {
 
 // 分析雀魂 WebSocket 数据
 func (h *mjHandler) analysisMajsoul(c echo.Context) error {
-	// TODO: HTTPS
+	data, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+
+	msg := majsoulMessage(data)
+	h.majsoulMessageQueue <- &msg
 	return c.NoContent(http.StatusOK)
 }
 
-func runServer() {
+func (h *mjHandler) runAnalysisMajsoulMessageTask() {
+	for msg := range h.majsoulMessageQueue {
+		if len(*msg) == 7 {
+			continue
+		}
+
+		h.majsoulRoundData.msg = msg
+		if err := h.majsoulRoundData.analysis(); err != nil {
+			fmt.Println("错误：", err)
+		}
+	}
+}
+
+func runServer(isHTTPS bool) {
 	e := echo.New()
+	e.HideBanner = true
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 
@@ -107,18 +129,32 @@ func runServer() {
 	}()
 
 	h := &mjHandler{
-		tenhouMessageQueue: make(chan *tenhouMessage, 100),
-		tenhouRoundData:    newTenhouRoundData(0, 0),
+		tenhouMessageQueue:  make(chan *tenhouMessage, 100),
+		tenhouRoundData:     &tenhouRoundData{},
+		majsoulMessageQueue: make(chan *majsoulMessage, 100),
+		majsoulRoundData:    &majsoulRoundData{},
 	}
+	h.tenhouRoundData.roundData = newRoundData(h.tenhouRoundData, 0, 0)
+	h.majsoulRoundData.roundData = newRoundData(h.majsoulRoundData, 0, 0)
+
+	go h.runAnalysisTenhouMessageTask()
+	go h.runAnalysisMajsoulMessageTask()
+
 	e.GET("/", h.index)
-	e.POST("/", h.analysisTenhou) // h.index h.analysisTenhou h.analysisMajsoul
 	e.POST("/analysis", h.analysis)
 	e.POST("/tenhou", h.analysisTenhou)
 	e.POST("/majsoul", h.analysisMajsoul)
 
-	go h.runAnalysisTenhouMessageTask()
-
-	if err := e.Start(":12121"); err != nil {
-		_errorExit(err)
+	addr := ":12121"
+	if !isHTTPS {
+		e.POST("/", h.analysisTenhou)
+		if err := e.Start(addr); err != nil {
+			_errorExit(err)
+		}
+	} else {
+		e.POST("/", h.analysisMajsoul)
+		if err := e.StartTLS(addr, "selfsigned.crt", "selfsigned.key"); err != nil {
+			_errorExit(err)
+		}
 	}
 }
