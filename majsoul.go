@@ -2,13 +2,12 @@ package main
 
 import (
 	"strings"
-	"fmt"
 )
 
 type majsoulMessage string
 
 type majsoulRoundData struct {
-	roundData
+	*roundData
 	msg *majsoulMessage
 }
 
@@ -40,20 +39,31 @@ func (d *majsoulRoundData) GetMessage() string {
 
 func (d *majsoulRoundData) IsInit() bool {
 	msg := string(*d.msg)
-	return strings.Contains(msg, "ActionNewRound")
+	return strings.Contains(msg, "ActionNewRound") || strings.Contains(msg, "NotifyPlayerLoadGameReady")
 }
 
 func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicator int, hands []int) {
 	msg := string(*d.msg)
+
+	if strings.Contains(msg, "NotifyPlayerLoadGameReady") {
+		// dealer: 0=自家, 1=下家, 2=对家, 3=上家
+		dealer = 1
+		for i := len(msg) - 1; i >= 0; i-- {
+			if msg[i] != 0 {
+				break
+			}
+			dealer++
+		}
+		dealer %= 4
+		return
+	}
+	dealer = -1
+
 	shift := 0
 	if msg[45] == 1 {
 		shift = 1
 	}
 	isDealer := shift == 1
-	fmt.Println("isDealer", isDealer)
-
-	// TODO
-	dealer = -1
 
 	// TODO: 开局九种九牌、w立、暗杠、天和
 	roundType := int(msg[46+shift])
@@ -65,10 +75,9 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicat
 		// 庄家开局有14张牌
 		handShift = 5
 	}
-	hands = make([]int, 34)
 	for _, rawTile := range strings.Split(msg[53+handShift:103+handShift], string([]byte{34, 2})) {
 		tile := d._mustParseMajsoulTile(rawTile)
-		hands[tile]++
+		hands = append(hands, tile)
 	}
 
 	doraIndicator = d._mustParseMajsoulTile(msg[105+handShift : 107+handShift])
@@ -78,14 +87,18 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicat
 
 func (d *majsoulRoundData) IsSelfDraw() bool {
 	msg := string(*d.msg)
-	const otherDrawMsgLength = 50
+	const otherDrawMsgLength = 60 // 50
 	return len(msg) > otherDrawMsgLength && strings.Contains(msg, "ActionDealTile")
 }
 
 func (d *majsoulRoundData) ParseSelfDraw() (tile int) {
 	msg := string(*d.msg)
 	// 含有摸到的牌，若有加杠、暗杠选项会更长
-	tile = d._mustParseMajsoulTile(msg[48:50])
+	var err error
+	tile, err = d._parseMajsoulTile(msg[48:50])
+	if err != nil {
+		tile = d._mustParseMajsoulTile(msg[49:51])
+	}
 	return
 }
 
@@ -97,21 +110,35 @@ func (d *majsoulRoundData) IsDiscard() bool {
 func (d *majsoulRoundData) ParseDiscard() (who int, tile int, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int) {
 	msg := string(*d.msg)
 
-	who = int(msg[48])
-	tile = d._mustParseMajsoulTile(msg[51:53])
+	//splits := strings.Split(msg, "ActionDiscardTile")
+
+	// 0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
+	majsoulWho := int(msg[48])
+	// 转换成 0=自家, 1=下家, 2=对家, 3=上家
+	who = (majsoulWho + d.dealer - d.roundNumber) % 4
+
+	var err error
+	shift := 0
+	tile, err = d._parseMajsoulTile(msg[51:53])
+	if err != nil {
+		tile = d._mustParseMajsoulTile(msg[52:54])
+		shift = 1
+	}
 	isTsumogiri = msg[len(msg)-5] == 1
-	isReach = msg[54] == 1
+	isReach = msg[54+shift] == 1
+	kanDoraIndicator = -1
 
 	const normalActionDiscardLength = 61
 	if len(msg) > normalActionDiscardLength {
 		// TODO: 用who是否为自家来判断
 		// TODO: 如果明杠后的舍牌又恰好能鸣牌，会是什么样的格式？
-		if dora, err := d._parseMajsoulTile(msg[len(msg)-4 : len(msg)-2]); err == nil {
+		rawTile := msg[len(msg)-4 : len(msg)-2]
+		if dora, err := d._parseMajsoulTile(rawTile); err == nil {
 			kanDoraIndicator = dora
 		}
 
 		// TODO: 待验证
-		if len(msg) > 67 && msg[67] == '|' {
+		if len(msg) > 67+shift && msg[67+shift] == '|' {
 			canBeMeld = true
 		}
 	}
@@ -119,23 +146,51 @@ func (d *majsoulRoundData) ParseDiscard() (who int, tile int, isTsumogiri bool, 
 	return
 }
 
+// 他家暗杠
+// .lq.ActionPrototypeActionAnGangAddGan8m
+// 57
+// [1 10 19 46 108 113 46 65 99 116 105 111 110 80 114 111 116 111 116 121 112 101 18 33 8 28 18 19 65 99 116 105 111 110 65 110 71 97 110 103 65 100 100 71 97 110 103 26 8 8 1 16 3 26 2 56 109]
+// 自家加杠
+//.lq.ActionPrototypevActionAnGangAddGang7zB6pB/3p
+//73
+//[1 10 19 46 108 113 46 65 99 116 105 111 110 80 114 111 116 111 116 121 112 101 18 49 8 118 18 19 65 99 116 105 111 110 65 110 71 97 110 103 65 100 100 71 97 110 103 26 24 8 2 16 2 26 2 55 122 66 6 10 2 54 112 16 1 66 6 10 2 51 112 16 1]
 func (d *majsoulRoundData) IsOpen() bool {
 	msg := string(*d.msg)
-	return strings.Contains(msg, "ActionChiPengGang")
+	return strings.Contains(msg, "ActionChiPengGang") || strings.Contains(msg, "ActionAnGangAddGan")
 }
 
 func (d *majsoulRoundData) ParseOpen() (who int, meldType int, meldTiles []int, calledTile int) {
 	msg := string(*d.msg)
 
-	// TODO: 待验证
-	who = int(msg[48])
+	if strings.Contains(msg, "ActionAnGangAddGan") {
+		// 0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
+		majsoulWho := int(msg[50])
+		// 转换成 0=自家, 1=下家, 2=对家, 3=上家
+		who = (majsoulWho + d.dealer - d.roundNumber) % 4
 
-	// TODO: 如何判断加杠？
+		calledTile = d._mustParseMajsoulTile(msg[len(msg)-2:])
+		if d.leftCounts[calledTile] == 4 {
+			meldType = meldTypeAnKan
+		} else {
+			meldType = meldTypeKakan
+		}
+		return
+	}
+
+	// 0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
+	majsoulWho := int(msg[48])
+	// 转换成 0=自家, 1=下家, 2=对家, 3=上家
+	who = (majsoulWho + d.dealer - d.roundNumber) % 4
+
 	var rawMeldTiles string
 	if msg[63] == '"' {
 		rawMeldTiles = msg[53:63]
+	} else if msg[64] == '"' {
+		rawMeldTiles = msg[54:64]
 	} else if msg[67] == '"' {
 		rawMeldTiles = msg[53:67]
+	} else if msg[68] == '"' {
+		rawMeldTiles = msg[54:68]
 	} else {
 		meldType = meldTypeKakan
 		panic("解析失败（可能是加杠？）")
@@ -163,6 +218,11 @@ func (d *majsoulRoundData) ParseOpen() (who int, meldType int, meldTiles []int, 
 			// 暗杠
 			meldType = meldTypeAnKan
 		}
+	} else {
+		panic("鸣牌数据解析失败！")
+	}
+	if calledTile < 0 {
+		calledTile = ^calledTile
 	}
 
 	return

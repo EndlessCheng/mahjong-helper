@@ -103,15 +103,10 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			continue
 		}
 
-		fmt.Println()
-		fmt.Println(len(*msg))
-		fmt.Println(*msg)
-		fmt.Println([]byte(*msg))
-
-		//h.majsoulRoundData.msg = msg
-		//if err := h.majsoulRoundData.analysis(); err != nil {
-		//	fmt.Println("错误：", err)
-		//}
+		h.majsoulRoundData.msg = msg
+		if err := h.majsoulRoundData.analysis(); err != nil {
+			fmt.Println("错误：", err)
+		}
 	}
 }
 
@@ -139,6 +134,8 @@ func runServer(isHTTPS bool) {
 		majsoulMessageQueue: make(chan *majsoulMessage, 100),
 		majsoulRoundData:    &majsoulRoundData{},
 	}
+	h.tenhouRoundData.roundData = newRoundData(h.tenhouRoundData, 0, 0)
+	h.majsoulRoundData.roundData = newRoundData(h.majsoulRoundData, 0, 0)
 
 	go h.runAnalysisTenhouMessageTask()
 	go h.runAnalysisMajsoulMessageTask()

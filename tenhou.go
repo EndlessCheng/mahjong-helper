@@ -86,7 +86,7 @@ type tenhouMessage struct {
 //
 
 type tenhouRoundData struct {
-	roundData
+	*roundData
 	msg *tenhouMessage
 }
 
@@ -200,10 +200,9 @@ func (d *tenhouRoundData) ParseInit() (roundNumber int, dealer int, doraIndicato
 	roundNumber, _ = strconv.Atoi(splits[0])
 	dealer, _ = strconv.Atoi(d.msg.Dealer)
 	doraIndicator = d._parseTenhouTile(splits[5])
-	hands = make([]int, 34)
 	for _, tenhouTile := range strings.Split(d.msg.Hai, ",") {
 		tile := d._parseTenhouTile(tenhouTile)
-		hands[tile]++
+		hands = append(hands, tile)
 	}
 	return
 }
