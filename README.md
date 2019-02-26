@@ -49,6 +49,8 @@ req.send(a.data);
 
 ### 雀魂 (majsoul)
 
+（目前尚未完全测试到一些特殊情况，可能会产生 bug）
+
 1\. 搜索 `WebSocket`，找到下方的 `onmessage` 函数，函数入参对象 `e` 中的 `data` 就是 WebSocket 收到的数据
 
 2\. 在该函数末尾添加如下代码（注意地址是 HTTPS 协议）
