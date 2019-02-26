@@ -165,28 +165,8 @@ func (p *playerInfo) printDiscards() {
 //
 
 type tenhouRoundData struct {
+	roundData
 	msg *tenhouMessage
-
-	roundNumber int
-
-	// 场风
-	roundWindTile int
-
-	// 宝牌指示牌
-	doraIndicators []int
-
-	// 自家手牌
-	counts []int
-
-	// 牌山剩余牌量
-	leftCounts []int
-
-	// 全局舍牌
-	// 按舍牌顺序，负数表示摸切(-)，非负数表示手切(+)
-	// 可以理解成：- 表示不要/暗色，+ 表示进张/亮色
-	globalDiscardTiles []int
-	// 0=自家, 1=下家, 2=对家, 3=上家
-	players [4]*playerInfo
 }
 
 func newTenhouRoundData(roundNumber int, dealer int) *tenhouRoundData {
@@ -197,16 +177,18 @@ func newTenhouRoundData(roundNumber int, dealer int) *tenhouRoundData {
 	}
 	globalDiscardTiles := []int{}
 	d := &tenhouRoundData{
-		roundNumber:        roundNumber,
-		roundWindTile:      roundWindTile,
-		counts:             make([]int, 34),
-		leftCounts:         make([]int, 34),
-		globalDiscardTiles: globalDiscardTiles,
-		players: [4]*playerInfo{
-			newPlayerInfo("自家", playerWindTile[0], &globalDiscardTiles),
-			newPlayerInfo("下家", playerWindTile[1], &globalDiscardTiles),
-			newPlayerInfo("对家", playerWindTile[2], &globalDiscardTiles),
-			newPlayerInfo("上家", playerWindTile[3], &globalDiscardTiles),
+		roundData: roundData{
+			roundNumber:        roundNumber,
+			roundWindTile:      roundWindTile,
+			counts:             make([]int, 34),
+			leftCounts:         make([]int, 34),
+			globalDiscardTiles: globalDiscardTiles,
+			players: [4]*playerInfo{
+				newPlayerInfo("自家", playerWindTile[0], &globalDiscardTiles),
+				newPlayerInfo("下家", playerWindTile[1], &globalDiscardTiles),
+				newPlayerInfo("对家", playerWindTile[2], &globalDiscardTiles),
+				newPlayerInfo("上家", playerWindTile[3], &globalDiscardTiles),
+			},
 		},
 	}
 	for i := range d.leftCounts {
@@ -443,6 +425,19 @@ func (d *tenhouRoundData) analysisTilesRisk() (tables riskTables) {
 	return tables
 }
 
+func (d *tenhouRoundData) ParseInit() {
+
+}
+
+func (d *tenhouRoundData) ParseDraw() {
+
+}
+
+func (d *tenhouRoundData) ParseDiscard() {
+
+}
+
+// TODO: 提出这部分逻辑至 core，然后用接口实现的方式去解析不同平台的数据
 func (d *tenhouRoundData) analysis() error {
 	//defer func() {
 	//	if err := recover(); err != nil {

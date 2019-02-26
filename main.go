@@ -559,8 +559,14 @@ func interact(raw string) {
 
 func main() {
 	if len(os.Args) <= 1 {
-		// 服务器模式
-		runServer()
+		// HTTP 服务器模式
+		runServer(false)
+		return
+	}
+
+	if os.Args[len(os.Args)-1] == "-s" {
+		// HTTPS 服务器模式
+		runServer(true)
 		return
 	}
 
