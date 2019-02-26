@@ -310,7 +310,7 @@ func boolToInt(b bool) int {
 	return 0
 }
 
-func in(e int, arr []int) bool {
+func inInts(e int, arr []int) bool {
 	for _, _e := range arr {
 		if e == _e {
 			return true
