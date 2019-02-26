@@ -17,6 +17,7 @@
 
 按照[如何获取 WebSocket 收发的消息](#如何获取WebSocket收发的消息)操作
 
+
 ## CLI
 
 ![](img/example1.png)
@@ -62,4 +63,6 @@ req.send(e.data);
 ```
 chrome://flags/#allow-insecure-localhost
 ```
-然后把高亮那一项的 Disabled 改成 Enabled
+然后把高亮那一项的 Disabled 改成 Enabled（不同浏览器/版本的描述可能不一样，如果是中文的话点击「启用」按钮）
+
+4\. 重启浏览器
