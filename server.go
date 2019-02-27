@@ -99,10 +99,6 @@ func (h *mjHandler) analysisMajsoul(c echo.Context) error {
 
 func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 	for msg := range h.majsoulMessageQueue {
-		if len(*msg) == 7 {
-			continue
-		}
-
 		h.majsoulRoundData.msg = msg
 		if err := h.majsoulRoundData.analysis(); err != nil {
 			fmt.Println("错误：", err)
