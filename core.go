@@ -164,7 +164,8 @@ type roundData struct {
 	doraIndicators []int
 
 	// 自家手牌
-	counts []int
+	counts    []int
+	meldCount int
 
 	// 牌山剩余牌量
 	leftCounts []int
@@ -211,14 +212,20 @@ func (d *roundData) reset(roundNumber int, dealer int) {
 	*d = *newData
 }
 
-// TODO: 临时用
-func (d *roundData) _fillZi() {
-	for i, c := range d.counts[27:] {
-		if c == 0 {
-			d.counts[i+27] = 3
+func (d *roundData) _countForAnalysis() []int {
+	tmpCount := make([]int, 34)
+	copy(tmpCount, d.counts)
+	cnt := 0
+	for i := 27; i < 34; i++ {
+		if cnt == d.meldCount {
 			break
 		}
+		if tmpCount[i] == 0 {
+			tmpCount[i] = 3
+			cnt++
+		}
 	}
+	return tmpCount
 }
 
 func (d *roundData) descLeftCounts(tile int) {
@@ -433,7 +440,6 @@ func (d *roundData) analysis() error {
 
 		if who == 0 {
 			// 自家副露
-			// 简化，修改副露牌为字牌
 			if meldType == meldTypeAnKan {
 				d.counts[meldTiles[0]] = 0
 			} else {
@@ -442,7 +448,7 @@ func (d *roundData) analysis() error {
 					d.counts[tile]--
 				}
 			}
-			d._fillZi()
+			d.meldCount++
 		}
 	case d.parser.IsNewDora():
 		// 杠宝牌
@@ -493,7 +499,7 @@ func (d *roundData) analysis() error {
 
 		// 何切
 		// TODO: 根据是否听牌/一向听、打点、巡目、和率等进行攻守判断
-		return _analysis(14, d.counts, d.leftCounts)
+		return _analysis(14, d._countForAnalysis(), d.leftCounts)
 	case d.parser.IsDiscard():
 		who, tile, isTsumogiri, isReach, canBeMeld, kanDoraIndicator := d.parser.ParseDiscard()
 
@@ -567,7 +573,7 @@ func (d *roundData) analysis() error {
 			// TODO: 消除海底/避免河底/型听提醒
 
 			// 何切
-			err := _analysis(14, d.counts, d.leftCounts)
+			err := _analysis(14, d._countForAnalysis(), d.leftCounts)
 			d.counts[tile]--
 			return err
 		}
