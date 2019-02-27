@@ -2,6 +2,8 @@ package main
 
 import (
 	"strings"
+	"regexp"
+	"fmt"
 )
 
 type majsoulMessage string
@@ -9,6 +11,10 @@ type majsoulMessage string
 type majsoulRoundData struct {
 	*roundData
 	msg *majsoulMessage
+}
+
+func (d *majsoulRoundData) fatalParse(info string, msg string) {
+	panic(fmt.Sprintln(info, len(msg), msg, []byte(msg)))
 }
 
 func (d *majsoulRoundData) parseWho(majsoulWho int) int {
@@ -34,6 +40,19 @@ func (d *majsoulRoundData) parseMajsoulTile(tile string) (int, error) {
 		tile = "5" + tile[1:]
 	}
 	return _convert(tile)
+}
+
+var tileReg = regexp.MustCompile("[0-9][mps]|[1-7]z")
+
+func (d *majsoulRoundData) extractTiles(msg string) (positions []int, tiles []int) {
+	indexPairs := tileReg.FindAllStringSubmatchIndex(msg, -1)
+	for _, pair := range indexPairs {
+		positions = append(positions, pair[0])
+		rawTile := msg[pair[0]:pair[1]]
+		tile := d.mustParseMajsoulTile(rawTile)
+		tiles = append(tiles, tile)
+	}
+	return
 }
 
 func (d *majsoulRoundData) GetDataSourceType() int {
@@ -101,14 +120,11 @@ func (d *majsoulRoundData) IsSelfDraw() bool {
 func (d *majsoulRoundData) ParseSelfDraw() (tile int) {
 	msg := string(*d.msg)
 	// 含有摸到的牌，若有加杠、暗杠选项会更长
-	var err error
-	for i := 48; i+2 < len(msg); i++ {
-		tile, err = d.parseMajsoulTile(msg[i : i+2])
-		if err == nil {
-			break
-		}
+	_, tiles := d.extractTiles(msg)
+	if len(tiles) == 0 {
+		d.fatalParse("[ParseSelfDraw]", msg)
 	}
-	return
+	return tiles[0]
 }
 
 func (d *majsoulRoundData) IsDiscard() bool {
