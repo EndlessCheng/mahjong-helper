@@ -350,8 +350,9 @@ func (d *roundData) analysis() error {
 			if len(msg) == 7 {
 				return nil
 			}
-			fmt.Println("收到", msg)
+			fmt.Printf("收到 [len=%d] %s\n", len(msg), msg)
 			fmt.Println(len(msg))
+			fmt.Println(stringToSlice(msg))
 			fmt.Println([]byte(msg))
 		} else {
 			fmt.Println("收到", msg)

@@ -318,3 +318,11 @@ func inInts(e int, arr []int) bool {
 	}
 	return false
 }
+
+func stringToSlice(str string) []string {
+	arr := make([]string, len(str))
+	for i, c := range str {
+		arr[i] = string([]byte{c})
+	}
+	return arr
+}
