@@ -322,7 +322,7 @@ func inInts(e int, arr []int) bool {
 func stringToSlice(str string) []string {
 	arr := make([]string, len(str))
 	for i, c := range str {
-		arr[i] = string([]byte{c})
+		arr[i] = string(c)
 	}
 	return arr
 }
