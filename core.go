@@ -149,11 +149,13 @@ func (p *playerInfo) printDiscards() {
 type roundData struct {
 	parser DataParser
 
+	// 场数（如东1为0，东2为1，...，南1为4，...）
 	roundNumber int
 
 	// 场风
 	roundWindTile int
 
+	// 庄家 0=自家, 1=下家, 2=对家, 3=上家
 	dealer int
 
 	// 宝牌指示牌
@@ -169,6 +171,7 @@ type roundData struct {
 	// 按舍牌顺序，负数表示摸切(-)，非负数表示手切(+)
 	// 可以理解成：- 表示不要/暗色，+ 表示进张/亮色
 	globalDiscardTiles []int
+
 	// 0=自家, 1=下家, 2=对家, 3=上家
 	players [4]*playerInfo
 }
@@ -179,14 +182,18 @@ func newRoundData(parser DataParser, roundNumber int, dealer int) *roundData {
 	for i := 0; i < 4; i++ {
 		playerWindTile[i] = 27 + (4-dealer+i)%4
 	}
+	leftCounts := make([]int, 34)
+	for i := range leftCounts {
+		leftCounts[i] = 4
+	}
 	globalDiscardTiles := []int{}
-	d := &roundData{
+	return &roundData{
 		parser:             parser,
 		roundNumber:        roundNumber,
 		roundWindTile:      roundWindTile,
 		dealer:             dealer,
 		counts:             make([]int, 34),
-		leftCounts:         make([]int, 34),
+		leftCounts:         leftCounts,
 		globalDiscardTiles: globalDiscardTiles,
 		players: [4]*playerInfo{
 			newPlayerInfo("自家", playerWindTile[0], &globalDiscardTiles),
@@ -195,10 +202,6 @@ func newRoundData(parser DataParser, roundNumber int, dealer int) *roundData {
 			newPlayerInfo("上家", playerWindTile[3], &globalDiscardTiles),
 		},
 	}
-	for i := range d.leftCounts {
-		d.leftCounts[i] = 4
-	}
-	return d
 }
 
 func (d *roundData) reset(roundNumber int, dealer int) {
