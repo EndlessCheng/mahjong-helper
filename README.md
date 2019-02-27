@@ -13,6 +13,8 @@
 
 安装[手动档客户端](https://github.com/EndlessCheng/mahjong-helper-gui)，可用于牌谱分析
 
+或者在命令行输入，比如 `mahjong-helper 34568m 678p 13567s`
+
 ### 自动挡
 
 按照[如何获取 WebSocket 收发的消息](#如何获取WebSocket收发的消息)操作
