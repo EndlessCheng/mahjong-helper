@@ -78,7 +78,7 @@ func (l ting0DiscardList) print() {
 		//printer := color.New(getTingCountColor(float64(count)))
 
 		improveCount := discard.improveTiles.allCount()
-		fmt.Printf(" 切 %s, 听 %v, %d 张 (%d 张默改, %.2f 改良比)", mahjongZH[discard.discardIndex], tiles, count, improveCount, float64(improveCount)/float64(count))
+		fmt.Printf(" 切 %s, 听 %v, %d 张 (%d 张默改, %.2f 改良比)", mahjongZH[discard.discardIndex], tiles, count, improveCount, float64(improveCount)/float64(count+1))
 		fmt.Printf(" (%.2f%% 和了率)\n", discard.agariRate)
 	}
 }
