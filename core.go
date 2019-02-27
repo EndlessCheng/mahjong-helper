@@ -35,15 +35,16 @@ type DataParser interface {
 
 	// 自家摸牌
 	// tile: 0-33
+	// kanDoraIndicator: 摸牌时，若为暗杠摸的岭上牌，则可以翻出杠宝牌指示牌，否则返回 -1 （天凤恒为 -1，见 IsNewDora）
 	IsSelfDraw() bool
-	ParseSelfDraw() (tile int)
+	ParseSelfDraw() (tile int, kanDoraIndicator int)
 
 	// 舍牌
 	// who: 0=自家, 1=下家, 2=对家, 3=上家
 	// isTsumogiri: 是否为摸切（who=0 时忽略该值）
 	// isReach: 是否为立直宣言（isReach 对于天凤来说恒为 false，见 IsReach）
 	// canBeMeld: 是否可以鸣牌（who=0 时忽略该值）
-	// kanDoraIndicator: 明杠的杠宝牌，在切牌后出现，没有则返回 -1（天凤恒为-1）
+	// kanDoraIndicator: 明杠/加杠的杠宝牌指示牌，在切牌后出现，没有则返回 -1（天凤恒为-1）
 	IsDiscard() bool
 	ParseDiscard() (who int, tile int, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int)
 
@@ -51,17 +52,18 @@ type DataParser interface {
 	// meldType: 鸣牌类型（吃、碰、暗杠、明杠、加杠）
 	// meldTiles: 副露的牌 [0-33]
 	// calledTile: 被鸣的牌 0-33
+	// kanDoraIndicator: 暗杠的杠宝牌指示牌，在他家暗杠时出现，没有则返回 -1（天凤恒为-1）
 	IsOpen() bool
-	ParseOpen() (who int, meldType int, meldTiles []int, calledTile int)
+	ParseOpen() (who int, meldType int, meldTiles []int, calledTile int, kanDoraIndicator int)
 
-	// 立直声明（IsReach() 对于雀魂来说恒为 false，见 ParseDiscard）
+	// 立直声明（IsReach 对于雀魂来说恒为 false，见 ParseDiscard）
 	IsReach() bool
 	ParseReach() (who int)
 
 	// 振听
 	IsFuriten() bool
 
-	// 杠宝牌
+	// 杠宝牌（IsNewDora 对于雀魂来说恒为 false，见 ParseSelfDraw ParseDiscard ParseOpen）
 	// kanDoraIndicator: 0-33
 	IsNewDora() bool
 	ParseNewDora() (kanDoraIndicator int)
@@ -412,7 +414,10 @@ func (d *roundData) analysis() error {
 		}
 	case d.parser.IsOpen():
 		// 某家鸣牌（含暗杠、加杠）
-		who, meldType, meldTiles, calledTile := d.parser.ParseOpen()
+		who, meldType, meldTiles, calledTile, kanDoraIndicator := d.parser.ParseOpen()
+		if kanDoraIndicator != -1 {
+			d.newDora(kanDoraIndicator)
+		}
 		if meldType == meldTypeKakan {
 			// TODO: 修改副露情况
 			d.descLeftCounts(calledTile)
@@ -475,10 +480,13 @@ func (d *roundData) analysis() error {
 			clearConsole()
 		}
 		// 自家（从牌山 d.leftCounts）摸牌（至手牌 d.counts）
-		// FIXME: 有一定概率在自己坐庄时，会先收到摸牌的消息，然后收到本局开始的消息
-		tile := d.parser.ParseSelfDraw()
+		// FIXME: 对于天凤，有一定概率在自己坐庄时，会先收到摸牌的消息，然后收到本局开始的消息
+		tile, kanDoraIndicator := d.parser.ParseSelfDraw()
 		d.descLeftCounts(tile)
 		d.counts[tile]++
+		if kanDoraIndicator != -1 {
+			d.newDora(kanDoraIndicator)
+		}
 
 		// 打印他家舍牌信息
 		d.printDiscards()
