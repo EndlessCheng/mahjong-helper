@@ -337,7 +337,6 @@ func (d *roundData) analysisTilesRisk() (tables riskTables) {
 	return tables
 }
 
-// TODO: 提出这部分逻辑至 core，然后用接口实现的方式去解析不同平台的数据
 func (d *roundData) analysis() error {
 	//defer func() {
 	//	if err := recover(); err != nil {
@@ -347,10 +346,15 @@ func (d *roundData) analysis() error {
 
 	if debugMode {
 		msg := d.parser.GetMessage()
-		fmt.Println("收到", msg)
 		if d.parser.GetDataSourceType() == dataSourceTypeMajsoul {
+			if len(msg) == 7 {
+				return nil
+			}
+			fmt.Println("收到", msg)
 			fmt.Println(len(msg))
 			fmt.Println([]byte(msg))
+		} else {
+			fmt.Println("收到", msg)
 		}
 	}
 
