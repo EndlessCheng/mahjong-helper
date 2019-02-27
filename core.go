@@ -341,11 +341,13 @@ func (d *roundData) analysisTilesRisk() (tables riskTables) {
 }
 
 func (d *roundData) analysis() error {
-	//defer func() {
-	//	if err := recover(); err != nil {
-	//		fmt.Println("内部错误：", err)
-	//	}
-	//}()
+	if !debugMode {
+		defer func() {
+			if err := recover(); err != nil {
+				fmt.Println("内部错误：", err)
+			}
+		}()
+	}
 
 	if debugMode {
 		msg := d.parser.GetMessage()
@@ -354,7 +356,6 @@ func (d *roundData) analysis() error {
 				return nil
 			}
 			fmt.Printf("收到 [len=%d] %s\n", len(msg), msg)
-			fmt.Println(len(msg))
 			fmt.Println(stringToSlice(msg))
 			fmt.Println([]byte(msg))
 		} else {
