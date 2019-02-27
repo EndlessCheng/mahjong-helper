@@ -5,6 +5,10 @@
     雀魂协议 使用 protobuff 
     具体协议 https://majsoul.union-game.com/0/v0.4.243.w/res/proto/liqi.json
 
+    mjsoul3.proto proto3的雀魂proto
+    mjsoul2.proto proto2的雀魂proto
+    
+
 ## 第一位
 
     raw[0] === 1 表示RESPONSE,REQUEST
@@ -83,7 +87,7 @@
 
 ###### 自己
 
-      {"seat":1,"left_tile_count":68,"zhenting":false}
+      {"seat":0,"tile":"6m","left_tile_count":65,"operation":{"seat":0,"operation_list":[{"type":1}],"time_add":0,"time_fixed":5000},"zhenting":false}
 
 ##### ActionDiscardTile
   

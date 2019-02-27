@@ -1,0 +1,2800 @@
+syntax = "proto3";
+
+package lq;
+
+message NotifyRoomGameStart {
+
+    string game_url = 1;
+    string connect_token = 2;
+    string game_uuid = 3;
+}
+
+message NotifyMatchGameStart {
+
+    string game_url = 1;
+    string connect_token = 2;
+    string game_uuid = 3;
+    uint32 match_mode_id = 4;
+}
+
+message NotifyRoomPlayerReady {
+
+    uint32 account_id = 1;
+    bool ready = 2;
+}
+
+message NotifyRoomPlayerUpdate {
+
+    repeated PlayerBaseView update_list = 1;
+    repeated uint32 remove_list = 2;
+    uint32 owner_id = 3;
+    uint32 robot_count = 4;
+}
+
+message NotifyRoomKickOut {
+}
+
+message NotifyMatchTimeout {
+}
+
+message NotifyFriendStateChange {
+
+    uint32 target_id = 1;
+    AccountActiveState active_state = 2;
+}
+
+message NotifyFriendViewChange {
+
+    uint32 target_id = 1;
+    PlayerBaseView base = 2;
+}
+
+message NotifyFriendChange {
+
+    uint32 account_id = 1;
+    uint32 type = 2;
+    Friend friend = 3;
+}
+
+message NotifyNewFriendApply {
+
+    uint32 account_id = 1;
+    uint32 apply_time = 2;
+    uint32 removed_id = 3;
+}
+
+message NotifyChatMessage {
+
+    ChatMessage chat = 1;
+}
+
+message NotifyClientMessage {
+
+    PlayerBaseView sender = 1;
+    uint32 type = 2;
+    string content = 3;
+}
+
+message NotifyAccountUpdate {
+
+    AccountUpdate update = 1;
+}
+
+message NotifyAnotherLogin {
+}
+
+message NotifyAccountLogout {
+}
+
+message NotifyAnnouncementUpdate {
+
+    repeated Announcement announcements = 1;
+    repeated uint32 sort = 2;
+}
+
+message NotifyNewMail {
+
+    Mail mail = 1;
+}
+
+message NotifyDeleteMail {
+
+    repeated uint32 mail_id_list = 1;
+}
+
+message NotifyReviveCoinUpdate {
+
+    bool has_gained = 1;
+}
+
+message NotifyDailyTaskUpdate {
+
+    repeated TaskProgress progresses = 1;
+}
+
+message NotifyActivityTaskUpdate {
+
+    repeated TaskProgress progresses = 1;
+}
+
+message NotifyNewComment {
+}
+
+message NotifyRollingNotice {
+
+    RollingNotice notice = 1;
+}
+
+message NotifyGiftSendRefresh {
+}
+
+message NotifyShopUpdate {
+
+    ShopInfo shop_info = 1;
+}
+
+message NotifyVipLevelChange {
+
+    uint32 gift_limit = 1;
+    uint32 friend_max_count = 2;
+    uint32 zhp_free_refresh_limit = 3;
+    uint32 zhp_cost_refresh_limit = 4;
+    float buddy_bonus = 5;
+}
+
+message NotifyServerSetting {
+
+    ServerSettings settings = 1;
+}
+
+message NotifyPayResult {
+
+    uint32 pay_result = 1;
+    string order_id = 2;
+    uint32 goods_id = 3;
+}
+
+message NotifyCustomContestAccountMsg {
+
+    uint32 unique_id = 1;
+    uint32 account_id = 2;
+    string sender = 3;
+    string content = 4;
+}
+
+message NotifyCustomContestSystemMsg {
+
+    uint32 unique_id = 1;
+    uint32 type = 2;
+    string uuid = 3;
+    CustomizedContestGameStart game_start = 4;
+    CustomizedContestGameEnd game_end = 5;
+}
+
+message NotifyCustomContestState {
+
+    uint32 unique_id = 1;
+    uint32 state = 2;
+}
+
+message NotifyActivityChange {
+
+    repeated Activity new_activities = 1;
+    repeated uint32 end_activities = 2;
+}
+
+message Error {
+
+    uint32 code = 1;
+    repeated uint32 u32_params = 2;
+    repeated string str_params = 3;
+    string json_param = 4;
+}
+
+message Wrapper {
+
+    string name = 1;
+    bytes data = 2;
+}
+
+message NetworkEndpoint {
+
+    string family = 1;
+    string address = 2;
+    uint32 port = 3;
+}
+
+message ReqCommon {
+}
+
+message ResCommon {
+
+    Error error = 1;
+}
+
+message ResAccountUpdate {
+
+    Error error = 1;
+    AccountUpdate update = 2;
+}
+
+message AntiAddiction {
+
+    uint32 online_duration = 1;
+}
+
+message AccountMahjongStatistic {
+
+    repeated uint32 final_position_counts = 1;
+    RoundSummary recent_round = 2;
+    HuSummary recent_hu = 3;
+    HighestHuRecord highest_hu = 4;
+    repeated uint32 recent_ranks = 5;
+    Liqi20Summary recent_20_hu_summary = 6;
+    LiQi10Summary recent_10_hu_summary = 7;
+
+    message RoundSummary {
+
+        uint32 total_count = 1;
+        uint32 rong_count = 2;
+        uint32 zimo_count = 3;
+        uint32 fangchong_count = 4;
+    }
+
+    message HuSummary {
+
+        uint32 total_count = 1;
+        uint32 dora_round_count = 2;
+        uint32 total_fan = 3;
+    }
+
+    message HighestHuRecord {
+
+        uint32 fanshu = 1;
+        uint32 doranum = 2;
+        string title = 3;
+        repeated string hands = 4;
+        repeated string ming = 5;
+        string hupai = 6;
+    }
+
+    message Liqi20Summary {
+
+        uint32 total_count = 1;
+        uint32 total_lidora_count = 2;
+        uint32 average_hu_point = 3;
+    }
+
+    message LiQi10Summary {
+
+        uint32 total_xuanshang = 1;
+        uint32 total_fanshu = 2;
+    }
+}
+
+message AccountStatisticData {
+
+    uint32 mahjong_category = 1;
+    uint32 game_category = 2;
+    AccountMahjongStatistic statistic = 3;
+}
+
+message AccountLevel {
+
+    uint32 id = 1;
+    uint32 score = 2;
+}
+
+message Account {
+
+    uint32 account_id = 1;
+    string nickname = 2;
+    uint32 login_time = 3;
+    uint32 logout_time = 4;
+    uint32 room_id = 5;
+    AntiAddiction anti_addiction = 6;
+    uint32 title = 7;
+    string signature = 8;
+    uint32 gold = 11;
+    uint32 diamond = 12;
+    uint32 avatar_id = 13;
+    uint32 vip = 14;
+    repeated PlatformDiamond platform_diamond = 18;
+    AccountLevel level = 21;
+    AccountShiLian shilian = 22;
+
+    message PlatformDiamond {
+
+        uint32 id = 1;
+        uint32 count = 2;
+    }
+}
+
+message AccountOwnerData {
+
+    repeated uint32 unlock_characters = 1;
+}
+
+message AccountUpdate {
+
+    repeated NumericalUpdate numerical = 1;
+    CharacterUpdate character = 2;
+    BagUpdate bag = 3;
+    AchievementUpdate achievement = 4;
+    AccountShiLian shilian = 5;
+    DailyTaskUpdate daily_task = 6;
+    TitleUpdate title = 7;
+    repeated uint32 new_recharged_list = 8;
+    ActivityTaskUpdate activity_task = 9;
+
+    message NumericalUpdate {
+
+        uint32 id = 1;
+        uint32 final = 3;
+    }
+
+    message CharacterUpdate {
+
+        repeated Character characters = 2;
+        repeated uint32 skins = 3;
+    }
+
+    message AchievementUpdate {
+
+        repeated AchievementProgress progresses = 1;
+    }
+
+    message DailyTaskUpdate {
+
+        repeated TaskProgress progresses = 1;
+    }
+
+    message TitleUpdate {
+
+        repeated uint32 new_titles = 1;
+    }
+
+    message ActivityTaskUpdate {
+
+        repeated TaskProgress progresses = 1;
+    }
+}
+
+message PlayerBaseView {
+
+    uint32 account_id = 1;
+    uint32 avatar_id = 2;
+    uint32 title = 3;
+    string nickname = 4;
+    AccountLevel level = 5;
+}
+
+message PlayerGameView {
+
+    uint32 account_id = 1;
+    uint32 avatar_id = 2;
+    uint32 title = 3;
+    string nickname = 4;
+    AccountLevel level = 5;
+    Character character = 6;
+}
+
+message GameMode {
+
+    uint32 mode = 1;
+    bool ai = 4;
+    string extendinfo = 5;
+    GameDetailRule detail_rule = 6;
+    GameTestingEnvironmentSet testing_environment = 7;
+}
+
+message GameTestingEnvironmentSet {
+
+    uint32 paixing = 1;
+    uint32 left_count = 2;
+}
+
+message GameDetailRule {
+
+    uint32 time_fixed = 1;
+    uint32 time_add = 2;
+    uint32 dora_count = 3;
+    uint32 shiduan = 4;
+    uint32 init_point = 5;
+    uint32 fandian = 6;
+    bool can_jifei = 7;
+    uint32 tianbian_value = 8;
+    uint32 liqibang_value = 9;
+    uint32 changbang_value = 10;
+    uint32 noting_fafu_1 = 11;
+    uint32 noting_fafu_2 = 12;
+    uint32 noting_fafu_3 = 13;
+    bool have_liujumanguan = 14;
+    bool have_qieshangmanguan = 15;
+    bool have_biao_dora = 16;
+    bool have_gang_biao_dora = 17;
+    bool ming_dora_immediately_open = 18;
+    bool have_li_dora = 19;
+    bool have_gang_li_dora = 20;
+    bool have_sifenglianda = 21;
+    bool have_sigangsanle = 22;
+    bool have_sijializhi = 23;
+    bool have_jiuzhongjiupai = 24;
+    bool have_sanjiahele = 25;
+    bool have_toutiao = 26;
+    bool have_helelianzhuang = 27;
+    bool have_helezhongju = 28;
+    bool have_tingpailianzhuang = 29;
+    bool have_tingpaizhongju = 30;
+    bool have_yifa = 31;
+    bool have_nanruxiru = 32;
+    uint32 jingsuanyuandian = 33;
+    int32 shunweima_2 = 34;
+    int32 shunweima_3 = 35;
+    int32 shunweima_4 = 36;
+    bool bianjietishi = 37;
+    uint32 ai_level = 38;
+    bool have_zimosun = 39;
+    bool disable_multi_yukaman = 40;
+}
+
+message Room {
+
+    uint32 room_id = 1;
+    uint32 owner_id = 2;
+    GameMode mode = 3;
+    uint32 max_player_count = 4;
+    repeated PlayerBaseView persons = 5;
+    repeated uint32 ready_list = 6;
+    bool is_playing = 7;
+    bool public_live = 8;
+    uint32 robot_count = 9;
+    uint32 tournament_id = 10;
+}
+
+message GameEndResult {
+
+    repeated PlayerItem players = 1;
+
+    message PlayerItem {
+
+        uint32 seat = 1;
+        int32 total_point = 2;
+        int32 part_point_1 = 3;
+        int32 part_point_2 = 4;
+        int32 grading_score = 5;
+        int32 gold = 6;
+    }
+}
+
+message GameConnectInfo {
+
+    string game_url = 1;
+    string connect_token = 2;
+    string game_uuid = 3;
+}
+
+message ChatMessage {
+
+    uint32 type = 1;
+    WorldChatMessage world_chat = 2;
+    PrivateChatMessage private_chat = 3;
+}
+
+message PrivateChatMessage {
+
+    uint32 sender_id = 1;
+    uint32 timestamp = 2;
+    string content = 3;
+    uint32 target_id = 4;
+}
+
+message WorldChatMessage {
+
+    uint32 sender_id = 1;
+    uint32 timestamp = 2;
+    string content = 3;
+    PlayerBaseView sender = 4;
+}
+
+message Item {
+
+    uint32 item_id = 1;
+    uint32 stack = 2;
+}
+
+message Bag {
+
+    repeated Item items = 1;
+}
+
+message BagUpdate {
+
+    repeated Item update_items = 1;
+}
+
+message RewardSlot {
+
+    uint32 id = 1;
+    uint32 count = 2;
+}
+
+message RewardPlusResult {
+
+    uint32 id = 1;
+    uint32 count = 2;
+    Exchange exchange = 3;
+
+    message Exchange {
+
+        uint32 id = 1;
+        uint32 count = 2;
+        uint32 exchange = 3;
+    }
+}
+
+message ExecuteReward {
+
+    RewardSlot reward = 1;
+    RewardSlot replace = 2;
+    uint32 replace_count = 3;
+}
+
+message Mail {
+
+    uint32 mail_id = 1;
+    uint32 state = 2;
+    bool take_attachment = 3;
+    string title = 4;
+    string content = 5;
+    repeated RewardSlot attachments = 6;
+    uint32 create_time = 7;
+    uint32 expire_time = 8;
+}
+
+message AchievementProgress {
+
+    uint32 id = 1;
+    uint32 counter = 2;
+    bool achieved = 3;
+    uint32 date = 4;
+}
+
+message AccountStatisticByGameMode {
+
+    uint32 mode = 1;
+    uint32 game_count_sum = 2;
+    repeated uint32 game_final_position = 3;
+    uint32 fly_count = 4;
+    float gold_earn_sum = 5;
+    uint32 round_count_sum = 6;
+    float dadian_sum = 7;
+    repeated RoundEndData round_end = 8;
+    uint32 ming_count_sum = 9;
+    uint32 liqi_count_sum = 10;
+    uint32 xun_count_sum = 11;
+    uint32 highest_lianzhuang = 12;
+    uint32 score_earn_sum = 13;
+    repeated RankScore rank_score = 14;
+
+    message RoundEndData {
+
+        uint32 type = 1;
+        uint32 sum = 2;
+    }
+
+    message RankScore {
+
+        uint32 rank = 1;
+        int32 score_sum = 2;
+        uint32 count = 3;
+    }
+}
+
+message AccountStatisticByFan {
+
+    uint32 fan_id = 1;
+    uint32 sum = 2;
+}
+
+message AccountFanAchieved {
+
+    uint32 mahjong_category = 1;
+    repeated AccountStatisticByFan fan = 2;
+    uint32 liujumanguan = 3;
+}
+
+message AccountDetailStatistic {
+
+    repeated AccountStatisticByGameMode game_mode = 1;
+    repeated AccountStatisticByFan fan = 2;
+    uint32 liujumanguan = 3;
+    repeated AccountFanAchieved fan_achieved = 4;
+}
+
+message AccountDetailStatisticByCategory {
+
+    uint32 category = 1;
+    AccountDetailStatistic detail_statistic = 2;
+}
+
+message AccountDetailStatisticV2 {
+
+    AccountDetailStatistic friend_room_statistic = 1;
+    RankStatistic rank_statistic = 2;
+    CustomizedContestStatistic customized_contest_statistic = 3;
+
+    message RankStatistic {
+
+        RankData total_statistic = 1;
+        RankData month_statistic = 2;
+        uint32 month_refresh_time = 3;
+
+        message RankData {
+
+            AccountDetailStatistic all_level_statistic = 1;
+            repeated RankLevelData level_data_list = 2;
+
+            message RankLevelData {
+
+                uint32 rank_level = 1;
+                AccountDetailStatistic statistic = 2;
+            }
+        }
+    }
+
+    message CustomizedContestStatistic {
+
+        AccountDetailStatistic total_statistic = 1;
+        AccountDetailStatistic month_statistic = 2;
+        uint32 month_refresh_time = 3;
+    }
+}
+
+message AccountShiLian {
+
+    uint32 step = 1;
+    uint32 state = 2;
+}
+
+message ClientDeviceInfo {
+
+    string device_type = 1;
+    string os = 2;
+    string os_version = 3;
+    string browser = 4;
+}
+
+enum GamePlayerState {
+
+    NULL = 0;
+    AUTH = 1;
+    SYNCING = 2;
+    READY = 3;
+}
+
+message Announcement {
+
+    uint32 id = 1;
+    string title = 2;
+    string content = 3;
+}
+
+message TaskProgress {
+
+    uint32 id = 1;
+    uint32 counter = 2;
+    bool achieved = 3;
+    bool rewarded = 4;
+}
+
+message GameConfig {
+
+    uint32 category = 1;
+    GameMode mode = 2;
+    MetaData meta = 3;
+
+    message MetaData {
+
+        uint32 room_id = 1;
+        uint32 mode_id = 2;
+        uint32 tournament_id = 3;
+        uint32 customized_contest_uid = 4;
+    }
+}
+
+message AccountActiveState {
+
+    uint32 account_id = 1;
+    uint32 login_time = 2;
+    uint32 logout_time = 3;
+    bool is_online = 4;
+    PlayingState playing = 5;
+
+    message PlayingState {
+
+        string game_uuid = 1;
+        uint32 category = 2;
+        MetaData meta = 3;
+
+        message MetaData {
+
+            uint32 room_id = 1;
+            uint32 mode_id = 2;
+        }
+    }
+}
+
+message Friend {
+
+    PlayerBaseView base = 1;
+    AccountActiveState state = 2;
+}
+
+message GameLiveUnit {
+
+    uint32 timestamp = 1;
+    uint32 action_category = 2;
+    bytes action_data = 3;
+}
+
+message GameLiveSegment {
+
+    repeated GameLiveUnit actions = 1;
+}
+
+message GameLiveSegmentUri {
+
+    uint32 segment_id = 1;
+    string segment_uri = 2;
+}
+
+message GameLiveHead {
+
+    string uuid = 1;
+    uint32 start_time = 2;
+    GameConfig game_config = 3;
+    repeated PlayerGameView players = 4;
+    repeated uint32 seat_list = 5;
+}
+
+message GameNewRoundState {
+
+    repeated uint32 seat_states = 1;
+}
+
+message GameEndAction {
+
+    uint32 state = 1;
+}
+
+message GameNoopAction {
+}
+
+message CommentItem {
+
+    uint32 comment_id = 1;
+    uint32 timestamp = 2;
+    PlayerBaseView commenter = 3;
+    string content = 4;
+}
+
+message RollingNotice {
+
+    uint32 id = 1;
+    string content = 2;
+    uint32 start_time = 3;
+    uint32 end_time = 4;
+    uint32 repeat_interval = 5;
+}
+
+message BillingGoods {
+
+    string id = 1;
+    string name = 2;
+    string desc = 3;
+    string icon = 4;
+    uint32 resource_id = 5;
+    uint32 resource_count = 6;
+}
+
+message BillingProduct {
+
+    BillingGoods goods = 1;
+    string currency_code = 2;
+    uint32 currency_price = 3;
+    uint32 sort_weight = 4;
+}
+
+message Character {
+
+    uint32 charid = 1;
+    uint32 level = 2;
+    uint32 exp = 3;
+    repeated ViewSlotSet views = 4;
+    uint32 skin = 5;
+    bool is_upgraded = 6;
+    repeated uint32 extra_emoji = 7;
+
+    message ViewSlotSet {
+
+        uint32 slot = 1;
+        uint32 item_id = 2;
+    }
+}
+
+message BuyRecord {
+
+    uint32 id = 1;
+    uint32 count = 2;
+}
+
+message ZHPShop {
+
+    repeated uint32 goods = 1;
+    repeated BuyRecord buy_records = 2;
+    RefreshCount free_refresh = 3;
+    RefreshCount cost_refresh = 4;
+
+    message RefreshCount {
+
+        uint32 count = 1;
+        uint32 limit = 2;
+    }
+}
+
+message ShopInfo {
+
+    ZHPShop zhp = 1;
+    repeated BuyRecord buy_records = 2;
+    uint32 last_refresh_time = 3;
+}
+
+message ChangeNicknameRecord {
+
+    string from = 1;
+    string to = 2;
+    uint32 time = 3;
+}
+
+message ServerSettings {
+
+    PaymentSetting payment_setting = 3;
+}
+
+message PaymentSetting {
+
+    uint32 open_payment = 1;
+    uint32 payment_info_show_type = 2;
+    string payment_info = 3;
+    WechatData wechat = 4;
+    AlipayData alipay = 5;
+
+    message WechatData {
+
+        bool disable_create = 1;
+        uint32 payment_source_platform = 2;
+        bool enable_credit = 3;
+    }
+
+    message AlipayData {
+
+        bool disable_create = 1;
+        uint32 payment_source_platform = 2;
+    }
+}
+
+message AccountSetting {
+
+    uint32 key = 1;
+    uint32 value = 2;
+}
+
+message ChestData {
+
+    uint32 chest_id = 1;
+    uint32 total_open_count = 2;
+    uint32 consume_count = 3;
+    uint32 face_black_count = 4;
+}
+
+message CustomizedContestBase {
+
+    uint32 unique_id = 1;
+    uint32 contest_id = 2;
+    string contest_name = 3;
+    uint32 state = 4;
+    uint32 creator_id = 5;
+    uint32 create_time = 6;
+    uint32 start_time = 7;
+    uint32 finish_time = 8;
+    bool open = 9;
+}
+
+message CustomizedContestExtend {
+
+    uint32 unique_id = 1;
+    string public_notice = 2;
+}
+
+message CustomizedContestAbstract {
+
+    uint32 unique_id = 1;
+    uint32 contest_id = 2;
+    string contest_name = 3;
+    uint32 state = 4;
+    uint32 creator_id = 5;
+    uint32 create_time = 6;
+    uint32 start_time = 7;
+    uint32 finish_time = 8;
+    bool open = 9;
+    string public_notice = 10;
+}
+
+message CustomizedContestDetail {
+
+    uint32 unique_id = 1;
+    uint32 contest_id = 2;
+    string contest_name = 3;
+    uint32 state = 4;
+    uint32 creator_id = 5;
+    uint32 create_time = 6;
+    uint32 start_time = 7;
+    uint32 finish_time = 8;
+    bool open = 9;
+    uint32 rank_rule = 10;
+    GameMode game_mode = 11;
+    string private_notice = 12;
+}
+
+message CustomizedContestPlayerReport {
+
+    uint32 rank_rule = 1;
+    uint32 rank = 2;
+    int32 point = 3;
+    repeated uint32 recent_game_ranks = 4;
+    uint32 total_game_count = 5;
+}
+
+message RecordGame {
+
+    string uuid = 1;
+    uint32 start_time = 2;
+    uint32 end_time = 3;
+    GameConfig config = 5;
+    repeated AccountInfo accounts = 11;
+    GameEndResult result = 12;
+
+    message AccountInfo {
+
+        uint32 account_id = 1;
+        uint32 seat = 2;
+        string nickname = 3;
+        uint32 avatar_id = 4;
+        Character character = 5;
+        uint32 title = 6;
+        AccountLevel level = 7;
+    }
+}
+
+message CustomizedContestGameStart {
+
+    repeated Item players = 1;
+
+    message Item {
+
+        uint32 account_id = 1;
+        string nickname = 2;
+    }
+}
+
+message CustomizedContestGameEnd {
+
+    repeated Item players = 1;
+
+    message Item {
+
+        uint32 account_id = 1;
+        string nickname = 2;
+        int32 total_point = 3;
+    }
+}
+
+message Activity {
+
+    uint32 activity_id = 1;
+    uint32 start_time = 2;
+    uint32 end_time = 3;
+    string type = 4;
+}
+
+message ExchangeRecord {
+
+    uint32 exchange_id = 1;
+    uint32 count = 2;
+}
+service Lobby {
+    rpc fetchConnectionInfo (ReqCommon) returns (ResConnectionInfo);
+    rpc signup (ReqSignupAccount) returns (ResSignupAccount);
+    rpc login (ReqLogin) returns (ResLogin);
+    rpc oauth2Auth (ReqOauth2Auth) returns (ResOauth2Auth);
+    rpc oauth2Check (ReqOauth2Check) returns (ResOauth2Check);
+    rpc oauth2Signup (ReqOauth2Signup) returns (ResOauth2Signup);
+    rpc oauth2Login (ReqOauth2Login) returns (ResLogin);
+    rpc createPhoneVerifyCode (ReqCreatePhoneVerifyCode) returns (ResCommon);
+    rpc verfifyCodeForSecure (ReqVerifyCodeForSecure) returns (ResVerfiyCodeForSecure);
+    rpc bindPhoneNumber (ReqBindPhoneNumber) returns (ResCommon);
+    rpc modifyPassword (ReqModifyPassword) returns (ResCommon);
+    rpc bindAccount (ReqBindAccount) returns (ResCommon);
+    rpc logout (ReqLogout) returns (ResLogout);
+    rpc heatbeat (ReqHeatBeat) returns (ResCommon);
+    rpc modifyNickname (ReqModifyNickname) returns (ResModifyNickname);
+    rpc fetchRoom (ReqCommon) returns (ResSelfRoom);
+    rpc createRoom (ReqCreateRoom) returns (ResCreateRoom);
+    rpc joinRoom (ReqJoinRoom) returns (ResJoinRoom);
+    rpc leaveRoom (ReqCommon) returns (ResCommon);
+    rpc readyPlay (ReqRoomReady) returns (ResCommon);
+    rpc startRoom (ReqRoomStart) returns (ResCommon);
+    rpc kickPlayer (ReqRoomKick) returns (ResCommon);
+    rpc modifyRoom (ReqModifyRoom) returns (ResCommon);
+    rpc matchGame (ReqJoinMatchQueue) returns (ResCommon);
+    rpc cancelMatch (ReqCancelMatchQueue) returns (ResCommon);
+    rpc fetchAccountInfo (ReqAccountInfo) returns (ResAccountInfo);
+    rpc changeAvatar (ReqChangeAvatar) returns (ResCommon);
+    rpc fetchAccountStatisticInfo (ReqAccountStatisticInfo) returns (ResAccountStatisticInfo);
+    rpc fetchAccountCharacterInfo (ReqCommon) returns (ResAccountCharacterInfo);
+    rpc shopPurchase (ReqShopPurchase) returns (ResShopPurchase);
+    rpc fetchGameRecord (ReqGameRecord) returns (ResGameRecord);
+    rpc fetchGameRecordList (ReqGameRecordList) returns (ResGameRecordList);
+    rpc fetchLevelLeaderboard (ReqCommon) returns (ResLevelLeaderboard);
+    rpc fetchMultiAccountBrief (ReqMultiAccountId) returns (ResMultiAccountBrief);
+    rpc fetchFriendList (ReqCommon) returns (ResFriendList);
+    rpc fetchFriendApplyList (ReqCommon) returns (ResFriendApplyList);
+    rpc applyFriend (ReqApplyFriend) returns (ResCommon);
+    rpc handleFriendApply (ReqHandleFriendApply) returns (ResCommon);
+    rpc removeFriend (ReqRemoveFriend) returns (ResCommon);
+    rpc searchAccountById (ReqSearchAccountById) returns (ResSearchAccountById);
+    rpc searchAccountByPattern (ReqSearchAccountByPattern) returns (ResSearchAccountByPattern);
+    rpc fetchAccountState (ReqAccountList) returns (ResAccountStates);
+    rpc sendPrivateMessage (ReqPrivateMessage) returns (ResCommon);
+    rpc sendWorldMessage (ReqWorldMessage) returns (ResCommon);
+    rpc fetchBagInfo (ReqCommon) returns (ResBagInfo);
+    rpc useBagItem (ReqUseBagItem) returns (ResCommon);
+    rpc composeShard (ReqComposeShard) returns (ResCommon);
+    rpc fetchAnnouncement (ReqCommon) returns (ResAnnouncement);
+    rpc readAnnouncement (ReqReadAnnouncement) returns (ResCommon);
+    rpc fetchMailInfo (ReqCommon) returns (ResMailInfo);
+    rpc readMail (ReqReadMail) returns (ResCommon);
+    rpc deleteMail (ReqDeleteMail) returns (ResCommon);
+    rpc takeAttachmentFromMail (ReqTakeAttachment) returns (ResCommon);
+    rpc fetchAchievement (ReqCommon) returns (ResAchievement);
+    rpc buyShiLian (ReqBuyShiLian) returns (ResCommon);
+    rpc matchShiLian (ReqCommon) returns (ResCommon);
+    rpc goNextShiLian (ReqCommon) returns (ResCommon);
+    rpc plusWorldClientStatistic (ReqWorldClientStatistic) returns (ResCommon);
+    rpc clientMessage (ReqClientMessage) returns (ResCommon);
+    rpc fetchCurrentMatchInfo (ReqCurrentMatchInfo) returns (ResCurrentMatchInfo);
+    rpc fetchReviveCoinInfo (ReqCommon) returns (ResReviveCoinInfo);
+    rpc gainReviveCoin (ReqCommon) returns (ResCommon);
+    rpc fetchDailyTask (ReqCommon) returns (ResDailyTask);
+    rpc refreshDailyTask (ReqRefreshDailyTask) returns (ResRefreshDailyTask);
+    rpc useGiftCode (ReqUseGiftCode) returns (ResUseGiftCode);
+    rpc fetchTitleList (ReqCommon) returns (ResTitleList);
+    rpc useTitle (ReqUseTitle) returns (ResCommon);
+    rpc sendClientMessage (ReqSendClientMessage) returns (ResCommon);
+    rpc fetchGameLiveInfo (ReqGameLiveInfo) returns (ResGameLiveInfo);
+    rpc fetchGameLiveLeftSegment (ReqGameLiveLeftSegment) returns (ResGameLiveLeftSegment);
+    rpc fetchGameLiveList (ReqGameLiveList) returns (ResGameLiveList);
+    rpc fetchCommentSetting (ReqCommon) returns (ResCommentSetting);
+    rpc updateCommentSetting (ReqUpdateCommentSetting) returns (ResCommon);
+    rpc fetchCommentList (ReqFetchCommentList) returns (ResFetchCommentList);
+    rpc fetchCommentContent (ReqFetchCommentContent) returns (ResFetchCommentContent);
+    rpc leaveComment (ReqLeaveComment) returns (ResCommon);
+    rpc deleteComment (ReqDeleteComment) returns (ResCommon);
+    rpc updateReadComment (ReqUpdateReadComment) returns (ResCommon);
+    rpc fetchRollingNotice (ReqCommon) returns (ReqRollingNotice);
+    rpc fetchServerTime (ReqCommon) returns (ResServerTime);
+    rpc fetchPlatformProducts (ReqPlatformBillingProducts) returns (ResPlatformBillingProducts);
+    rpc createBillingOrder (ReqCreateBillingOrder) returns (ResCreateBillingOrder);
+    rpc solveGooglePlayOrder (ReqSolveGooglePlayOrder) returns (ResCommon);
+    rpc cancelGooglePlayOrder (ReqCancelGooglePlayOrder) returns (ResCommon);
+    rpc openChest (ReqOpenChest) returns (ResOpenChest);
+    rpc buyFromChestShop (ReqBuyFromChestShop) returns (ResBuyFromChestShop);
+    rpc fetchDailySignInInfo (ReqCommon) returns (ResDailySignInInfo);
+    rpc doDailySignIn (ReqCommon) returns (ResCommon);
+    rpc fetchCharacterInfo (ReqCommon) returns (ResCharacterInfo);
+    rpc changeMainCharacter (ReqChangeMainCharacter) returns (ResCommon);
+    rpc changeCharacterSkin (ReqChangeCharacterSkin) returns (ResCommon);
+    rpc changeCharacterView (ReqChangeCharacterView) returns (ResCommon);
+    rpc sendGiftToCharacter (ReqSendGiftToCharacter) returns (ResSendGiftToCharacter);
+    rpc sellItem (ReqSellItem) returns (ResCommon);
+    rpc fetchCommonView (ReqCommon) returns (ResCommonView);
+    rpc changeCommonView (ReqChangeCommonView) returns (ResCommon);
+    rpc upgradeCharacter (ReqUpgradeCharacter) returns (ResUpgradeCharacter);
+    rpc gameMasterCommand (ReqGMCommand) returns (ResCommon);
+    rpc fetchShopInfo (ReqCommon) returns (ResShopInfo);
+    rpc buyFromShop (ReqBuyFromShop) returns (ResBuyFromShop);
+    rpc buyFromZHP (ReqBuyFromZHP) returns (ResCommon);
+    rpc refreshZHPShop (ReqCommon) returns (ResRefreshZHPShop);
+    rpc exchangeCurrency (ReqExchangeCurrency) returns (ResCommon);
+    rpc exchangeChestStone (ReqExchangeCurrency) returns (ResCommon);
+    rpc fetchServerSettings (ReqCommon) returns (ResServerSettings);
+    rpc fetchAccountSettings (ReqCommon) returns (ResAccountSettings);
+    rpc updateAccountSettings (ReqUpdateAccountSettings) returns (ResCommon);
+    rpc fetchModNicknameTime (ReqCommon) returns (ResModNicknameTime);
+    rpc createWechatNativeOrder (ReqCreateWechatNativeOrder) returns (ResCreateWechatNativeOrder);
+    rpc createWechatAppOrder (ReqCreateWechatAppOrder) returns (ResCreateWechatAppOrder);
+    rpc createAlipayOrder (ReqCreateAlipayOrder) returns (ResCreateAlipayOrder);
+    rpc createAlipayScanOrder (ReqCreateAlipayScanOrder) returns (ResCreateAlipayScanOrder);
+    rpc createAlipayAppOrder (ReqCreateAlipayAppOrder) returns (ResCreateAlipayAppOrder);
+    rpc fetchMisc (ReqCommon) returns (ResMisc);
+    rpc modifySignature (ReqModifySignature) returns (ResCommon);
+    rpc fetchIDCardInfo (ReqCommon) returns (ResIDCardInfo);
+    rpc updateIDCardInfo (ReqUpdateIDCardInfo) returns (ResCommon);
+    rpc fetchVipReward (ReqCommon) returns (ResVipReward);
+    rpc gainVipReward (ReqGainVipReward) returns (ResCommon);
+    rpc fetchCustomizedContestList (ReqFetchCustomizedContestList) returns (ResFetchCustomizedContestList);
+    rpc fetchCustomizedContestExtendInfo (ReqFetchCustomizedContestExtendInfo) returns (ResFetchCustomizedContestExtendInfo);
+    rpc enterCustomizedContest (ReqEnterCustomizedContest) returns (ResEnterCustomizedContest);
+    rpc leaveCustomizedContest (ReqCommon) returns (ResCommon);
+    rpc fetchCustomizedContestOnlineInfo (ReqFetchCustomizedContestOnlineInfo) returns (ResFetchCustomizedContestOnlineInfo);
+    rpc fetchCustomizedContestByContestId (ReqFetchCustomizedContestByContestId) returns (ResFetchCustomizedContestByContestId);
+    rpc startCustomizedContest (ReqStartCustomizedContest) returns (ResCommon);
+    rpc stopCustomizedContest (ReqCommon) returns (ResCommon);
+    rpc joinCustomizedContestChatRoom (ReqJoinCustomizedContestChatRoom) returns (ResJoinCustomizedContestChatRoom);
+    rpc leaveCustomizedContestChatRoom (ReqCommon) returns (ResCommon);
+    rpc sayChatMessage (ReqSayChatMessage) returns (ResCommon);
+    rpc fetchCustomizedContestGameRecords (ReqFetchCustomizedContestGameRecords) returns (ResFetchCustomizedContestGameRecords);
+    rpc fetchCustomizedContestGameLiveList (ReqFetchCustomizedContestGameLiveList) returns (ResFetchCustomizedContestGameLiveList);
+    rpc followCustomizedContest (ReqTargetCustomizedContest) returns (ResCommon);
+    rpc unfollowCustomizedContest (ReqTargetCustomizedContest) returns (ResCommon);
+    rpc fetchActivityList (ReqCommon) returns (ResActivityList);
+    rpc fetchAccountActivityData (ReqCommon) returns (ResAccountActivityData);
+    rpc exchangeActivityItem (ReqExchangeActivityItem) returns (ResExchangeActivityItem);
+    rpc completeActivityTask (ReqCompleteActivityTask) returns (ResCommon);
+}
+
+message ResConnectionInfo {
+
+    Error error = 1;
+    NetworkEndpoint client_endpoint = 2;
+}
+
+message ReqSignupAccount {
+
+    string account = 1;
+    string password = 2;
+}
+
+message ResSignupAccount {
+
+    Error error = 1;
+}
+
+message ReqLogin {
+
+    string account = 1;
+    string password = 2;
+    bool reconnect = 3;
+    ClientDeviceInfo device = 4;
+    string random_key = 5;
+    string client_version = 6;
+    bool gen_access_token = 7;
+    repeated uint32 currency_platforms = 8;
+}
+
+message ResLogin {
+
+    Error error = 1;
+    uint32 account_id = 2;
+    Account account = 3;
+    GameConnectInfo game_info = 4;
+    bool has_unread_announcement = 5;
+    string access_token = 6;
+}
+
+message ReqBindAccount {
+
+    string account = 1;
+    string password = 2;
+}
+
+message ReqCreatePhoneVerifyCode {
+
+    string phone = 1;
+    uint32 usage = 2;
+}
+
+message ReqVerifyCodeForSecure {
+
+    string code = 1;
+    uint32 operation = 2;
+}
+
+message ResVerfiyCodeForSecure {
+
+    Error error = 1;
+    string secure_token = 2;
+}
+
+message ReqBindPhoneNumber {
+
+    string code = 1;
+    string secure_token = 2;
+}
+
+message ReqModifyPassword {
+
+    string new_password = 1;
+    string old_password = 2;
+    string secure_token = 3;
+}
+
+message ReqOauth2Auth {
+
+    uint32 type = 1;
+    string code = 2;
+}
+
+message ResOauth2Auth {
+
+    Error error = 1;
+    string access_token = 2;
+}
+
+message ReqOauth2Check {
+
+    uint32 type = 1;
+    string access_token = 2;
+}
+
+message ResOauth2Check {
+
+    Error error = 1;
+    bool has_account = 2;
+}
+
+message ReqOauth2Signup {
+
+    uint32 type = 1;
+    string access_token = 2;
+}
+
+message ResOauth2Signup {
+
+    Error error = 1;
+}
+
+message ReqOauth2Login {
+
+    uint32 type = 1;
+    string access_token = 2;
+    bool reconnect = 3;
+    ClientDeviceInfo device = 4;
+    string random_key = 5;
+    string client_version = 6;
+    repeated uint32 currency_platforms = 8;
+}
+
+message ReqLogout {
+}
+
+message ResLogout {
+
+    Error error = 1;
+}
+
+message ReqHeatBeat {
+
+    uint32 no_operation_counter = 1;
+}
+
+message ReqJoinMatchQueue {
+
+    uint32 match_mode = 1;
+}
+
+message ReqCancelMatchQueue {
+
+    uint32 match_mode = 1;
+}
+
+message ReqAccountInfo {
+
+    uint32 account_id = 1;
+}
+
+message ResAccountInfo {
+
+    Error error = 1;
+    Account account = 2;
+    Room room = 3;
+}
+
+message ReqModifyNickname {
+
+    string nickname = 1;
+    uint32 use_item_id = 2;
+}
+
+message ResModifyNickname {
+
+    Error error = 1;
+}
+
+message ResSelfRoom {
+
+    Error error = 1;
+    Room room = 2;
+}
+
+message ReqCreateRoom {
+
+    uint32 player_count = 1;
+    GameMode mode = 2;
+    bool public_live = 3;
+    uint32 tournament_id = 4;
+}
+
+message ResCreateRoom {
+
+    Error error = 1;
+    Room room = 2;
+}
+
+message ReqJoinRoom {
+
+    uint32 room_id = 1;
+}
+
+message ResJoinRoom {
+
+    Error error = 1;
+    Room room = 2;
+}
+
+message ReqRoomReady {
+
+    bool ready = 1;
+}
+
+message ReqRoomStart {
+}
+
+message ReqRoomKick {
+
+    uint32 account_id = 1;
+}
+
+message ReqModifyRoom {
+
+    uint32 robot_count = 1;
+}
+
+message ReqChangeAvatar {
+
+    uint32 avatar_id = 1;
+}
+
+message ReqAccountStatisticInfo {
+
+    uint32 account_id = 1;
+}
+
+message ResAccountStatisticInfo {
+
+    Error error = 1;
+    repeated AccountStatisticData statistic_data = 2;
+    AccountDetailStatisticV2 detail_data = 3;
+}
+
+message ResAccountCharacterInfo {
+
+    repeated uint32 unlock_list = 1;
+}
+
+message ReqShopPurchase {
+
+    string type = 1;
+    uint32 id = 2;
+}
+
+message ResShopPurchase {
+
+    Error error = 1;
+    AccountUpdate update = 2;
+}
+
+message ReqGameRecord {
+
+    string game_uuid = 1;
+}
+
+message ResGameRecord {
+
+    Error error = 1;
+    RecordGame head = 3;
+    bytes data = 4;
+    string data_url = 5;
+}
+
+message ReqGameRecordList {
+
+    uint32 start = 1;
+    uint32 count = 2;
+}
+
+message ResGameRecordList {
+
+    Error error = 1;
+    uint32 total_count = 2;
+    repeated RecordGame record_list = 3;
+}
+
+message ResLevelLeaderboard {
+
+    Error error = 1;
+    repeated Item items = 2;
+    uint32 self_rank = 3;
+
+    message Item {
+
+        uint32 account_id = 1;
+        AccountLevel level = 2;
+    }
+}
+
+message ReqMultiAccountId {
+
+    repeated uint32 account_id_list = 1;
+}
+
+message ResMultiAccountBrief {
+
+    Error error = 1;
+    repeated PlayerBaseView players = 2;
+}
+
+message ResFriendList {
+
+    Error error = 1;
+    repeated Friend friends = 2;
+    uint32 friend_max_count = 3;
+}
+
+message ResFriendApplyList {
+
+    Error error = 1;
+    repeated FriendApply applies = 2;
+
+    message FriendApply {
+
+        uint32 account_id = 1;
+        uint32 apply_time = 2;
+    }
+}
+
+message ReqApplyFriend {
+
+    uint32 target_id = 1;
+}
+
+message ReqHandleFriendApply {
+
+    uint32 target_id = 1;
+    uint32 method = 2;
+}
+
+message ReqRemoveFriend {
+
+    uint32 target_id = 1;
+}
+
+message ReqSearchAccountByPattern {
+
+    bool search_next = 1;
+    string pattern = 2;
+}
+
+message ResSearchAccountByPattern {
+
+    Error error = 1;
+    bool is_finished = 2;
+    repeated uint32 match_accounts = 3;
+    uint32 decode_id = 4;
+}
+
+message ReqAccountList {
+
+    repeated uint32 account_id_list = 1;
+}
+
+message ResAccountStates {
+
+    Error error = 1;
+    repeated AccountActiveState states = 2;
+}
+
+message ReqPrivateMessage {
+
+    uint32 target_id = 1;
+    string content = 2;
+}
+
+message ReqWorldMessage {
+
+    string content = 1;
+}
+
+message ReqSearchAccountById {
+
+    uint32 account_id = 1;
+}
+
+message ResSearchAccountById {
+
+    Error error = 1;
+    PlayerBaseView player = 2;
+}
+
+message ResBagInfo {
+
+    Error error = 1;
+    Bag bag = 2;
+}
+
+message ReqUseBagItem {
+
+    uint32 item_id = 1;
+}
+
+message ReqComposeShard {
+
+    uint32 item_id = 1;
+}
+
+message ResAnnouncement {
+
+    Error error = 1;
+    repeated Announcement announcements = 2;
+    repeated uint32 sort = 3;
+    repeated uint32 read_list = 4;
+}
+
+message ResMailInfo {
+
+    Error error = 1;
+    repeated Mail mails = 2;
+}
+
+message ReqReadMail {
+
+    uint32 mail_id = 1;
+}
+
+message ReqDeleteMail {
+
+    uint32 mail_id = 1;
+}
+
+message ReqTakeAttachment {
+
+    uint32 mail_id = 1;
+}
+
+message ResAchievement {
+
+    Error error = 1;
+    repeated AchievementProgress progresses = 2;
+}
+
+message ResTitleList {
+
+    Error error = 1;
+    repeated uint32 title_list = 2;
+}
+
+message ReqUseTitle {
+
+    uint32 title = 1;
+}
+
+message ReqBuyShiLian {
+
+    uint32 type = 1;
+}
+
+message ReqWorldClientStatistic {
+
+    repeated StatisticItem datas = 1;
+
+    message StatisticItem {
+
+        uint32 key = 1;
+        uint32 value = 2;
+    }
+}
+
+message ReqClientMessage {
+
+    uint32 timestamp = 1;
+    string message = 2;
+}
+
+message ReqCurrentMatchInfo {
+
+    repeated uint32 mode_list = 1;
+}
+
+message ResCurrentMatchInfo {
+
+    Error error = 1;
+    repeated CurrentMatchInfo matches = 2;
+
+    message CurrentMatchInfo {
+
+        uint32 mode_id = 1;
+        uint32 playing_count = 2;
+    }
+}
+
+message ReqReadAnnouncement {
+
+    uint32 announcement_id = 1;
+}
+
+message ResReviveCoinInfo {
+
+    Error error = 1;
+    bool has_gained = 2;
+}
+
+message ResDailyTask {
+
+    Error error = 1;
+    repeated TaskProgress progresses = 2;
+    bool has_refresh_count = 3;
+}
+
+message ReqRefreshDailyTask {
+
+    uint32 task_id = 1;
+}
+
+message ResRefreshDailyTask {
+
+    Error error = 1;
+    TaskProgress progress = 2;
+}
+
+message ReqUseGiftCode {
+
+    string code = 1;
+}
+
+message ResUseGiftCode {
+
+    Error error = 1;
+    repeated RewardSlot rewards = 6;
+}
+
+message ReqSendClientMessage {
+
+    uint32 target_id = 1;
+    uint32 type = 2;
+    string content = 3;
+}
+
+message ReqGameLiveInfo {
+
+    string game_uuid = 1;
+}
+
+message ResGameLiveInfo {
+
+    Error error = 1;
+    uint32 left_start_seconds = 2;
+    GameLiveHead live_head = 3;
+    repeated GameLiveSegmentUri segments = 4;
+    uint32 now_millisecond = 5;
+}
+
+message ReqGameLiveLeftSegment {
+
+    string game_uuid = 1;
+    uint32 last_segment_id = 2;
+}
+
+message ResGameLiveLeftSegment {
+
+    Error error = 1;
+    uint32 live_state = 2;
+    repeated GameLiveSegmentUri segments = 4;
+    uint32 now_millisecond = 5;
+    uint32 segment_end_millisecond = 6;
+}
+
+message ReqGameLiveList {
+
+    uint32 filter_id = 1;
+}
+
+message ResGameLiveList {
+
+    Error error = 1;
+    repeated GameLiveHead live_list = 2;
+}
+
+message ResCommentSetting {
+
+    Error error = 1;
+    uint32 comment_allow = 2;
+}
+
+message ReqUpdateCommentSetting {
+
+    uint32 comment_allow = 1;
+}
+
+message ReqFetchCommentList {
+
+    uint32 target_id = 1;
+}
+
+message ResFetchCommentList {
+
+    Error error = 1;
+    uint32 comment_allow = 2;
+    repeated uint32 comment_id_list = 3;
+    uint32 last_read_id = 4;
+}
+
+message ReqFetchCommentContent {
+
+    uint32 target_id = 1;
+    repeated uint32 comment_id_list = 2;
+}
+
+message ResFetchCommentContent {
+
+    Error error = 1;
+    repeated CommentItem comments = 2;
+}
+
+message ReqLeaveComment {
+
+    uint32 target_id = 1;
+    string content = 2;
+}
+
+message ReqDeleteComment {
+
+    uint32 target_id = 1;
+    repeated uint32 delete_list = 2;
+}
+
+message ReqUpdateReadComment {
+
+    uint32 read_id = 1;
+}
+
+message ReqRollingNotice {
+
+    RollingNotice notice = 1;
+}
+
+message ResServerTime {
+
+    uint32 server_time = 1;
+}
+
+message ReqPlatformBillingProducts {
+
+    uint32 shelves_id = 1;
+}
+
+message ResPlatformBillingProducts {
+
+    Error error = 1;
+    repeated BillingProduct products = 2;
+}
+
+message ReqCreateBillingOrder {
+
+    uint32 goods_id = 1;
+    uint32 payment_platform = 2;
+    uint32 client_type = 3;
+    uint32 account_id = 4;
+}
+
+message ResCreateBillingOrder {
+
+    Error error = 1;
+    string order_id = 2;
+}
+
+message ReqSolveGooglePlayOrder {
+
+    string inapp_purchase_data = 2;
+    string inapp_data_signature = 3;
+}
+
+message ReqCancelGooglePlayOrder {
+
+    string order_id = 1;
+}
+
+message ReqCreateWechatNativeOrder {
+
+    uint32 goods_id = 1;
+    uint32 client_type = 2;
+    uint32 account_id = 3;
+    string account_ip = 4;
+}
+
+message ResCreateWechatNativeOrder {
+
+    Error error = 1;
+    string qrcode_buffer = 2;
+    string order_id = 3;
+}
+
+message ReqCreateWechatAppOrder {
+
+    uint32 goods_id = 1;
+    uint32 client_type = 2;
+    uint32 account_id = 3;
+    string account_ip = 4;
+}
+
+message ResCreateWechatAppOrder {
+
+    Error error = 1;
+    CallWechatAppParam call_wechat_app_param = 2;
+
+    message CallWechatAppParam {
+
+        string appid = 1;
+        string partnerid = 2;
+        string prepayid = 3;
+        string package = 4;
+        string noncestr = 5;
+        string timestamp = 6;
+        string sign = 7;
+    }
+}
+
+message ReqCreateAlipayOrder {
+
+    uint32 goods_id = 1;
+    uint32 client_type = 2;
+    uint32 account_id = 3;
+    string alipay_trade_type = 4;
+    string return_url = 5;
+}
+
+message ResCreateAlipayOrder {
+
+    Error error = 1;
+    string alipay_url = 2;
+}
+
+message ReqCreateAlipayScanOrder {
+
+    uint32 goods_id = 1;
+    uint32 client_type = 2;
+    uint32 account_id = 3;
+}
+
+message ResCreateAlipayScanOrder {
+
+    Error error = 1;
+    string qrcode_buffer = 2;
+    string order_id = 3;
+    string qr_code = 4;
+}
+
+message ReqCreateAlipayAppOrder {
+
+    uint32 goods_id = 1;
+    uint32 client_type = 2;
+    uint32 account_id = 3;
+}
+
+message ResCreateAlipayAppOrder {
+
+    Error error = 1;
+    string alipay_url = 2;
+}
+
+message ReqOpenChest {
+
+    uint32 chest_id = 1;
+    uint32 count = 2;
+    bool use_ticket = 3;
+}
+
+message ResOpenChest {
+
+    Error error = 1;
+    repeated OpenResult results = 2;
+    uint32 total_open_count = 3;
+
+    message OpenResult {
+
+        RewardSlot reward = 1;
+        RewardSlot replace = 2;
+    }
+}
+
+message ReqBuyFromChestShop {
+
+    uint32 goods_id = 1;
+    uint32 count = 2;
+}
+
+message ResBuyFromChestShop {
+
+    Error error = 1;
+    uint32 chest_id = 2;
+    uint32 consume_count = 3;
+}
+
+message ResDailySignInInfo {
+
+    Error error = 1;
+    uint32 sign_in_days = 2;
+}
+
+message ResCharacterInfo {
+
+    Error error = 1;
+    repeated Character characters = 2;
+    repeated uint32 skins = 3;
+    uint32 main_character_id = 4;
+    uint32 send_gift_count = 5;
+    uint32 send_gift_limit = 6;
+}
+
+message ReqChangeMainCharacter {
+
+    uint32 character_id = 1;
+}
+
+message ReqChangeCharacterSkin {
+
+    uint32 character_id = 1;
+    uint32 skin = 2;
+}
+
+message ReqChangeCharacterView {
+
+    uint32 character_id = 1;
+    uint32 slot = 2;
+    uint32 item_id = 3;
+}
+
+message ReqSendGiftToCharacter {
+
+    uint32 character_id = 1;
+    repeated Gift gifts = 2;
+
+    message Gift {
+
+        uint32 item_id = 1;
+        uint32 count = 2;
+    }
+}
+
+message ResSendGiftToCharacter {
+
+    Error error = 1;
+    uint32 level = 2;
+    uint32 exp = 3;
+}
+
+message ReqSellItem {
+
+    repeated Item sells = 1;
+
+    message Item {
+
+        uint32 item_id = 1;
+        uint32 count = 2;
+    }
+}
+
+message ResCommonView {
+
+    Error error = 1;
+    repeated Slot slots = 2;
+
+    message Slot {
+
+        uint32 slot = 1;
+        uint32 value = 2;
+    }
+}
+
+message ReqChangeCommonView {
+
+    uint32 slot = 1;
+    uint32 value = 2;
+}
+
+message ReqUpgradeCharacter {
+
+    uint32 character_id = 1;
+}
+
+message ResUpgradeCharacter {
+
+    Error error = 1;
+    Character character = 2;
+}
+
+message ReqGMCommand {
+
+    string command = 1;
+}
+
+message ResShopInfo {
+
+    Error error = 1;
+    ShopInfo shop_info = 2;
+}
+
+message ReqBuyFromShop {
+
+    uint32 goods_id = 1;
+    uint32 count = 2;
+}
+
+message ResBuyFromShop {
+
+    Error error = 1;
+    repeated RewardSlot rewards = 2;
+}
+
+message ReqBuyFromZHP {
+
+    uint32 goods_id = 1;
+    uint32 count = 2;
+}
+
+message ResRefreshZHPShop {
+
+    Error error = 1;
+    ZHPShop zhp = 2;
+}
+
+message ReqExchangeCurrency {
+
+    uint32 id = 1;
+    uint32 count = 2;
+}
+
+message ResServerSettings {
+
+    ServerSettings settings = 1;
+}
+
+message ResAccountSettings {
+
+    Error error = 1;
+    repeated AccountSetting settings = 2;
+}
+
+message ReqUpdateAccountSettings {
+
+    AccountSetting setting = 1;
+}
+
+message ResModNicknameTime {
+
+    uint32 last_mod_time = 1;
+}
+
+message ResMisc {
+
+    Error error = 1;
+    repeated uint32 recharged_list = 2;
+    repeated ChestData chests = 3;
+}
+
+message ReqModifySignature {
+
+    string signature = 1;
+}
+
+message ResIDCardInfo {
+
+    Error error = 1;
+    bool is_authed = 2;
+    string country = 3;
+}
+
+message ReqUpdateIDCardInfo {
+
+    string fullname = 1;
+    string card_no = 2;
+}
+
+message ResVipReward {
+
+    Error error = 1;
+    repeated uint32 gained_vip_levels = 2;
+}
+
+message ReqGainVipReward {
+
+    uint32 vip_level = 1;
+}
+
+message ReqFetchCustomizedContestList {
+
+    uint32 start = 1;
+    uint32 count = 2;
+}
+
+message ResFetchCustomizedContestList {
+
+    Error error = 1;
+    repeated CustomizedContestBase contests = 2;
+    repeated CustomizedContestBase follow_contests = 3;
+}
+
+message ReqFetchCustomizedContestExtendInfo {
+
+    repeated uint32 uid_list = 1;
+}
+
+message ResFetchCustomizedContestExtendInfo {
+
+    Error error = 1;
+    repeated CustomizedContestExtend extend_list = 2;
+}
+
+message ReqEnterCustomizedContest {
+
+    uint32 unique_id = 1;
+}
+
+message ResEnterCustomizedContest {
+
+    Error error = 1;
+    CustomizedContestDetail detail_info = 2;
+    CustomizedContestPlayerReport player_report = 3;
+    bool is_followed = 4;
+}
+
+message ReqFetchCustomizedContestOnlineInfo {
+
+    uint32 unique_id = 1;
+}
+
+message ResFetchCustomizedContestOnlineInfo {
+
+    Error error = 1;
+    uint32 online_player = 2;
+}
+
+message ReqFetchCustomizedContestByContestId {
+
+    uint32 contest_id = 1;
+}
+
+message ResFetchCustomizedContestByContestId {
+
+    Error error = 1;
+    CustomizedContestAbstract contest_info = 2;
+}
+
+message ReqStartCustomizedContest {
+
+    uint32 unique_id = 1;
+}
+
+message ReqJoinCustomizedContestChatRoom {
+
+    uint32 unique_id = 1;
+}
+
+message ResJoinCustomizedContestChatRoom {
+
+    Error error = 1;
+    repeated bytes chat_history = 2;
+}
+
+message ReqSayChatMessage {
+
+    string content = 1;
+}
+
+message ReqFetchCustomizedContestGameLiveList {
+
+    uint32 unique_id = 1;
+}
+
+message ResFetchCustomizedContestGameLiveList {
+
+    Error error = 1;
+    repeated GameLiveHead live_list = 2;
+}
+
+message ReqFetchCustomizedContestGameRecords {
+
+    uint32 unique_id = 1;
+    uint32 last_index = 2;
+}
+
+message ResFetchCustomizedContestGameRecords {
+
+    Error error = 1;
+    uint32 next_index = 2;
+    repeated RecordGame record_list = 3;
+}
+
+message ReqTargetCustomizedContest {
+
+    uint32 unique_id = 1;
+}
+
+message ResActivityList {
+
+    Error error = 1;
+    repeated Activity activities = 2;
+}
+
+message ResAccountActivityData {
+
+    Error error = 1;
+    repeated ExchangeRecord exchange_records = 2;
+    repeated TaskProgress task_progress_list = 3;
+}
+
+message ReqExchangeActivityItem {
+
+    uint32 exchange_id = 1;
+}
+
+message ResExchangeActivityItem {
+
+    Error error = 1;
+    repeated ExecuteReward execute_reward = 2;
+}
+
+message ReqCompleteActivityTask {
+
+    uint32 task_id = 1;
+}
+
+message ActionMJStart {
+}
+
+message ActionNewRound {
+
+    uint32 chang = 1;
+    uint32 ju = 2;
+    uint32 ben = 3;
+    repeated string tiles = 4;
+    string dora = 5;
+    repeated int32 scores = 6;
+    OptionalOperationList operation = 7;
+    uint32 liqibang = 8;
+    repeated TingPaiDiscardInfo tingpais0 = 9;
+    repeated TingPaiInfo tingpais1 = 10;
+    bool al = 11;
+    string md5 = 12;
+    uint32 left_tile_count = 13;
+}
+
+message RecordNewRound {
+
+    uint32 chang = 1;
+    uint32 ju = 2;
+    uint32 ben = 3;
+    string dora = 4;
+    repeated int32 scores = 5;
+    uint32 liqibang = 6;
+    repeated string tiles0 = 7;
+    repeated string tiles1 = 8;
+    repeated string tiles2 = 9;
+    repeated string tiles3 = 10;
+    repeated TingPai tingpai = 11;
+    OptionalOperationList operation = 12;
+    string md5 = 13;
+    string paishan = 14;
+    uint32 left_tile_count = 15;
+
+    message TingPai {
+
+        uint32 seat = 1;
+        repeated TingPaiInfo tingpais1 = 2;
+    }
+}
+
+message GameSnapshot {
+
+    uint32 chang = 1;
+    uint32 ju = 2;
+    uint32 ben = 3;
+    uint32 index_player = 4;
+    uint32 left_tile_count = 5;
+    repeated string hands = 6;
+    repeated string doras = 7;
+    uint32 liqibang = 8;
+    repeated PlayerSnapshot players = 9;
+    bool zhenting = 10;
+
+    message PlayerSnapshot {
+
+        int32 score = 1;
+        int32 liqiposition = 2;
+        uint32 tilenum = 3;
+        repeated string qipais = 4;
+        repeated Fulu mings = 5;
+
+        message Fulu {
+
+            uint32 type = 1;
+            repeated string tile = 2;
+            repeated uint32 from = 3;
+        }
+    }
+}
+
+message ActionPrototype {
+
+    uint32 step = 1;
+    string name = 2;
+    bytes data = 3;
+}
+
+message GameDetailRecords {
+
+    repeated bytes records = 1;
+}
+
+message OptionalOperation {
+
+    uint32 type = 1;
+    repeated string combination = 2;
+}
+
+message OptionalOperationList {
+
+    uint32 seat = 1;
+    repeated OptionalOperation operation_list = 2;
+    uint32 time_add = 4;
+    uint32 time_fixed = 5;
+}
+
+message LiQiSuccess {
+
+    uint32 seat = 1;
+    int32 score = 2;
+    uint32 liqibang = 3;
+}
+
+message FanInfo {
+
+    string name = 1;
+    uint32 val = 2;
+}
+
+message HuleInfo {
+
+    repeated string hand = 1;
+    repeated string ming = 2;
+    string hu_tile = 3;
+    uint32 seat = 4;
+    bool zimo = 5;
+    bool qinjia = 6;
+    bool liqi = 7;
+    repeated string doras = 8;
+    repeated string li_doras = 9;
+    bool yiman = 10;
+    uint32 count = 11;
+    repeated FanInfo fans = 12;
+    uint32 fu = 13;
+    string title = 14;
+    uint32 point_rong = 15;
+    uint32 point_zimo_qin = 16;
+    uint32 point_zimo_xian = 17;
+}
+
+message TingPaiInfo {
+
+    string tile = 1;
+    bool haveyi = 2;
+}
+
+message TingPaiDiscardInfo {
+
+    string tile = 1;
+    bool zhenting = 2;
+    repeated TingPaiInfo infos = 3;
+}
+
+message GameEnd {
+
+    repeated int32 scores = 1;
+}
+
+message ActionDiscardTile {
+
+    uint32 seat = 1;
+    string tile = 2;
+    bool is_liqi = 3;
+    OptionalOperationList operation = 4;
+    bool moqie = 5;
+    bool zhenting = 6;
+    repeated TingPaiInfo tingpais = 7;
+    repeated string doras = 8;
+    bool is_wliqi = 9;
+}
+
+message RecordDiscardTile {
+
+    uint32 seat = 1;
+    string tile = 2;
+    bool is_liqi = 3;
+    bool moqie = 5;
+    repeated bool zhenting = 6;
+    repeated TingPaiInfo tingpais = 7;
+    repeated string doras = 8;
+    bool is_wliqi = 9;
+    repeated OptionalOperationList operations = 10;
+}
+
+message ActionDealTile {
+
+    uint32 seat = 1;
+    string tile = 2;
+    uint32 left_tile_count = 3;
+    OptionalOperationList operation = 4;
+    LiQiSuccess liqi = 5;
+    repeated string doras = 6;
+    bool zhenting = 7;
+    repeated TingPaiDiscardInfo tingpais = 8;
+}
+
+message RecordDealTile {
+
+    uint32 seat = 1;
+    string tile = 2;
+    uint32 left_tile_count = 3;
+    LiQiSuccess liqi = 5;
+    repeated string doras = 6;
+    repeated bool zhenting = 7;
+    OptionalOperationList operation = 8;
+}
+
+message ActionChiPengGang {
+
+    uint32 seat = 1;
+    uint32 type = 2;
+    repeated string tiles = 3;
+    repeated uint32 froms = 4;
+    LiQiSuccess liqi = 5;
+    OptionalOperationList operation = 6;
+    bool zhenting = 7;
+    repeated TingPaiDiscardInfo tingpais = 8;
+}
+
+message RecordChiPengGang {
+
+    uint32 seat = 1;
+    uint32 type = 2;
+    repeated string tiles = 3;
+    repeated uint32 froms = 4;
+    LiQiSuccess liqi = 5;
+    repeated bool zhenting = 7;
+    OptionalOperationList operation = 8;
+}
+
+message ActionAnGangAddGang {
+
+    uint32 seat = 1;
+    uint32 type = 2;
+    string tiles = 3;
+    OptionalOperationList operation = 4;
+    repeated string doras = 6;
+    bool zhenting = 7;
+    repeated TingPaiInfo tingpais = 8;
+}
+
+message RecordAnGangAddGang {
+
+    uint32 seat = 1;
+    uint32 type = 2;
+    string tiles = 3;
+    repeated string doras = 6;
+    repeated OptionalOperationList operations = 7;
+}
+
+message ActionBaBei {
+
+    uint32 seat = 1;
+    OptionalOperationList operation = 4;
+    repeated string doras = 6;
+    bool zhenting = 7;
+    repeated TingPaiInfo tingpais = 8;
+    bool moqie = 9;
+}
+
+message RecordBaBei {
+
+    uint32 seat = 1;
+    repeated string doras = 6;
+    repeated OptionalOperationList operations = 7;
+    bool moqie = 8;
+}
+
+message ActionHule {
+
+    repeated HuleInfo hules = 1;
+    repeated int32 old_scores = 2;
+    repeated int32 delta_scores = 3;
+    uint32 wait_timeout = 4;
+    repeated int32 scores = 5;
+    GameEnd gameend = 6;
+    repeated string doras = 7;
+}
+
+message RecordHule {
+
+    repeated HuleInfo hules = 1;
+    repeated int32 old_scores = 2;
+    repeated int32 delta_scores = 3;
+    uint32 wait_timeout = 4;
+    repeated int32 scores = 5;
+    GameEnd gameend = 6;
+    repeated string doras = 7;
+}
+
+message ActionLiuJu {
+
+    uint32 type = 1;
+    GameEnd gameend = 2;
+    uint32 seat = 3;
+    repeated string tiles = 4;
+    LiQiSuccess liqi = 5;
+    repeated string allplayertiles = 6;
+}
+
+message RecordLiuJu {
+
+    uint32 type = 1;
+    GameEnd gameend = 2;
+    uint32 seat = 3;
+    repeated string tiles = 4;
+    LiQiSuccess liqi = 5;
+    repeated string allplayertiles = 6;
+}
+
+message NoTilePlayerInfo {
+
+    bool tingpai = 3;
+    repeated string hand = 4;
+    repeated TingPaiInfo tings = 5;
+}
+
+message NoTileScoreInfo {
+
+    uint32 seat = 1;
+    repeated int32 old_scores = 2;
+    repeated int32 delta_scores = 3;
+    repeated string hand = 4;
+    repeated string ming = 5;
+    repeated string doras = 6;
+    uint32 score = 7;
+}
+
+message ActionNoTile {
+
+    bool liujumanguan = 1;
+    repeated NoTilePlayerInfo players = 2;
+    repeated NoTileScoreInfo scores = 3;
+    bool gameend = 4;
+}
+
+message RecordNoTile {
+
+    bool liujumanguan = 1;
+    repeated NoTilePlayerInfo players = 2;
+    repeated NoTileScoreInfo scores = 3;
+    bool gameend = 4;
+}
+service FastTest {
+    rpc authGame (ReqAuthGame) returns (ResAuthGame);
+    rpc enterGame (ReqCommon) returns (ResEnterGame);
+    rpc syncGame (ReqSyncGame) returns (ResSyncGame);
+    rpc finishSyncGame (ReqCommon) returns (ResCommon);
+    rpc terminateGame (ReqCommon) returns (ResCommon);
+    rpc inputOperation (ReqSelfOperation) returns (ResCommon);
+    rpc inputChiPengGang (ReqChiPengGang) returns (ResCommon);
+    rpc confirmNewRound (ReqCommon) returns (ResCommon);
+    rpc broadcastInGame (ReqBroadcastInGame) returns (ResCommon);
+    rpc inputGameGMCommand (ReqGMCommandInGaming) returns (ResCommon);
+    rpc fetchGamePlayerState (ReqCommon) returns (ResGamePlayerState);
+    rpc checkNetworkDelay (ReqCommon) returns (ResCommon);
+}
+
+message ReqAuthGame {
+
+    string token = 1;
+    string game_uuid = 2;
+}
+
+message ResAuthGame {
+
+    Error error = 1;
+    repeated PlayerGameView players = 2;
+    repeated uint32 seat_list = 3;
+    bool is_game_start = 4;
+    GameConfig game_config = 5;
+    repeated uint32 ready_id_list = 6;
+}
+
+message GameRestore {
+
+    GameSnapshot snapshot = 1;
+    repeated ActionPrototype actions = 2;
+    uint32 passed_waiting_time = 3;
+    uint32 game_state = 4;
+    uint32 start_time = 5;
+    uint32 last_pause_time_ms = 6;
+}
+
+message ResEnterGame {
+
+    Error error = 1;
+    bool is_end = 2;
+    uint32 step = 3;
+    GameRestore game_restore = 4;
+}
+
+message ReqSyncGame {
+
+    string round_id = 1;
+    uint32 step = 2;
+}
+
+message ResSyncGame {
+
+    Error error = 1;
+    bool is_end = 2;
+    uint32 step = 3;
+    GameRestore game_restore = 4;
+}
+
+message ReqSelfOperation {
+
+    uint32 type = 1;
+    uint32 index = 2;
+    string tile = 3;
+    bool cancel_operation = 4;
+    bool moqie = 5;
+    uint32 timeuse = 6;
+}
+
+message ReqChiPengGang {
+
+    uint32 type = 1;
+    uint32 index = 2;
+    bool cancel_operation = 3;
+    uint32 timeuse = 6;
+}
+
+message ReqBroadcastInGame {
+
+    string content = 1;
+    bool except_self = 2;
+}
+
+message ReqGMCommandInGaming {
+
+    string json_data = 1;
+}
+
+message ResGamePlayerState {
+
+    Error error = 1;
+    repeated GamePlayerState state_list = 2;
+}
+
+message NotifyNewGame {
+
+    string game_uuid = 1;
+    repeated string player_list = 2;
+}
+
+message NotifyPlayerLoadGameReady {
+
+    repeated uint32 ready_id_list = 1;
+}
+
+message NotifyGameBroadcast {
+
+    uint32 seat = 1;
+    string content = 2;
+}
+
+message NotifyGameEndResult {
+
+    GameEndResult result = 1;
+}
+
+message NotifyGameTerminate {
+
+    string reason = 1;
+}
+
+message NotifyPlayerConnectionState {
+
+    uint32 seat = 1;
+    GamePlayerState state = 2;
+}
+
+message NotifyAccountLevelChange {
+
+    AccountLevel origin = 1;
+    AccountLevel final = 2;
+}
+
+message NotifyGameFinishReward {
+
+    uint32 mode_id = 1;
+    LevelChange level_change = 2;
+    MatchChest match_chest = 3;
+    MainCharacter main_character = 4;
+    CharacterGift character_gift = 5;
+
+    message LevelChange {
+
+        AccountLevel origin = 1;
+        AccountLevel final = 2;
+    }
+
+    message MatchChest {
+
+        uint32 chest_id = 1;
+        uint32 origin = 2;
+        uint32 final = 3;
+        bool is_graded = 4;
+        repeated RewardSlot rewards = 5;
+    }
+
+    message MainCharacter {
+
+        uint32 level = 1;
+        uint32 exp = 2;
+        uint32 add = 3;
+    }
+
+    message CharacterGift {
+
+        uint32 origin = 1;
+        uint32 final = 2;
+        uint32 add = 3;
+        bool is_graded = 4;
+    }
+}
+
+message NotifyActivityReward {
+
+    repeated ActivityReward activity_reward = 1;
+
+    message ActivityReward {
+
+        uint32 activity_id = 1;
+        repeated RewardSlot rewards = 2;
+    }
+}
+
+message NotifyGamePause {
+
+    bool paused = 1;
+}
