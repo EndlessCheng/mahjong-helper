@@ -11,7 +11,14 @@ type majsoulRoundData struct {
 	msg *majsoulMessage
 }
 
-func (d *majsoulRoundData) _mustParseMajsoulTile(tile string) int {
+func (d *majsoulRoundData) parseWho(majsoulWho int) int {
+	// majsoulWho 0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
+	// 转换成 0=自家, 1=下家, 2=对家, 3=上家
+	who := (majsoulWho + d.dealer - d.roundNumber%4 + 4) % 4
+	return who
+}
+
+func (d *majsoulRoundData) mustParseMajsoulTile(tile string) int {
 	if tile[0] == '0' {
 		tile = "5" + tile[1:]
 	}
@@ -22,18 +29,11 @@ func (d *majsoulRoundData) _mustParseMajsoulTile(tile string) int {
 	return idx
 }
 
-func (d *majsoulRoundData) _parseMajsoulTile(tile string) (int, error) {
+func (d *majsoulRoundData) parseMajsoulTile(tile string) (int, error) {
 	if tile[0] == '0' {
 		tile = "5" + tile[1:]
 	}
 	return _convert(tile)
-}
-
-func (d *majsoulRoundData) _parseWho(majsoulWho int) int {
-	// majsoulWho 0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
-	// 转换成 0=自家, 1=下家, 2=对家, 3=上家
-	who := (majsoulWho + d.dealer - d.roundNumber%4 + 4) % 4
-	return who
 }
 
 func (d *majsoulRoundData) GetDataSourceType() int {
@@ -83,11 +83,11 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicat
 		handShift = 5
 	}
 	for _, rawTile := range strings.Split(msg[53+handShift:103+handShift], string([]byte{34, 2})) {
-		tile := d._mustParseMajsoulTile(rawTile)
+		tile := d.mustParseMajsoulTile(rawTile)
 		hands = append(hands, tile)
 	}
 
-	doraIndicator = d._mustParseMajsoulTile(msg[105+handShift : 107+handShift])
+	doraIndicator = d.mustParseMajsoulTile(msg[105+handShift : 107+handShift])
 
 	return
 }
@@ -103,7 +103,7 @@ func (d *majsoulRoundData) ParseSelfDraw() (tile int) {
 	// 含有摸到的牌，若有加杠、暗杠选项会更长
 	var err error
 	for i := 48; i+2 < len(msg); i++ {
-		tile, err = d._parseMajsoulTile(msg[i : i+2])
+		tile, err = d.parseMajsoulTile(msg[i : i+2])
 		if err == nil {
 			break
 		}
@@ -125,13 +125,13 @@ func (d *majsoulRoundData) ParseDiscard() (who int, tile int, isTsumogiri bool, 
 	if majsoulWho > 4 {
 		majsoulWho = int(msg[49])
 	}
-	who = d._parseWho(majsoulWho)
+	who = d.parseWho(majsoulWho)
 
 	var err error
 	shift := 0
-	tile, err = d._parseMajsoulTile(msg[51:53])
+	tile, err = d.parseMajsoulTile(msg[51:53])
 	if err != nil {
-		tile = d._mustParseMajsoulTile(msg[52:54])
+		tile = d.mustParseMajsoulTile(msg[52:54])
 		shift = 1
 	}
 	isTsumogiri = msg[len(msg)-5] == 1
@@ -143,7 +143,7 @@ func (d *majsoulRoundData) ParseDiscard() (who int, tile int, isTsumogiri bool, 
 		// TODO: 用who是否为自家来判断
 		// TODO: 如果明杠后的舍牌又恰好能鸣牌，会是什么样的格式？
 		rawTile := msg[len(msg)-4 : len(msg)-2]
-		if dora, err := d._parseMajsoulTile(rawTile); err == nil {
+		if dora, err := d.parseMajsoulTile(rawTile); err == nil {
 			kanDoraIndicator = dora
 		}
 
@@ -177,9 +177,9 @@ func (d *majsoulRoundData) ParseOpen() (who int, meldType int, meldTiles []int, 
 		if majsoulWho > 4 {
 			majsoulWho = int(msg[51])
 		}
-		who = d._parseWho(majsoulWho)
+		who = d.parseWho(majsoulWho)
 
-		calledTile = d._mustParseMajsoulTile(msg[len(msg)-2:])
+		calledTile = d.mustParseMajsoulTile(msg[len(msg)-2:])
 		if d.leftCounts[calledTile] == 4 {
 			meldType = meldTypeAnKan
 		} else {
@@ -192,7 +192,7 @@ func (d *majsoulRoundData) ParseOpen() (who int, meldType int, meldTiles []int, 
 	if majsoulWho > 4 {
 		majsoulWho = int(msg[49])
 	}
-	who = d._parseWho(majsoulWho)
+	who = d.parseWho(majsoulWho)
 
 	// FIXME: 65 也可能
 	var rawMeldTiles string
@@ -209,7 +209,7 @@ func (d *majsoulRoundData) ParseOpen() (who int, meldType int, meldTiles []int, 
 		panic("解析失败（可能是加杠？）")
 	}
 	for _, rawTile := range strings.Split(rawMeldTiles, string([]byte{26, 2})) {
-		tile := d._mustParseMajsoulTile(rawTile)
+		tile := d.mustParseMajsoulTile(rawTile)
 		meldTiles = append(meldTiles, tile)
 	}
 
