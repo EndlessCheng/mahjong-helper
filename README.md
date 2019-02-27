@@ -65,7 +65,7 @@ req.open("POST", "https://localhost:12121/");
 req.send(e.data);
 ```
 
-3.\ 全局替换：把所有的 `i.play=function(t){` 替换成 `i.play=function(t){var req=new XMLHttpRequest();req.open("POST","https://localhost:12121/");req.send(JSON.stringify(t));`
+3\. 全局替换：把所有的 `i.play=function(t){` 替换成 `i.play=function(t){var req=new XMLHttpRequest();req.open("POST","https://localhost:12121/");req.send(JSON.stringify(t));`
 
 4\. 允许本地证书通过浏览器，在浏览器（仅限 Chrome 内核）中输入
 ```
