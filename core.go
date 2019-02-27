@@ -224,7 +224,12 @@ func (d *roundData) _fillZi() {
 func (d *roundData) descLeftCounts(tile int) {
 	d.leftCounts[tile]--
 	if d.leftCounts[tile] < 0 {
-		fmt.Printf("数据异常: %s 数量为 %d\n", mahjongZH[tile], d.leftCounts[tile])
+		info := fmt.Sprintf("数据异常: %s 数量为 %d", mahjongZH[tile], d.leftCounts[tile])
+		if debugMode {
+			panic(info)
+		} else {
+			fmt.Println(info)
+		}
 	}
 }
 
@@ -352,17 +357,7 @@ func (d *roundData) analysis() error {
 	}
 
 	if debugMode {
-		msg := d.parser.GetMessage()
-		if d.parser.GetDataSourceType() == dataSourceTypeMajsoul {
-			if len(msg) == 7 {
-				return nil
-			}
-			fmt.Printf("收到 [len=%d] %s\n", len(msg), msg)
-			fmt.Println(stringToSlice(msg))
-			fmt.Println([]byte(msg))
-		} else {
-			fmt.Println("收到", msg)
-		}
+		fmt.Println("收到", d.parser.GetMessage())
 	}
 
 	// 若自家立直，则进入看戏模式

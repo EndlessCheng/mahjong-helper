@@ -15,10 +15,10 @@ import (
 type mjHandler struct {
 	analysing bool
 
-	tenhouMessageQueue chan *tenhouMessage
+	tenhouMessageQueue chan []byte
 	tenhouRoundData    *tenhouRoundData
 
-	majsoulMessageQueue chan *majsoulMessage
+	majsoulMessageQueue chan []byte
 	majsoulRoundData    *majsoulRoundData
 }
 
@@ -65,19 +65,26 @@ func (h *mjHandler) analysis(c echo.Context) error {
 
 // 分析天凤 WebSocket 数据
 func (h *mjHandler) analysisTenhou(c echo.Context) error {
-	d := tenhouMessage{}
-	if err := json.NewDecoder(c.Request().Body).Decode(&d); err != nil {
+	data, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	h.tenhouMessageQueue <- &d
+	h.tenhouMessageQueue <- data
 	return c.NoContent(http.StatusOK)
 }
 
 func (h *mjHandler) runAnalysisTenhouMessageTask() {
 	for msg := range h.tenhouMessageQueue {
-		h.tenhouRoundData.msg = msg
+		d := tenhouMessage{}
+		if err := json.Unmarshal(msg, &d); err != nil {
+			fmt.Println(err)
+			continue
+		}
+
+		h.tenhouRoundData.msg = &d
+		h.tenhouRoundData.originJSON = string(msg)
 		if err := h.tenhouRoundData.analysis(); err != nil {
 			fmt.Println("错误：", err)
 		}
@@ -86,19 +93,26 @@ func (h *mjHandler) runAnalysisTenhouMessageTask() {
 
 // 分析雀魂 WebSocket 数据
 func (h *mjHandler) analysisMajsoul(c echo.Context) error {
-	d := majsoulMessage{}
-	if err := json.NewDecoder(c.Request().Body).Decode(&d); err != nil {
+	data, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	h.majsoulMessageQueue <- &d
+	h.majsoulMessageQueue <- data
 	return c.NoContent(http.StatusOK)
 }
 
 func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 	for msg := range h.majsoulMessageQueue {
-		h.majsoulRoundData.msg = msg
+		d := majsoulMessage{}
+		if err := json.Unmarshal(msg, &d); err != nil {
+			fmt.Println(err)
+			continue
+		}
+
+		h.majsoulRoundData.msg = &d
+		h.majsoulRoundData.originJSON = string(msg)
 		if err := h.majsoulRoundData.analysis(); err != nil {
 			fmt.Println("错误：", err)
 		}
@@ -124,9 +138,9 @@ func runServer(isHTTPS bool) {
 	}()
 
 	h := &mjHandler{
-		tenhouMessageQueue:  make(chan *tenhouMessage, 100),
+		tenhouMessageQueue:  make(chan []byte, 100),
 		tenhouRoundData:     &tenhouRoundData{},
-		majsoulMessageQueue: make(chan *majsoulMessage, 100),
+		majsoulMessageQueue: make(chan []byte, 100),
 		majsoulRoundData:    &majsoulRoundData{},
 	}
 	h.tenhouRoundData.roundData = newRoundData(h.tenhouRoundData, 0, 0)

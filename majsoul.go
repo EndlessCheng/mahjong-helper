@@ -2,41 +2,41 @@ package main
 
 import (
 	"fmt"
-	"encoding/json"
 )
 
 type majsoulMessage struct {
 	// NotifyPlayerLoadGameReady
 	// {"ready_id_list":[0,865366,0,0]}
-	ReadyIDList []int `json:"ready_id_list"`
+	ReadyIDList []int `json:"ready_id_list,omitempty"`
 
 	// ActionNewRound
 	// {"chang":0,"ju":0,"ben":0,"tiles":["4m","6m","7m","3p","6p","7p","6s","1z","1z","2z","3z","4z","7z"],"dora":"6m","scores":[25000,25000,25000,25000],"liqibang":0,"al":false,"md5":"7527BD6868BBAB75B02A80CEA7CB4405","left_tile_count":69}
-	MD5   string   `json:"md5"`
-	Chang int      `json:"chang"`
-	Ju    int      `json:"ju"`
-	Tiles []string `json:"tiles"`
-	Dora  string   `json:"dora"`
+	MD5   string   `json:"md5,omitempty"`
+	Chang *int     `json:"chang,omitempty"`
+	Ju    *int     `json:"ju,omitempty"`
+	Tiles []string `json:"tiles,omitempty"`
+	Dora  string   `json:"dora,omitempty"`
 
 	// ActionDealTile
 	// {"seat":1,"tile":"5m","left_tile_count":64,"operation":{"seat":1,"operation_list":[{"type":1}],"time_add":0,"time_fixed":60000},"zhenting":false}
-	Seat  int      `json:"seat"`
-	Tile  string   `json:"tile"`
-	Doras []string `json:"doras"` // 暗杠摸牌了，同时翻出杠宝牌指示牌
+	Seat          *int     `json:"seat,omitempty"`
+	Tile          string   `json:"tile,omitempty"`
+	Doras         []string `json:"doras,omitempty"` // 暗杠摸牌了，同时翻出杠宝牌指示牌
+	LeftTileCount *int     `json:"left_tile_count,omitempty"`
 
 	// ActionDiscardTile
 	// {"seat":0,"tile":"5z","is_liqi":false,"moqie":true,"zhenting":false,"is_wliqi":false}
 	// {"seat":0,"tile":"1z","is_liqi":false,"operation":{"seat":1,"operation_list":[{"type":3,"combination":["1z|1z"]}],"time_add":0,"time_fixed":60000},"moqie":false,"zhenting":false,"is_wliqi":false}
 	// 吃 碰 和
 	// {"seat":0,"tile":"6p","is_liqi":false,"operation":{"seat":1,"operation_list":[{"type":2,"combination":["7p|8p"]},{"type":3,"combination":["6p|6p"]},{"type":9}],"time_add":0,"time_fixed":60000},"moqie":false,"zhenting":true,"is_wliqi":false}
-	IsLiqi    bool      `json:"is_liqi"`
-	IsWliqi   bool      `json:"is_wliqi"`
-	Moqie     *bool     `json:"moqie"`
-	Operation *struct{} `json:"operation"`
+	IsLiqi    *bool     `json:"is_liqi,omitempty"`
+	IsWliqi   *bool     `json:"is_wliqi,omitempty"`
+	Moqie     *bool     `json:"moqie,omitempty"`
+	Operation *struct{} `json:"operation,omitempty"`
 
 	// ActionChiPengGang || ActionAnGangAddGang
 	// {"seat":1,"type":1,"tiles":["1z","1z","1z"],"froms":[1,1,0],"operation":{"seat":1,"operation_list":[{"type":1,"combination":["1z"]}],"time_add":0,"time_fixed":60000},"zhenting":false,"tingpais":[{"tile":"4m","zhenting":false,"infos":[{"tile":"6s","haveyi":true},{"tile":"6p","haveyi":true}]},{"tile":"7m","zhenting":false,"infos":[{"tile":"6s","haveyi":true},{"tile":"6p","haveyi":true}]}]}
-	Froms []int `json:"froms"`
+	Froms []int `json:"froms,omitempty"`
 
 	// ActionLiqi
 
@@ -49,8 +49,9 @@ type majsoulMessage struct {
 
 type majsoulRoundData struct {
 	*roundData
-	seat int // 初始座位：0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
-	msg  *majsoulMessage
+	originJSON string
+	msg        *majsoulMessage
+	seat       int // 初始座位：0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
 }
 
 func (d *majsoulRoundData) fatalParse(info string, msg string) {
@@ -107,17 +108,13 @@ func (d *majsoulRoundData) GetDataSourceType() int {
 }
 
 func (d *majsoulRoundData) GetMessage() string {
-	data, err := json.Marshal(d.msg)
-	if err != nil {
-		panic(err)
-	}
-	return string(data)
+	return d.originJSON
 }
 
 func (d *majsoulRoundData) IsInit() bool {
 	msg := d.msg
 	// NotifyPlayerLoadGameReady || ActionNewRound
-	return len(msg.ReadyIDList) > 0 || msg.MD5 != ""
+	return msg.ReadyIDList != nil || msg.MD5 != ""
 }
 
 func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicator int, hands []int) {
@@ -137,7 +134,7 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicat
 	}
 	dealer = -1
 
-	roundNumber = 4*msg.Chang + msg.Ju
+	roundNumber = 4**msg.Chang + *msg.Ju
 	doraIndicator = d.mustParseMajsoulTile(msg.Dora)
 	hands = d.mustParseMajsoulTiles(msg.Tiles)
 	return
@@ -146,7 +143,11 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicat
 func (d *majsoulRoundData) IsSelfDraw() bool {
 	msg := d.msg
 	// ActionDealTile
-	return msg.Seat == d.seat
+	if msg.Seat == nil || msg.Moqie != nil {
+		return false
+	}
+	who := d.parseWho(*msg.Seat)
+	return who == 0
 }
 
 func (d *majsoulRoundData) ParseSelfDraw() (tile int, kanDoraIndicator int) {
@@ -154,12 +155,11 @@ func (d *majsoulRoundData) ParseSelfDraw() (tile int, kanDoraIndicator int) {
 	tile = d.mustParseMajsoulTile(msg.Tile)
 	kanDoraIndicator = -1
 	if len(msg.Doras) > 0 {
-		kanDoraIndicator = d.mustParseMajsoulTile(msg.Doras[len(msg.Doras)-1])
+		kanDoraIndicator = d.mustParseMajsoulTile(msg.Doras[0])
 	}
 	return
 }
 
-// {"seat":0,"tile":"5z","is_liqi":false,"moqie":true,"zhenting":false,"is_wliqi":false}
 func (d *majsoulRoundData) IsDiscard() bool {
 	msg := d.msg
 	// ActionDiscardTile
@@ -168,14 +168,14 @@ func (d *majsoulRoundData) IsDiscard() bool {
 
 func (d *majsoulRoundData) ParseDiscard() (who int, tile int, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int) {
 	msg := d.msg
-	who = d.parseWho(msg.Seat)
+	who = d.parseWho(*msg.Seat)
 	tile = d.mustParseMajsoulTile(msg.Tile)
 	isTsumogiri = *msg.Moqie
-	isReach = msg.IsLiqi || msg.IsWliqi
+	isReach = *msg.IsLiqi || *msg.IsWliqi
 	canBeMeld = msg.Operation != nil
 	kanDoraIndicator = -1
 	if len(msg.Doras) > 0 {
-		kanDoraIndicator = d.mustParseMajsoulTile(msg.Doras[len(msg.Doras)-1])
+		kanDoraIndicator = d.mustParseMajsoulTile(msg.Doras[0])
 	}
 	return
 }
@@ -183,17 +183,17 @@ func (d *majsoulRoundData) ParseDiscard() (who int, tile int, isTsumogiri bool, 
 func (d *majsoulRoundData) IsOpen() bool {
 	msg := d.msg
 	// ActionChiPengGang || ActionAnGangAddGang
-	return len(msg.Tiles) <= 4
+	return msg.Tiles != nil && len(msg.Tiles) <= 4
 }
 
 func (d *majsoulRoundData) ParseOpen() (who int, meldType int, meldTiles []int, calledTile int, kanDoraIndicator int) {
 	msg := d.msg
 
-	who = d.parseWho(d.seat)
+	who = d.parseWho(*msg.Seat)
 	meldTiles = d.mustParseMajsoulTiles(msg.Tiles)
 	kanDoraIndicator = -1
 	if len(msg.Doras) > 0 {
-		kanDoraIndicator = d.mustParseMajsoulTile(msg.Doras[len(msg.Doras)-1])
+		kanDoraIndicator = d.mustParseMajsoulTile(msg.Doras[0])
 		calledTile = d.mustParseMajsoulTile(msg.Tiles[0])
 		if d.leftCounts[calledTile] == 4 {
 			meldType = meldTypeAnKan

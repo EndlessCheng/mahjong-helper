@@ -87,7 +87,8 @@ type tenhouMessage struct {
 
 type tenhouRoundData struct {
 	*roundData
-	msg *tenhouMessage
+	originJSON string
+	msg        *tenhouMessage
 }
 
 //func (d *tenhouRoundData) mergeCachedTile() {
@@ -185,7 +186,7 @@ func (d *tenhouRoundData) GetDataSourceType() int {
 }
 
 func (d *tenhouRoundData) GetMessage() string {
-	return d.msg.Tag
+	return d.originJSON
 }
 
 func (d *tenhouRoundData) IsInit() bool {
