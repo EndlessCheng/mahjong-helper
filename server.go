@@ -86,14 +86,13 @@ func (h *mjHandler) runAnalysisTenhouMessageTask() {
 
 // 分析雀魂 WebSocket 数据
 func (h *mjHandler) analysisMajsoul(c echo.Context) error {
-	data, err := ioutil.ReadAll(c.Request().Body)
-	if err != nil {
+	d := majsoulMessage{}
+	if err := json.NewDecoder(c.Request().Body).Decode(&d); err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	msg := majsoulMessage(data)
-	h.majsoulMessageQueue <- &msg
+	h.majsoulMessageQueue <- &d
 	return c.NoContent(http.StatusOK)
 }
 
