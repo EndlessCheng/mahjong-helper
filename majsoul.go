@@ -11,11 +11,11 @@ type majsoulMessage struct {
 
 	// ActionNewRound
 	// {"chang":0,"ju":0,"ben":0,"tiles":["4m","6m","7m","3p","6p","7p","6s","1z","1z","2z","3z","4z","7z"],"dora":"6m","scores":[25000,25000,25000,25000],"liqibang":0,"al":false,"md5":"7527BD6868BBAB75B02A80CEA7CB4405","left_tile_count":69}
-	MD5   string   `json:"md5,omitempty"`
-	Chang *int     `json:"chang,omitempty"`
-	Ju    *int     `json:"ju,omitempty"`
-	Tiles []string `json:"tiles,omitempty"`
-	Dora  string   `json:"dora,omitempty"`
+	MD5   string      `json:"md5,omitempty"`
+	Chang *int        `json:"chang,omitempty"`
+	Ju    *int        `json:"ju,omitempty"`
+	Tiles interface{} `json:"tiles,omitempty"` // 一般情况下为 []interface{}, interface{} 即 string，但是暗杠的情况下，该值为一个 string
+	Dora  string      `json:"dora,omitempty"`
 
 	// ActionDealTile
 	// {"seat":1,"tile":"5m","left_tile_count":64,"operation":{"seat":1,"operation_list":[{"type":1}],"time_add":0,"time_fixed":60000},"zhenting":false}
@@ -56,6 +56,28 @@ type majsoulRoundData struct {
 
 func (d *majsoulRoundData) fatalParse(info string, msg string) {
 	panic(fmt.Sprintln(info, len(msg), msg, []byte(msg)))
+}
+
+func (d *majsoulRoundData) normalTiles(tiles interface{}) []string {
+	_tiles, ok := tiles.([]interface{})
+	if !ok {
+		// 是否为暗杠？
+		_tile, ok := tiles.(string)
+		if !ok {
+			panic(fmt.Sprintln("[anKanTile] 解析错误", tiles))
+		}
+		return []string{_tile}
+	}
+
+	results := make([]string, len(_tiles))
+	for i, _tile := range _tiles {
+		_t, ok := _tile.(string)
+		if !ok {
+			panic(fmt.Sprintln("[normalTiles] 解析错误", tiles))
+		}
+		results[i] = _t
+	}
+	return results
 }
 
 func (d *majsoulRoundData) parseWho(seat int) int {
@@ -136,7 +158,7 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicat
 
 	roundNumber = 4**msg.Chang + *msg.Ju
 	doraIndicator = d.mustParseMajsoulTile(msg.Dora)
-	hands = d.mustParseMajsoulTiles(msg.Tiles)
+	hands = d.mustParseMajsoulTiles(d.normalTiles(msg.Tiles))
 	return
 }
 
@@ -183,18 +205,18 @@ func (d *majsoulRoundData) ParseDiscard() (who int, tile int, isTsumogiri bool, 
 func (d *majsoulRoundData) IsOpen() bool {
 	msg := d.msg
 	// ActionChiPengGang || ActionAnGangAddGang
-	return msg.Tiles != nil && len(msg.Tiles) <= 4
+	return msg.Tiles != nil && len(d.normalTiles(msg.Tiles)) <= 4
 }
 
 func (d *majsoulRoundData) ParseOpen() (who int, meldType int, meldTiles []int, calledTile int, kanDoraIndicator int) {
 	msg := d.msg
 
 	who = d.parseWho(*msg.Seat)
-	meldTiles = d.mustParseMajsoulTiles(msg.Tiles)
+	meldTiles = d.mustParseMajsoulTiles(d.normalTiles(msg.Tiles))
 	kanDoraIndicator = -1
 	if len(msg.Doras) > 0 {
 		kanDoraIndicator = d.mustParseMajsoulTile(msg.Doras[0])
-		calledTile = d.mustParseMajsoulTile(msg.Tiles[0])
+		calledTile = d.mustParseMajsoulTile(d.normalTiles(msg.Tiles)[0])
 		if d.leftCounts[calledTile] == 4 {
 			meldType = meldTypeAnKan
 		} else {
