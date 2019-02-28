@@ -44,7 +44,7 @@ type DataParser interface {
 	// isTsumogiri: 是否为摸切（who=0 时忽略该值）
 	// isReach: 是否为立直宣言（isReach 对于天凤来说恒为 false，见 IsReach）
 	// canBeMeld: 是否可以鸣牌（who=0 时忽略该值）
-	// kanDoraIndicator: 明杠/加杠的杠宝牌指示牌，在切牌后出现，没有则返回 -1（天凤恒为-1）
+	// kanDoraIndicator: 大明杠/加杠的杠宝牌指示牌，在切牌后出现，没有则返回 -1（天凤恒为-1，见 IsNewDora）
 	IsDiscard() bool
 	ParseDiscard() (who int, tile int, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int)
 
@@ -52,7 +52,7 @@ type DataParser interface {
 	// meldType: 鸣牌类型（吃、碰、暗杠、明杠、加杠）
 	// meldTiles: 副露的牌 [0-33]
 	// calledTile: 被鸣的牌 0-33
-	// kanDoraIndicator: 暗杠的杠宝牌指示牌，在他家暗杠时出现，没有则返回 -1（天凤恒为-1）
+	// kanDoraIndicator: 暗杠的杠宝牌指示牌，在他家暗杠时出现，没有则返回 -1（天凤恒为-1，见 IsNewDora）
 	IsOpen() bool
 	ParseOpen() (who int, meldType int, meldTiles []int, calledTile int, kanDoraIndicator int)
 
