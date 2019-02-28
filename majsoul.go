@@ -137,12 +137,14 @@ func (d *majsoulRoundData) GetMessage() string {
 func (d *majsoulRoundData) IsInit() bool {
 	msg := d.msg
 
-	if len(msg.ReadyIDList) > 0 && len(msg.ReadyIDList) < 4 {
-		fmt.Printf("等待玩家准备 (%d/4)\n", len(msg.ReadyIDList))
+	const playersCount = 4
+
+	if len(msg.ReadyIDList) > 0 && len(msg.ReadyIDList) < playersCount {
+		fmt.Printf("等待玩家准备 (%d/%d)\n", len(msg.ReadyIDList), playersCount)
 		return false
 	}
 
-	if d.playerID == -1 && len(msg.ReadyIDList) == 4 {
+	if d.playerID == -1 && len(msg.ReadyIDList) == playersCount {
 		// 判断是否为人机对战，获取玩家ID
 		if !inIntSlice(0, msg.ReadyIDList) {
 			fmt.Println("尚未获取到玩家服务器端 ID，请先开启一局人机对战")
@@ -162,7 +164,7 @@ func (d *majsoulRoundData) IsInit() bool {
 	}
 
 	// NotifyPlayerLoadGameReady || ActionNewRound
-	return len(msg.ReadyIDList) == 4 || msg.MD5 != ""
+	return len(msg.ReadyIDList) == playersCount || msg.MD5 != ""
 }
 
 func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicator int, hands []int) {
