@@ -61,12 +61,11 @@ func (d *majsoulRoundData) fatalParse(info string, msg string) {
 func (d *majsoulRoundData) normalTiles(tiles interface{}) []string {
 	_tiles, ok := tiles.([]interface{})
 	if !ok {
-		// 是否为暗杠？
 		_tile, ok := tiles.(string)
 		if !ok {
 			panic(fmt.Sprintln("[anKanTile] 解析错误", tiles))
 		}
-		return []string{_tile}
+		return []string{_tile, _tile, _tile, _tile}
 	}
 
 	results := make([]string, len(_tiles))
