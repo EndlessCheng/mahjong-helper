@@ -49,6 +49,7 @@ type majsoulMessage struct {
 
 type majsoulRoundData struct {
 	*roundData
+	playerID   int
 	originJSON string
 	msg        *majsoulMessage
 	seat       int // 初始座位：0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
@@ -135,18 +136,39 @@ func (d *majsoulRoundData) GetMessage() string {
 
 func (d *majsoulRoundData) IsInit() bool {
 	msg := d.msg
+
+	if d.playerID == -1 && len(msg.ReadyIDList) == 4 {
+		// 判断是否为人机对战，获取玩家ID
+		if !inIntSlice(0, msg.ReadyIDList) {
+			fmt.Println("尚未获取到玩家服务器端 ID，请先开启一局人机对战")
+			return false
+		}
+		for _, playerID := range msg.ReadyIDList {
+			if playerID != 0 {
+				d.playerID = playerID
+				fmt.Println("玩家服务器端 ID 获取成功:", d.playerID)
+				fmt.Println("")
+				break
+			}
+		}
+	}
+
+	if d.playerID == -1 {
+		return false
+	}
+
 	// NotifyPlayerLoadGameReady || ActionNewRound
-	return msg.ReadyIDList != nil || msg.MD5 != ""
+	return len(msg.ReadyIDList) == 4 || msg.MD5 != ""
 }
 
 func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicator int, hands []int) {
 	msg := d.msg
 
-	if len(msg.ReadyIDList) > 0 {
+	if len(msg.ReadyIDList) == 4 {
 		// dealer: 0=自家, 1=下家, 2=对家, 3=上家
 		dealer = 1
 		for i := len(msg.ReadyIDList) - 1; i >= 0; i-- {
-			if msg.ReadyIDList[i] != 0 {
+			if msg.ReadyIDList[i] == d.playerID {
 				break
 			}
 			dealer++
@@ -164,10 +186,16 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicat
 
 func (d *majsoulRoundData) IsSelfDraw() bool {
 	msg := d.msg
-	// ActionDealTile
+
+	if d.playerID == -1 {
+		return false
+	}
+
 	if msg.Seat == nil || msg.Moqie != nil {
 		return false
 	}
+
+	// ActionDealTile
 	who := d.parseWho(*msg.Seat)
 	return who == 0
 }
@@ -184,6 +212,11 @@ func (d *majsoulRoundData) ParseSelfDraw() (tile int, kanDoraIndicator int) {
 
 func (d *majsoulRoundData) IsDiscard() bool {
 	msg := d.msg
+
+	if d.playerID == -1 {
+		return false
+	}
+
 	// ActionDiscardTile
 	return msg.Moqie != nil
 }
@@ -204,6 +237,11 @@ func (d *majsoulRoundData) ParseDiscard() (who int, tile int, isTsumogiri bool, 
 
 func (d *majsoulRoundData) IsOpen() bool {
 	msg := d.msg
+
+	if d.playerID == -1 {
+		return false
+	}
+
 	// ActionChiPengGang || ActionAnGangAddGang
 	return msg.Tiles != nil && len(d.normalTiles(msg.Tiles)) <= 4
 }

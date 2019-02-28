@@ -141,7 +141,7 @@ func runServer(isHTTPS bool) {
 		tenhouMessageQueue:  make(chan []byte, 100),
 		tenhouRoundData:     &tenhouRoundData{},
 		majsoulMessageQueue: make(chan []byte, 100),
-		majsoulRoundData:    &majsoulRoundData{},
+		majsoulRoundData:    &majsoulRoundData{playerID: -1},
 	}
 	h.tenhouRoundData.roundData = newRoundData(h.tenhouRoundData, 0, 0)
 	h.majsoulRoundData.roundData = newRoundData(h.majsoulRoundData, 0, 0)
