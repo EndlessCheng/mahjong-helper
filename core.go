@@ -25,6 +25,9 @@ type DataParser interface {
 
 	GetMessage() string
 
+	// 解析前，根据消息内容来决定是否要进行后续解析
+	CheckMessage() bool
+
 	// round 开始/重连
 	// roundNumber: 场数（如东1为0，东2为1，...，南1为4，...）
 	// dealer: 庄家 0-3
@@ -365,6 +368,10 @@ func (d *roundData) analysis() error {
 
 	if debugMode {
 		fmt.Println("收到", d.parser.GetMessage())
+	}
+
+	if !d.parser.CheckMessage() {
+		return nil
 	}
 
 	// 若自家立直，则进入看戏模式

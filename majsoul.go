@@ -2,9 +2,14 @@ package main
 
 import (
 	"fmt"
+	"time"
+	"github.com/fatih/color"
 )
 
 type majsoulMessage struct {
+	// 对应到服务器用户数据库中的ID，该值越小表示您的注册时间越早
+	AccountID int `json:"account_id"`
+
 	// NotifyPlayerLoadGameReady
 	ReadyIDList []int `json:"ready_id_list,omitempty"`
 
@@ -48,10 +53,11 @@ type majsoulMessage struct {
 
 type majsoulRoundData struct {
 	*roundData
-	playerID   int
+
 	originJSON string
-	msg        *majsoulMessage
+	accountID  int
 	seat       int // 初始座位：0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
+	msg        *majsoulMessage
 }
 
 func (d *majsoulRoundData) fatalParse(info string, msg string) {
@@ -111,19 +117,6 @@ func (d *majsoulRoundData) mustParseMajsoulTiles(tiles []string) []int {
 	return hands
 }
 
-//var tileReg = regexp.MustCompile("[0-9][mps]|[1-7]z")
-//
-//func (d *majsoulRoundData) extractTiles(msg string) (positions []int, tiles []int) {
-//	indexPairs := tileReg.FindAllStringSubmatchIndex(msg, -1)
-//	for _, pair := range indexPairs {
-//		positions = append(positions, pair[0])
-//		rawTile := msg[pair[0]:pair[1]]
-//		tile := d.mustParseMajsoulTile(rawTile)
-//		tiles = append(tiles, tile)
-//	}
-//	return
-//}
-
 func (d *majsoulRoundData) GetDataSourceType() int {
 	return dataSourceTypeMajsoul
 }
@@ -132,37 +125,45 @@ func (d *majsoulRoundData) GetMessage() string {
 	return d.originJSON
 }
 
-func (d *majsoulRoundData) IsInit() bool {
+func (d *majsoulRoundData) CheckMessage() bool {
 	msg := d.msg
 
-	const playersCount = 4
+	if d.accountID > 0 {
+		return true
+	}
 
-	if len(msg.ReadyIDList) > 0 && len(msg.ReadyIDList) < playersCount {
-		fmt.Printf("等待玩家准备 (%d/%d)\n", len(msg.ReadyIDList), playersCount)
+	// 尚未获取到玩家数据库账号 ID
+	if msg.ReadyIDList == nil {
 		return false
 	}
 
-	if d.playerID == -1 && len(msg.ReadyIDList) == playersCount {
-		// 判断是否为人机对战，获取玩家ID
-		if !inIntSlice(0, msg.ReadyIDList) {
-			fmt.Println("尚未获取到玩家服务器端 ID，请先开启一局人机对战")
-			return false
-		}
-		for _, playerID := range msg.ReadyIDList {
-			if playerID != 0 {
-				d.playerID = playerID
-				fmt.Println("玩家服务器端 ID 获取成功:", d.playerID)
-				break
-			}
-		}
-	}
-
-	if d.playerID == -1 {
+	if len(msg.ReadyIDList) < 4 {
+		fmt.Printf("等待玩家准备 (%d/%d)\n", len(msg.ReadyIDList), 4)
 		return false
 	}
 
+	// 判断是否为人机对战，获取玩家ID
+	if !inIntSlice(0, msg.ReadyIDList) {
+		color.Red("尚未获取到玩家数据库账号 ID，请您刷新网页，或开启一局人机对战")
+		return false
+	}
+
+	for _, accountID := range msg.ReadyIDList {
+		if accountID > 0 {
+			d.accountID = accountID
+			printAccountInfo(accountID)
+			time.Sleep(2 * time.Second)
+			return true
+		}
+	}
+
+	return false
+}
+
+func (d *majsoulRoundData) IsInit() bool {
+	msg := d.msg
 	// NotifyPlayerLoadGameReady || ActionNewRound
-	return len(msg.ReadyIDList) == playersCount || msg.MD5 != ""
+	return len(msg.ReadyIDList) == 4 || msg.MD5 != ""
 }
 
 func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicator int, hands []int) {
@@ -172,7 +173,7 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicat
 		// dealer: 0=自家, 1=下家, 2=对家, 3=上家
 		dealer = 1
 		for i := len(msg.ReadyIDList) - 1; i >= 0; i-- {
-			if msg.ReadyIDList[i] == d.playerID {
+			if msg.ReadyIDList[i] == d.accountID {
 				break
 			}
 			dealer++
@@ -190,10 +191,6 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicat
 
 func (d *majsoulRoundData) IsSelfDraw() bool {
 	msg := d.msg
-
-	if d.playerID == -1 {
-		return false
-	}
 
 	if msg.Seat == nil || msg.Moqie != nil {
 		return false
@@ -216,11 +213,6 @@ func (d *majsoulRoundData) ParseSelfDraw() (tile int, kanDoraIndicator int) {
 
 func (d *majsoulRoundData) IsDiscard() bool {
 	msg := d.msg
-
-	if d.playerID == -1 {
-		return false
-	}
-
 	// ActionDiscardTile
 	return msg.Moqie != nil
 }
@@ -241,11 +233,6 @@ func (d *majsoulRoundData) ParseDiscard() (who int, tile int, isTsumogiri bool, 
 
 func (d *majsoulRoundData) IsOpen() bool {
 	msg := d.msg
-
-	if d.playerID == -1 {
-		return false
-	}
-
 	// ActionChiPengGang || ActionAnGangAddGang
 	return msg.Tiles != nil && len(d.normalTiles(msg.Tiles)) <= 4
 }
@@ -262,6 +249,7 @@ func (d *majsoulRoundData) ParseOpen() (who int, meldType int, meldTiles []int, 
 		meldType = meldTypeAnKan
 		calledTile = d.mustParseMajsoulTile(d.normalTiles(msg.Tiles)[0])
 		if d.leftCounts[calledTile] != 4 {
+			// TODO: 改成 panic
 			fmt.Println("暗杠数据解析错误！")
 		}
 		return

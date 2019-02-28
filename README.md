@@ -83,3 +83,4 @@ req.send(e.data);
 ```
 
 3\. 全局替换：把所有的 `i.play=function(t){` 替换成 `i.play=function(t){var req=new XMLHttpRequest();req.open("POST","https://localhost:12121/");req.send(JSON.stringify(t));`
+把 `l.prototype._onLoginSuccess=function(t,i){`（仅一处）替换成 `l.prototype._onLoginSuccess=function(t,i){var req=new XMLHttpRequest();req.open("POST","https://localhost:12121/");req.send(JSON.stringify(i));`

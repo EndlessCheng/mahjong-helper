@@ -578,7 +578,8 @@ func welcome() int {
 	clearConsole()
 	color.Magenta("已选择 - %s", platforms[choose])
 	if choose == 1 {
-		fmt.Println("说明：目前雀魂的消息解析还在alpha测试阶段，受技术限制，需要在程序启动后，先开启一局人机来获取玩家的服务器端ID（进入对战后即可退出）")
+		color.Yellow("提醒：若您已登录游戏，请刷新网页，或者开启一局人机对战\n" +
+			"该步骤用于获取您的数据库账号 ID，便于在游戏开始时分析自风，否则程序将无法解析后续数据")
 	}
 
 	return choose

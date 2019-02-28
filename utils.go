@@ -123,6 +123,15 @@ func inIntSlice(a int, arr []int) bool {
 	return false
 }
 
+func intAtSlice(a int, arr []int) int {
+	for i, _a := range arr {
+		if _a == a {
+			return i
+		}
+	}
+	return -1
+}
+
 func uniqueStrings(strings []string) []string {
 	u := make([]string, 0, len(strings))
 	mp := make(map[string]struct{}, len(strings))
