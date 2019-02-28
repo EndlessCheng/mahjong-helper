@@ -42,7 +42,13 @@
 3. 修改代码，使用 `XMLHttpRequest` 将收发的消息发送到（在 localhost 开启的）mahjong-helper 服务器，服务器收到消息后会自动进行相关分析
 4. 将修改后的 JS 代码传至个人的 github.io 项目，拿到该 JS 文件地址
 5. 安装浏览器扩展 Header Editor，重定向原 JS 文件地址到上一步中拿到的地址，具体操作可以参考[这篇](https://tieba.baidu.com/p/5956122477)
-6. 刷新网页
+6. 允许本地证书通过浏览器，在浏览器（仅限 Chrome 内核）中输入
+```
+chrome://flags/#allow-insecure-localhost
+```
+然后把高亮那一项的 Disabled 改成 Enabled（不同浏览器/版本的描述可能不一样，如果是中文的话点击「启用」按钮）
+
+7\. 重启浏览器
 
 觉得麻烦的话，1-4 的步骤可以用我改好的：
 
@@ -77,11 +83,3 @@ req.send(e.data);
 ```
 
 3\. 全局替换：把所有的 `i.play=function(t){` 替换成 `i.play=function(t){var req=new XMLHttpRequest();req.open("POST","https://localhost:12121/");req.send(JSON.stringify(t));`
-
-4\. 允许本地证书通过浏览器，在浏览器（仅限 Chrome 内核）中输入
-```
-chrome://flags/#allow-insecure-localhost
-```
-然后把高亮那一项的 Disabled 改成 Enabled（不同浏览器/版本的描述可能不一样，如果是中文的话点击「启用」按钮）
-
-5\. 重启浏览器
