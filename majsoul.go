@@ -258,11 +258,11 @@ func (d *majsoulRoundData) ParseOpen() (who int, meldType int, meldTiles []int, 
 	kanDoraIndicator = -1
 	if len(msg.Doras) > 0 {
 		kanDoraIndicator = d.mustParseMajsoulTile(msg.Doras[0])
+
+		meldType = meldTypeAnKan
 		calledTile = d.mustParseMajsoulTile(d.normalTiles(msg.Tiles)[0])
-		if d.leftCounts[calledTile] == 4 {
-			meldType = meldTypeAnKan
-		} else {
-			meldType = meldTypeKakan
+		if d.leftCounts[calledTile] != 4 {
+			fmt.Println("暗杠数据解析错误！")
 		}
 		return
 	}
@@ -277,13 +277,13 @@ func (d *majsoulRoundData) ParseOpen() (who int, meldType int, meldTiles []int, 
 		}
 	} else if len(meldTiles) == 4 {
 		calledTile = meldTiles[0]
-		// 通过判断 calledTile 的来源来是否为上一张舍牌，来判断是明杠还是暗杠
+		// 通过判断 calledTile 的来源来是否为上一张舍牌，来判断是大明杠还是加杠
 		if len(d.globalDiscardTiles) > 0 && calledTile == d.globalDiscardTiles[len(d.globalDiscardTiles)-1] {
-			// 明杠
+			// 大明杠
 			meldType = meldTypeMinKan
 		} else {
-			// 暗杠
-			meldType = meldTypeAnKan
+			// 加杠
+			meldType = meldTypeKakan
 		}
 	} else {
 		panic("鸣牌数据解析失败！")

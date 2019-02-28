@@ -16,7 +16,7 @@ const (
 	meldTypeChi    = iota // 吃
 	meldTypePon           // 碰
 	meldTypeAnKan         // 暗杠
-	meldTypeMinKan        // 明杠
+	meldTypeMinKan        // 大明杠
 	meldTypeKakan         // 加杠
 )
 
