@@ -111,6 +111,12 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			continue
 		}
 
+		if d.AccountID > 0 {
+			h.majsoulRoundData.accountID = d.AccountID
+			printAccountInfo(d.AccountID)
+			continue
+		}
+
 		h.majsoulRoundData.msg = &d
 		h.majsoulRoundData.originJSON = string(msg)
 		if err := h.majsoulRoundData.analysis(); err != nil {
@@ -141,7 +147,7 @@ func runServer(isHTTPS bool) {
 		tenhouMessageQueue:  make(chan []byte, 100),
 		tenhouRoundData:     &tenhouRoundData{},
 		majsoulMessageQueue: make(chan []byte, 100),
-		majsoulRoundData:    &majsoulRoundData{playerID: -1},
+		majsoulRoundData:    &majsoulRoundData{accountID: -1},
 	}
 	h.tenhouRoundData.roundData = newRoundData(h.tenhouRoundData, 0, 0)
 	h.majsoulRoundData.roundData = newRoundData(h.majsoulRoundData, 0, 0)

@@ -87,6 +87,7 @@ type tenhouMessage struct {
 
 type tenhouRoundData struct {
 	*roundData
+
 	originJSON string
 	msg        *tenhouMessage
 }
@@ -187,6 +188,10 @@ func (d *tenhouRoundData) GetDataSourceType() int {
 
 func (d *tenhouRoundData) GetMessage() string {
 	return d.originJSON
+}
+
+func (d *tenhouRoundData) CheckMessage() bool {
+	return true
 }
 
 func (d *tenhouRoundData) IsInit() bool {
