@@ -6,7 +6,6 @@ import (
 
 type majsoulMessage struct {
 	// NotifyPlayerLoadGameReady
-	// {"ready_id_list":[0,865366,0,0]}
 	ReadyIDList []int `json:"ready_id_list,omitempty"`
 
 	// ActionNewRound
