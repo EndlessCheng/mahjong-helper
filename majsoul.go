@@ -25,6 +25,8 @@ type majsoulMessage struct {
 
 	// ActionDealTile
 	// {"seat":1,"tile":"5m","left_tile_count":23,"operation":{"seat":1,"operation_list":[{"type":1}],"time_add":0,"time_fixed":60000},"zhenting":false}
+	// 他家暗杠后的摸牌
+	// {"seat":1,"left_tile_count":3,"doras":["7m","0p"],"zhenting":false}
 	Seat          *int     `json:"seat,omitempty"`
 	Tile          string   `json:"tile,omitempty"`
 	Doras         []string `json:"doras,omitempty"` // 暗杠摸牌了，同时翻出杠宝牌指示牌
@@ -35,8 +37,6 @@ type majsoulMessage struct {
 	// {"seat":0,"tile":"1z","is_liqi":false,"operation":{"seat":1,"operation_list":[{"type":3,"combination":["1z|1z"]}],"time_add":0,"time_fixed":60000},"moqie":false,"zhenting":false,"is_wliqi":false}
 	// 吃 碰 和
 	// {"seat":0,"tile":"6p","is_liqi":false,"operation":{"seat":1,"operation_list":[{"type":2,"combination":["7p|8p"]},{"type":3,"combination":["6p|6p"]},{"type":9}],"time_add":0,"time_fixed":60000},"moqie":false,"zhenting":true,"is_wliqi":false}
-	// 明杠后的舍牌
-	// {"seat":1,"left_tile_count":3,"doras":["7m","0p"],"zhenting":false}
 	IsLiqi    *bool     `json:"is_liqi,omitempty"`
 	IsWliqi   *bool     `json:"is_wliqi,omitempty"`
 	Moqie     *bool     `json:"moqie,omitempty"`
@@ -325,14 +325,6 @@ func (d *majsoulRoundData) IsFuriten() bool {
 	return false
 }
 
-func (d *majsoulRoundData) IsNewDora() bool {
-	return false
-}
-
-func (d *majsoulRoundData) ParseNewDora() (kanDoraIndicator int) {
-	return 0
-}
-
 func (d *majsoulRoundData) IsRoundWin() bool {
 	msg := d.msg
 	// ActionHule
@@ -346,5 +338,19 @@ func (d *majsoulRoundData) ParseRoundWin() (whos []int, points []int) {
 		whos = append(whos, d.parseWho(result.Seat))
 		points = append(points, result.PointRong)
 	}
+	return
+}
+
+func (d *majsoulRoundData) IsNewDora() bool {
+	msg := d.msg
+	// 在最后处理该项
+	// ActionDealTile
+	return msg.Doras != nil
+}
+
+func (d *majsoulRoundData) ParseNewDora() (kanDoraIndicator int) {
+	msg := d.msg
+
+	kanDoraIndicator = d.mustParseMajsoulTile(msg.Doras[len(msg.Doras)-1])
 	return
 }
