@@ -117,6 +117,14 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			continue
 		}
 
+		if d.Friends != nil {
+			fmt.Println("好友账号ID   好友上次登录时间        好友上次登出时间       好友昵称")
+			for _, friend := range d.Friends {
+				fmt.Println(friend)
+			}
+			continue
+		}
+
 		h.majsoulRoundData.msg = &d
 		h.majsoulRoundData.originJSON = string(msg)
 		if err := h.majsoulRoundData.analysis(); err != nil {
