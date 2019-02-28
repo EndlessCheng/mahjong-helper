@@ -44,6 +44,11 @@
 5. 安装浏览器扩展 Header Editor，重定向原 JS 文件地址到上一步中拿到的地址，具体操作可以参考[这篇](https://tieba.baidu.com/p/5956122477)
 6. 刷新网页
 
+觉得麻烦的话，1-4 的步骤可以用我改好的：
+
+- 天凤：`http://EndlessCheng.github.io/tenhou/1623.js`
+- 雀魂：`https://EndlessCheng.github.io/majsoul/code.js`
+
 下面说明天凤和雀魂的代码注入点
 
 ### 天凤 (tenhou)
@@ -58,8 +63,6 @@ req.send(a.data);
 ```
 
 ### 雀魂 (majsoul)
-
-（目前尚未完全测试到一些特殊情况，可能会产生 bug）
 
 考虑到雀魂的 WebSocket 收到的是封装后的 protobuf 二进制数据，不好解析，于是另寻他路
 
