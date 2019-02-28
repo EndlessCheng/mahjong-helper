@@ -137,6 +137,11 @@ func (d *majsoulRoundData) GetMessage() string {
 func (d *majsoulRoundData) IsInit() bool {
 	msg := d.msg
 
+	if len(msg.ReadyIDList) > 0 && len(msg.ReadyIDList) < 4 {
+		fmt.Printf("等待玩家准备 (%d/4)\n", len(msg.ReadyIDList))
+		return false
+	}
+
 	if d.playerID == -1 && len(msg.ReadyIDList) == 4 {
 		// 判断是否为人机对战，获取玩家ID
 		if !inIntSlice(0, msg.ReadyIDList) {
@@ -147,7 +152,6 @@ func (d *majsoulRoundData) IsInit() bool {
 			if playerID != 0 {
 				d.playerID = playerID
 				fmt.Println("玩家服务器端 ID 获取成功:", d.playerID)
-				fmt.Println("")
 				break
 			}
 		}
