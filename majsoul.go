@@ -16,7 +16,7 @@ type majsoulMessage struct {
 	ReadyIDList []int `json:"ready_id_list,omitempty"`
 
 	// ActionNewRound
-	// {"chang":0,"ju":0,"ben":0,"tiles":["4m","6m","7m","3p","6p","7p","6s","1z","1z","2z","3z","4z","7z"],"dora":"6m","scores":[25000,25000,25000,25000],"liqibang":0,"al":false,"md5":"7527BD6868BBAB75B02A80CEA7CB4405","left_tile_count":69}
+	// {"chang":0,"ju":0,"ben":0,"tiles":["1m","3m","7m","3p","6p","7p","6s","1z","1z","2z","3z","4z","7z"],"dora":"6m","scores":[25000,25000,25000,25000],"liqibang":0,"al":false,"md5":"7527BD6868BBAB75B02A80CEA7CB4405","left_tile_count":69}
 	MD5   string      `json:"md5,omitempty"`
 	Chang *int        `json:"chang,omitempty"`
 	Ju    *int        `json:"ju,omitempty"`
@@ -24,7 +24,7 @@ type majsoulMessage struct {
 	Dora  string      `json:"dora,omitempty"`
 
 	// ActionDealTile
-	// {"seat":1,"tile":"5m","left_tile_count":64,"operation":{"seat":1,"operation_list":[{"type":1}],"time_add":0,"time_fixed":60000},"zhenting":false}
+	// {"seat":1,"tile":"5m","left_tile_count":23,"operation":{"seat":1,"operation_list":[{"type":1}],"time_add":0,"time_fixed":60000},"zhenting":false}
 	Seat          *int     `json:"seat,omitempty"`
 	Tile          string   `json:"tile,omitempty"`
 	Doras         []string `json:"doras,omitempty"` // 暗杠摸牌了，同时翻出杠宝牌指示牌
@@ -35,6 +35,8 @@ type majsoulMessage struct {
 	// {"seat":0,"tile":"1z","is_liqi":false,"operation":{"seat":1,"operation_list":[{"type":3,"combination":["1z|1z"]}],"time_add":0,"time_fixed":60000},"moqie":false,"zhenting":false,"is_wliqi":false}
 	// 吃 碰 和
 	// {"seat":0,"tile":"6p","is_liqi":false,"operation":{"seat":1,"operation_list":[{"type":2,"combination":["7p|8p"]},{"type":3,"combination":["6p|6p"]},{"type":9}],"time_add":0,"time_fixed":60000},"moqie":false,"zhenting":true,"is_wliqi":false}
+	// 明杠后的舍牌
+	// {"seat":1,"left_tile_count":3,"doras":["7m","0p"],"zhenting":false}
 	IsLiqi    *bool     `json:"is_liqi,omitempty"`
 	IsWliqi   *bool     `json:"is_wliqi,omitempty"`
 	Moqie     *bool     `json:"moqie,omitempty"`
@@ -47,6 +49,10 @@ type majsoulMessage struct {
 	// ActionLiqi
 
 	// ActionHule
+	Hules []struct {
+		Seat      int `json:"seat"`
+		PointRong int `json:"point_rong"`
+	} `json:"hules"`
 
 	// ActionLiuJu
 
@@ -230,7 +236,7 @@ func (d *majsoulRoundData) ParseSelfDraw() (tile int, kanDoraIndicator int) {
 	tile = d.mustParseMajsoulTile(msg.Tile)
 	kanDoraIndicator = -1
 	if len(msg.Doras) > 0 {
-		kanDoraIndicator = d.mustParseMajsoulTile(msg.Doras[0])
+		kanDoraIndicator = d.mustParseMajsoulTile(msg.Doras[len(msg.Doras)-1])
 	}
 	return
 }
@@ -250,7 +256,7 @@ func (d *majsoulRoundData) ParseDiscard() (who int, tile int, isTsumogiri bool, 
 	canBeMeld = msg.Operation != nil
 	kanDoraIndicator = -1
 	if len(msg.Doras) > 0 {
-		kanDoraIndicator = d.mustParseMajsoulTile(msg.Doras[0])
+		kanDoraIndicator = d.mustParseMajsoulTile(msg.Doras[len(msg.Doras)-1])
 	}
 	return
 }
@@ -268,7 +274,7 @@ func (d *majsoulRoundData) ParseOpen() (who int, meldType int, meldTiles []int, 
 	meldTiles = d.mustParseMajsoulTiles(d.normalTiles(msg.Tiles))
 	kanDoraIndicator = -1
 	if len(msg.Doras) > 0 {
-		kanDoraIndicator = d.mustParseMajsoulTile(msg.Doras[0])
+		kanDoraIndicator = d.mustParseMajsoulTile(msg.Doras[len(msg.Doras)-1])
 
 		meldType = meldTypeAnKan
 		calledTile = d.mustParseMajsoulTile(d.normalTiles(msg.Tiles)[0])
@@ -325,4 +331,20 @@ func (d *majsoulRoundData) IsNewDora() bool {
 
 func (d *majsoulRoundData) ParseNewDora() (kanDoraIndicator int) {
 	return 0
+}
+
+func (d *majsoulRoundData) IsRoundWin() bool {
+	msg := d.msg
+	// ActionHule
+	return msg.Hules != nil
+}
+
+func (d *majsoulRoundData) ParseRoundWin() (whos []int, points []int) {
+	msg := d.msg
+
+	for _, result := range msg.Hules {
+		whos = append(whos, d.parseWho(result.Seat))
+		points = append(points, result.PointRong)
+	}
+	return
 }

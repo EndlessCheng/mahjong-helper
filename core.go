@@ -70,6 +70,10 @@ type DataParser interface {
 	// kanDoraIndicator: 0-33
 	IsNewDora() bool
 	ParseNewDora() (kanDoraIndicator int)
+
+	// 本局是否和牌
+	IsRoundWin() bool
+	ParseRoundWin() (whos []int, points []int)
 }
 
 //
@@ -532,8 +536,8 @@ func (d *roundData) analysis() error {
 		// 他家舍牌
 		d.descLeftCounts(tile)
 
-		if who != 3 {
-			// 为防止先收到自家摸牌，然后收到上家摸牌，上家舍牌时不刷新
+		// 天凤：为防止先收到自家摸牌，然后收到上家摸牌，上家舍牌时不刷新
+		if d.parser.GetDataSourceType() != dataSourceTypeTenhou || who != 3 {
 			if !debugMode {
 				clearConsole()
 			}
@@ -564,7 +568,7 @@ func (d *roundData) analysis() error {
 			player.meldDiscardsAtGlobal = append(player.meldDiscardsAtGlobal, len(d.globalDiscardTiles)-1)
 		}
 
-		if who != 3 {
+		if d.parser.GetDataSourceType() != dataSourceTypeTenhou || who != 3 {
 			// 打印他家舍牌信息
 			d.printDiscards()
 			fmt.Println()
@@ -583,6 +587,15 @@ func (d *roundData) analysis() error {
 			err := _analysis(14, d._countForAnalysis(), d.leftCounts)
 			d.counts[tile]--
 			return err
+		}
+	case d.parser.IsRoundWin():
+		if !debugMode {
+			clearConsole()
+		}
+		fmt.Println("和牌，本局结束")
+		whos, points := d.parser.ParseRoundWin()
+		for i, who := range whos {
+			fmt.Printf(d.players[who].name, points[i])
 		}
 	default:
 	}

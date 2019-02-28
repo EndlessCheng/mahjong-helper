@@ -279,3 +279,11 @@ func (d *tenhouRoundData) ParseNewDora() (kanDoraIndicator int) {
 	kanDoraIndicator = d._parseTenhouTile(d.msg.Hai)
 	return
 }
+
+func (d *tenhouRoundData) IsRoundWin() bool {
+	return false
+}
+
+func (d *tenhouRoundData) ParseRoundWin() (whos []int, points []int) {
+	return
+}
