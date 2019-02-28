@@ -147,6 +147,10 @@ func (d *majsoulRoundData) mustParseMajsoulTiles(tiles []string) []int {
 	return hands
 }
 
+func (d *majsoulRoundData) isNewDora(doras []string) bool {
+	return len(doras) > len(d.doraIndicators)
+}
+
 func (d *majsoulRoundData) GetDataSourceType() int {
 	return dataSourceTypeMajsoul
 }
@@ -234,7 +238,7 @@ func (d *majsoulRoundData) ParseSelfDraw() (tile int, kanDoraIndicator int) {
 	msg := d.msg
 	tile = d.mustParseMajsoulTile(msg.Tile)
 	kanDoraIndicator = -1
-	if len(msg.Doras) > 0 {
+	if d.isNewDora(msg.Doras) {
 		kanDoraIndicator = d.mustParseMajsoulTile(msg.Doras[len(msg.Doras)-1])
 	}
 	return
@@ -254,7 +258,7 @@ func (d *majsoulRoundData) ParseDiscard() (who int, tile int, isTsumogiri bool, 
 	isReach = *msg.IsLiqi || *msg.IsWliqi
 	canBeMeld = msg.Operation != nil
 	kanDoraIndicator = -1
-	if len(msg.Doras) > 0 {
+	if d.isNewDora(msg.Doras) {
 		kanDoraIndicator = d.mustParseMajsoulTile(msg.Doras[len(msg.Doras)-1])
 	}
 	return
@@ -272,7 +276,7 @@ func (d *majsoulRoundData) ParseOpen() (who int, meldType int, meldTiles []int, 
 	who = d.parseWho(*msg.Seat)
 	meldTiles = d.mustParseMajsoulTiles(d.normalTiles(msg.Tiles))
 	kanDoraIndicator = -1
-	if len(msg.Doras) > 0 {
+	if d.isNewDora(msg.Doras) {
 		kanDoraIndicator = d.mustParseMajsoulTile(msg.Doras[len(msg.Doras)-1])
 
 		meldType = meldTypeAnKan
@@ -344,7 +348,7 @@ func (d *majsoulRoundData) IsNewDora() bool {
 	msg := d.msg
 	// 在最后处理该项
 	// ActionDealTile
-	return msg.Doras != nil
+	return d.isNewDora(msg.Doras)
 }
 
 func (d *majsoulRoundData) ParseNewDora() (kanDoraIndicator int) {

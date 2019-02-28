@@ -590,7 +590,7 @@ func (d *roundData) analysis() error {
 		fmt.Println("和牌，本局结束")
 		whos, points := d.parser.ParseRoundWin()
 		for i, who := range whos {
-			fmt.Printf(d.players[who].name, points[i])
+			fmt.Println(d.players[who].name, points[i])
 		}
 	case d.parser.IsNewDora():
 		// 杠宝牌
