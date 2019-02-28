@@ -271,19 +271,19 @@ func (d *tenhouRoundData) IsFuriten() bool {
 	return d.msg.Tag == "FURITEN"
 }
 
+func (d *tenhouRoundData) IsRoundWin() bool {
+	return false
+}
+
+func (d *tenhouRoundData) ParseRoundWin() (whos []int, points []int) {
+	return
+}
+
 func (d *tenhouRoundData) IsNewDora() bool {
 	return d.msg.Tag == "DORA"
 }
 
 func (d *tenhouRoundData) ParseNewDora() (kanDoraIndicator int) {
 	kanDoraIndicator = d._parseTenhouTile(d.msg.Hai)
-	return
-}
-
-func (d *tenhouRoundData) IsRoundWin() bool {
-	return false
-}
-
-func (d *tenhouRoundData) ParseRoundWin() (whos []int, points []int) {
 	return
 }

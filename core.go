@@ -66,14 +66,15 @@ type DataParser interface {
 	// 振听
 	IsFuriten() bool
 
+	// 本局是否和牌
+	IsRoundWin() bool
+	ParseRoundWin() (whos []int, points []int)
+
+	// 这一项放在末尾处理
 	// 杠宝牌（IsNewDora 对于雀魂来说恒为 false，见 ParseSelfDraw ParseDiscard ParseOpen）
 	// kanDoraIndicator: 0-33
 	IsNewDora() bool
 	ParseNewDora() (kanDoraIndicator int)
-
-	// 本局是否和牌
-	IsRoundWin() bool
-	ParseRoundWin() (whos []int, points []int)
 }
 
 //
@@ -461,12 +462,6 @@ func (d *roundData) analysis() error {
 			}
 			d.meldCount++
 		}
-	case d.parser.IsNewDora():
-		// 杠宝牌
-		// 1. 剩余牌减少
-		// 2. 打点提高
-		kanDoraIndicator := d.parser.ParseNewDora()
-		d.newDora(kanDoraIndicator)
 	case d.parser.IsReach():
 		// 立直宣告
 		// 如果是他家立直，进入攻守判断模式
@@ -597,6 +592,12 @@ func (d *roundData) analysis() error {
 		for i, who := range whos {
 			fmt.Printf(d.players[who].name, points[i])
 		}
+	case d.parser.IsNewDora():
+		// 杠宝牌
+		// 1. 剩余牌减少
+		// 2. 打点提高
+		kanDoraIndicator := d.parser.ParseNewDora()
+		d.newDora(kanDoraIndicator)
 	default:
 	}
 
