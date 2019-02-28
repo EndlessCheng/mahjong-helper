@@ -87,3 +87,5 @@ req.send(e.data);
 把所有的 `i.play=function(t){` 替换成 `i.play=function(t){var req=new XMLHttpRequest();req.open("POST","https://localhost:12121/");req.send(JSON.stringify(t));`
 
 把 `l.prototype._onLoginSuccess=function(t,i){`（仅一处）替换成 `l.prototype._onLoginSuccess=function(t,i){var req=new XMLHttpRequest();req.open("POST","https://localhost:12121/");req.send(JSON.stringify(i));`
+
+PS: 在网页控制台输入 `GameMgr._inRelease = 0` 即可开启调试模式
