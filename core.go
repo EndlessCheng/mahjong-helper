@@ -35,15 +35,16 @@ type DataParser interface {
 
 	// 自家摸牌
 	// tile: 0-33
+	// kanDoraIndicator: 摸牌时，若为暗杠摸的岭上牌，则可以翻出杠宝牌指示牌，否则返回 -1 （天凤恒为 -1，见 IsNewDora）
 	IsSelfDraw() bool
-	ParseSelfDraw() (tile int)
+	ParseSelfDraw() (tile int, kanDoraIndicator int)
 
 	// 舍牌
 	// who: 0=自家, 1=下家, 2=对家, 3=上家
 	// isTsumogiri: 是否为摸切（who=0 时忽略该值）
 	// isReach: 是否为立直宣言（isReach 对于天凤来说恒为 false，见 IsReach）
 	// canBeMeld: 是否可以鸣牌（who=0 时忽略该值）
-	// kanDoraIndicator: 明杠的杠宝牌，在切牌后出现，没有则返回 -1（天凤恒为-1）
+	// kanDoraIndicator: 明杠/加杠的杠宝牌指示牌，在切牌后出现，没有则返回 -1（天凤恒为-1）
 	IsDiscard() bool
 	ParseDiscard() (who int, tile int, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int)
 
@@ -51,17 +52,18 @@ type DataParser interface {
 	// meldType: 鸣牌类型（吃、碰、暗杠、明杠、加杠）
 	// meldTiles: 副露的牌 [0-33]
 	// calledTile: 被鸣的牌 0-33
+	// kanDoraIndicator: 暗杠的杠宝牌指示牌，在他家暗杠时出现，没有则返回 -1（天凤恒为-1）
 	IsOpen() bool
-	ParseOpen() (who int, meldType int, meldTiles []int, calledTile int)
+	ParseOpen() (who int, meldType int, meldTiles []int, calledTile int, kanDoraIndicator int)
 
-	// 立直声明（IsReach() 对于雀魂来说恒为 false，见 ParseDiscard）
+	// 立直声明（IsReach 对于雀魂来说恒为 false，见 ParseDiscard）
 	IsReach() bool
 	ParseReach() (who int)
 
 	// 振听
 	IsFuriten() bool
 
-	// 杠宝牌
+	// 杠宝牌（IsNewDora 对于雀魂来说恒为 false，见 ParseSelfDraw ParseDiscard ParseOpen）
 	// kanDoraIndicator: 0-33
 	IsNewDora() bool
 	ParseNewDora() (kanDoraIndicator int)
@@ -162,7 +164,8 @@ type roundData struct {
 	doraIndicators []int
 
 	// 自家手牌
-	counts []int
+	counts    []int
+	meldCount int
 
 	// 牌山剩余牌量
 	leftCounts []int
@@ -209,20 +212,31 @@ func (d *roundData) reset(roundNumber int, dealer int) {
 	*d = *newData
 }
 
-// TODO: 临时用
-func (d *roundData) _fillZi() {
-	for i, c := range d.counts[27:] {
-		if c == 0 {
-			d.counts[i+27] = 3
+func (d *roundData) _countForAnalysis() []int {
+	tmpCount := make([]int, 34)
+	copy(tmpCount, d.counts)
+	cnt := 0
+	for i := 27; i < 34; i++ {
+		if cnt == d.meldCount {
 			break
 		}
+		if tmpCount[i] == 0 {
+			tmpCount[i] = 3
+			cnt++
+		}
 	}
+	return tmpCount
 }
 
 func (d *roundData) descLeftCounts(tile int) {
 	d.leftCounts[tile]--
 	if d.leftCounts[tile] < 0 {
-		fmt.Printf("数据异常: %s 数量为 %d\n", mahjongZH[tile], d.leftCounts[tile])
+		info := fmt.Sprintf("数据异常: %s 数量为 %d", mahjongZH[tile], d.leftCounts[tile])
+		if debugMode {
+			panic(info)
+		} else {
+			fmt.Println(info)
+		}
 	}
 }
 
@@ -341,25 +355,16 @@ func (d *roundData) analysisTilesRisk() (tables riskTables) {
 }
 
 func (d *roundData) analysis() error {
-	//defer func() {
-	//	if err := recover(); err != nil {
-	//		fmt.Println("内部错误：", err)
-	//	}
-	//}()
+	if !debugMode {
+		defer func() {
+			if err := recover(); err != nil {
+				fmt.Println("内部错误：", err)
+			}
+		}()
+	}
 
 	if debugMode {
-		msg := d.parser.GetMessage()
-		if d.parser.GetDataSourceType() == dataSourceTypeMajsoul {
-			if len(msg) == 7 {
-				return nil
-			}
-			fmt.Printf("收到 [len=%d] %s\n", len(msg), msg)
-			fmt.Println(len(msg))
-			fmt.Println(stringToSlice(msg))
-			fmt.Println([]byte(msg))
-		} else {
-			fmt.Println("收到", msg)
-		}
+		fmt.Println("收到", d.parser.GetMessage())
 	}
 
 	// 若自家立直，则进入看戏模式
@@ -411,7 +416,10 @@ func (d *roundData) analysis() error {
 		}
 	case d.parser.IsOpen():
 		// 某家鸣牌（含暗杠、加杠）
-		who, meldType, meldTiles, calledTile := d.parser.ParseOpen()
+		who, meldType, meldTiles, calledTile, kanDoraIndicator := d.parser.ParseOpen()
+		if kanDoraIndicator != -1 {
+			d.newDora(kanDoraIndicator)
+		}
 		if meldType == meldTypeKakan {
 			// TODO: 修改副露情况
 			d.descLeftCounts(calledTile)
@@ -432,7 +440,6 @@ func (d *roundData) analysis() error {
 
 		if who == 0 {
 			// 自家副露
-			// 简化，修改副露牌为字牌
 			if meldType == meldTypeAnKan {
 				d.counts[meldTiles[0]] = 0
 			} else {
@@ -441,7 +448,7 @@ func (d *roundData) analysis() error {
 					d.counts[tile]--
 				}
 			}
-			d._fillZi()
+			d.meldCount++
 		}
 	case d.parser.IsNewDora():
 		// 杠宝牌
@@ -474,10 +481,13 @@ func (d *roundData) analysis() error {
 			clearConsole()
 		}
 		// 自家（从牌山 d.leftCounts）摸牌（至手牌 d.counts）
-		// FIXME: 有一定概率在自己坐庄时，会先收到摸牌的消息，然后收到本局开始的消息
-		tile := d.parser.ParseSelfDraw()
+		// FIXME: 对于天凤，有一定概率在自己坐庄时，会先收到摸牌的消息，然后收到本局开始的消息
+		tile, kanDoraIndicator := d.parser.ParseSelfDraw()
 		d.descLeftCounts(tile)
 		d.counts[tile]++
+		if kanDoraIndicator != -1 {
+			d.newDora(kanDoraIndicator)
+		}
 
 		// 打印他家舍牌信息
 		d.printDiscards()
@@ -489,7 +499,7 @@ func (d *roundData) analysis() error {
 
 		// 何切
 		// TODO: 根据是否听牌/一向听、打点、巡目、和率等进行攻守判断
-		return _analysis(14, d.counts, d.leftCounts)
+		return _analysis(14, d._countForAnalysis(), d.leftCounts)
 	case d.parser.IsDiscard():
 		who, tile, isTsumogiri, isReach, canBeMeld, kanDoraIndicator := d.parser.ParseDiscard()
 
@@ -563,7 +573,7 @@ func (d *roundData) analysis() error {
 			// TODO: 消除海底/避免河底/型听提醒
 
 			// 何切
-			err := _analysis(14, d.counts, d.leftCounts)
+			err := _analysis(14, d._countForAnalysis(), d.leftCounts)
 			d.counts[tile]--
 			return err
 		}

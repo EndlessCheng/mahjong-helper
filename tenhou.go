@@ -87,7 +87,8 @@ type tenhouMessage struct {
 
 type tenhouRoundData struct {
 	*roundData
-	msg *tenhouMessage
+	originJSON string
+	msg        *tenhouMessage
 }
 
 //func (d *tenhouRoundData) mergeCachedTile() {
@@ -185,7 +186,7 @@ func (d *tenhouRoundData) GetDataSourceType() int {
 }
 
 func (d *tenhouRoundData) GetMessage() string {
-	return d.msg.Tag
+	return d.originJSON
 }
 
 func (d *tenhouRoundData) IsInit() bool {
@@ -213,9 +214,10 @@ func (d *tenhouRoundData) IsSelfDraw() bool {
 	return _selfDrawReg.MatchString(d.msg.Tag)
 }
 
-func (d *tenhouRoundData) ParseSelfDraw() (tile int) {
+func (d *tenhouRoundData) ParseSelfDraw() (tile int, kanDoraIndicator int) {
 	rawTile := d.msg.Tag[1:]
 	tile = d._parseTenhouTile(rawTile)
+	kanDoraIndicator = -1
 	return
 }
 
@@ -242,9 +244,10 @@ func (d *tenhouRoundData) IsOpen() bool {
 	return d.msg.Tag == "N"
 }
 
-func (d *tenhouRoundData) ParseOpen() (who int, meldType int, meldTiles []int, calledTile int) {
+func (d *tenhouRoundData) ParseOpen() (who int, meldType int, meldTiles []int, calledTile int, kanDoraIndicator int) {
 	who, _ = strconv.Atoi(d.msg.Who)
 	meldType, meldTiles, calledTile = d._parseTenhouMeld(d.msg.Meld)
+	kanDoraIndicator = -1
 	return
 }
 
