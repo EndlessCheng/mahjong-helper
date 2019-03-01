@@ -167,6 +167,10 @@ func (d *majsoulRoundData) CheckMessage() bool {
 	}
 
 	if d.accountID > 0 {
+		if msg.ReadyIDList != nil && !inIntSlice(d.accountID, msg.ReadyIDList) {
+			color.Red("尚未正确获取到玩家数据库账号 ID，请您刷新网页，或开启一局人机对战（错误信息：您的 ID %d 不在对战列表 %v 中）", d.accountID, msg.ReadyIDList)
+			return false
+		}
 		return true
 	}
 	// 尚未获取到玩家数据库账号 ID
