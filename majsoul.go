@@ -99,7 +99,7 @@ func (d *majsoulRoundData) normalTiles(tiles interface{}) []string {
 	if !ok {
 		_tile, ok := tiles.(string)
 		if !ok {
-			panic(fmt.Sprintln("[anKanTile] 解析错误", tiles))
+			panic(fmt.Sprintln("[normalTiles] 解析错误", tiles))
 		}
 		return []string{_tile, _tile, _tile, _tile}
 	}
@@ -229,6 +229,7 @@ func (d *majsoulRoundData) IsSelfDraw() bool {
 		return false
 	}
 
+	// FIXME: 更好的判断？
 	// ActionDealTile
 	who := d.parseWho(*msg.Seat)
 	return who == 0
@@ -266,6 +267,7 @@ func (d *majsoulRoundData) ParseDiscard() (who int, tile int, isTsumogiri bool, 
 
 func (d *majsoulRoundData) IsOpen() bool {
 	msg := d.msg
+	// FIXME: 更好的判断？
 	// ActionChiPengGang || ActionAnGangAddGang
 	return msg.Tiles != nil && len(d.normalTiles(msg.Tiles)) <= 4
 }
