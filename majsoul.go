@@ -16,7 +16,7 @@ type majsoulMessage struct {
 	ReadyIDList []int `json:"ready_id_list,omitempty"`
 
 	// ActionNewRound
-	// {"chang":0,"ju":0,"ben":0,"tiles":["1m","3m","7m","3p","6p","7p","6s","1z","1z","2z","3z","4z","7z"],"dora":"6m","scores":[25000,25000,25000,25000],"liqibang":0,"al":false,"md5":"7527BD6868BBAB75B02A80CEA7CB4405","left_tile_count":69}
+	// {"chang":0,"ju":0,"ben":0,"tiles":["1m","3m","7m","3p","6p","7p","6s","1z","1z","2z","3z","4z","7z"],"dora":"6m","scores":[25000,25000,25000,25000],"liqibang":0,"al":false,"md5":"","left_tile_count":69}
 	MD5   string      `json:"md5,omitempty"`
 	Chang *int        `json:"chang,omitempty"`
 	Ju    *int        `json:"ju,omitempty"`
