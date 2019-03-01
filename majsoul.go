@@ -16,7 +16,7 @@ type majsoulMessage struct {
 	ReadyIDList []int `json:"ready_id_list,omitempty"`
 
 	// ActionNewRound
-	// {"chang":0,"ju":0,"ben":0,"tiles":["1m","3m","7m","3p","6p","7p","6s","1z","1z","2z","3z","4z","7z"],"dora":"6m","scores":[25000,25000,25000,25000],"liqibang":0,"al":false,"md5":"7527BD6868BBAB75B02A80CEA7CB4405","left_tile_count":69}
+	// {"chang":0,"ju":0,"ben":0,"tiles":["1m","3m","7m","3p","6p","7p","6s","1z","1z","2z","3z","4z","7z"],"dora":"6m","scores":[25000,25000,25000,25000],"liqibang":0,"al":false,"md5":"","left_tile_count":69}
 	MD5   string      `json:"md5,omitempty"`
 	Chang *int        `json:"chang,omitempty"`
 	Ju    *int        `json:"ju,omitempty"`
@@ -99,7 +99,7 @@ func (d *majsoulRoundData) normalTiles(tiles interface{}) []string {
 	if !ok {
 		_tile, ok := tiles.(string)
 		if !ok {
-			panic(fmt.Sprintln("[anKanTile] 解析错误", tiles))
+			panic(fmt.Sprintln("[normalTiles] 解析错误", tiles))
 		}
 		return []string{_tile, _tile, _tile, _tile}
 	}
@@ -162,8 +162,8 @@ func (d *majsoulRoundData) GetMessage() string {
 func (d *majsoulRoundData) CheckMessage() bool {
 	msg := d.msg
 
-	if len(msg.ReadyIDList) > 0 && len(msg.ReadyIDList) < 4 {
-		fmt.Printf("等待玩家准备 (%d/%d)\n", len(msg.ReadyIDList), 4)
+	if msg.ReadyIDList != nil {
+		fmt.Printf("等待玩家准备 (%d/%d) %v\n", len(msg.ReadyIDList), 4, msg.ReadyIDList)
 	}
 
 	if d.accountID > 0 {
@@ -229,6 +229,7 @@ func (d *majsoulRoundData) IsSelfDraw() bool {
 		return false
 	}
 
+	// FIXME: 更好的判断？
 	// ActionDealTile
 	who := d.parseWho(*msg.Seat)
 	return who == 0
@@ -266,6 +267,7 @@ func (d *majsoulRoundData) ParseDiscard() (who int, tile int, isTsumogiri bool, 
 
 func (d *majsoulRoundData) IsOpen() bool {
 	msg := d.msg
+	// FIXME: 更好的判断？
 	// ActionChiPengGang || ActionAnGangAddGang
 	return msg.Tiles != nil && len(d.normalTiles(msg.Tiles)) <= 4
 }
