@@ -111,7 +111,7 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			continue
 		}
 
-		if h.majsoulRoundData.accountID == -1 && d.AccountID > 0 {
+		if d.AccountID > 0 && h.majsoulRoundData.accountID != d.AccountID {
 			h.majsoulRoundData.accountID = d.AccountID
 			printAccountInfo(d.AccountID)
 			continue
