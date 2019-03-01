@@ -13,6 +13,8 @@ import (
 )
 
 type mjHandler struct {
+	log echo.Logger
+
 	analysing bool
 
 	tenhouMessageQueue chan []byte
@@ -25,11 +27,11 @@ type mjHandler struct {
 func (h *mjHandler) index(c echo.Context) error {
 	data, err := ioutil.ReadAll(c.Request().Body)
 	if err != nil {
-		c.Logger().Error("[mjHandler.index.ioutil.ReadAll]")
+		h.log.Error("[mjHandler.index.ioutil.ReadAll]", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
-	c.Logger().Info(string(data))
+	h.log.Info(string(data))
 	return c.String(http.StatusOK, time.Now().Format("2006-01-02 15:04:05"))
 }
 
@@ -83,8 +85,11 @@ func (h *mjHandler) runAnalysisTenhouMessageTask() {
 			continue
 		}
 
+		originJSON := string(msg)
+		h.log.Info(originJSON)
+
 		h.tenhouRoundData.msg = &d
-		h.tenhouRoundData.originJSON = string(msg)
+		h.tenhouRoundData.originJSON = originJSON
 		if err := h.tenhouRoundData.analysis(); err != nil {
 			fmt.Println("错误：", err)
 		}
@@ -111,6 +116,9 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			continue
 		}
 
+		originJSON := string(msg)
+		h.log.Info(originJSON)
+
 		if d.AccountID > 0 && h.majsoulRoundData.accountID != d.AccountID {
 			h.majsoulRoundData.accountID = d.AccountID
 			printAccountInfo(d.AccountID)
@@ -126,7 +134,7 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 		}
 
 		h.majsoulRoundData.msg = &d
-		h.majsoulRoundData.originJSON = string(msg)
+		h.majsoulRoundData.originJSON = originJSON
 		if err := h.majsoulRoundData.analysis(); err != nil {
 			fmt.Println("错误：", err)
 		}
@@ -152,6 +160,8 @@ func runServer(isHTTPS bool) {
 	}()
 
 	h := &mjHandler{
+		log: e.Logger,
+
 		tenhouMessageQueue:  make(chan []byte, 100),
 		tenhouRoundData:     &tenhouRoundData{},
 		majsoulMessageQueue: make(chan []byte, 100),
