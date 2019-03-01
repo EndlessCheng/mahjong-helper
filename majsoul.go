@@ -162,8 +162,8 @@ func (d *majsoulRoundData) GetMessage() string {
 func (d *majsoulRoundData) CheckMessage() bool {
 	msg := d.msg
 
-	if len(msg.ReadyIDList) > 0 && len(msg.ReadyIDList) < 4 {
-		fmt.Printf("等待玩家准备 (%d/%d)\n", len(msg.ReadyIDList), 4)
+	if msg.ReadyIDList != nil {
+		fmt.Printf("等待玩家准备 (%d/%d) %v\n", len(msg.ReadyIDList), 4, msg.ReadyIDList)
 	}
 
 	if d.accountID > 0 {
