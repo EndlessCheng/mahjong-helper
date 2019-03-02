@@ -8,6 +8,7 @@ func TestCalculateShantenWithImprove(t *testing.T) {
 
 func TestCalculateShantenWithImproves13(t *testing.T) {
 	tiles := "334m 22478p 23456s"
+	tiles = "234579m 3456p 3577s"
 	t.Log(CalculateShantenWithImproves13(MustStrToTiles34(tiles), false))
 }
 
