@@ -194,7 +194,7 @@ func runServer(isHTTPS bool) {
 }
 
 const (
-	certStr = `-----BEGIN CERTIFICATE-----
+	certText = `-----BEGIN CERTIFICATE-----
 MIIDHjCCAgYCCQDU2jXI1a7kizANBgkqhkiG9w0BAQsFADBRMQswCQYDVQQGEwJV
 UzELMAkGA1UECAwCVVMxCzAJBgNVBAcMAkFBMQswCQYDVQQKDAJBQTEMMAoGA1UE
 CwwDQUFBMQ0wCwYDVQQDDARBQUFBMB4XDTE5MDIyNjA2Mjc1OFoXDTIwMDIyNjA2
@@ -215,7 +215,7 @@ KCqES5FjLWJtRKzqPODT7iF/g8f2R25MkipFq8XqgI/UXw==
 -----END CERTIFICATE-----
 `
 
-	keyStr = `-----BEGIN PRIVATE KEY-----
+	keyText = `-----BEGIN PRIVATE KEY-----
 MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCx68qh0A4To8Hx
 IcwJu7H4jGxYywGNd/qMkPu3UxVXvYdjjWFUN8L3dH/53GK1HPfJ+ivl/XNOv2rh
 7NA/67mWvl4s0isrwf9r4Zm7rPJnJvDSmQQtiRIuWCOKCKA/Gn/ZAPnJ0NXYsFpe
@@ -250,7 +250,7 @@ func startTLS(e *echo.Echo, address string) (err error) {
 	s := e.TLSServer
 	s.TLSConfig = new(tls.Config)
 	s.TLSConfig.Certificates = make([]tls.Certificate, 1)
-	s.TLSConfig.Certificates[0], err = tls.X509KeyPair([]byte(certStr), []byte(keyStr))
+	s.TLSConfig.Certificates[0], err = tls.X509KeyPair([]byte(certText), []byte(keyText))
 	if err != nil {
 		return
 	}
