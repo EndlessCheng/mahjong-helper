@@ -587,6 +587,12 @@ func (d *roundData) analysis() error {
 		}
 		fmt.Println("和牌，本局结束")
 		whos, points := d.parser.ParseRoundWin()
+		if len(whos) == 3 {
+			color.Yellow("凤 凰 级 避 铳")
+			if d.parser.GetDataSourceType() == dataSourceTypeMajsoul {
+				color.Yellow("（快醒醒，这是雀魂）")
+			}
+		}
 		for i, who := range whos {
 			fmt.Println(d.players[who].name, points[i])
 		}
