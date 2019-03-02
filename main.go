@@ -7,6 +7,7 @@ import (
 	"time"
 	"github.com/fatih/color"
 	"math/rand"
+	"EndlessCheng/mahjong-helper/util"
 )
 
 func init() {
@@ -205,7 +206,7 @@ func checkTing1(counts []int, recur bool) (needTiles, *ting1Detail) {
 				if _, ok := needs[j]; !ok {
 					needs[j] = 4 - (counts[j] - 1)
 				} else {
-					// 比如说 57m22566s，切 5s/6s 来 8m 都听牌，但是听牌的数量有区别
+					// 比如说 57m22566s，切 5s/6s 来 6m 都听牌，但是听牌的数量有区别
 				}
 				if recur {
 					if tingCnt := nd.allCount(); tingCnt > tingCntMap[j] {
@@ -311,78 +312,78 @@ func checkTing1Discard(counts []int) ting1DiscardList {
 }
 
 // 13张牌，检查一向听（简化版）
-func _simpleCheckTing1(counts []int) needTiles {
-	needs := needTiles{}
-	for i := range mahjong {
-		if counts[i] >= 1 {
-			counts[i]-- // 切掉其中一张牌
-			for j := range mahjong {
-				if j == i {
-					continue
-				}
-				if counts[j] == 4 {
-					continue
-				}
-				counts[j]++ // 换成其他牌
-				if nd := checkTing0(counts); len(nd) > 0 {
-					// 若能听牌，则换的这张牌为一向听的进张
-					if _, ok := needs[j]; !ok {
-						needs[j] = 4 - (counts[j] - 1)
-					} else {
-						// 比如说 57m22566s，切 5s/6s 来 8m 都听牌
-					}
-				}
-				counts[j]--
-			}
-			counts[i]++
-		}
-	}
-	return needs
-}
+//func _simpleCheckTing1(counts []int) needTiles {
+//	needs := needTiles{}
+//	for i := range mahjong {
+//		if counts[i] >= 1 {
+//			counts[i]-- // 切掉其中一张牌
+//			for j := range mahjong {
+//				if j == i {
+//					continue
+//				}
+//				if counts[j] == 4 {
+//					continue
+//				}
+//				counts[j]++ // 换成其他牌
+//				if nd := checkTing0(counts); len(nd) > 0 {
+//					// 若能听牌，则换的这张牌为一向听的进张
+//					if _, ok := needs[j]; !ok {
+//						needs[j] = 4 - (counts[j] - 1)
+//					} else {
+//						// 比如说 57m22566s，切 5s/6s 来 8m 都听牌
+//					}
+//				}
+//				counts[j]--
+//			}
+//			counts[i]++
+//		}
+//	}
+//	return needs
+//}
 
 // 13张牌，检查两向听
 // TODO: 两向听时计算一向听的平均进张
-func checkTing2(counts []int) needTiles {
-	needs := needTiles{}
-	for i := range mahjong {
-		if counts[i] >= 1 {
-			counts[i]-- // 切掉其中一张牌
-			for j := range mahjong {
-				if j == i {
-					continue
-				}
-				if counts[j] == 4 {
-					continue
-				}
-				counts[j]++ // 换成其他牌
-				if nd := _simpleCheckTing1(counts); len(nd) > 0 {
-					// 若能一向听，则换的这张牌为两向听的进张
-					if _, ok := needs[j]; !ok {
-						needs[j] = 4 - (counts[j] - 1)
-					}
-				}
-				counts[j]--
-			}
-			counts[i]++
-		}
-	}
-	return needs
-}
+//func checkTing2(counts []int) needTiles {
+//	needs := needTiles{}
+//	for i := range mahjong {
+//		if counts[i] >= 1 {
+//			counts[i]-- // 切掉其中一张牌
+//			for j := range mahjong {
+//				if j == i {
+//					continue
+//				}
+//				if counts[j] == 4 {
+//					continue
+//				}
+//				counts[j]++ // 换成其他牌
+//				if nd := _simpleCheckTing1(counts); len(nd) > 0 {
+//					// 若能一向听，则换的这张牌为两向听的进张
+//					if _, ok := needs[j]; !ok {
+//						needs[j] = 4 - (counts[j] - 1)
+//					}
+//				}
+//				counts[j]--
+//			}
+//			counts[i]++
+//		}
+//	}
+//	return needs
+//}
 
 // 14张牌，可以两向听，何切
-func checkTing2Discard(counts []int) ting2DiscardList {
-	ting2DiscardList := ting2DiscardList{}
-	for i := range mahjong {
-		if counts[i] >= 1 {
-			counts[i]-- // 切牌
-			if needs := checkTing2(counts); len(needs) > 0 {
-				ting2DiscardList = append(ting2DiscardList, ting2Discard{i, needs})
-			}
-			counts[i]++
-		}
-	}
-	return ting2DiscardList
-}
+//func checkTing2Discard(counts []int) ting2DiscardList {
+//	ting2DiscardList := ting2DiscardList{}
+//	for i := range mahjong {
+//		if counts[i] >= 1 {
+//			counts[i]-- // 切牌
+//			if needs := checkTing2(counts); len(needs) > 0 {
+//				ting2DiscardList = append(ting2DiscardList, ting2Discard{i, needs})
+//			}
+//			counts[i]++
+//		}
+//	}
+//	return ting2DiscardList
+//}
 
 func _analysis(num int, counts []int, leftCounts []int) error {
 	raw, err := countsToString(counts)
@@ -412,21 +413,15 @@ func _analysis(num int, counts []int, leftCounts []int) error {
 
 		if needs, ting1Detail := checkTing1(counts, true); len(needs) > 0 {
 			count, tiles := needs.parseZH()
-			fmt.Println("一向听:", count, tiles)
+			fmt.Println("一向听：", count, tiles)
 			ting1Detail.print()
 			//flushBuffer()
 			break
 		}
 
-		if needs := checkTing2(counts); len(needs) > 0 {
-			count, tiles := needs.parseZH()
-			fmt.Println("两向听:", count, tiles)
-
-			//setTing2MinCount(count)
-			break
-		}
-
-		fmt.Println("尚未两向听")
+		result := util.CalculateShantenWithImproves13(counts, false)
+		fmt.Println(util.NumberToChineseShanten(result.Shanten) + "：")
+		fmt.Println(result)
 	case 14:
 		if checkWin(counts) {
 			fmt.Println("已胡牌")
@@ -441,7 +436,9 @@ func _analysis(num int, counts []int, leftCounts []int) error {
 			// 这里不 break，保留向听倒退的选择
 		}
 
+		needPrintIncShanten := false
 		if ting1DiscardList := checkTing1Discard(counts); len(ting1DiscardList) > 0 {
+			fmt.Println("一向听：")
 			ting1DiscardList.printWithLeftCounts(leftCounts)
 
 			if ting1DiscardList.isGood() {
@@ -449,22 +446,36 @@ func _analysis(num int, counts []int, leftCounts []int) error {
 			}
 
 			// 非完全一向听，保留倒退回两向听的选择
+			needPrintIncShanten = true
 			fmt.Println()
 		}
 
-		if rawTing2DiscardList := checkTing2Discard(counts); len(rawTing2DiscardList) > 0 {
-			// 过滤掉一向听的舍牌
-			newTing2DiscardList := ting2DiscardList{}
-			for _, d := range rawTing2DiscardList {
-				if d.needs.allCount() < 100 { // TODO: 更好的判断条件？
-					newTing2DiscardList = append(newTing2DiscardList, d)
-				}
-			}
-			newTing2DiscardList.printWithLeftCounts(leftCounts)
-			break
+		isOpen := false
+		if !isOpen && util.CountPairs(counts) < 4 {
+			// 不考虑七对子
+			isOpen = true
 		}
-
-		fmt.Println("尚未两向听")
+		shanten, results14, incShantenResults14 := util.CalculateShantenWithImproves14(counts, isOpen)
+		// TODO: 若两向听的进张<=15，则添加向听倒退的提示（拒绝做七对子）
+		if !needPrintIncShanten {
+			fmt.Println(util.NumberToChineseShanten(shanten) + "：")
+			for _, result := range results14 {
+				result.Result13.Waits.FixCountsWithLeftCounts(leftCounts)
+			}
+			results14.Sort()
+			for _, result := range results14 {
+				printWaitsWithImproves14(result)
+			}
+		} else {
+			fmt.Println(util.NumberToChineseShanten(shanten+1) + "：")
+			for _, result := range incShantenResults14 {
+				result.Result13.Waits.FixCountsWithLeftCounts(leftCounts)
+			}
+			incShantenResults14.Sort()
+			for _, result := range incShantenResults14 {
+				printWaitsWithImproves14(result)
+			}
+		}
 	default:
 		err := fmt.Errorf("参数错误: %d 张牌", num)
 		return err

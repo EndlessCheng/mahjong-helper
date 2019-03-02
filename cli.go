@@ -5,6 +5,7 @@ import (
 	"strings"
 	"github.com/fatih/color"
 	"sort"
+	"EndlessCheng/mahjong-helper/util"
 )
 
 type ting0Improve struct {
@@ -253,10 +254,10 @@ func (l ting2DiscardList) print() {
 	l.sort()
 	maxTing2Count := l[0].needs.allCount()
 	for _, discard := range l {
-		if count, tiles := discard.needs.parse(); count == maxTing2Count || printCount < printLimitExceptMax {
+		if count := discard.needs.allCount(); count == maxTing2Count || printCount < printLimitExceptMax {
 			printCount++
 			colorTing2Count(count)
-			fmt.Printf("   切 %s %v\n", mahjongZH[discard.discardIndex], tiles)
+			fmt.Printf("   切 %s %v\n", mahjongZH[discard.discardIndex], util.TilesToMergedStrWithBracket(discard.needs.indexes()))
 		}
 	}
 }
@@ -358,4 +359,34 @@ func printAccountInfo(accountID int) {
 	fmt.Printf("您的账号 ID 为 ")
 	color.New(color.FgMagenta).Printf("%d", accountID)
 	fmt.Printf("，该数字为雀魂服务器账号数据库中的 ID，该值越小表示您的注册时间越早\n")
+}
+
+//
+
+func printWaitsWithImproves14(result14 *util.WaitsWithImproves14) {
+	result13 := result14.Result13
+	tiles34, indexes := result13.Waits.ParseIndex()
+
+	// 8     切 3索 [2万, 7万]
+	// 9.20  [20 改良]  4.00 听牌数
+
+	colorShantenWaitsCount(result14.Shanten, tiles34)
+	fmt.Printf("切 %s %s\n", mahjongZH[result14.DiscardTile], util.TilesToMergedStrWithBracket(indexes))
+
+	if result13.ImproveWayCount > 0 {
+		if result13.ImproveWayCount >= 100 { // 三位数
+			fmt.Printf("%-6.2f[%3d改良]", result13.AvgImproveWaitsCount, result13.ImproveWayCount)
+		} else {
+			fmt.Printf("%-6.2f[%2d 改良]", result13.AvgImproveWaitsCount, result13.ImproveWayCount)
+		}
+	} else {
+		fmt.Print(strings.Repeat(" ", 15))
+	}
+
+	fmt.Print(" ")
+	_color := getNextShantenWaitsCountColor(result14.Shanten, result13.AvgNextShantenWaitsCount)
+	color.New(_color).Printf("%5.2f", result13.AvgNextShantenWaitsCount)
+	fmt.Printf(" %s进张", util.NumberToChineseShanten(result14.Shanten-1))
+
+	fmt.Println()
 }

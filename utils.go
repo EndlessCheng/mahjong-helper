@@ -182,6 +182,15 @@ func colorTing2Count(n int) {
 	color.New(_getTingCountAttr(float64(n) / 2)...).Printf("%2d", n)
 }
 
+func colorShantenWaitsCount(shanten int, waitsCount int) {
+	div := 1
+	for i := 1; i < shanten; i++ {
+		div *= 2
+	}
+	colors := _getTingCountAttr(float64(waitsCount) / float64(div))
+	color.New(colors...).Printf("%-6d", waitsCount)
+}
+
 func getTingCountColor(count float64) color.Attribute {
 	switch {
 	case count < 5:
@@ -193,6 +202,14 @@ func getTingCountColor(count float64) color.Attribute {
 	default:
 		return color.FgRed
 	}
+}
+
+func getNextShantenWaitsCountColor(shanten int, avgNextShantenWaitsCount float64) color.Attribute {
+	div := 1
+	for i := 1; i < shanten; i++ {
+		div *= 2
+	}
+	return getTingCountColor(avgNextShantenWaitsCount / float64(div))
 }
 
 func getSimpleRiskColor(index int) color.Attribute {

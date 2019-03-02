@@ -50,8 +50,11 @@ type majsoulMessage struct {
 
 	// ActionHule
 	Hules []struct {
-		Seat      int `json:"seat"`
-		PointRong int `json:"point_rong"`
+		Seat          int  `json:"seat"`
+		Zimo          bool `json:"zimo"`
+		PointRong     int  `json:"point_rong"`
+		PointZimoQin  int  `json:"point_zimo_qin"`
+		PointZimoXian int  `json:"point_zimo_xian"`
 	} `json:"hules"`
 
 	// ActionLiuJu
@@ -344,8 +347,17 @@ func (d *majsoulRoundData) ParseRoundWin() (whos []int, points []int) {
 	msg := d.msg
 
 	for _, result := range msg.Hules {
+		who := d.parseWho(result.Seat)
 		whos = append(whos, d.parseWho(result.Seat))
-		points = append(points, result.PointRong)
+		point := result.PointRong
+		if result.Zimo {
+			if who == d.dealer {
+				point = 3 * result.PointZimoXian
+			} else {
+				point = result.PointZimoQin + 2*result.PointZimoXian
+			}
+		}
+		points = append(points, point)
 	}
 	return
 }
