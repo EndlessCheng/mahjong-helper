@@ -576,10 +576,14 @@ func welcome() int {
 	}
 
 	clearConsole()
-	color.Magenta("已选择 - %s", platforms[choose])
+	platformName := platforms[choose]
+	if choose == 1 {
+		platformName += "（水晶杠杠版）"
+	}
+	color.Magenta("已选择 - %s", platformName)
 	if choose == 1 {
 		color.Yellow("提醒：若您已登录游戏，请刷新网页，或者开启一局人机对战\n" +
-			"该步骤用于获取您的数据库账号 ID，便于在游戏开始时分析自风，否则程序将无法解析后续数据")
+			"该步骤用于获取您的账号 ID，便于在游戏开始时分析自风，否则程序将无法解析后续数据")
 	}
 
 	return choose
