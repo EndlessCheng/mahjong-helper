@@ -379,7 +379,7 @@ func (d *roundData) analysis() error {
 
 	// 若自家立直，则进入看戏模式
 	// TODO: 见逃判断
-	if !d.parser.IsInit() && d.players[0].isReached {
+	if !d.parser.IsInit() && !d.parser.IsRoundWin() && d.players[0].isReached {
 		return nil
 	}
 
@@ -423,6 +423,10 @@ func (d *roundData) analysis() error {
 		for _, tile := range hands {
 			d.counts[tile]++
 			d.descLeftCounts(tile)
+		}
+
+		if len(hands) == 14 {
+			return _analysis(14, d._countForAnalysis(), d.leftCounts)
 		}
 	case d.parser.IsOpen():
 		// 某家鸣牌（含暗杠、加杠）
