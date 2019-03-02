@@ -207,7 +207,7 @@ func getTingCountColor(count float64) color.Attribute {
 func getNextShantenWaitsCountColor(shanten int, avgNextShantenWaitsCount float64) color.Attribute {
 	div := 1
 	for i := 1; i < shanten; i++ {
-		div *= 2
+		div *= 3
 	}
 	return getTingCountColor(avgNextShantenWaitsCount / float64(div))
 }

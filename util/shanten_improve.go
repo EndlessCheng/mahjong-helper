@@ -255,10 +255,15 @@ func (l WaitsWithImproves14List) Sort() {
 	sort.Slice(l, func(i, j int) bool {
 		ri, rj := l[i].Result13, l[j].Result13
 
-		if ri.Waits.allCount() != rj.Waits.allCount() {
+		allCountRate := float64(ri.Waits.allCount()) / float64(rj.Waits.allCount())
+		if allCountRate < 1 {
+			allCountRate = 1 / allCountRate
+		}
+		if allCountRate > 1.1 {
 			return ri.Waits.allCount() > rj.Waits.allCount()
 		}
 
+		// 相差在 10% 以内的，向听前进后的进张数的加权均值多者为优
 		if ri.AvgNextShantenWaitsCount != rj.AvgNextShantenWaitsCount {
 			return ri.AvgNextShantenWaitsCount > rj.AvgNextShantenWaitsCount
 		}

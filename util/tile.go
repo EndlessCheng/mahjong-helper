@@ -112,6 +112,9 @@ func (w Waits) containHonors() bool {
 }
 
 func (w Waits) FixCountsWithLeftCounts(leftCounts []int) {
+	if len(leftCounts) != 34 {
+		return
+	}
 	for k := range w {
 		w[k] = leftCounts[k]
 	}
