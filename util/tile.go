@@ -31,7 +31,7 @@ var mahjongZH = [...]string{
 // map[进张牌]剩余数
 type Waits map[int]int
 
-func (w Waits) allCount() (count int) {
+func (w Waits) AllCount() (count int) {
 	for _, cnt := range w {
 		count += cnt
 	}
@@ -53,7 +53,7 @@ func (w Waits) indexes() []int {
 }
 
 func (w Waits) ParseIndex() (allCount int, indexes []int) {
-	return w.allCount(), w.indexes()
+	return w.AllCount(), w.indexes()
 }
 
 func (w Waits) _parse(template [34]string) (allCount int, tiles []string) {
@@ -90,7 +90,7 @@ func (w Waits) tilesZH() []string {
 }
 
 func (w Waits) String() string {
-	return fmt.Sprintf("%d 进张 %s", w.allCount(), TilesToMergedStrWithBracket(w.indexes()))
+	return fmt.Sprintf("%d 进张 %s", w.AllCount(), TilesToMergedStrWithBracket(w.indexes()))
 }
 
 func (w Waits) containAllIndexes(anotherNeeds Waits) bool {

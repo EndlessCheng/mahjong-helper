@@ -182,13 +182,16 @@ func colorTing2Count(n int) {
 	color.New(_getTingCountAttr(float64(n) / 2)...).Printf("%2d", n)
 }
 
-func colorShantenWaitsCount(shanten int, waitsCount int) {
+// *
+func getShantenWaitsCountColors(shanten int, waitsCount int) []color.Attribute {
+	if shanten == 0 {
+		return _getTingCountAttr(float64(waitsCount * 3))
+	}
 	div := 1
 	for i := 1; i < shanten; i++ {
 		div *= 2
 	}
-	colors := _getTingCountAttr(float64(waitsCount) / float64(div))
-	color.New(colors...).Printf("%-6d", waitsCount)
+	return _getTingCountAttr(float64(waitsCount) / float64(div))
 }
 
 func getTingCountColor(count float64) color.Attribute {

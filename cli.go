@@ -363,15 +363,39 @@ func printAccountInfo(accountID int) {
 
 //
 
-func printWaitsWithImproves14(result14 *util.WaitsWithImproves14) {
-	result13 := result14.Result13
-	tiles34, indexes := result13.Waits.ParseIndex()
+// 8     切 3索 [2万, 7万]
+// 9.20  [20 改良]  4.00 听牌数
 
-	// 8     切 3索 [2万, 7万]
-	// 9.20  [20 改良]  4.00 听牌数
+// 4     [2万, 7万]
+// 4.50  [4 TODO 改良]  55.36% 和了率
+func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 int) {
+	shanten := result13.Shanten
+	waits := result13.Waits
 
-	colorShantenWaitsCount(result14.Shanten, tiles34)
-	fmt.Printf("切 %s %s\n", mahjongZH[result14.DiscardTile], util.TilesToMergedStrWithBracket(indexes))
+	waitsCount, waitTiles := waits.ParseIndex()
+	colors := getShantenWaitsCountColors(shanten, waitsCount)
+	color.New(colors...).Printf("%-6d", waitsCount)
+	if discardTile34 != -1 {
+		fmt.Print("切 ")
+		if shanten <= 1 {
+			color.New(getSimpleRiskColor(discardTile34)).Print(mahjongZH[discardTile34])
+		} else {
+			fmt.Print(mahjongZH[discardTile34])
+		}
+	}
+	fmt.Print(" ")
+	if shanten <= 1 {
+		fmt.Print("[")
+		color.New(getSafeColor(waitTiles[0])).Print(mahjongZH[waitTiles[0]])
+		for _, index := range waitTiles[1:] {
+			fmt.Print(", ")
+			color.New(getSafeColor(index)).Print(mahjongZH[index])
+		}
+		fmt.Print("]")
+		fmt.Println()
+	} else {
+		fmt.Println(util.TilesToMergedStrWithBracket(waitTiles))
+	}
 
 	if result13.ImproveWayCount > 0 {
 		if result13.ImproveWayCount >= 100 { // 三位数
@@ -384,9 +408,20 @@ func printWaitsWithImproves14(result14 *util.WaitsWithImproves14) {
 	}
 
 	fmt.Print(" ")
-	_color := getNextShantenWaitsCountColor(result14.Shanten, result13.AvgNextShantenWaitsCount)
-	color.New(_color).Printf("%5.2f", result13.AvgNextShantenWaitsCount)
-	fmt.Printf(" %s进张", util.NumberToChineseShanten(result14.Shanten-1))
+
+	if shanten > 0 {
+		_color := getNextShantenWaitsCountColor(shanten, result13.AvgNextShantenWaitsCount)
+		color.New(_color).Printf("%5.2f", result13.AvgNextShantenWaitsCount)
+		fmt.Printf(" %s", util.NumberToChineseShanten(shanten-1))
+		if shanten > 1 {
+			fmt.Printf("进张")
+		} else {
+			fmt.Printf("数")
+		}
+	} else { // shanten == 0
+		agariRate := util.CalculateAgariRate(waits, nil)
+		fmt.Printf("%5.2f%% 和了率", agariRate)
+	}
 
 	fmt.Println()
 }
