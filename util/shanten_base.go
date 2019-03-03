@@ -8,7 +8,7 @@ const AgariState = -1
 
 // 根据手牌计算向听数
 // tiles34 手牌
-// isOpen 是否副露，未副露的手牌会考虑七对子  TODO: 这样好吗？
+// isOpen 是否副露，未副露的手牌会考虑七对子
 func CalculateShanten(tiles34 []int, isOpen bool) int {
 	countOfTiles := CountOfTiles(tiles34)
 	if countOfTiles > 14 {

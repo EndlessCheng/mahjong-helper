@@ -2,14 +2,60 @@ package util
 
 import "testing"
 
-func TestCalculateShantenWithImprove(t *testing.T) {
-	t.Log(CalculateShantenAndWaits13(MustStrToTiles34("11357m 13579p 135s"), false))
+func TestCalculateShantenWithImproveClosed(t *testing.T) {
+	for _, tiles := range []string{
+		"11357m 13579p 135s",
+		"123456789m 1135s",
+		"123456789m 1134s",
+		"123456789m 1234z",
+	} {
+		tiles34 := MustStrToTiles34(tiles)
+		if CountOfTiles(tiles34) != 13 {
+			t.Error(tiles, "不是13张牌")
+			continue
+		}
+		shanten, waits := CalculateShantenAndWaits13(tiles34, false)
+		t.Log(tiles, "=", NumberToChineseShanten(shanten), waits)
+	}
 }
 
-func TestCalculateShantenWithImproves13(t *testing.T) {
-	tiles := "334m 22478p 23456s"
-	tiles = "234579m 3456p 3577s"
-	t.Log(CalculateShantenWithImproves13(MustStrToTiles34(tiles), false))
+func TestCalculateShantenWithImproveOpen(t *testing.T) {
+	for _, tiles := range []string{
+		"1234p",
+		"1234z",
+	} {
+		tiles34 := MustStrToTiles34(tiles)
+		shanten, waits := CalculateShantenAndWaits13(tiles34, true)
+		t.Log(tiles, "=", NumberToChineseShanten(shanten), waits)
+	}
+}
+
+func TestCalculateShantenWithImproves13Closed(t *testing.T) {
+	for _, tiles := range []string{
+		"11357m 13579p 135s",
+		"123456789m 1135s",
+		"123456789m 1134s",
+		"123456789m 1234z",
+	} {
+		tiles34 := MustStrToTiles34(tiles)
+		if CountOfTiles(tiles34) != 13 {
+			t.Error(tiles, "不是13张牌")
+			continue
+		}
+		result := CalculateShantenWithImproves13(tiles34, false)
+		t.Log(tiles, "=\n"+result.String())
+	}
+}
+
+func TestCalculateShantenWithImproves13Open(t *testing.T) {
+	for _, tiles := range []string{
+		"1234m",
+		"1135m",
+	} {
+		tiles34 := MustStrToTiles34(tiles)
+		result := CalculateShantenWithImproves13(tiles34, true)
+		t.Log(tiles, "=\n"+result.String())
+	}
 }
 
 func TestCalculateShantenWithImproves14(t *testing.T) {
@@ -22,17 +68,23 @@ func TestCalculateShantenWithImproves14(t *testing.T) {
 	tiles = "334m 22457p 23456s 1z"
 	tiles = "334m 122478p 23456s"
 	tiles = "1m 258p 258s 1234567z"
-	shanten, results, _ := CalculateShantenWithImproves14(MustStrToTiles34(tiles), false)
-	t.Log(shanten)
+	tiles = "4567m 4579p 344588s"
+	shanten, results, incShantenResults := CalculateShantenWithImproves14(MustStrToTiles34(tiles), false)
+	t.Log(NumberToChineseShanten(shanten))
 	for _, result := range results {
+		t.Log(result)
+	}
+	t.Log(NumberToChineseShanten(shanten+1))
+	for _, result := range incShantenResults {
 		t.Log(result)
 	}
 }
 
-func BenchmarkCalculateShantenWithImproves14(b *testing.B) {
+func BenchmarkCalculateShantenWithImproves14Closed(b *testing.B) {
+	tiles34 := MustStrToTiles34("124679m 3678p 2366s")
 	for i := 0; i < b.N; i++ {
-		// 剪枝前：1.91s
-		// 剪枝后：1.19s
-		CalculateShantenWithImproves14(MustStrToTiles34("124679m 3678p 2366s"), false)
+		// 剪枝前：0.28s
+		// 剪枝后：0.22s
+		CalculateShantenWithImproves14(tiles34, false)
 	}
 }
