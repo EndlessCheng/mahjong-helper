@@ -58,24 +58,26 @@ func _analysis(num int, tiles34 []int, leftTiles34 []int, isOpen bool) error {
 			printWaitsWithImproves13(result.Result13, result.DiscardTile)
 		}
 
-		bestWaitsCount := results14[0].Result13.Waits.AllCount()
-		bestIncShantenWaitsCount := incShantenResults14[0].Result13.Waits.AllCount()
+		if len(incShantenResults14) > 0 {
+			bestWaitsCount := results14[0].Result13.Waits.AllCount()
+			bestIncShantenWaitsCount := incShantenResults14[0].Result13.Waits.AllCount()
 
-		// TODO: 待调整
-		// 1 - 12
-		// 2 - 24
-		// 3 - 36
-		// ...
-		incShantenWaitsCountLimit := 12
-		for i := 1; i < shanten; i++ {
-			incShantenWaitsCountLimit *= 2
-		}
-		needPrintIncShanten := bestWaitsCount <= incShantenWaitsCountLimit &&
-			len(incShantenResults14) > 0 && bestIncShantenWaitsCount >= 2*bestWaitsCount
-		if shanten > 0 && needPrintIncShanten {
-			fmt.Println(util.NumberToChineseShanten(shanten+1) + "：")
-			for _, result := range incShantenResults14 {
-				printWaitsWithImproves13(result.Result13, result.DiscardTile)
+			// TODO: 待调整
+			// 1 - 12
+			// 2 - 24
+			// 3 - 36
+			// ...
+			incShantenWaitsCountLimit := 12
+			for i := 1; i < shanten; i++ {
+				incShantenWaitsCountLimit *= 2
+			}
+			needPrintIncShanten := bestWaitsCount <= incShantenWaitsCountLimit &&
+				len(incShantenResults14) > 0 && bestIncShantenWaitsCount >= 2*bestWaitsCount
+			if shanten > 0 && needPrintIncShanten {
+				fmt.Println(util.NumberToChineseShanten(shanten+1) + "：")
+				for _, result := range incShantenResults14 {
+					printWaitsWithImproves13(result.Result13, result.DiscardTile)
+				}
 			}
 		}
 	default:
