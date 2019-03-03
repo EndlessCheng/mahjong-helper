@@ -438,7 +438,12 @@ func (d *roundData) analysis() error {
 		}
 		if meldType == meldTypeKakan {
 			// TODO: 修改副露情况
-			d.descLeftCounts(calledTile)
+			if who != 0 {
+				d.descLeftCounts(calledTile)
+			} else {
+				// 自家加杠成功
+				d.counts[calledTile]--
+			}
 			break
 		}
 
