@@ -23,6 +23,7 @@ func TestCalculateShantenWithImproveOpen(t *testing.T) {
 	for _, tiles := range []string{
 		"1234p",
 		"1234z",
+		"5p",
 	} {
 		tiles34 := MustStrToTiles34(tiles)
 		shanten, waits := CalculateShantenAndWaits13(tiles34, true)
@@ -51,6 +52,7 @@ func TestCalculateShantenWithImproves13Open(t *testing.T) {
 	for _, tiles := range []string{
 		"1234m",
 		"1135m",
+		"5p",
 	} {
 		tiles34 := MustStrToTiles34(tiles)
 		result := CalculateShantenWithImproves13(tiles34, true)
@@ -58,7 +60,7 @@ func TestCalculateShantenWithImproves13Open(t *testing.T) {
 	}
 }
 
-func TestCalculateShantenWithImproves14(t *testing.T) {
+func TestCalculateShantenWithImproves14Closed(t *testing.T) {
 	tiles := "124679m 3678p 2366s"
 	tiles = "11379m 347p 277s 111z"
 	tiles = "334578m 11468p 235s"
@@ -86,5 +88,18 @@ func BenchmarkCalculateShantenWithImproves14Closed(b *testing.B) {
 		// 剪枝前：0.28s
 		// 剪枝后：0.22s
 		CalculateShantenWithImproves14(tiles34, false)
+	}
+}
+
+func TestCalculateShantenWithImproves14Open(t *testing.T) {
+	tiles := "35m"
+	shanten, results, incShantenResults := CalculateShantenWithImproves14(MustStrToTiles34(tiles), true)
+	t.Log(NumberToChineseShanten(shanten))
+	for _, result := range results {
+		t.Log(result)
+	}
+	t.Log(NumberToChineseShanten(shanten+1))
+	for _, result := range incShantenResults {
+		t.Log(result)
 	}
 }

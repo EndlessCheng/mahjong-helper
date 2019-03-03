@@ -8,7 +8,7 @@ import (
 // map[改良牌]进张
 type Improves map[int]Waits
 
-// 13 张手牌的分析结果
+// 1/4/7/10/13 张手牌的分析结果
 type WaitsWithImproves13 struct {
 	// 手牌
 	Tiles34 []int
@@ -53,7 +53,7 @@ func (r *WaitsWithImproves13) analysis() (avgImproveWaitsCount float64, avgNextS
 		avgImproveWaitsCount = float64(improveScore) / float64(weight)
 		r.AvgImproveWaitsCount = avgImproveWaitsCount
 	} else {
-		r.AvgImproveWaitsCount = float64(r.Waits.allCount())
+		r.AvgImproveWaitsCount = float64(r.Waits.AllCount())
 	}
 
 	if len(r.NextShantenWaitsCountMap) > 0 {
@@ -87,7 +87,7 @@ func (r *WaitsWithImproves13) String() string {
 	return s
 }
 
-// 13 张牌，计算向听数和进张
+// 1/4/7/10/13 张牌，计算向听数和进张
 func CalculateShantenAndWaits13(tiles34 []int, isOpen bool) (shanten int, waits Waits) {
 	shanten = CalculateShanten(tiles34, isOpen)
 
@@ -152,10 +152,10 @@ func CalculateShantenAndWaits13(tiles34 []int, isOpen bool) (shanten int, waits 
 	return
 }
 
-// 13 张牌，计算向听数、进张、改良等
+// 1/4/7/10/13 张牌，计算向听数、进张、改良等
 func CalculateShantenWithImproves13(tiles34 []int, isOpen bool) (waitsWithImproves *WaitsWithImproves13) {
 	shanten13, waits := CalculateShantenAndWaits13(tiles34, isOpen)
-	waitsCount := waits.allCount()
+	waitsCount := waits.AllCount()
 
 	//fmt.Println(Tiles34ToMergedStrWithBracket(tiles34), waits)
 
@@ -187,7 +187,7 @@ func CalculateShantenWithImproves13(tiles34 []int, isOpen bool) (waitsWithImprov
 				// 正确的切牌
 				if newShanten13, _waits := CalculateShantenAndWaits13(tiles34, isOpen); newShanten13 < shanten13 {
 					// 切牌一般切进张最多的
-					if waitsCount := _waits.allCount(); waitsCount > nextShantenWaitsCountMap[i] {
+					if waitsCount := _waits.AllCount(); waitsCount > nextShantenWaitsCountMap[i] {
 						nextShantenWaitsCountMap[i] = waitsCount
 					}
 				}
@@ -204,7 +204,7 @@ func CalculateShantenWithImproves13(tiles34 []int, isOpen bool) (waitsWithImprov
 				// 正确的切牌
 				if newShanten13, improveWaits := CalculateShantenAndWaits13(tiles34, isOpen); newShanten13 == shanten13 {
 					// 若进张数变多，则为改良
-					if improveWaitsCount := improveWaits.allCount(); improveWaitsCount > waitsCount {
+					if improveWaitsCount := improveWaits.AllCount(); improveWaitsCount > waitsCount {
 						improveWayCount++
 						if improveWaitsCount > improveWaitsCount34[i] {
 							improveWaitsCount34[i] = improveWaitsCount
@@ -253,12 +253,12 @@ func (l WaitsWithImproves14List) Sort() {
 	sort.Slice(l, func(i, j int) bool {
 		ri, rj := l[i].Result13, l[j].Result13
 
-		allCountRate := float64(ri.Waits.allCount()) / float64(rj.Waits.allCount())
+		allCountRate := float64(ri.Waits.AllCount()) / float64(rj.Waits.AllCount())
 		if allCountRate < 1 {
 			allCountRate = 1 / allCountRate
 		}
 		if allCountRate > 1.1 {
-			return ri.Waits.allCount() > rj.Waits.allCount()
+			return ri.Waits.AllCount() > rj.Waits.AllCount()
 		}
 
 		// 相差在 10% 以内的，向听前进后的进张数的加权均值多者为优
@@ -278,7 +278,7 @@ func (l WaitsWithImproves14List) Sort() {
 	})
 }
 
-// 14 张牌，计算向听数、进张、改良、向听倒退等
+// 2/5/8/11/14 张牌，计算向听数、进张、改良、向听倒退等
 func CalculateShantenWithImproves14(tiles34 []int, isOpen bool) (shanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
 	shanten = CalculateShanten(tiles34, isOpen)
 
