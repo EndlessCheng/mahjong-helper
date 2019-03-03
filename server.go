@@ -153,7 +153,7 @@ func runServer(isHTTPS bool) {
 	go func() {
 		// 等待服务启动再设置输出
 		time.Sleep(time.Second)
-		logFile, err := os.OpenFile("gamedata.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+		logFile, err := os.OpenFile(logFile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
 		if err != nil {
 			panic(err)
 		}
