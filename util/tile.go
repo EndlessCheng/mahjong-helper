@@ -211,3 +211,29 @@ func TilesToMergedStr(tiles []int) (res string) {
 func TilesToMergedStrWithBracket(tiles []int) (res string) {
 	return "[" + TilesToMergedStr(tiles) + "]"
 }
+
+func Tiles34ToMergedStr(tiles34 []int) (res string) {
+	merge := func(lowerIndex, upperIndex int, endsWith string) {
+		found := false
+		for i, c := range tiles34 {
+			if i >= lowerIndex && i < upperIndex {
+				for j := 0; j < c; j++ {
+					found = true
+					res += string('1' + i - lowerIndex)
+				}
+			}
+		}
+		if found {
+			res += endsWith
+		}
+	}
+	merge(0, 9, "m ")
+	merge(9, 18, "p ")
+	merge(18, 27, "s ")
+	merge(27, 34, "z")
+	return strings.TrimSpace(res)
+}
+
+func Tiles34ToMergedStrWithBracket(tiles34 []int) (res string) {
+	return "[" + Tiles34ToMergedStr(tiles34) + "]"
+}
