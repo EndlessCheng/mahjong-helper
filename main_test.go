@@ -8,16 +8,6 @@ func init() {
 	debug = true
 }
 
-func BenchmarkCheckTing1Discard(b *testing.B) {
-	_, cnt, err := convert("123m 22378p 345899s")
-	if err != nil {
-		b.Error(err)
-	}
-	for i := 0; i < 10; i++ {
-		checkTing1Discard(cnt)
-	}
-}
-
 func TestAnalysis(t *testing.T) {
 	var raw string
 	raw = "11222333789s 11z"
