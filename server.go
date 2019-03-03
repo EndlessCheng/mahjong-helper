@@ -158,6 +158,8 @@ func runServer(isHTTPS bool) {
 			panic(err)
 		}
 		e.Logger.SetOutput(logFile)
+		e.Logger.Info("============================================================================================")
+		e.Logger.Info("服务启动")
 	}()
 
 	h := &mjHandler{
