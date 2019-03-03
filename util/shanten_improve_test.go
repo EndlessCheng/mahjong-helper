@@ -71,14 +71,19 @@ func TestCalculateShantenWithImproves14Closed(t *testing.T) {
 	tiles = "334m 122478p 23456s"
 	tiles = "1m 258p 258s 1234567z"
 	tiles = "4567m 4579p 344588s"
+	tiles = "2479999m 45667p 13s" // 切任何一张都不会向听倒退
 	shanten, results, incShantenResults := CalculateShantenWithImproves14(MustStrToTiles34(tiles), false)
 	t.Log(NumberToChineseShanten(shanten))
 	for _, result := range results {
 		t.Log(result)
 	}
-	t.Log(NumberToChineseShanten(shanten+1))
-	for _, result := range incShantenResults {
-		t.Log(result)
+	if len(incShantenResults) > 0 {
+		t.Log(NumberToChineseShanten(shanten + 1))
+		for _, result := range incShantenResults {
+			t.Log(result)
+		}
+	} else {
+		t.Log("无向听倒退的切牌")
 	}
 }
 
@@ -98,7 +103,7 @@ func TestCalculateShantenWithImproves14Open(t *testing.T) {
 	for _, result := range results {
 		t.Log(result)
 	}
-	t.Log(NumberToChineseShanten(shanten+1))
+	t.Log(NumberToChineseShanten(shanten + 1))
 	for _, result := range incShantenResults {
 		t.Log(result)
 	}
