@@ -8,7 +8,7 @@
 
 您也可以选择从源码编译程序：
 
-`dep ensure -v` 之后 `go build` 编译，运行生成的文件
+`go get -u -v github.com/EndlessCheng/mahjong-helper/...`
 
 
 ## 服务端脚本说明
