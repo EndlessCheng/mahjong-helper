@@ -13,34 +13,34 @@ type majsoulMessage struct {
 	Friends []*majsoulFriend `json:"friends"`
 
 	// NotifyPlayerLoadGameReady
-	ReadyIDList []int `json:"ready_id_list,omitempty"`
+	ReadyIDList []int `json:"ready_id_list"`
 
 	// ActionNewRound
 	// {"chang":0,"ju":0,"ben":0,"tiles":["1m","3m","7m","3p","6p","7p","6s","1z","1z","2z","3z","4z","7z"],"dora":"6m","scores":[25000,25000,25000,25000],"liqibang":0,"al":false,"md5":"","left_tile_count":69}
-	MD5   string      `json:"md5,omitempty"`
-	Chang *int        `json:"chang,omitempty"`
-	Ju    *int        `json:"ju,omitempty"`
-	Tiles interface{} `json:"tiles,omitempty"` // 一般情况下为 []interface{}, interface{} 即 string，但是暗杠的情况下，该值为一个 string
-	Dora  string      `json:"dora,omitempty"`
+	MD5   string      `json:"md5"`
+	Chang *int        `json:"chang"`
+	Ju    *int        `json:"ju"`
+	Tiles interface{} `json:"tiles"` // 一般情况下为 []interface{}, interface{} 即 string，但是暗杠的情况下，该值为一个 string
+	Dora  string      `json:"dora"`
 
 	// ActionDealTile
 	// {"seat":1,"tile":"5m","left_tile_count":23,"operation":{"seat":1,"operation_list":[{"type":1}],"time_add":0,"time_fixed":60000},"zhenting":false}
 	// 他家暗杠后的摸牌
 	// {"seat":1,"left_tile_count":3,"doras":["7m","0p"],"zhenting":false}
-	Seat          *int     `json:"seat,omitempty"`
-	Tile          string   `json:"tile,omitempty"`
-	Doras         []string `json:"doras,omitempty"` // 暗杠摸牌了，同时翻出杠宝牌指示牌
-	LeftTileCount *int     `json:"left_tile_count,omitempty"`
+	Seat          *int     `json:"seat"`
+	Tile          string   `json:"tile"`
+	Doras         []string `json:"doras"` // 暗杠摸牌了，同时翻出杠宝牌指示牌
+	LeftTileCount *int     `json:"left_tile_count"`
 
 	// ActionDiscardTile
 	// {"seat":0,"tile":"5z","is_liqi":false,"moqie":true,"zhenting":false,"is_wliqi":false}
 	// {"seat":0,"tile":"1z","is_liqi":false,"operation":{"seat":1,"operation_list":[{"type":3,"combination":["1z|1z"]}],"time_add":0,"time_fixed":60000},"moqie":false,"zhenting":false,"is_wliqi":false}
 	// 吃 碰 和
 	// {"seat":0,"tile":"6p","is_liqi":false,"operation":{"seat":1,"operation_list":[{"type":2,"combination":["7p|8p"]},{"type":3,"combination":["6p|6p"]},{"type":9}],"time_add":0,"time_fixed":60000},"moqie":false,"zhenting":true,"is_wliqi":false}
-	IsLiqi    *bool     `json:"is_liqi,omitempty"`
-	IsWliqi   *bool     `json:"is_wliqi,omitempty"`
-	Moqie     *bool     `json:"moqie,omitempty"`
-	Operation *struct{} `json:"operation,omitempty"`
+	IsLiqi    *bool     `json:"is_liqi"`
+	IsWliqi   *bool     `json:"is_wliqi"`
+	Moqie     *bool     `json:"moqie"`
+	Operation *struct{} `json:"operation"`
 
 	// ActionChiPengGang || ActionAnGangAddGang
 	// {"seat":1,"type":1,"tiles":["1z","1z","1z"],"froms":[1,1,0],"operation":{"seat":1,"operation_list":[{"type":1,"combination":["1z"]}],"time_add":0,"time_fixed":60000},"zhenting":false,"tingpais":[{"tile":"4m","zhenting":false,"infos":[{"tile":"6s","haveyi":true},{"tile":"6p","haveyi":true}]},{"tile":"7m","zhenting":false,"infos":[{"tile":"6s","haveyi":true},{"tile":"6p","haveyi":true}]}]}
