@@ -7,7 +7,7 @@ import (
 	"time"
 	"github.com/fatih/color"
 	"math/rand"
-	"EndlessCheng/mahjong-helper/util"
+	"github.com/EndlessCheng/mahjong-helper/util"
 )
 
 func init() {
