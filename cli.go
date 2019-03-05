@@ -5,7 +5,7 @@ import (
 	"strings"
 	"github.com/fatih/color"
 	"sort"
-	"EndlessCheng/mahjong-helper/util"
+	"github.com/EndlessCheng/mahjong-helper/util"
 )
 
 type ting0Improve struct {
