@@ -4,11 +4,13 @@
 
 前往 [release](https://github.com/EndlessCheng/mahjong-helper/releases) 页面下载
 
-### 从源码编译
+### 从源码编译安装
 
-您也可以选择从源码编译程序：
+您也可以选择从源码编译安装：
 
 `go get -u -v github.com/EndlessCheng/mahjong-helper/...`
+
+完成后程序生成于 `$GOPATH/bin/` 目录下
 
 
 ## 服务端脚本说明
