@@ -6,7 +6,9 @@
 
 1. 前往 [release](https://github.com/EndlessCheng/mahjong-helper/releases) 页面下载程序
 
-2. 安装浏览器扩展 Header Editor，具体操作可以参考[这篇](https://tieba.baidu.com/p/5956122477)，安装完之后进入该扩展的管理界面，点击`导入和导出`，在下载规则中填入 `http://jianyan.me/js/mahjong-helper.json`，点击右侧的下载按钮，然后点击下方的`保存`
+2. 安装浏览器扩展 Header Editor，具体操作可以参考[这篇](https://tieba.baidu.com/p/5956122477)，
+
+    安装好扩展后点进该扩展的`管理`界面，点击`导入和导出`，在下载规则中填入 `http://jianyan.me/js/mahjong-helper.json`，点击右侧的下载按钮，然后点击下方的`保存`
 
 3. （雀魂需要）允许本地证书通过浏览器，在浏览器（仅限 Chrome 内核）中输入
 
