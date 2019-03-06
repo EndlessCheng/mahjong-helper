@@ -2,11 +2,24 @@
 
 ## 安装
 
-前往 [release](https://github.com/EndlessCheng/mahjong-helper/releases) 页面下载
+分下面几步：
 
-### 从源码编译安装
+1. 前往 [release](https://github.com/EndlessCheng/mahjong-helper/releases) 页面下载程序
 
-您也可以选择从源码编译安装：
+2. 安装浏览器扩展 Header Editor，具体操作可以参考[这篇](https://tieba.baidu.com/p/5956122477)，安装完之后进入该扩展的管理界面，点击`导入和导出`，在下载规则中填入 `http://jianyan.me/js/mahjong-helper.json`，点击右侧的下载按钮，然后点击下方的`保存`
+
+3. （雀魂需要）允许本地证书通过浏览器，在浏览器（仅限 Chrome 内核）中输入
+```
+chrome://flags/#allow-insecure-localhost
+```
+然后把高亮那一项的 Disabled 改成 Enabled（不同浏览器/版本的描述可能不一样，如果是中文的话点击「启用」按钮），之后重启浏览器
+
+（PS：第2步发生了什么见[如何获取 WebSocket 收发的消息](#如何获取WebSocket收发的消息)）
+
+
+### 从源码安装程序
+
+您也可以选择从源码安装：
 
 `go get -u -v github.com/EndlessCheng/mahjong-helper/...`
 
@@ -25,7 +38,7 @@
 
 ### 自动挡
 
-按照[如何获取 WebSocket 收发的消息](#如何获取WebSocket收发的消息)操作
+启动程序，选择平台即可
 
 自动化分析会在牌效率上考虑场上已有的牌（含舍牌、副露、宝牌指示牌）；防守方面，提示他家手切模切，并当有人立直或多副露时，将手牌简要地按照筋的危险度进行排序，顺带提醒一下 NC OC
 
