@@ -83,7 +83,7 @@
 
 **觉得麻烦的话，1-4 的步骤可以用我改好的：**
 
-- 天凤：`http://jianyan.me/tenhou/1623.js`
+- 天凤：`https://jianyan.me/tenhou/1623.js`
 - 雀魂：`https://jianyan.me/majsoul/code.js`
 
 下面说明天凤和雀魂的代码注入点
