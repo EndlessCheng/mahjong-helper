@@ -24,12 +24,12 @@ func _analysis(num int, tiles34 []int, leftTiles34 []int, isOpen bool) error {
 	fmt.Println(raw)
 	fmt.Println(strings.Repeat("=", len(raw)))
 
-	switch num {
-	case 13:
+	switch {
+	case num%3 == 1:
 		result := util.CalculateShantenWithImproves13(tiles34, isOpen)
 		fmt.Println(util.NumberToChineseShanten(result.Shanten) + "：")
 		printWaitsWithImproves13(result, -1)
-	case 14:
+	case num%3 == 2:
 		if util.CheckWin(tiles34) {
 			color.Red("【已胡牌】")
 			break
