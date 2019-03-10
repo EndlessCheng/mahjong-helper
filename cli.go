@@ -367,7 +367,8 @@ func printAccountInfo(accountID int) {
 // 9.20  [20 改良]  4.00 听牌数
 
 // 4     [2万, 7万]
-// 4.50  [4 TODO 改良]  55.36% 和了率
+// 4.50  [ 4 改良]  55.36% 和了率
+// TODO: 按照和率排序？
 func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 int) {
 	shanten := result13.Shanten
 	waits := result13.Waits
@@ -420,8 +421,12 @@ func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 
 		}
 	} else { // shanten == 0
 		agariRate := util.CalculateAgariRate(waits, nil)
-		fmt.Printf("%5.2f%% 和了率", agariRate)
+		fmt.Printf("%5.2f%% 和了率（仅供参考）", agariRate)
 	}
+
+	//if dangerous {
+	//	// TODO: 提示危险度！
+	//}
 
 	fmt.Println()
 }

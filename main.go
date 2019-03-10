@@ -205,6 +205,7 @@ func welcome() int {
 }
 
 func main() {
+	// TODO: flag 库
 	if len(os.Args) <= 1 {
 		// 服务器模式
 		isHTTPS := welcome() == 1

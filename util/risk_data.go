@@ -1,4 +1,4 @@
-package main
+package util
 
 type tileType int8
 
@@ -25,7 +25,7 @@ const (
 )
 
 // [巡目][类型]
-var riskData = [][]float64{
+var RiskData = [][]float64{
 	{},
 	{5.7, 5.7, 5.8, 4.7, 3.4, 2.5, 2.5, 3.1, 5.6, 3.8, 1.8, -1, -1, 2.1, 1.2, 0.5, 2.4, 1.4, 1.2}, // 1
 	{6.6, 6.9, 6.3, 5.2, 4.0, 3.5, 3.5, 4.1, 5.3, 3.5, 1.9, 0.8, 2.6, 2.3, 1.2, 0.5, 2.7, 1.3, 0.4},
@@ -53,7 +53,7 @@ var (
 	// 123789: 无现物，有现物
 	// 4: 无17现物，无1有7，有1无7，有17
 	// 56: 同上
-	tileTypeTable = [][]tileType{
+	TileTypeTable = [][]tileType{
 		{tileTypeNoSuji19, tileTypeSuji19},
 		{tileTypeNoSuji28, tileTypeSuji28},
 		{tileTypeNoSuji37, tileTypeSuji37},
@@ -65,7 +65,7 @@ var (
 		{tileTypeNoSuji19, tileTypeSuji19},
 	}
 	// [是否为役牌(0-1)][剩余数-1]
-	ziTileType = [][]tileType{
+	ZiTileType = [][]tileType{
 		{tileTypeOtaHaiLeft1, tileTypeOtaHaiLeft2, tileTypeOtaHaiLeft3, tileTypeOtaHaiLeft3},
 		{tileTypeYakuHaiLeft1, tileTypeYakuHaiLeft2, tileTypeYakuHaiLeft3, tileTypeOtaHaiLeft3},
 	}
