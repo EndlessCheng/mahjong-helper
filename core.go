@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/fatih/color"
+	"github.com/EndlessCheng/mahjong-helper/util"
 )
 
 var debugMode = false
@@ -323,24 +324,24 @@ func (d *roundData) analysisTilesRisk() (tables riskTables) {
 		// TODO: 单独处理宣言牌的筋牌、宣言牌的同色牌的危险度
 		for i := 0; i < 3; i++ {
 			for j := 0; j < 3; j++ {
-				t := tileTypeTable[j][safeTiles[9*i+j+3]]
-				table[9*i+j] = riskData[turns][t]
+				t := util.TileTypeTable[j][safeTiles[9*i+j+3]]
+				table[9*i+j] = util.RiskData[turns][t]
 			}
 			for j := 3; j < 6; j++ {
 				mixSafeTile := safeTiles[9*i+j-3]<<1 | safeTiles[9*i+j+3]
-				t := tileTypeTable[j][mixSafeTile]
-				table[9*i+j] = riskData[turns][t]
+				t := util.TileTypeTable[j][mixSafeTile]
+				table[9*i+j] = util.RiskData[turns][t]
 			}
 			for j := 6; j < 9; j++ {
-				t := tileTypeTable[j][safeTiles[9*i+j-3]]
-				table[9*i+j] = riskData[turns][t]
+				t := util.TileTypeTable[j][safeTiles[9*i+j-3]]
+				table[9*i+j] = util.RiskData[turns][t]
 			}
 		}
 		for i := 27; i < 34; i++ {
 			if d.leftCounts[i] > 0 {
 				isYakuHai := i == d.roundWindTile || i == player.selfWindTile || i >= 31
-				t := ziTileType[boolToInt(isYakuHai)][d.leftCounts[i]-1]
-				table[i] = riskData[turns][t]
+				t := util.ZiTileType[boolToInt(isYakuHai)][d.leftCounts[i]-1]
+				table[i] = util.RiskData[turns][t]
 			}
 		}
 
