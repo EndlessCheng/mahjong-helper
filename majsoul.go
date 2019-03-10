@@ -232,7 +232,7 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicat
 func (d *majsoulRoundData) IsSelfDraw() bool {
 	msg := d.msg
 
-	if msg.Seat == nil || msg.Moqie != nil {
+	if msg.Seat == nil || msg.Moqie != nil || msg.Tile == "" {
 		return false
 	}
 
