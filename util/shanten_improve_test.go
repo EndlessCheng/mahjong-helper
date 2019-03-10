@@ -1,6 +1,9 @@
 package util
 
-import "testing"
+import (
+	"testing"
+	"fmt"
+)
 
 func TestCalculateShantenWithImproveClosed(t *testing.T) {
 	for _, tiles := range []string{
@@ -33,10 +36,12 @@ func TestCalculateShantenWithImproveOpen(t *testing.T) {
 
 func TestCalculateShantenWithImproves13Closed(t *testing.T) {
 	for _, tiles := range []string{
-		"11357m 13579p 135s",
-		"123456789m 1135s",
-		"123456789m 1134s",
-		"123456789m 1234z",
+		//"11357m 13579p 135s",
+		//"123456789m 1135s",
+		//"123456789m 1134s",
+		//"123456789m 1234z",
+		"3m 12668p 5678s 222z",
+		"6m 12668p 5678s 222z",
 	} {
 		tiles34 := MustStrToTiles34(tiles)
 		if CountOfTiles(tiles34) != 13 {
@@ -45,6 +50,7 @@ func TestCalculateShantenWithImproves13Closed(t *testing.T) {
 		}
 		result := CalculateShantenWithImproves13(tiles34, false)
 		t.Log(tiles, "=\n"+result.String())
+		fmt.Println()
 	}
 }
 
