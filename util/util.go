@@ -40,3 +40,11 @@ func CountPairs(tiles34 []int) (pairs int) {
 	}
 	return
 }
+
+func invert(tiles34 []int) (leftTiles34 []int) {
+	leftTiles34 = make([]int, 34)
+	for i, count := range tiles34 {
+		leftTiles34[i] = 4 - count
+	}
+	return
+}

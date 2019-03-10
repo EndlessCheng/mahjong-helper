@@ -70,20 +70,3 @@ var (
 		{tileTypeYakuHaiLeft1, tileTypeYakuHaiLeft2, tileTypeYakuHaiLeft3, tileTypeOtaHaiLeft3},
 	}
 )
-
-//  TODO  var noChanceMatrix = [
-//            {'indices': [1], 'blocked_tiles': [0]},
-//            {'indices': [2], 'blocked_tiles': [0, 1]},
-//            {'indices': [3], 'blocked_tiles': [1, 2]},
-//            {'indices': [4], 'blocked_tiles': [2, 6]},
-//            {'indices': [5], 'blocked_tiles': [6, 7]},
-//            {'indices': [6], 'blocked_tiles': [7, 8]},
-//            {'indices': [7], 'blocked_tiles': [8]},
-//            {'indices': [1, 5], 'blocked_tiles': [3]},
-//            {'indices': [2, 6], 'blocked_tiles': [4]},
-//            {'indices': [3, 7], 'blocked_tiles': [5]},
-//            {'indices': [1, 4], 'blocked_tiles': [2, 3]},
-//            {'indices': [2, 5], 'blocked_tiles': [3, 4]},
-//            {'indices': [3, 6], 'blocked_tiles': [4, 5]},
-//            {'indices': [4, 7], 'blocked_tiles': [5, 6]},
-//        ]
