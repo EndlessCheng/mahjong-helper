@@ -27,7 +27,7 @@ func Test_analysis(t *testing.T) {
 		Message string `json:"message"`
 	}{}
 
-	for lo, line := range strings.Split(string(data), "\n")[startLo:] {
+	for lo, line := range strings.Split(string(data), "\n")[startLo-1:] {
 		fmt.Println(lo+1)
 		json.Unmarshal([]byte(line), &s)
 
