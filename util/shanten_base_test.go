@@ -14,6 +14,7 @@ func TestCalculateShantenClosed(t *testing.T) {
 }
 
 func TestCalculateShantenOpen(t *testing.T) {
+	//t.Log(CalculateShanten(MustStrToTiles34("123m"), true))
 	t.Log(CalculateShanten(MustStrToTiles34("2247m"), true) == 1)
 	t.Log(CalculateShanten(MustStrToTiles34("11234m"), true) == -1)
 }

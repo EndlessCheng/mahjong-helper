@@ -157,8 +157,6 @@ func CalculateShantenWithImproves13(tiles34 []int, isOpen bool) (waitsWithImprov
 	shanten13, waits := CalculateShantenAndWaits13(tiles34, isOpen)
 	waitsCount := waits.AllCount()
 
-	//fmt.Println(Tiles34ToMergedStrWithBracket(tiles34), waits)
-
 	nextShantenWaitsCountMap := map[int]int{} // map[进张牌]听多少张牌
 	improves := Improves{}
 	improveWayCount := 0
@@ -210,7 +208,7 @@ func CalculateShantenWithImproves13(tiles34 []int, isOpen bool) (waitsWithImprov
 							improveWaitsCount34[i] = improveWaitsCount
 							improves[i] = improveWaits
 						}
-						//fmt.Println(fmt.Sprintf("    摸 %s 切 %s 改良:", mahjongZH[drawTile], mahjongZH[discardTile]), improveWaitsCount, TilesToMergedStrWithBracket(improveWaits.indexes()))
+						//fmt.Println(fmt.Sprintf("    摸 %s 切 %s 改良:", mahjongZH[i], mahjongZH[j]), improveWaitsCount, TilesToMergedStrWithBracket(improveWaits.indexes()))
 					}
 				}
 				tiles34[j]++
