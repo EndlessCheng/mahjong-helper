@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"strings"
 	"fmt"
-	"github.com/segmentio/objconv/json"
+	"encoding/json"
 )
 
 func Test_analysis(t *testing.T) {
@@ -18,7 +18,7 @@ func Test_analysis(t *testing.T) {
 
 	//
 	accountID := -1
-	startLo := 0
+	startLo := 1
 
 	majsoulRoundData := &majsoulRoundData{accountID: accountID}
 	majsoulRoundData.roundData = newRoundData(majsoulRoundData, 0, 0)

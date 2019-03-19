@@ -12,8 +12,13 @@ type majsoulMessage struct {
 
 	Friends []*majsoulFriend `json:"friends"`
 
-	// NotifyPlayerLoadGameReady
+	// ResAuthGame
+	IsGameStart *bool `json:"is_game_start"` // false=新游戏，true=重连
+	SeatList    []int `json:"seat_list"`
 	ReadyIDList []int `json:"ready_id_list"`
+
+	// NotifyPlayerLoadGameReady
+	//ReadyIDList []int `json:"ready_id_list"`
 
 	// ActionNewRound
 	// {"chang":0,"ju":0,"ben":0,"tiles":["1m","3m","7m","3p","6p","7p","6s","1z","1z","2z","3z","4z","7z"],"dora":"6m","scores":[25000,25000,25000,25000],"liqibang":0,"al":false,"md5":"","left_tile_count":69}
@@ -165,55 +170,58 @@ func (d *majsoulRoundData) GetMessage() string {
 func (d *majsoulRoundData) CheckMessage() bool {
 	msg := d.msg
 
-	if msg.ReadyIDList != nil {
+	// 首先，获取玩家账号
+	if msg.SeatList != nil {
+		// 有 accountID 时，检查 accountID 是否正确
+		if d.accountID > 0 && !inIntSlice(d.accountID, msg.SeatList) {
+			color.Red("尚未正确获取到玩家账号 ID，请您刷新网页，或开启一局人机对战（错误信息：您的账号 ID %d 不在对战列表 %v 中）", d.accountID, msg.SeatList)
+			return false
+		}
+
+		// 判断是否为人机对战，若为人机对战，则获取 accountID
+		if inIntSlice(0, msg.SeatList) {
+			for _, accountID := range msg.SeatList {
+				if accountID > 0 {
+					d.accountID = accountID
+					printAccountInfo(accountID)
+					time.Sleep(2 * time.Second)
+				}
+			}
+		}
+	}
+
+	// 没有账号直接 return false
+	if d.accountID == -1 {
+		return false
+	}
+
+	// 当自家准备好时（msg.SeatList == nil），打印准备信息
+	if msg.SeatList == nil && msg.ReadyIDList != nil {
 		fmt.Printf("等待玩家准备 (%d/%d) %v\n", len(msg.ReadyIDList), 4, msg.ReadyIDList)
 	}
 
-	if d.accountID > 0 {
-		if msg.ReadyIDList != nil && !inIntSlice(d.accountID, msg.ReadyIDList) {
-			color.Red("尚未正确获取到玩家账号 ID，请您刷新网页，或开启一局人机对战（错误信息：您的账号 ID %d 不在对战列表 %v 中）", d.accountID, msg.ReadyIDList)
-			return false
-		}
-		return true
-	}
-	// 尚未获取到玩家账号 ID
-
-	if len(msg.ReadyIDList) < 4 {
+	// 筛去重连的消息，目前的程序不考虑重连的情况
+	if msg.IsGameStart != nil && *msg.IsGameStart {
 		return false
 	}
 
-	// 判断是否为人机对战，获取玩家ID
-	if !inIntSlice(0, msg.ReadyIDList) {
-		color.Red("尚未获取到玩家账号 ID，请您刷新网页，或开启一局人机对战")
-		return false
-	}
-
-	for _, accountID := range msg.ReadyIDList {
-		if accountID > 0 {
-			d.accountID = accountID
-			printAccountInfo(accountID)
-			time.Sleep(2 * time.Second)
-			return true
-		}
-	}
-
-	return false
+	return true
 }
 
 func (d *majsoulRoundData) IsInit() bool {
 	msg := d.msg
-	// NotifyPlayerLoadGameReady || ActionNewRound
-	return len(msg.ReadyIDList) == 4 || msg.MD5 != ""
+	// ResAuthGame || ActionNewRound
+	return len(msg.SeatList) == 4 || msg.MD5 != ""
 }
 
 func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicator int, hands []int) {
 	msg := d.msg
 
-	if len(msg.ReadyIDList) == 4 {
+	if len(msg.SeatList) == 4 {
 		// dealer: 0=自家, 1=下家, 2=对家, 3=上家
 		dealer = 1
-		for i := len(msg.ReadyIDList) - 1; i >= 0; i-- {
-			if msg.ReadyIDList[i] == d.accountID {
+		for i := len(msg.SeatList) - 1; i >= 0; i-- {
+			if msg.SeatList[i] == d.accountID {
 				break
 			}
 			dealer++
