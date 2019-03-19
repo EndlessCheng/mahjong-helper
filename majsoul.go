@@ -172,19 +172,21 @@ func (d *majsoulRoundData) CheckMessage() bool {
 
 	// 首先，获取玩家账号
 	if msg.SeatList != nil {
-		// 有 accountID 时，检查 accountID 是否正确
-		if d.accountID > 0 && !inIntSlice(d.accountID, msg.SeatList) {
-			color.Red("尚未正确获取到玩家账号 ID，请您刷新网页，或开启一局人机对战（错误信息：您的账号 ID %d 不在对战列表 %v 中）", d.accountID, msg.SeatList)
-			return false
-		}
-
-		// 判断是否为人机对战，若为人机对战，则获取 accountID
-		if inIntSlice(0, msg.SeatList) {
-			for _, accountID := range msg.SeatList {
-				if accountID > 0 {
-					d.accountID = accountID
-					printAccountInfo(accountID)
-					time.Sleep(2 * time.Second)
+		if d.accountID > 0 {
+			// 有 accountID 时，检查 accountID 是否正确
+			if !inIntSlice(d.accountID, msg.SeatList) {
+				color.Red("尚未正确获取到玩家账号 ID，请您刷新网页，或开启一局人机对战（错误信息：您的账号 ID %d 不在对战列表 %v 中）", d.accountID, msg.SeatList)
+				return false
+			}
+		} else {
+			// 判断是否为人机对战，若为人机对战，则获取 accountID
+			if inIntSlice(0, msg.SeatList) {
+				for _, accountID := range msg.SeatList {
+					if accountID > 0 {
+						d.accountID = accountID
+						printAccountInfo(accountID)
+						time.Sleep(2 * time.Second)
+					}
 				}
 			}
 		}
