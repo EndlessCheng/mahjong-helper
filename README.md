@@ -98,20 +98,6 @@
 
 考虑到雀魂的 WebSocket 收到的是封装后的 protobuf 二进制数据，不好解析，于是另寻他路
 
-1. 搜索 `AddListener2MJ("NotifyPlayerLoadGameReady"` 找到后面的匿名函数 function(e)
-
-2. 在匿名函数开头（或者末尾）添加如下代码（注意地址是 HTTPS 协议）
-
-    ```javascript
-    var req = new XMLHttpRequest();
-    req.open("POST", "https://localhost:12121/");
-    req.send(e.data);
-    ```
-
-3. 全局替换：
-
-    把所有的 `i.play=function(t){` 替换成 `i.play=function(t){var req=new XMLHttpRequest();req.open("POST","https://localhost:12121/");req.send(JSON.stringify(t));`
-    
-    把 `l.prototype._onLoginSuccess=function(t,i){`（仅一处）替换成 `l.prototype._onLoginSuccess=function(t,i){var req=new XMLHttpRequest();req.open("POST","https://localhost:12121/");req.send(JSON.stringify(i));`
+大致思路是根据 [liqi.json](https://github.com/EndlessCheng/mahjong-helper/blob/master/liqi.json) 文件提供的对分析玩家操作有用的字段查找相关关键字，如 `ActionDealTile` `ActionDiscardTile` `ActionChiPengGang` 等，具体修改了哪些内容可以对比雀魂的 JS 代码和我修改后的 https://jianyan.me/majsoul/code-v0.1.4.js
 
 PS: 在网页控制台输入 `GameMgr._inRelease = 0` 即可开启调试模式
