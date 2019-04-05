@@ -71,9 +71,13 @@ func _analysis(num int, tiles34 []int, leftTiles34 []int, isOpen bool) error {
 			for i := 1; i < shanten; i++ {
 				incShantenWaitsCountLimit *= 2
 			}
-			needPrintIncShanten := bestWaitsCount <= incShantenWaitsCountLimit &&
-				len(incShantenResults14) > 0 && bestIncShantenWaitsCount >= 2*bestWaitsCount
-			if shanten > 0 && needPrintIncShanten {
+
+			needPrintIncShanten := bestWaitsCount <= incShantenWaitsCountLimit && bestIncShantenWaitsCount >= 2*bestWaitsCount
+			if shanten == 0 {
+				needPrintIncShanten = bestIncShantenWaitsCount >= 18
+			}
+
+			if needPrintIncShanten {
 				fmt.Println(util.NumberToChineseShanten(shanten+1) + "：")
 				for _, result := range incShantenResults14 {
 					printWaitsWithImproves13(result.Result13, result.DiscardTile)
