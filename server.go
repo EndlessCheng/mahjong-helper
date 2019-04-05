@@ -11,6 +11,8 @@ import (
 	"fmt"
 	"encoding/json"
 	"crypto/tls"
+	"net"
+	"github.com/fatih/color"
 )
 
 type mjHandler struct {
@@ -182,16 +184,22 @@ func runServer(isHTTPS bool) {
 	e.POST("/majsoul", h.analysisMajsoul)
 
 	addr := ":12121"
+	var err error
 	if !isHTTPS {
 		e.POST("/", h.analysisTenhou)
-		if err := e.Start(addr); err != nil {
-			_errorExit(err)
-		}
+		err = e.Start(addr)
 	} else {
 		e.POST("/", h.analysisMajsoul)
-		if err := startTLS(e, addr); err != nil {
-			_errorExit(err)
+		err = startTLS(e, addr)
+	}
+	if err != nil {
+		// 检查是否为端口占用错误
+		if opErr, ok := err.(*net.OpError); ok && opErr.Op == "listen" {
+			if syscallErr, ok := opErr.Err.(*os.SyscallError); ok && syscallErr.Syscall == "bind" {
+				color.Red(addr + " 端口已被占用，程序无法启动（是否已经开启了本程序？）")
+			}
 		}
+		_errorExit(err)
 	}
 }
 
