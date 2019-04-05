@@ -78,6 +78,8 @@ func TestCalculateShantenWithImproves14Closed(t *testing.T) {
 	tiles = "1m 258p 258s 1234567z"
 	tiles = "4567m 4579p 344588s"
 	tiles = "2479999m 45667p 13s" // 切任何一张都不会向听倒退
+	tiles = "25667m 27789p 37s 44z"
+	tiles = "111444777m 11177s"
 	shanten, results, incShantenResults := CalculateShantenWithImproves14(MustStrToTiles34(tiles), false)
 	t.Log(NumberToChineseShanten(shanten))
 	for _, result := range results {
