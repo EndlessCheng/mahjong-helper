@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strconv"
 	"errors"
+	"bufio"
 )
 
 var mahjong = [...]string{
@@ -33,6 +34,8 @@ var mahjongZH = [...]string{
 
 func _errorExit(args ...interface{}) {
 	fmt.Fprintln(os.Stderr, args...)
+	fmt.Println("按任意键退出...")
+	bufio.NewReader(os.Stdin).ReadByte()
 	os.Exit(1)
 }
 
