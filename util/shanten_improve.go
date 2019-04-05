@@ -251,23 +251,29 @@ func (l WaitsWithImproves14List) Sort() {
 	sort.Slice(l, func(i, j int) bool {
 		ri, rj := l[i].Result13, l[j].Result13
 
-		allCountRate := float64(ri.Waits.AllCount()) / float64(rj.Waits.AllCount())
-		if allCountRate < 1 {
-			allCountRate = 1 / allCountRate
-		}
-		if allCountRate > 1.1 {
-			return ri.Waits.AllCount() > rj.Waits.AllCount()
+		riWaitsCount, rjWaitsCount := ri.Waits.AllCount(), rj.Waits.AllCount()
+		// 为 0 的话看改良
+		if rateAboveOne(riWaitsCount, rjWaitsCount) > 1.1 {
+			return riWaitsCount > rjWaitsCount
 		}
 
-		// 相差在 10% 以内的，向听前进后的进张数的加权均值多者为优
-		if ri.AvgNextShantenWaitsCount != rj.AvgNextShantenWaitsCount {
+		// 进张相差在 10% 以内的，AvgNextShantenWaitsCount 多者为优，但是若 AvgNextShantenWaitsCount 差距太小（10%）还是看进张
+		if rateAboveOneFloat64(ri.AvgNextShantenWaitsCount, rj.AvgNextShantenWaitsCount) > 1.1 {
 			return ri.AvgNextShantenWaitsCount > rj.AvgNextShantenWaitsCount
 		}
 
+		if riWaitsCount != rjWaitsCount {
+			return riWaitsCount > rjWaitsCount
+		}
+
+		// 改良多的优先
 		if ri.AvgImproveWaitsCount != rj.AvgImproveWaitsCount {
 			return ri.AvgImproveWaitsCount > rj.AvgImproveWaitsCount
 		}
 
+		// TODO: 和率优先
+
+		// 改良类型多的优先
 		if ri.ImproveWayCount != rj.ImproveWayCount {
 			return ri.ImproveWayCount > rj.ImproveWayCount
 		}

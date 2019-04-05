@@ -1,5 +1,7 @@
 package util
 
+import "math"
+
 func boolToInt(b bool) int {
 	if b {
 		return 1
@@ -47,4 +49,21 @@ func invert(tiles34 []int) (leftTiles34 []int) {
 		leftTiles34[i] = 4 - count
 	}
 	return
+}
+
+func rateAboveOne(x, y int) float64 {
+	return rateAboveOneFloat64(float64(x), float64(y))
+}
+
+func rateAboveOneFloat64(x, y float64) float64 {
+	if x == y {
+		return 1
+	}
+	if x == 0 || y == 0 {
+		return math.MaxFloat64
+	}
+	if x > y {
+		return x / y
+	}
+	return y / x
 }
