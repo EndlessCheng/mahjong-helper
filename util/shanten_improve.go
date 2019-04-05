@@ -251,22 +251,31 @@ func (l WaitsWithImproves14List) Sort() {
 	sort.Slice(l, func(i, j int) bool {
 		ri, rj := l[i].Result13, l[j].Result13
 
+		// 「大差距排序」：进张 - 前进后的进张 - 改良
+
 		riWaitsCount, rjWaitsCount := ri.Waits.AllCount(), rj.Waits.AllCount()
-		// 为 0 的话看改良
 		if rateAboveOne(riWaitsCount, rjWaitsCount) > 1.1 {
 			return riWaitsCount > rjWaitsCount
 		}
 
-		// 进张相差在 10% 以内的，AvgNextShantenWaitsCount 多者为优，但是若 AvgNextShantenWaitsCount 差距太小（10%）还是看进张
 		if rateAboveOneFloat64(ri.AvgNextShantenWaitsCount, rj.AvgNextShantenWaitsCount) > 1.1 {
 			return ri.AvgNextShantenWaitsCount > rj.AvgNextShantenWaitsCount
 		}
+
+		if rateAboveOneFloat64(ri.AvgImproveWaitsCount, rj.AvgImproveWaitsCount) > 1.1 {
+			return ri.AvgImproveWaitsCount > rj.AvgImproveWaitsCount
+		}
+
+		// 「微差距排序」：进张 - 前进后的进张 - 改良
 
 		if riWaitsCount != rjWaitsCount {
 			return riWaitsCount > rjWaitsCount
 		}
 
-		// 改良多的优先
+		if ri.AvgNextShantenWaitsCount != rj.AvgNextShantenWaitsCount {
+			return ri.AvgNextShantenWaitsCount > rj.AvgNextShantenWaitsCount
+		}
+
 		if ri.AvgImproveWaitsCount != rj.AvgImproveWaitsCount {
 			return ri.AvgImproveWaitsCount > rj.AvgImproveWaitsCount
 		}
