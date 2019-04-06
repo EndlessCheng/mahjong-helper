@@ -377,15 +377,21 @@ func printAccountInfo(accountID int) {
 	fmt.Printf("，该数字为雀魂服务器账号数据库中的 ID，该值越小表示您的注册时间越早\n")
 }
 
-//
+/*
 
-// 8     切 3索 [2万, 7万]
-// 9.20  [20 改良]  4.00 听牌数
+8     切 3索 [2万, 7万]
+9.20  [20 改良]  4.00 听牌数
 
-// 4     [2万, 7万]
-// 4.50  [ 4 改良]  55.36% 和了率
+4     [2万, 7万]
+4.50  [ 4 改良]  55.36% 和了率
+
+
+8     用 45万 吃，切 4万 [2万, 7万]
+9.20  [20 改良]  4.00 听牌数
+
+*/
 // TODO: 按照和率排序？
-func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 int) {
+func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 int, openTiles34 []int) {
 	shanten := result13.Shanten
 	waits := result13.Waits
 
@@ -393,6 +399,13 @@ func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 
 	colors := getShantenWaitsCountColors(shanten, waitsCount)
 	color.New(colors...).Printf("%-6d", waitsCount)
 	if discardTile34 != -1 {
+		if len(openTiles34) > 0 {
+			meldType := "吃"
+			if openTiles34[0] == openTiles34[1] {
+				meldType = "碰"
+			}
+			fmt.Printf("用 %s%s %s，", string([]rune(mahjongZH[openTiles34[0]])[:1]), mahjongZH[openTiles34[1]], meldType)
+		}
 		fmt.Print("切 ")
 		if shanten <= 1 {
 			color.New(getSimpleRiskColor(discardTile34)).Print(mahjongZH[discardTile34])
