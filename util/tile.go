@@ -185,6 +185,14 @@ func MustStrToTiles34(tiles string) []int {
 	return tiles34
 }
 
+func MustStrToTile34(tile string) int {
+	tile34, err := StrToTile34(tile)
+	if err != nil {
+		panic(err)
+	}
+	return tile34
+}
+
 // [0, 2, 9] => "13m 1p"
 func TilesToMergedStr(tiles []int) (res string) {
 	sort.Ints(tiles)
