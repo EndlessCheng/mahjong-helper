@@ -234,15 +234,27 @@ func CalculateShantenWithImproves13(tiles34 []int, isOpen bool) (waitsWithImprov
 }
 
 type WaitsWithImproves14 struct {
+	// 切牌后的手牌分析结果
 	Result13 *WaitsWithImproves13
 	// 需要切的牌
 	DiscardTile int
 	// 切掉这张牌后的向听数
 	Shanten int
+	// 副露信息（没有副露就是 nil）
+	// 比如用 23m 吃了牌，OpenTiles 就是 [1,2]
+	OpenTiles []int
 }
 
 func (r *WaitsWithImproves14) String() string {
-	return fmt.Sprintf("切 %s: %s", mahjongZH[r.DiscardTile], r.Result13.String())
+	meldInfo := ""
+	if len(r.OpenTiles) > 0 {
+		meldType := "吃"
+		if r.OpenTiles[0] == r.OpenTiles[1] {
+			meldType = "碰"
+		}
+		meldInfo = fmt.Sprintf("%s %s，", TilesToMergedStr(r.OpenTiles), meldType)
+	}
+	return meldInfo + fmt.Sprintf("切 %s: %s", mahjongZH[r.DiscardTile], r.Result13.String())
 }
 
 type WaitsWithImproves14List []*WaitsWithImproves14
@@ -291,6 +303,22 @@ func (l WaitsWithImproves14List) Sort() {
 	})
 }
 
+func (l *WaitsWithImproves14List) filterOutDiscard(cantDiscardTile int) {
+	newResults := WaitsWithImproves14List{}
+	for _, r := range *l {
+		if r.DiscardTile != cantDiscardTile {
+			newResults = append(newResults, r)
+		}
+	}
+	*l = newResults
+}
+
+func (l WaitsWithImproves14List) addOpenTile(openTiles []int) {
+	for _, r := range l {
+		r.OpenTiles = openTiles
+	}
+}
+
 // 2/5/8/11/14 张牌，计算向听数、进张、改良、向听倒退等
 func CalculateShantenWithImproves14(tiles34 []int, isOpen bool) (shanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
 	shanten = CalculateShanten(tiles34, isOpen)
@@ -316,5 +344,80 @@ func CalculateShantenWithImproves14(tiles34 []int, isOpen bool) (shanten int, wa
 	}
 	waitsWithImproves.Sort()
 	incShantenResults.Sort()
+	return
+}
+
+func CalculateMeld(tiles34 []int, tile int, allowChi bool) (shanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
+	combinations := [][2]int{}
+	// 是否能碰
+	if tiles34[tile] >= 2 {
+		combinations = append(combinations, [2]int{tile, tile})
+	}
+	// 是否能吃
+	if allowChi && tile < 27 {
+		checkChi := func(tileA, tileB int) {
+			if tiles34[tileA] > 0 && tiles34[tileB] > 0 {
+				combinations = append(combinations, [2]int{tileA, tileB})
+			}
+		}
+		t9 := tile % 9
+		if t9 >= 2 {
+			checkChi(tile-2, tile-1)
+		}
+		if t9 >= 1 && t9 <= 7 {
+			checkChi(tile-1, tile+1)
+		}
+		if t9 <= 6 {
+			checkChi(tile+1, tile+2)
+		}
+	}
+
+	// 计算所有副露情况下的最小向听数
+	shanten = 99
+	for _, c := range combinations {
+		tiles34[c[0]]--
+		tiles34[c[1]]--
+		shanten = minInt(shanten, CalculateShanten(tiles34, true))
+		tiles34[c[0]]++
+		tiles34[c[1]]++
+	}
+
+	for _, c := range combinations {
+		tiles34[c[0]]--
+		tiles34[c[1]]--
+		_shanten, _waitsWithImproves, _incShantenResults := CalculateShantenWithImproves14(tiles34, true)
+		tiles34[c[0]]++
+		tiles34[c[1]]++
+
+		// 去掉现物食替的情况
+		_waitsWithImproves.filterOutDiscard(tile)
+		_incShantenResults.filterOutDiscard(tile)
+
+		// 去掉筋食替的情况
+		cantDiscardTile := -1
+		if c[0] < tile && c[1] < tile && tile >= 3 {
+			cantDiscardTile = tile - 3
+		} else if c[0] > tile && c[1] > tile && tile <= 5 {
+			cantDiscardTile = tile + 3
+		}
+		if cantDiscardTile != -1 {
+			_waitsWithImproves.filterOutDiscard(cantDiscardTile)
+			_incShantenResults.filterOutDiscard(cantDiscardTile)
+		}
+
+		_waitsWithImproves.addOpenTile(c[:])
+		_incShantenResults.addOpenTile(c[:])
+
+		if _shanten == shanten {
+			waitsWithImproves = append(waitsWithImproves, _waitsWithImproves...)
+			incShantenResults = append(incShantenResults, _incShantenResults...)
+		} else if _shanten == shanten+1 {
+			incShantenResults = append(incShantenResults, _waitsWithImproves...)
+		}
+	}
+
+	waitsWithImproves.Sort()
+	incShantenResults.Sort()
+
 	return
 }

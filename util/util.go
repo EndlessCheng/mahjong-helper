@@ -67,3 +67,10 @@ func rateAboveOneFloat64(x, y float64) float64 {
 	}
 	return y / x
 }
+
+func minInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
