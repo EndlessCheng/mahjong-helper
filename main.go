@@ -116,6 +116,11 @@ func analysisMeld(tiles34 []int, leftTiles34 []int, targetTile34 int, allowChi b
 	results14.FilterWithLeftTiles34(leftTiles34)
 	incShantenResults14.FilterWithLeftTiles34(leftTiles34)
 
+	if shanten == -1 {
+		color.Red("【已胡牌】")
+		return
+	}
+
 	// 打印结果
 	fmt.Println("鸣牌后" + util.NumberToChineseShanten(shanten) + "：")
 	for _, result := range results14 {

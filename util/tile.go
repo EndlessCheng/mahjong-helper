@@ -216,7 +216,7 @@ func TilesToMergedStr(tiles []int) (res string) {
 }
 
 func Tile34ToMergedStr(tile34 int) (res string) {
-	return Tiles34ToMergedStr([]int{tile34})
+	return TilesToMergedStr([]int{tile34})
 }
 
 // [0, 2, 9] => "[13m 1p]"
