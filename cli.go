@@ -379,14 +379,14 @@ func printAccountInfo(accountID int) {
 
 /*
 
-8     切 3索 [2万, 7万]
+8     切 3索 听[2万, 7万]
 9.20  [20 改良]  4.00 听牌数
 
-4     [2万, 7万]
+4     听 [2万, 7万]
 4.50  [ 4 改良]  55.36% 和了率
 
 
-8     用 45万 吃，切 4万 [2万, 7万]
+8     45万吃，切 4万 听[2万, 7万]
 9.20  [20 改良]  4.00 听牌数
 
 */
@@ -404,7 +404,8 @@ func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 
 			if openTiles34[0] == openTiles34[1] {
 				meldType = "碰"
 			}
-			fmt.Printf("用 %s%s %s，", string([]rune(mahjongZH[openTiles34[0]])[:1]), mahjongZH[openTiles34[1]], meldType)
+			color.New(color.FgHiWhite).Printf("%s%s", string([]rune(mahjongZH[openTiles34[0]])[:1]), mahjongZH[openTiles34[1]])
+			fmt.Printf("%s，", meldType)
 		}
 		fmt.Print("切 ")
 		if shanten <= 1 {
@@ -412,8 +413,9 @@ func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 
 		} else {
 			fmt.Print(mahjongZH[discardTile34])
 		}
+		fmt.Print(" ")
 	}
-	fmt.Print(" ")
+	fmt.Print("听")
 	if shanten <= 1 {
 		fmt.Print("[")
 		color.New(getSafeColor(waitTiles[0])).Print(mahjongZH[waitTiles[0]])
