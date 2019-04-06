@@ -66,12 +66,12 @@ func _analysis(num int, tiles34 []int, leftTiles34 []int, isOpen bool) error {
 		fmt.Println(util.NumberToChineseShanten(result.Shanten) + "：")
 		printWaitsWithImproves13(result, -1, nil)
 	case num%3 == 2:
-		if util.CheckWin(tiles34) {
+		shanten, results14, incShantenResults14 := util.CalculateShantenWithImproves14(tiles34, isOpen)
+
+		if shanten == -1 {
 			color.Red("【已胡牌】")
 			break
 		}
-
-		shanten, results14, incShantenResults14 := util.CalculateShantenWithImproves14(tiles34, isOpen)
 
 		if shanten == 0 {
 			color.Red("【已听牌】")
@@ -122,11 +122,20 @@ func analysisMeld(tiles34 []int, leftTiles34 []int, targetTile34 int, allowChi b
 	}
 
 	// 打印结果
+	const maxShown = 8
 	fmt.Println("鸣牌后" + util.NumberToChineseShanten(shanten) + "：")
-	for _, result := range results14 {
+	shownResults14 := results14
+	if len(shownResults14) > maxShown {
+		shownResults14 = shownResults14[:maxShown]
+	}
+	for _, result := range shownResults14 {
 		printWaitsWithImproves13(result.Result13, result.DiscardTile, result.OpenTiles)
 	}
-	_printIncShantenResults14(shanten, results14, incShantenResults14)
+	shownIncResults14 := incShantenResults14
+	if len(shownIncResults14) > maxShown {
+		shownIncResults14 = shownIncResults14[:maxShown]
+	}
+	_printIncShantenResults14(shanten, results14, shownIncResults14)
 }
 
 func analysis(raw string) (num int, counts []int, err error) {
