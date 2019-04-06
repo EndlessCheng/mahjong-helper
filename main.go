@@ -102,19 +102,25 @@ func _analysis(num int, tiles34 []int, leftTiles34 []int, isOpen bool) error {
 }
 
 func analysisMeld(tiles34 []int, leftTiles34 []int, targetTile34 int, allowChi bool) {
-	raw := util.Tiles34ToMergedStr(tiles34) + " + " + util.Tile34ToMergedStr(targetTile34) + "?"
-	fmt.Println(raw)
-	fmt.Println(strings.Repeat("=", len(raw)))
-
+	// 原始手牌分析
 	result := util.CalculateShantenWithImproves13(tiles34, true)
 	result.Waits.FixCountsWithLeftCounts(leftTiles34)
-	fmt.Println("原手牌" + util.NumberToChineseShanten(result.Shanten) + "：")
-	printWaitsWithImproves13(result, -1, nil)
 
 	// 副露分析
 	shanten, results14, incShantenResults14 := util.CalculateMeld(tiles34, targetTile34, allowChi)
 	results14.FilterWithLeftTiles34(leftTiles34)
 	incShantenResults14.FilterWithLeftTiles34(leftTiles34)
+
+	if len(results14) == 0 && len(incShantenResults14) == 0 {
+		return
+	}
+
+	raw := util.Tiles34ToMergedStr(tiles34) + " + " + util.Tile34ToMergedStr(targetTile34) + "?"
+	fmt.Println(raw)
+	fmt.Println(strings.Repeat("=", len(raw)))
+
+	fmt.Println("当前" + util.NumberToChineseShanten(result.Shanten) + "：")
+	printWaitsWithImproves13(result, -1, nil)
 
 	if shanten == -1 {
 		color.Red("【已胡牌】")

@@ -86,14 +86,14 @@ func (r *WaitsWithImproves13) String() string {
 		r.AvgImproveWaitsCount,
 		r.ImproveWayCount,
 	)
-	if r.Shanten > 0 {
+	if r.Shanten >= 1 {
 		s += fmt.Sprintf(" %.2f %s进张",
 			r.AvgNextShantenWaitsCount,
 			NumberToChineseShanten(r.Shanten-1),
 		)
-		if r.Shanten == 1 {
-			s += fmt.Sprintf("（%.2f%% 参考和率）", r.AvgAgariRate)
-		}
+	}
+	if r.Shanten >= 0 && r.Shanten <= 1 {
+		s += fmt.Sprintf("（%.2f%% 参考和率）", r.AvgAgariRate)
 	}
 	return s
 }
@@ -254,6 +254,9 @@ func CalculateShantenWithImproves13(tiles34 []int, isOpen bool) (waitsWithImprov
 		tiles34[i]--
 	}
 	avgAgariRate /= float64(waitsCount)
+	if shanten13 == 0 {
+		avgAgariRate = CalculateAgariRate(waits, nil)
+	}
 
 	_tiles34 := make([]int, 34)
 	copy(_tiles34, tiles34)
@@ -302,7 +305,12 @@ func (l WaitsWithImproves14List) Sort() {
 	sort.Slice(l, func(i, j int) bool {
 		ri, rj := l[i].Result13, l[j].Result13
 
-		// 「大差距排序」：进张 - 前进后的进张 - 改良
+		// 听牌的话直接按照和率排序，TODO: 考虑打点
+		if l[0].Shanten == 0 {
+			return ri.AvgAgariRate > rj.AvgAgariRate
+		}
+
+		// 「大差距排序」：进张 - 前进后的进张 - 和率 - 改良
 
 		riWaitsCount, rjWaitsCount := ri.Waits.AllCount(), rj.Waits.AllCount()
 		if rateAboveOne(riWaitsCount, rjWaitsCount) > 1.15 {
@@ -313,11 +321,15 @@ func (l WaitsWithImproves14List) Sort() {
 			return ri.AvgNextShantenWaitsCount > rj.AvgNextShantenWaitsCount
 		}
 
+		if rateAboveOneFloat64(ri.AvgAgariRate, rj.AvgAgariRate) > 1.1 {
+			return ri.AvgAgariRate > rj.AvgAgariRate
+		}
+
 		if rateAboveOneFloat64(ri.AvgImproveWaitsCount, rj.AvgImproveWaitsCount) > 1.1 {
 			return ri.AvgImproveWaitsCount > rj.AvgImproveWaitsCount
 		}
 
-		// 「微差距排序」：进张 - 前进后的进张 - 改良
+		// 「微差距排序」：进张 - 前进后的进张 - 和率 - 改良
 
 		if riWaitsCount != rjWaitsCount {
 			return riWaitsCount > rjWaitsCount
@@ -327,11 +339,13 @@ func (l WaitsWithImproves14List) Sort() {
 			return ri.AvgNextShantenWaitsCount > rj.AvgNextShantenWaitsCount
 		}
 
+		if ri.AvgAgariRate != rj.AvgAgariRate {
+			return ri.AvgAgariRate > rj.AvgAgariRate
+		}
+
 		if ri.AvgImproveWaitsCount != rj.AvgImproveWaitsCount {
 			return ri.AvgImproveWaitsCount > rj.AvgImproveWaitsCount
 		}
-
-		// TODO: 和率优先
 
 		// 改良类型多的优先
 		if ri.ImproveWayCount != rj.ImproveWayCount {
@@ -394,16 +408,16 @@ func CalculateShantenWithImproves14(tiles34 []int, isOpen bool) (shanten int, wa
 }
 
 // 计算最小向听数，鸣牌方式，该鸣牌方式下的向听数
-func calculateMeldShanten(tiles34 []int, tile int, allowChi bool) (minShanten int, combinations [][2]int, shantens []int) {
+func calculateMeldShanten(tiles34 []int, tile int, allowChi bool) (minShanten int, combinations [][]int, shantens []int) {
 	// 是否能碰
 	if tiles34[tile] >= 2 {
-		combinations = append(combinations, [2]int{tile, tile})
+		combinations = append(combinations, []int{tile, tile})
 	}
 	// 是否能吃
 	if allowChi && tile < 27 {
 		checkChi := func(tileA, tileB int) {
 			if tiles34[tileA] > 0 && tiles34[tileB] > 0 {
-				combinations = append(combinations, [2]int{tileA, tileB})
+				combinations = append(combinations, []int{tileA, tileB})
 			}
 		}
 		t9 := tile % 9
