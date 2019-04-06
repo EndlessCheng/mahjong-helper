@@ -415,7 +415,7 @@ func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 
 		}
 		fmt.Print(" ")
 	}
-	fmt.Print("听")
+	//fmt.Print("等")
 	if shanten <= 1 {
 		fmt.Print("[")
 		color.New(getSafeColor(waitTiles[0])).Print(mahjongZH[waitTiles[0]])
@@ -454,8 +454,7 @@ func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 
 			fmt.Printf("（%.2f%% 参考和率）", result13.AvgAgariRate)
 		}
 	} else { // shanten == 0
-		agariRate := util.CalculateAgariRate(waits, nil)
-		fmt.Printf("%5.2f%% 和了率（仅供参考）", agariRate)
+		fmt.Printf("%5.2f%% 参考和率", result13.AvgAgariRate)
 	}
 
 	//if dangerous {
