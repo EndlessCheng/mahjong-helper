@@ -19,6 +19,41 @@ var debug = false
 var detailFlag = false
 var interactFlag = false // 交互模式
 
+func _printIncShantenResults14(shanten int, results14, incShantenResults14 util.WaitsWithImproves14List) {
+	if len(incShantenResults14) == 0 {
+		return
+	}
+
+	bestWaitsCount := results14[0].Result13.Waits.AllCount()
+	bestIncShantenWaitsCount := incShantenResults14[0].Result13.Waits.AllCount()
+
+	// TODO: 待调整
+	// 1 - 12
+	// 2 - 24
+	// 3 - 36
+	// ...
+	incShantenWaitsCountLimit := 12
+	for i := 1; i < shanten; i++ {
+		incShantenWaitsCountLimit *= 2
+	}
+
+	needPrintIncShanten := bestWaitsCount <= incShantenWaitsCountLimit && bestIncShantenWaitsCount >= 2*bestWaitsCount
+	if shanten == 0 {
+		needPrintIncShanten = bestIncShantenWaitsCount >= 18
+	}
+	if !needPrintIncShanten {
+		return
+	}
+
+	if len(incShantenResults14[0].OpenTiles) > 0 {
+		fmt.Print("鸣牌后")
+	}
+	fmt.Println(util.NumberToChineseShanten(shanten+1) + "：")
+	for _, result := range incShantenResults14 {
+		printWaitsWithImproves13(result.Result13, result.DiscardTile, result.OpenTiles)
+	}
+}
+
 func _analysis(num int, tiles34 []int, leftTiles34 []int, isOpen bool) error {
 	raw := util.Tiles34ToMergedStr(tiles34)
 	fmt.Println(raw)
@@ -27,8 +62,9 @@ func _analysis(num int, tiles34 []int, leftTiles34 []int, isOpen bool) error {
 	switch {
 	case num%3 == 1:
 		result := util.CalculateShantenWithImproves13(tiles34, isOpen)
+		result.Waits.FixCountsWithLeftCounts(leftTiles34)
 		fmt.Println(util.NumberToChineseShanten(result.Shanten) + "：")
-		printWaitsWithImproves13(result, -1)
+		printWaitsWithImproves13(result, -1, nil)
 	case num%3 == 2:
 		if util.CheckWin(tiles34) {
 			color.Red("【已胡牌】")
@@ -43,47 +79,17 @@ func _analysis(num int, tiles34 []int, leftTiles34 []int, isOpen bool) error {
 
 		// TODO: 若两向听的进张<=15，则添加向听倒退的提示（拒绝做七对子）
 
-		// TODO: 合并的步骤放到解析中去处理
-		for _, result := range results14 {
-			result.Result13.Waits.FixCountsWithLeftCounts(leftTiles34)
-		}
-		results14.Sort()
-		for _, result := range incShantenResults14 {
-			result.Result13.Waits.FixCountsWithLeftCounts(leftTiles34)
-		}
-		incShantenResults14.Sort()
+		// TODO: 改良没算，还是放到解析中去处理比较好
+		results14.FilterWithLeftTiles34(leftTiles34)
+		incShantenResults14.FilterWithLeftTiles34(leftTiles34)
 
 		fmt.Println(util.NumberToChineseShanten(shanten) + "：")
 		for _, result := range results14 {
-			printWaitsWithImproves13(result.Result13, result.DiscardTile)
+			printWaitsWithImproves13(result.Result13, result.DiscardTile, result.OpenTiles)
 		}
 
-		if len(incShantenResults14) > 0 {
-			bestWaitsCount := results14[0].Result13.Waits.AllCount()
-			bestIncShantenWaitsCount := incShantenResults14[0].Result13.Waits.AllCount()
-
-			// TODO: 待调整
-			// 1 - 12
-			// 2 - 24
-			// 3 - 36
-			// ...
-			incShantenWaitsCountLimit := 12
-			for i := 1; i < shanten; i++ {
-				incShantenWaitsCountLimit *= 2
-			}
-
-			needPrintIncShanten := bestWaitsCount <= incShantenWaitsCountLimit && bestIncShantenWaitsCount >= 2*bestWaitsCount
-			if shanten == 0 {
-				needPrintIncShanten = bestIncShantenWaitsCount >= 18
-			}
-
-			if needPrintIncShanten {
-				fmt.Println(util.NumberToChineseShanten(shanten+1) + "：")
-				for _, result := range incShantenResults14 {
-					printWaitsWithImproves13(result.Result13, result.DiscardTile)
-				}
-			}
-		}
+		// 不好的牌会打印出向听倒退的分析
+		_printIncShantenResults14(shanten, results14, incShantenResults14)
 	default:
 		err := fmt.Errorf("参数错误: %d 张牌", num)
 		return err
@@ -93,6 +99,29 @@ func _analysis(num int, tiles34 []int, leftTiles34 []int, isOpen bool) error {
 	fmt.Println()
 
 	return nil
+}
+
+func analysisMeld(tiles34 []int, leftTiles34 []int, targetTile34 int, allowChi bool) {
+	raw := util.Tiles34ToMergedStr(tiles34) + " + " + util.Tile34ToMergedStr(targetTile34) + "?"
+	fmt.Println(raw)
+	fmt.Println(strings.Repeat("=", len(raw)))
+
+	result := util.CalculateShantenWithImproves13(tiles34, true)
+	result.Waits.FixCountsWithLeftCounts(leftTiles34)
+	fmt.Println("原手牌" + util.NumberToChineseShanten(result.Shanten) + "：")
+	printWaitsWithImproves13(result, -1, nil)
+
+	// 副露分析
+	shanten, results14, incShantenResults14 := util.CalculateMeld(tiles34, targetTile34, allowChi)
+	results14.FilterWithLeftTiles34(leftTiles34)
+	incShantenResults14.FilterWithLeftTiles34(leftTiles34)
+
+	// 打印结果
+	fmt.Println("鸣牌后" + util.NumberToChineseShanten(shanten) + "：")
+	for _, result := range results14 {
+		printWaitsWithImproves13(result.Result13, result.DiscardTile, result.OpenTiles)
+	}
+	_printIncShantenResults14(shanten, results14, incShantenResults14)
 }
 
 func analysis(raw string) (num int, counts []int, err error) {
@@ -209,11 +238,18 @@ func welcome() int {
 }
 
 func main() {
-	// TODO: flag 库
+	// TODO: github.com/urfave/cli
+	// TODO: flag 比较下二者
+	// TODO: -majsoul -tenhou 快捷方式
 	if len(os.Args) <= 1 {
 		// 服务器模式
 		isHTTPS := welcome() == 1
 		runServer(isHTTPS)
+		return
+	}
+
+	if os.Args[len(os.Args)-1] == "-analysis" {
+		runServer(false)
 		return
 	}
 

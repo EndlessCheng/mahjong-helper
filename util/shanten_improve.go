@@ -252,7 +252,7 @@ func (r *WaitsWithImproves14) String() string {
 		if r.OpenTiles[0] == r.OpenTiles[1] {
 			meldType = "碰"
 		}
-		meldInfo = fmt.Sprintf("%s %s，", TilesToMergedStr(r.OpenTiles), meldType)
+		meldInfo = fmt.Sprintf("用 %s%s %s，", string([]rune(mahjongZH[r.OpenTiles[0]])[:1]), mahjongZH[r.OpenTiles[1]], meldType)
 	}
 	return meldInfo + fmt.Sprintf("切 %s: %s", mahjongZH[r.DiscardTile], r.Result13.String())
 }
@@ -301,6 +301,13 @@ func (l WaitsWithImproves14List) Sort() {
 
 		return l[i].DiscardTile > l[j].DiscardTile
 	})
+}
+
+func (l WaitsWithImproves14List) FilterWithLeftTiles34(leftTiles34 []int) {
+	for _, r := range l {
+		r.Result13.Waits.FixCountsWithLeftCounts(leftTiles34)
+	}
+	l.Sort()
 }
 
 func (l *WaitsWithImproves14List) filterOutDiscard(cantDiscardTile int) {

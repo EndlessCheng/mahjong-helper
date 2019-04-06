@@ -584,16 +584,11 @@ func (d *roundData) analysis() error {
 			riskTables.printWithHands(d.counts, d.leftCounts)
 		}
 
-		if canBeMeld { // 是否副露
-			d.counts[tile]++
-
+		// 若能副露，计算何切
+		if canBeMeld {
 			// TODO: 消除海底/避免河底/型听提醒
-
-			// 何切
-			isOpen := len(d.players[0].melds) > 0
-			err := _analysis(14, d.counts, d.leftCounts, isOpen)
-			d.counts[tile]--
-			return err
+			allowChi := who == 3
+			analysisMeld(d.counts, d.leftCounts, tile, allowChi)
 		}
 	case d.parser.IsRoundWin():
 		if !debugMode {
