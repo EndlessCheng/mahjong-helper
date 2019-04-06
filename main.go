@@ -24,25 +24,27 @@ func _printIncShantenResults14(shanten int, results14, incShantenResults14 util.
 		return
 	}
 
-	bestWaitsCount := results14[0].Result13.Waits.AllCount()
-	bestIncShantenWaitsCount := incShantenResults14[0].Result13.Waits.AllCount()
+	if len(results14) > 0 {
+		bestWaitsCount := results14[0].Result13.Waits.AllCount()
+		bestIncShantenWaitsCount := incShantenResults14[0].Result13.Waits.AllCount()
 
-	// TODO: 待调整
-	// 1 - 12
-	// 2 - 24
-	// 3 - 36
-	// ...
-	incShantenWaitsCountLimit := 12
-	for i := 1; i < shanten; i++ {
-		incShantenWaitsCountLimit *= 2
-	}
+		// TODO: 待调整
+		// 1 - 12
+		// 2 - 24
+		// 3 - 36
+		// ...
+		incShantenWaitsCountLimit := 12
+		for i := 1; i < shanten; i++ {
+			incShantenWaitsCountLimit *= 2
+		}
 
-	needPrintIncShanten := bestWaitsCount <= incShantenWaitsCountLimit && bestIncShantenWaitsCount >= 2*bestWaitsCount
-	if shanten == 0 {
-		needPrintIncShanten = bestIncShantenWaitsCount >= 18
-	}
-	if !needPrintIncShanten {
-		return
+		needPrintIncShanten := bestWaitsCount <= incShantenWaitsCountLimit && bestIncShantenWaitsCount >= 2*bestWaitsCount
+		if shanten == 0 {
+			needPrintIncShanten = bestIncShantenWaitsCount >= 18
+		}
+		if !needPrintIncShanten {
+			return
+		}
 	}
 
 	if len(incShantenResults14[0].OpenTiles) > 0 {
@@ -111,8 +113,7 @@ func analysisMeld(tiles34 []int, leftTiles34 []int, targetTile34 int, allowChi b
 	results14.FilterWithLeftTiles34(leftTiles34)
 	incShantenResults14.FilterWithLeftTiles34(leftTiles34)
 
-	// 鸣牌还向听倒退就不显示了
-	if len(results14) == 0 {
+	if len(results14) == 0 && len(incShantenResults14) == 0 {
 		return
 	}
 
@@ -130,14 +131,18 @@ func analysisMeld(tiles34 []int, leftTiles34 []int, targetTile34 int, allowChi b
 
 	// 打印结果
 	const maxShown = 8
-	fmt.Println("鸣牌后" + util.NumberToChineseShanten(shanten) + "：")
-	shownResults14 := results14
-	if len(shownResults14) > maxShown {
-		shownResults14 = shownResults14[:maxShown]
+
+	if len(results14) > 0 {
+		fmt.Println("鸣牌后" + util.NumberToChineseShanten(shanten) + "：")
+		shownResults14 := results14
+		if len(shownResults14) > maxShown {
+			shownResults14 = shownResults14[:maxShown]
+		}
+		for _, result := range shownResults14 {
+			printWaitsWithImproves13(result.Result13, result.DiscardTile, result.OpenTiles)
+		}
 	}
-	for _, result := range shownResults14 {
-		printWaitsWithImproves13(result.Result13, result.DiscardTile, result.OpenTiles)
-	}
+
 	shownIncResults14 := incShantenResults14
 	if len(shownIncResults14) > maxShown {
 		shownIncResults14 = shownIncResults14[:maxShown]
