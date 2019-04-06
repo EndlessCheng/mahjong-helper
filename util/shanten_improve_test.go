@@ -2,7 +2,6 @@ package util
 
 import (
 	"testing"
-	"fmt"
 )
 
 func TestCalculateShantenWithImproveClosed(t *testing.T) {
@@ -32,16 +31,16 @@ func TestCalculateShantenWithImproveOpen(t *testing.T) {
 	} {
 		tiles34 := MustStrToTiles34(tiles)
 		shanten, waits, meldWaits := CalculateShantenAndWaits13(tiles34, true)
-		t.Log(tiles, "=", NumberToChineseShanten(shanten), waits, "+",  meldWaits)
+		t.Log(tiles, "=", NumberToChineseShanten(shanten), waits, "+", meldWaits)
 	}
 }
 
 func TestCalculateShantenWithImproves13Closed(t *testing.T) {
 	for _, tiles := range []string{
-		//"11357m 13579p 135s",
-		//"123456789m 1135s",
-		//"123456789m 1134s",
-		//"123456789m 1234z",
+		"11357m 13579p 135s",
+		"123456789m 1135s",
+		"123456789m 1134s",
+		"123456789m 1234z",
 		"3m 12668p 5678s 222z",
 		"6m 12668p 5678s 222z",
 	} {
@@ -52,7 +51,6 @@ func TestCalculateShantenWithImproves13Closed(t *testing.T) {
 		}
 		result := CalculateShantenWithImproves13(tiles34, false)
 		t.Log(tiles, "=\n"+result.String())
-		fmt.Println()
 	}
 }
 
@@ -83,6 +81,8 @@ func TestCalculateShantenWithImproves14Closed(t *testing.T) {
 	tiles = "25667m 27789p 37s 44z"
 	tiles = "111444777m 11177s"
 	tiles = "2468m 33578p 22356s"
+	tiles = "57m 4455p 12345699s"
+	tiles = "57m 3445667p 12399s"
 	shanten, results, incShantenResults := CalculateShantenWithImproves14(MustStrToTiles34(tiles), false)
 	t.Log(NumberToChineseShanten(shanten))
 	for _, result := range results {
