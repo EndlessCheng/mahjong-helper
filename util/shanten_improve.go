@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"sort"
+	"math"
 )
 
 // map[改良牌]进张
@@ -39,9 +40,11 @@ type WaitsWithImproves13 struct {
 
 	// 向听前进后的进张数的加权均值
 	AvgNextShantenWaitsCount float64
+
+	// 向听前进后，若听牌，其最大和率的加权均值
+	AvgAgariRate float64
 }
 
-// avgImproveWaitsCount: 在没有摸到进张时的改良进张数的加权均值
 func (r *WaitsWithImproves13) analysis() (avgImproveWaitsCount float64, avgNextShantenWaitsCount float64) {
 	const leftTile = 4
 
@@ -76,9 +79,9 @@ func (r *WaitsWithImproves13) analysis() (avgImproveWaitsCount float64, avgNextS
 
 // 调试用
 func (r *WaitsWithImproves13) String() string {
-	s := fmt.Sprintf("%d(%d) 进张 %s\n%.2f [%d 改良]",
+	s := fmt.Sprintf("%d 进张 %s\n%.2f [%d 改良]",
 		r.Waits.AllCount(),
-		r.Waits.AllCount()+r.MeldWaits.AllCount(),
+		//r.Waits.AllCount()+r.MeldWaits.AllCount(),
 		TilesToMergedStrWithBracket(r.Waits.indexes()),
 		r.AvgImproveWaitsCount,
 		r.ImproveWayCount,
@@ -88,6 +91,9 @@ func (r *WaitsWithImproves13) String() string {
 			r.AvgNextShantenWaitsCount,
 			NumberToChineseShanten(r.Shanten-1),
 		)
+		if r.Shanten == 1 {
+			s += fmt.Sprintf("（%.2f%% 参考和率）", r.AvgAgariRate)
+		}
 	}
 	return s
 }
@@ -158,17 +164,17 @@ func CalculateShantenAndWaits13(tiles34 []int, isOpen bool) (shanten int, waits 
 
 		// 鸣牌的情况
 		//if isOpen {
-			//if newShanten, combinations, shantens := calculateMeldShanten(tiles34, i, true); newShanten < shanten {
-			//	// 向听前进了，说明鸣牌成功，则换的这张牌为鸣牌进张
-			//	// 计算进张数：若能碰则 =剩余数*3，否则 =剩余数
-			//	meldWaits[i] = leftTile - tiles34[i]
-			//	for i, comb := range combinations {
-			//		if comb[0] == comb[1] && shantens[i] == newShanten {
-			//			meldWaits[i] *= 3
-			//			break
-			//		}
-			//	}
-			//}
+		//if newShanten, combinations, shantens := calculateMeldShanten(tiles34, i, true); newShanten < shanten {
+		//	// 向听前进了，说明鸣牌成功，则换的这张牌为鸣牌进张
+		//	// 计算进张数：若能碰则 =剩余数*3，否则 =剩余数
+		//	meldWaits[i] = leftTile - tiles34[i]
+		//	for i, comb := range combinations {
+		//		if comb[0] == comb[1] && shantens[i] == newShanten {
+		//			meldWaits[i] *= 3
+		//			break
+		//		}
+		//	}
+		//}
 		//}
 	}
 
@@ -188,6 +194,7 @@ func CalculateShantenWithImproves13(tiles34 []int, isOpen bool) (waitsWithImprov
 	for i := 0; i < 34; i++ {
 		improveWaitsCount34[i] = waitsCount
 	}
+	avgAgariRate := 0.0
 
 	const leftTile = 4
 
@@ -199,6 +206,7 @@ func CalculateShantenWithImproves13(tiles34 []int, isOpen bool) (waitsWithImprov
 		tiles34[i]++
 		if _, ok := waits[i]; ok {
 			// 是进张
+			maxAgariRate := 0.0
 			for j := 0; j < 34; j++ {
 				if tiles34[j] == 0 || j == i {
 					continue
@@ -211,9 +219,15 @@ func CalculateShantenWithImproves13(tiles34 []int, isOpen bool) (waitsWithImprov
 					if waitsCount := _waits.AllCount(); waitsCount > nextShantenWaitsCountMap[i] {
 						nextShantenWaitsCountMap[i] = waitsCount
 					}
+					// 听牌一般切和率最高的，TODO: 除非打点更高
+					if newShanten13 == 0 {
+						maxAgariRate = math.Max(maxAgariRate, CalculateAgariRate(_waits, nil))
+					}
 				}
 				tiles34[j]++
 			}
+			// 加权
+			avgAgariRate += float64(leftTile-tiles34[i]+1) * maxAgariRate
 		} else {
 			// 不是进张，但可能有改良
 			for j := 0; j < 34; j++ {
@@ -239,6 +253,7 @@ func CalculateShantenWithImproves13(tiles34 []int, isOpen bool) (waitsWithImprov
 		}
 		tiles34[i]--
 	}
+	avgAgariRate /= float64(waitsCount)
 
 	_tiles34 := make([]int, 34)
 	copy(_tiles34, tiles34)
@@ -250,6 +265,7 @@ func CalculateShantenWithImproves13(tiles34 []int, isOpen bool) (waitsWithImprov
 		Improves:                 improves,
 		ImproveWayCount:          improveWayCount,
 		ImproveWaitsCount34:      improveWaitsCount34,
+		AvgAgariRate:             avgAgariRate,
 	}
 	waitsWithImproves.analysis()
 
@@ -289,7 +305,7 @@ func (l WaitsWithImproves14List) Sort() {
 		// 「大差距排序」：进张 - 前进后的进张 - 改良
 
 		riWaitsCount, rjWaitsCount := ri.Waits.AllCount(), rj.Waits.AllCount()
-		if rateAboveOne(riWaitsCount, rjWaitsCount) > 1.1 {
+		if rateAboveOne(riWaitsCount, rjWaitsCount) > 1.15 {
 			return riWaitsCount > rjWaitsCount
 		}
 
