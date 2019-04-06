@@ -17,7 +17,7 @@ func TestCalculateShantenWithImproveClosed(t *testing.T) {
 			t.Error(tiles, "不是13张牌")
 			continue
 		}
-		shanten, waits := CalculateShantenAndWaits13(tiles34, false)
+		shanten, waits, _ := CalculateShantenAndWaits13(tiles34, false)
 		t.Log(tiles, "=", NumberToChineseShanten(shanten), waits)
 	}
 }
@@ -27,10 +27,12 @@ func TestCalculateShantenWithImproveOpen(t *testing.T) {
 		"1234p",
 		"1234z",
 		"5p",
+		"66m 12334p 334s 777z",
+		"66m 123334p 34s 777z",
 	} {
 		tiles34 := MustStrToTiles34(tiles)
-		shanten, waits := CalculateShantenAndWaits13(tiles34, true)
-		t.Log(tiles, "=", NumberToChineseShanten(shanten), waits)
+		shanten, waits, meldWaits := CalculateShantenAndWaits13(tiles34, true)
+		t.Log(tiles, "=", NumberToChineseShanten(shanten), waits, "+",  meldWaits)
 	}
 }
 

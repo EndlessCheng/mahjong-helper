@@ -16,8 +16,11 @@ type WaitsWithImproves13 struct {
 	// 向听数
 	Shanten int
 
-	// 进张：摸到这张牌可以让向听数前进
+	// 进张：摸到这张牌能让向听数前进
 	Waits Waits
+
+	// 鸣牌进张：他家打出这张牌，可以鸣牌，且能让向听数前进
+	MeldWaits Waits
 
 	// map[进张牌]向听前进后的进张数（这里让向听前进的切牌是最优切牌，即让向听前进后的进张数最大的切牌）
 	NextShantenWaitsCountMap map[int]int
@@ -73,8 +76,10 @@ func (r *WaitsWithImproves13) analysis() (avgImproveWaitsCount float64, avgNextS
 
 // 调试用
 func (r *WaitsWithImproves13) String() string {
-	s := fmt.Sprintf("%s\n%.2f [%d 改良]",
-		r.Waits.String(),
+	s := fmt.Sprintf("%d(%d) 进张 %s\n%.2f [%d 改良]",
+		r.Waits.AllCount(),
+		r.Waits.AllCount()+r.MeldWaits.AllCount(),
+		TilesToMergedStrWithBracket(r.Waits.indexes()),
 		r.AvgImproveWaitsCount,
 		r.ImproveWayCount,
 	)
@@ -88,7 +93,7 @@ func (r *WaitsWithImproves13) String() string {
 }
 
 // 1/4/7/10/13 张牌，计算向听数和进张
-func CalculateShantenAndWaits13(tiles34 []int, isOpen bool) (shanten int, waits Waits) {
+func CalculateShantenAndWaits13(tiles34 []int, isOpen bool) (shanten int, waits Waits, meldWaits Waits) {
 	shanten = CalculateShanten(tiles34, isOpen)
 
 	const leftTile = 4
@@ -137,24 +142,42 @@ func CalculateShantenAndWaits13(tiles34 []int, isOpen bool) (shanten int, waits 
 	//}
 
 	waits = Waits{}
+	meldWaits = Waits{}
 	for i := 0; i < 34; i++ {
 		//if !needCheck34[i] {
 		//	continue
 		//}
-		// 摸牌
+
+		// 摸牌的情况
 		tiles34[i]++
 		if newShanten := CalculateShanten(tiles34, isOpen); newShanten < shanten {
 			// 向听前进了，则换的这张牌为进张
 			waits[i] = leftTile - (tiles34[i] - 1)
 		}
 		tiles34[i]--
+
+		// 鸣牌的情况
+		//if isOpen {
+			//if newShanten, combinations, shantens := calculateMeldShanten(tiles34, i, true); newShanten < shanten {
+			//	// 向听前进了，说明鸣牌成功，则换的这张牌为鸣牌进张
+			//	// 计算进张数：若能碰则 =剩余数*3，否则 =剩余数
+			//	meldWaits[i] = leftTile - tiles34[i]
+			//	for i, comb := range combinations {
+			//		if comb[0] == comb[1] && shantens[i] == newShanten {
+			//			meldWaits[i] *= 3
+			//			break
+			//		}
+			//	}
+			//}
+		//}
 	}
+
 	return
 }
 
 // 1/4/7/10/13 张牌，计算向听数、进张、改良等
 func CalculateShantenWithImproves13(tiles34 []int, isOpen bool) (waitsWithImproves *WaitsWithImproves13) {
-	shanten13, waits := CalculateShantenAndWaits13(tiles34, isOpen)
+	shanten13, waits, _ := CalculateShantenAndWaits13(tiles34, isOpen)
 	waitsCount := waits.AllCount()
 
 	nextShantenWaitsCountMap := map[int]int{} // map[进张牌]听多少张牌
@@ -183,7 +206,7 @@ func CalculateShantenWithImproves13(tiles34 []int, isOpen bool) (waitsWithImprov
 				// 切牌
 				tiles34[j]--
 				// 正确的切牌
-				if newShanten13, _waits := CalculateShantenAndWaits13(tiles34, isOpen); newShanten13 < shanten13 {
+				if newShanten13, _waits, _ := CalculateShantenAndWaits13(tiles34, isOpen); newShanten13 < shanten13 {
 					// 切牌一般切进张最多的
 					if waitsCount := _waits.AllCount(); waitsCount > nextShantenWaitsCountMap[i] {
 						nextShantenWaitsCountMap[i] = waitsCount
@@ -200,7 +223,7 @@ func CalculateShantenWithImproves13(tiles34 []int, isOpen bool) (waitsWithImprov
 				// 切牌
 				tiles34[j]--
 				// 正确的切牌
-				if newShanten13, improveWaits := CalculateShantenAndWaits13(tiles34, isOpen); newShanten13 == shanten13 {
+				if newShanten13, improveWaits, _ := CalculateShantenAndWaits13(tiles34, isOpen); newShanten13 == shanten13 {
 					// 若进张数变多，则为改良
 					if improveWaitsCount := improveWaits.AllCount(); improveWaitsCount > waitsCount {
 						improveWayCount++
@@ -354,8 +377,8 @@ func CalculateShantenWithImproves14(tiles34 []int, isOpen bool) (shanten int, wa
 	return
 }
 
-func CalculateMeld(tiles34 []int, tile int, allowChi bool) (shanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
-	combinations := [][2]int{}
+// 计算最小向听数，鸣牌方式，该鸣牌方式下的向听数
+func calculateMeldShanten(tiles34 []int, tile int, allowChi bool) (minShanten int, combinations [][2]int, shantens []int) {
 	// 是否能碰
 	if tiles34[tile] >= 2 {
 		combinations = append(combinations, [2]int{tile, tile})
@@ -380,14 +403,22 @@ func CalculateMeld(tiles34 []int, tile int, allowChi bool) (shanten int, waitsWi
 	}
 
 	// 计算所有副露情况下的最小向听数
-	shanten = 99
+	minShanten = 99
 	for _, c := range combinations {
 		tiles34[c[0]]--
 		tiles34[c[1]]--
-		shanten = minInt(shanten, CalculateShanten(tiles34, true))
+		shanten := CalculateShanten(tiles34, true)
+		minShanten = minInt(minShanten, shanten)
+		shantens = append(shantens, shanten)
 		tiles34[c[0]]++
 		tiles34[c[1]]++
 	}
+
+	return
+}
+
+func CalculateMeld(tiles34 []int, tile int, allowChi bool) (shanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
+	shanten, combinations, _ := calculateMeldShanten(tiles34, tile, allowChi)
 
 	for _, c := range combinations {
 		tiles34[c[0]]--
