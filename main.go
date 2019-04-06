@@ -111,7 +111,8 @@ func analysisMeld(tiles34 []int, leftTiles34 []int, targetTile34 int, allowChi b
 	results14.FilterWithLeftTiles34(leftTiles34)
 	incShantenResults14.FilterWithLeftTiles34(leftTiles34)
 
-	if len(results14) == 0 && len(incShantenResults14) == 0 {
+	// 鸣牌还向听倒退就不显示了
+	if len(results14) == 0 {
 		return
 	}
 

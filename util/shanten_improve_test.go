@@ -124,6 +124,7 @@ func TestCalculateMeld(t *testing.T) {
 	tiles := "1234m 112z"
 	tiles = "23445667m 11z"
 	tiles = "112356799m 1233z"
+	tiles = "78m 12355p 789s" // ***
 	result := CalculateShantenWithImproves13(MustStrToTiles34(tiles), true)
 	t.Log("原手牌" + NumberToChineseShanten(result.Shanten))
 	t.Log(result)
@@ -131,6 +132,7 @@ func TestCalculateMeld(t *testing.T) {
 	tile := "1m"
 	tile = "3m" // "1z"
 	tile = "4m"
+	tile = "4p"
 	shanten, results, incShantenResults := CalculateMeld(MustStrToTiles34(tiles), MustStrToTile34(tile), true)
 	t.Log("鸣牌后" + NumberToChineseShanten(shanten))
 	for _, result := range results {

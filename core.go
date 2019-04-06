@@ -130,27 +130,28 @@ func (p *playerInfo) printDiscards() {
 	for i, disTile := range p.discardTiles {
 		fmt.Printf(" ")
 		// TODO: 显示 dora, 赤宝牌
+		bgColor := color.BgBlack
+		fgColor := color.FgWhite
+		var tile string
 		if disTile >= 0 { // 手切
+			tile = mahjong[disTile]
+			if disTile >= 27 {
+				tile = mahjongU[disTile] // 关注字牌的手切
+			}
 			if len(p.melds) == 0 { // 未副露
-				if disTile >= 27 {
-					// 关注字牌的手切
-					fmt.Printf(mahjongU[disTile])
-				} else {
-					fmt.Printf(mahjong[disTile])
-				}
 			} else { // 副露
-				// 高亮中张和字牌的手切
-				c := color.New(getDiscardAlertColor(disTile))
+				fgColor = getDiscardAlertColor(disTile) // 高亮中张手切
 				if inInts(i, p.meldDiscardsAt) {
-					// 鸣牌时切的那张牌要大写
-					c.Printf(mahjongU[disTile])
-				} else {
-					c.Printf(mahjong[disTile])
+					bgColor = color.BgWhite // 鸣牌时切的那张牌要背景高亮
+					fgColor = color.FgBlack
 				}
 			}
 		} else { // 摸切
-			fmt.Printf("--")
+			disTile = ^disTile
+			tile = mahjong[disTile]
+			fgColor = color.FgHiBlack // 暗色显示
 		}
+		color.New(bgColor, fgColor).Print(tile)
 	}
 	fmt.Println()
 }
@@ -567,6 +568,7 @@ func (d *roundData) analysis() error {
 			}
 		} else if len(player.meldDiscardsAt) != len(player.melds) {
 			// 标记鸣牌的舍牌
+			// 注意这里会标记到暗杠的舍牌上
 			if len(player.meldDiscardsAt)+1 != len(player.melds) {
 				fmt.Printf("玩家数据异常 %#v", *player)
 			}
