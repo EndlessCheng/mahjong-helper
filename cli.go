@@ -448,6 +448,9 @@ func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 
 		} else {
 			fmt.Printf("数")
 		}
+		if shanten == 1 {
+			fmt.Printf("（%.2f%% 参考和率）", result13.AvgAgariRate)
+		}
 	} else { // shanten == 0
 		agariRate := util.CalculateAgariRate(waits, nil)
 		fmt.Printf("%5.2f%% 和了率（仅供参考）", agariRate)
