@@ -441,18 +441,21 @@ func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 
 
 	fmt.Print(" ")
 
-	if shanten > 0 {
+	if shanten >= 1 {
 		_color := getNextShantenWaitsCountColor(shanten, result13.AvgNextShantenWaitsCount)
 		color.New(_color).Printf("%5.2f", result13.AvgNextShantenWaitsCount)
 		fmt.Printf(" %s", util.NumberToChineseShanten(shanten-1))
-		if shanten > 1 {
+		if shanten >= 2 {
 			fmt.Printf("进张")
 		} else {
 			fmt.Printf("数")
+			//fmt.Printf("（%.2f%% 参考和率）", result13.AvgAgariRate)
 		}
-		if shanten == 1 {
-			fmt.Printf("（%.2f%% 参考和率）", result13.AvgAgariRate)
+		mixedScore := float64(waitsCount) * result13.AvgNextShantenWaitsCount
+		for i := 2; i <= shanten; i++ {
+			mixedScore /= 4
 		}
+		fmt.Printf("（%.2f 综合分）", mixedScore)
 	} else { // shanten == 0
 		fmt.Printf("%5.2f%% 参考和率", result13.AvgAgariRate)
 	}
