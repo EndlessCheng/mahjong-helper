@@ -8,7 +8,18 @@ func TestCalcWallTiles34(t *testing.T) {
 		"33337777m",
 		"333777m",
 		"333444777m",
+		"8888m",
 	} {
 		t.Log(CalcWallTiles34(invert(MustStrToTiles34(tiles))))
 	}
 }
+
+func TestCalcNCSafeTiles34(t *testing.T) {
+	for _, tiles := range []string{
+		"8888m",
+	} {
+		leftTiles34 := invert(MustStrToTiles34(tiles))
+		t.Log(CalcNCSafeTiles34(leftTiles34).FilterWithHands(MustStrToTiles34("9m")))
+	}
+}
+
