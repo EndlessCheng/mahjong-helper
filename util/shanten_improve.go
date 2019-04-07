@@ -87,9 +87,14 @@ func (r *WaitsWithImproves13) String() string {
 		r.ImproveWayCount,
 	)
 	if r.Shanten >= 1 {
-		s += fmt.Sprintf(" %.2f %s进张",
+		mixedScore := float64(r.Waits.AllCount()) * r.AvgNextShantenWaitsCount
+		for i := 2; i <= r.Shanten; i++ {
+			mixedScore /= 4
+		}
+		s += fmt.Sprintf(" %.2f %s进张（%.2f 综合分）",
 			r.AvgNextShantenWaitsCount,
 			NumberToChineseShanten(r.Shanten-1),
+			float64(r.Waits.AllCount())*r.AvgNextShantenWaitsCount,
 		)
 	}
 	if r.Shanten >= 0 && r.Shanten <= 1 {
@@ -310,33 +315,45 @@ func (l WaitsWithImproves14List) Sort() {
 			return ri.AvgAgariRate > rj.AvgAgariRate
 		}
 
-		// 「大差距排序」：进张 - 前进后的进张 - 和率 - 改良
+		// 「大差距排序」：进张*前进后的进张 - 前进后的进张 - 进张 - 和率 - 改良
 
 		riWaitsCount, rjWaitsCount := ri.Waits.AllCount(), rj.Waits.AllCount()
-		if rateAboveOne(riWaitsCount, rjWaitsCount) > 1.15 {
-			return riWaitsCount > rjWaitsCount
+		riM, rjM := float64(riWaitsCount)*ri.AvgNextShantenWaitsCount, float64(rjWaitsCount)*rj.AvgNextShantenWaitsCount
+		//if rateAboveOneFloat64(riM, rjM) > 1.1 {
+		//	return riM > rjM
+		//}
+		if riM != rjM {
+			return riM > rjM
 		}
 
-		if rateAboveOneFloat64(ri.AvgNextShantenWaitsCount, rj.AvgNextShantenWaitsCount) > 1.1 {
-			return ri.AvgNextShantenWaitsCount > rj.AvgNextShantenWaitsCount
-		}
+		//if rateAboveOne(riWaitsCount, rjWaitsCount) > 1.1 {
+		//	return riWaitsCount > rjWaitsCount
+		//}
+		//
+		//if rateAboveOneFloat64(ri.AvgNextShantenWaitsCount, rj.AvgNextShantenWaitsCount) > 1.1 {
+		//	return ri.AvgNextShantenWaitsCount > rj.AvgNextShantenWaitsCount
+		//}
+		//
+		//if rateAboveOneFloat64(ri.AvgAgariRate, rj.AvgAgariRate) > 1.1 {
+		//	return ri.AvgAgariRate > rj.AvgAgariRate
+		//}
+		//
+		//if rateAboveOneFloat64(ri.AvgImproveWaitsCount, rj.AvgImproveWaitsCount) > 1.1 {
+		//	return ri.AvgImproveWaitsCount > rj.AvgImproveWaitsCount
+		//}
 
-		if rateAboveOneFloat64(ri.AvgAgariRate, rj.AvgAgariRate) > 1.1 {
-			return ri.AvgAgariRate > rj.AvgAgariRate
-		}
+		// 「微差距排序」：同上
 
-		if rateAboveOneFloat64(ri.AvgImproveWaitsCount, rj.AvgImproveWaitsCount) > 1.1 {
-			return ri.AvgImproveWaitsCount > rj.AvgImproveWaitsCount
-		}
-
-		// 「微差距排序」：进张 - 前进后的进张 - 和率 - 改良
-
-		if riWaitsCount != rjWaitsCount {
-			return riWaitsCount > rjWaitsCount
+		if riM != rjM {
+			return riM > rjM
 		}
 
 		if ri.AvgNextShantenWaitsCount != rj.AvgNextShantenWaitsCount {
 			return ri.AvgNextShantenWaitsCount > rj.AvgNextShantenWaitsCount
+		}
+
+		if riWaitsCount != rjWaitsCount {
+			return riWaitsCount > rjWaitsCount
 		}
 
 		if ri.AvgAgariRate != rj.AvgAgariRate {
