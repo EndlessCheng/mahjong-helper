@@ -278,10 +278,13 @@ type handsRisk struct {
 	risk float64
 }
 
+// 34 种牌的危险度
 type riskTable []float64
 
 func (t riskTable) printWithHands(counts []int) {
-	tab := "   "
+	const tab = "   "
+
+	// 打印现物/NC且剩余数=0
 	fmt.Printf(tab)
 	for i, c := range counts {
 		if c > 0 && t[i] == 0 {
@@ -290,6 +293,7 @@ func (t riskTable) printWithHands(counts []int) {
 	}
 	fmt.Println()
 
+	// 打印危险牌，按照铳率排序&高亮
 	handsRisks := []handsRisk{}
 	for i, c := range counts {
 		if c > 0 && t[i] > 0 {
@@ -306,31 +310,46 @@ func (t riskTable) printWithHands(counts []int) {
 	fmt.Println()
 }
 
+// 对手的各自危险度
 type riskTables []riskTable
 
 func (ts riskTables) printWithHands(counts []int, leftCounts []int) {
-	printed := false
-	names := []string{"下家", "对家", "上家"}
-	for i, table := range ts {
-		if len(table) > 0 {
-			printed = true
-			fmt.Println(names[i] + "安牌:")
-			table.printWithHands(counts)
+	ncSafeTileList := util.CalcNCSafeTiles34(leftCounts).FilterWithHands(counts)
+	ocSafeTileList := util.CalcOCSafeTiles34(leftCounts).FilterWithHands(counts)
+
+	for _, riskTable := range ts {
+		if len(riskTable) > 0 {
+			// NC且剩余数=0也当作安牌（忽略国士）
+			for _, ncSafeTile := range ncSafeTileList {
+				if leftCounts[ncSafeTile.Tile34] == 0 {
+					riskTable[ncSafeTile.Tile34] = 0
+				}
+			}
 		}
 	}
 
-	// NC OC
+	// 打印安牌，危险牌
+	printed := false
+	names := []string{"下家", "对家", "上家"}
+	for i := 2; i >= 0; i-- {
+		riskTable := ts[i]
+		if len(riskTable) > 0 {
+			printed = true
+			fmt.Println(names[i] + "安牌:")
+			riskTable.printWithHands(counts)
+		}
+	}
+
+	// 打印 NC OC
 	if printed {
-		ncSafeTileList := util.CalcNCSafeTiles34(leftCounts).FilterWithHands(counts)
-		if len(ncSafeTileList) != 0 {
+		if len(ncSafeTileList) > 0 {
 			fmt.Printf("NC:")
 			for _, safeTile := range ncSafeTileList {
 				fmt.Printf(" " + mahjongZH[safeTile.Tile34])
 			}
 			fmt.Println()
 		}
-		ocSafeTileList := util.CalcOCSafeTiles34(leftCounts).FilterWithHands(counts)
-		if len(ocSafeTileList) != 0 {
+		if len(ocSafeTileList) > 0 {
 			fmt.Printf("OC:")
 			for _, safeTile := range ocSafeTileList {
 				fmt.Printf(" " + mahjongZH[safeTile.Tile34])

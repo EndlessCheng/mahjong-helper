@@ -47,7 +47,7 @@ func (l WallSafeTileList) sort() {
 func (l WallSafeTileList) FilterWithHands(handsTiles34 []int) WallSafeTileList {
 	newSafeTiles34 := WallSafeTileList{}
 	for _, safeTile := range l {
-		if inInts(safeTile.Tile34, handsTiles34) {
+		if handsTiles34[safeTile.Tile34] > 0 {
 			newSafeTiles34 = append(newSafeTiles34, safeTile)
 		}
 	}

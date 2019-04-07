@@ -339,6 +339,7 @@ func (d *roundData) analysisTilesRisk() (tables riskTables) {
 			}
 		}
 		for i := 27; i < 34; i++ {
+			// 剩余数为0可以视作安牌（只输国士）
 			if d.leftCounts[i] > 0 {
 				isYakuHai := i == d.roundWindTile || i == player.selfWindTile || i >= 31
 				t := util.ZiTileType[boolToInt(isYakuHai)][d.leftCounts[i]-1]
@@ -347,7 +348,7 @@ func (d *roundData) analysisTilesRisk() (tables riskTables) {
 		}
 
 		// 利用剩余牌是否为 0 或者 1 计算 No Chance, One Chance, Double One Chance, Double Two Chance(待定) 等
-		// 利用舍牌计算无筋早外
+		// TODO: 利用舍牌计算无筋早外
 		//（待定）有早外的半筋（早巡打过8m时，3m的半筋6m）
 		//（待定）利用赤宝牌计算危险度
 		// 宝牌周边牌的危险度要增加一点
