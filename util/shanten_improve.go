@@ -43,6 +43,10 @@ type WaitsWithImproves13 struct {
 
 	// 向听前进后，若听牌，其最大和率的加权均值
 	AvgAgariRate float64
+
+	// TODO: 提醒切这张牌可以断幺
+	// TODO: 赤牌改良提醒
+	// TODO: 5万(赤)
 }
 
 func (r *WaitsWithImproves13) analysis() (avgImproveWaitsCount float64, avgNextShantenWaitsCount float64) {
