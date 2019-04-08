@@ -47,6 +47,7 @@ var RiskData = [][]float64{
 	{24.7, 24.9, 17.9, 16.7, 15.4, 15.2, 15.0, 15.6, 8.5, 6.6, 4.0, 4.3, 4.2, 13.9, 8.5, 1.7, 11.8, 9.4, 1.6}, // 18
 	{27.5, 27.8, 20.4, 19.1, 17.8, 17.5, 17.5, 17.5, 9.8, 7.4, 5.0, 5.1, 5.1, 18.1, 12.1, 2.8, 14.7, 12.6, 2.1},
 }
+var MaxTurns = len(RiskData) - 1
 
 var (
 	// [需要判断危险度的牌号(0-8)][是否有对应的现物(0-1或0-3)]
@@ -65,7 +66,7 @@ var (
 		{tileTypeNoSuji19, tileTypeSuji19},
 	}
 	// [是否为役牌(0-1)][剩余数-1]
-	ZiTileType = [][]tileType{
+	HonorTileType = [][]tileType{
 		{tileTypeOtaHaiLeft1, tileTypeOtaHaiLeft2, tileTypeOtaHaiLeft3, tileTypeOtaHaiLeft3},
 		{tileTypeYakuHaiLeft1, tileTypeYakuHaiLeft2, tileTypeYakuHaiLeft3, tileTypeOtaHaiLeft3},
 	}

@@ -186,14 +186,15 @@ type roundData struct {
 	globalDiscardTiles []int
 
 	// 0=自家, 1=下家, 2=对家, 3=上家
-	players [4]*playerInfo
+	players []*playerInfo
 }
 
 func newRoundData(parser DataParser, roundNumber int, dealer int) *roundData {
-	roundWindTile := 27 + roundNumber/4
-	playerWindTile := make([]int, 4)
-	for i := 0; i < 4; i++ {
-		playerWindTile[i] = 27 + (4-dealer+i)%4
+	const playerNumber = 4
+	roundWindTile := 27 + roundNumber/playerNumber
+	playerWindTile := make([]int, playerNumber)
+	for i := 0; i < playerNumber; i++ {
+		playerWindTile[i] = 27 + (playerNumber-dealer+i)%playerNumber
 	}
 	leftCounts := make([]int, 34)
 	for i := range leftCounts {
@@ -208,7 +209,7 @@ func newRoundData(parser DataParser, roundNumber int, dealer int) *roundData {
 		counts:             make([]int, 34),
 		leftCounts:         leftCounts,
 		globalDiscardTiles: globalDiscardTiles,
-		players: [4]*playerInfo{
+		players: []*playerInfo{
 			newPlayerInfo("自家", playerWindTile[0], &globalDiscardTiles),
 			newPlayerInfo("下家", playerWindTile[1], &globalDiscardTiles),
 			newPlayerInfo("对家", playerWindTile[2], &globalDiscardTiles),
@@ -220,22 +221,6 @@ func newRoundData(parser DataParser, roundNumber int, dealer int) *roundData {
 func (d *roundData) reset(roundNumber int, dealer int) {
 	newData := newRoundData(d.parser, roundNumber, dealer)
 	*d = *newData
-}
-
-func (d *roundData) _countForAnalysis() []int {
-	tmpCount := make([]int, 34)
-	copy(tmpCount, d.counts)
-	cnt := 0
-	for i := 27; i < 34; i++ {
-		if cnt == d.meldCount {
-			break
-		}
-		if tmpCount[i] == 0 {
-			tmpCount[i] = 3
-			cnt++
-		}
-	}
-	return tmpCount
 }
 
 func (d *roundData) descLeftCounts(tile int) {
@@ -257,36 +242,38 @@ func (d *roundData) newDora(kanDoraIndicator int) {
 }
 
 func (d *roundData) printDiscards() {
-	for i := 3; i > 0; i-- {
+	for i := len(d.players) - 1; i >= 1; i-- {
 		d.players[i].printDiscards()
 	}
 }
 
-// 分析34种牌的危险度，可以用来判断自家手牌的安全度，以及他家是否在进攻（多次切出危险度高的牌）
+// 分析34种牌的危险度
+// 可以用来判断自家手牌的安全度，以及他家是否在进攻（多次切出危险度高的牌）
 func (d *roundData) analysisTilesRisk() (tables riskTables) {
-	tables = make([]riskTable, 3)
-	for who, player := range d.players[1:] {
+	tables = make(riskTables, len(d.players))
+
+	for who, player := range d.players {
 		// TODO: 对于副露者，根据他的副露情况、手切数、巡目计算其听牌率
-		// TODO: 若某人一直摸切，然后突然手切了一张字牌，那他很有可能在默听，或者进入了完全一向听
+		// TODO: 若某人一直摸切，然后突然手切了一张字牌，那他很有可能默听/一向听
 		// 目前暂时简化成「三副露=听牌，晚巡两副露=听牌」（暗杠算副露）
 		if !player.isReached && (len(player.melds) < 2 || len(player.melds) == 2 && len(player.discardTiles) < 13) {
 			continue
 		}
 
 		// 该玩家的巡目 = 为其切过的牌的数目
-		turns := minInt(len(player.discardTiles), 19)
+		turns := minInt(len(player.discardTiles), util.MaxTurns)
 		if turns == 0 {
 			continue
 		}
 
 		// 收集安牌
-		safeTiles := make([]uint8, 34)
+		safeTiles34 := make([]bool, 34)
 		for _, tile := range player.discardTiles {
 			// 该玩家的舍牌
 			if tile < 0 {
 				tile = ^tile
 			}
-			safeTiles[tile] = 1
+			safeTiles34[tile] = true
 		}
 		if player.reachTileAtGlobal != -1 {
 			// 立直后其他家切出的牌
@@ -294,7 +281,7 @@ func (d *roundData) analysisTilesRisk() (tables riskTables) {
 				if tile < 0 {
 					tile = ^tile
 				}
-				safeTiles[tile] = 1
+				safeTiles34[tile] = true
 			}
 		} else {
 			// TODO: 副露者三副露之后，其上家的舍牌大概率是安牌
@@ -319,49 +306,10 @@ func (d *roundData) analysisTilesRisk() (tables riskTables) {
 
 		}
 
-		table := make([]float64, 34)
-
-		// 利用安牌计算双筋、筋、半筋、无筋等
-		// TODO: 单独处理宣言牌的筋牌、宣言牌的同色牌的危险度
-		for i := 0; i < 3; i++ {
-			for j := 0; j < 3; j++ {
-				t := util.TileTypeTable[j][safeTiles[9*i+j+3]]
-				table[9*i+j] = util.RiskData[turns][t]
-			}
-			for j := 3; j < 6; j++ {
-				mixSafeTile := safeTiles[9*i+j-3]<<1 | safeTiles[9*i+j+3]
-				t := util.TileTypeTable[j][mixSafeTile]
-				table[9*i+j] = util.RiskData[turns][t]
-			}
-			for j := 6; j < 9; j++ {
-				t := util.TileTypeTable[j][safeTiles[9*i+j-3]]
-				table[9*i+j] = util.RiskData[turns][t]
-			}
-		}
-		for i := 27; i < 34; i++ {
-			// 剩余数为0可以视作安牌（只输国士）
-			if d.leftCounts[i] > 0 {
-				isYakuHai := i == d.roundWindTile || i == player.selfWindTile || i >= 31
-				t := util.ZiTileType[boolToInt(isYakuHai)][d.leftCounts[i]-1]
-				table[i] = util.RiskData[turns][t]
-			}
-		}
-
-		// 利用剩余牌是否为 0 或者 1 计算 No Chance, One Chance, Double One Chance, Double Two Chance(待定) 等
-		// TODO: 利用舍牌计算无筋早外
-		//（待定）有早外的半筋（早巡打过8m时，3m的半筋6m）
-		//（待定）利用赤宝牌计算危险度
-		// 宝牌周边牌的危险度要增加一点
-		//（待定）切过5的情况
-
-		for i, isSafe := range safeTiles {
-			if isSafe == 1 {
-				table[i] = 0
-			}
-		}
-
-		tables[who] = table
+		risk34 := util.CalculateRiskTiles34(turns, safeTiles34, d.leftCounts, d.roundWindTile, player.selfWindTile)
+		tables[who] = riskTable(risk34)
 	}
+
 	return tables
 }
 
@@ -400,18 +348,19 @@ func (d *roundData) analysis() error {
 		case dataSourceTypeTenhou:
 			d.reset(roundNumber, dealer)
 		case dataSourceTypeMajsoul:
+			playerNumber := len(d.players)
 			if dealer != -1 {
 				d.dealer = dealer
 
 				fmt.Printf("游戏即将开始，您分配到的座位是：")
-				windTile := 27 + (4-dealer)%4
+				windTile := 27 + (playerNumber-dealer)%playerNumber
 				color.Yellow(mahjongZH[windTile])
 
 				return nil
 			} else {
 				dealer = d.dealer
 				if roundNumber > 0 && roundNumber != d.roundNumber {
-					dealer = (dealer + 1) % 4
+					dealer = (dealer + 1) % playerNumber
 				}
 				d.reset(roundNumber, dealer)
 			}

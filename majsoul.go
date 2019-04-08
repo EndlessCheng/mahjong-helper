@@ -213,13 +213,15 @@ func (d *majsoulRoundData) CheckMessage() bool {
 func (d *majsoulRoundData) IsInit() bool {
 	msg := d.msg
 	// ResAuthGame || ActionNewRound
-	return len(msg.SeatList) == 4 || msg.MD5 != ""
+	const playerNumber = 4
+	return len(msg.SeatList) == playerNumber || msg.MD5 != ""
 }
 
 func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicator int, hands []int) {
 	msg := d.msg
+	const playerNumber = 4
 
-	if len(msg.SeatList) == 4 {
+	if len(msg.SeatList) == playerNumber {
 		// dealer: 0=自家, 1=下家, 2=对家, 3=上家
 		dealer = 1
 		for i := len(msg.SeatList) - 1; i >= 0; i-- {
@@ -228,12 +230,12 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicat
 			}
 			dealer++
 		}
-		dealer %= 4
+		dealer %= playerNumber
 		return
 	}
 	dealer = -1
 
-	roundNumber = 4**msg.Chang + *msg.Ju
+	roundNumber = playerNumber*(*msg.Chang) + *msg.Ju
 	doraIndicator = d.mustParseMajsoulTile(msg.Dora)
 	hands = d.mustParseMajsoulTiles(d.normalTiles(msg.Tiles))
 	return

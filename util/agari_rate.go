@@ -15,7 +15,7 @@ var (
 	// 8巡目 [剩余数1-3]
 	// from:「統計学」のマージャン戦術
 	// FIXME: 这条仅适用于单骑，双碰不适用
-	agariZiTable = [3]float64{47.5, 58.0, 49.5}
+	honorTileAgariTable = [3]float64{47.5, 58.0, 49.5}
 )
 
 // selfDiscards: 自家舍牌，用于分析骗筋时的和率
@@ -33,7 +33,7 @@ func CalculateAgariRate(waits Waits, selfDiscards []int) float64 {
 			}
 			rate = agariTable[tile][left-1]
 		} else {
-			rate = agariZiTable[left-1]
+			rate = honorTileAgariTable[left-1]
 		}
 		agariRate = agariRate + rate - agariRate*rate/100
 	}
