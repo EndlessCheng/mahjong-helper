@@ -178,14 +178,6 @@ func _getTingCountAttr(n float64) []color.Attribute {
 	return colors
 }
 
-func colorTing1Count(n int) {
-	color.New(_getTingCountAttr(float64(n))...).Printf("%-6d", n)
-}
-
-func colorTing2Count(n int) {
-	color.New(_getTingCountAttr(float64(n) / 2)...).Printf("%2d", n)
-}
-
 // *
 func getShantenWaitsCountColors(shanten int, waitsCount int) []color.Attribute {
 	if shanten == 0 {
