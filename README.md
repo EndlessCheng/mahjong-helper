@@ -34,9 +34,9 @@
 
 分为两种模式
 
-### 手动档
+### 手动挡
 
-安装[手动档客户端](https://github.com/EndlessCheng/mahjong-helper-gui)，可用于牌谱分析
+安装[手动挡客户端](https://github.com/EndlessCheng/mahjong-helper-gui)，可用于牌谱分析
 
 或者在命令行输入，比如 `mahjong-helper 34568m 5678p 23567s`
 
