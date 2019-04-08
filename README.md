@@ -10,7 +10,7 @@
 
     安装好扩展后点进该扩展的`管理`界面，点击`导入和导出`，在下载规则中填入 `https://jianyan.me/js/mahjong-helper.json`，点击右侧的下载按钮，然后点击下方的`保存`
 
-3. （雀魂需要）允许本地证书通过浏览器，在浏览器（仅限 Chrome 内核）中输入
+3. （雀魂需要）允许本地证书通过浏览器，在浏览器（仅限 Chrome 和使用了 Chrome 内核的浏览器）中输入
 
     ```
     chrome://flags/#allow-insecure-localhost
@@ -34,9 +34,9 @@
 
 分为两种模式
 
-### 手动档
+### 手动挡
 
-安装[手动档客户端](https://github.com/EndlessCheng/mahjong-helper-gui)，可用于牌谱分析
+安装[手动挡客户端](https://github.com/EndlessCheng/mahjong-helper-gui)，可用于牌谱分析
 
 或者在命令行输入，比如 `mahjong-helper 34568m 5678p 23567s`
 

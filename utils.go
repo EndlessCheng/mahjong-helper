@@ -41,6 +41,7 @@ func _errorExit(args ...interface{}) {
 
 // e.g. "3m" => 2
 func _convert(tile string) (int, error) {
+	tile = strings.TrimSpace(tile)
 	for i, m := range mahjong {
 		if m == tile {
 			return i, nil
