@@ -279,7 +279,7 @@ type handsRisk struct {
 }
 
 // 34 种牌的危险度
-type riskTable []float64
+type riskTable util.RiskTiles34
 
 func (t riskTable) printWithHands(counts []int) {
 	const tab = "   "
@@ -314,24 +314,10 @@ func (t riskTable) printWithHands(counts []int) {
 type riskTables []riskTable
 
 func (ts riskTables) printWithHands(counts []int, leftCounts []int) {
-	ncSafeTileList := util.CalcNCSafeTiles34(leftCounts).FilterWithHands(counts)
-	ocSafeTileList := util.CalcOCSafeTiles34(leftCounts).FilterWithHands(counts)
-
-	for _, riskTable := range ts {
-		if len(riskTable) > 0 {
-			// NC且剩余数=0也当作安牌（忽略国士）
-			for _, ncSafeTile := range ncSafeTileList {
-				if leftCounts[ncSafeTile.Tile34] == 0 {
-					riskTable[ncSafeTile.Tile34] = 0
-				}
-			}
-		}
-	}
-
 	// 打印安牌，危险牌
 	printed := false
-	names := []string{"下家", "对家", "上家"}
-	for i := 2; i >= 0; i-- {
+	names := []string{"", "下家", "对家", "上家"}
+	for i := len(ts) - 1; i >= 1; i-- {
 		riskTable := ts[i]
 		if len(riskTable) > 0 {
 			printed = true
@@ -342,6 +328,8 @@ func (ts riskTables) printWithHands(counts []int, leftCounts []int) {
 
 	// 打印 NC OC
 	if printed {
+		ncSafeTileList := util.CalcNCSafeTiles(leftCounts).FilterWithHands(counts)
+		ocSafeTileList := util.CalcOCSafeTiles(leftCounts).FilterWithHands(counts)
 		if len(ncSafeTileList) > 0 {
 			fmt.Printf("NC:")
 			for _, safeTile := range ncSafeTileList {
