@@ -32,13 +32,21 @@
 
 ## 服务端脚本说明
 
-分为两种模式
+分为手动/自动两种模式
 
 ### 手动挡
 
 安装[手动挡客户端](https://github.com/EndlessCheng/mahjong-helper-gui)，可用于牌谱分析
 
-或者在命令行输入，比如 `mahjong-helper 34568m 5678p 23567s`
+或者在命令行输入:
+
+- 分析何切
+
+    `mahjong-helper 34568m 5678p 23567s`
+    
+- 分析鸣牌
+
+    `mahjong-helper 33567789m 46s + 6m`
 
 ### 自动挡
 
