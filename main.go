@@ -150,13 +150,30 @@ func analysisMeld(tiles34 []int, leftTiles34 []int, targetTile34 int, allowChi b
 	_printIncShantenResults14(shanten, results14, shownIncResults14)
 }
 
-func analysis(raw string) (num int, counts []int, err error) {
-	num, counts, err = convert(raw)
+func analysis(raw string) (num int, tiles34 []int, err error) {
+	splits := strings.Split(raw, "+")
+	if len(splits) == 2 {
+		num, tiles34, err = convert(splits[0])
+		if err != nil {
+			return
+		}
+
+		var targetTile34 int
+		targetTile34, err = _convert(splits[1])
+		if err != nil {
+			return
+		}
+
+		analysisMeld(tiles34, nil, targetTile34, true)
+		return
+	}
+
+	num, tiles34, err = convert(raw)
 	if err != nil {
 		return
 	}
 
-	err = _analysis(num, counts, nil, false)
+	err = _analysis(num, tiles34, nil, false)
 	return
 }
 
@@ -295,6 +312,8 @@ func main() {
 	}
 
 	t0 := time.Now()
-	analysis(raw)
+	if _, _, err := analysis(raw); err != nil {
+		fmt.Println(err)
+	}
 	fmt.Printf("耗时 %.2f 秒\n", float64(time.Now().UnixNano()-t0.UnixNano())/float64(time.Second))
 }
