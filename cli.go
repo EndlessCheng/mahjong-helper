@@ -8,6 +8,14 @@ import (
 	"github.com/EndlessCheng/mahjong-helper/util"
 )
 
+func printAccountInfo(accountID int) {
+	fmt.Printf("您的账号 ID 为 ")
+	color.New(color.FgMagenta).Printf("%d", accountID)
+	fmt.Printf("，该数字为雀魂服务器账号数据库中的 ID，该值越小表示您的注册时间越早\n")
+}
+
+//
+
 type handsRisk struct {
 	tile int
 	risk float64
@@ -61,7 +69,7 @@ func (ts riskTables) printWithHands(counts []int, leftCounts []int) {
 		}
 	}
 
-	// 打印 NC OC
+	// 打印因 NC OC 产生的安牌
 	if printed {
 		ncSafeTileList := util.CalcNCSafeTiles(leftCounts).FilterWithHands(counts)
 		ocSafeTileList := util.CalcOCSafeTiles(leftCounts).FilterWithHands(counts)
@@ -79,6 +87,8 @@ func (ts riskTables) printWithHands(counts []int, leftCounts []int) {
 			}
 			fmt.Println()
 		}
+
+		// 下面这个是另一种显示方式：显示壁牌
 		//printedNC := false
 		//for i, c := range leftCounts[:27] {
 		//	if c != 0 || i%9 == 0 || i%9 == 8 {
@@ -113,12 +123,6 @@ func (ts riskTables) printWithHands(counts []int, leftCounts []int) {
 
 //
 
-func printAccountInfo(accountID int) {
-	fmt.Printf("您的账号 ID 为 ")
-	color.New(color.FgMagenta).Printf("%d", accountID)
-	fmt.Printf("，该数字为雀魂服务器账号数据库中的 ID，该值越小表示您的注册时间越早\n")
-}
-
 /*
 
 8     切 3索 听[2万, 7万]
@@ -132,7 +136,7 @@ func printAccountInfo(accountID int) {
 9.20  [20 改良]  4.00 听牌数
 
 */
-// TODO: 按照和率排序？
+// 打印何切分析结果
 func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 int, openTiles34 []int) {
 	shanten := result13.Shanten
 	waits := result13.Waits
