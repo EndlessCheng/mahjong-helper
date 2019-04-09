@@ -74,12 +74,14 @@ func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, roun
 		}
 	}
 	for i := 27; i < 34; i++ {
-		// 剩余数为0可以视作安牌（只输国士）
 		if leftTiles34[i] > 0 {
 			// 该玩家的役牌 = 场风/其自风/白/发/中
 			isYakuHai := i == roundWindTile || i == playerWindTile || i >= 31
 			t := HonorTileType[boolToInt(isYakuHai)][leftTiles34[i]-1]
 			risk34[i] = RiskData[turns][t]
+		} else {
+			// 剩余数为0可以视作安牌（只输国士）
+			risk34[i] = 0
 		}
 	}
 
