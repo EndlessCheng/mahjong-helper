@@ -61,7 +61,7 @@ func (h *mjHandler) analysis(c echo.Context) error {
 		detailFlag = true
 		defer func() { detailFlag = false }()
 	}
-	if _, _, err := analysis(d.Tiles); err != nil {
+	if _, err := analysisHumanTiles(d.Tiles); err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusBadRequest, err.Error())
 	}

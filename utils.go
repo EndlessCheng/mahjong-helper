@@ -3,10 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
-	"github.com/fatih/color"
-			"errors"
-	"bufio"
+		"github.com/fatih/color"
+				"bufio"
 )
 
 var mahjong = [...]string{
@@ -35,51 +33,6 @@ func _errorExit(args ...interface{}) {
 	fmt.Println("按任意键退出...")
 	bufio.NewReader(os.Stdin).ReadByte()
 	os.Exit(1)
-}
-
-// e.g. "3m" => 2
-func _convert(tile string) (int, error) {
-	tile = strings.TrimSpace(tile)
-	for i, m := range mahjong {
-		if m == tile {
-			return i, nil
-		}
-	}
-	return -1, fmt.Errorf("参数错误: %s", tile)
-}
-
-// e.g. "22m 24p" => (4, [0, 2, 0, 0, ...,0, 10, 12])
-func convert(tiles string) (num int, counts []int, err error) {
-	tiles = strings.TrimSpace(tiles)
-	if tiles == "" {
-		return 0, nil, errors.New("参数错误: 处理的手牌不能为空")
-	}
-
-	var indexes []int
-	for _, split := range strings.Split(tiles, " ") {
-		split = strings.TrimSpace(split)
-		if len(split) <= 1 {
-			return 0, nil, errors.New("参数错误: " + split)
-		}
-		for i := range split[:len(split)-1] {
-			single := split[i:i+1] + split[len(split)-1:]
-			tile, err := _convert(single)
-			if err != nil {
-				return -1, nil, err
-			}
-			indexes = append(indexes, tile)
-		}
-	}
-
-	counts = make([]int, len(mahjong))
-	for _, index := range indexes {
-		counts[index]++
-		if counts[index] > 4 {
-			return 0, nil, errors.New("参数错误: 超过4张一样的牌！")
-		}
-	}
-
-	return len(indexes), counts, nil
 }
 
 //

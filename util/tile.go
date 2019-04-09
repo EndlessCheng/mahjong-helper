@@ -120,8 +120,8 @@ func (w Waits) FixCountsWithLeftCounts(leftCounts []int) {
 
 //
 
-func CountOfTiles(tiles []int) (count int) {
-	for _, c := range tiles {
+func CountOfTiles34(tiles34 []int) (count int) {
+	for _, c := range tiles34 {
 		count += c
 	}
 	return

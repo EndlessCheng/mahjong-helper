@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"testing"
+	"github.com/EndlessCheng/mahjong-helper/util"
+)
 
 func Test_parseTenhouMeld(t *testing.T) {
 	d := &tenhouRoundData{}
@@ -11,15 +14,15 @@ func Test_parseTenhouMeld(t *testing.T) {
 
 func TestAnalysisTilesRisk(t *testing.T) {
 	d := newRoundData(&tenhouRoundData{}, 0, 0)
-	_, counts, err := convert("1235m 1223478p 345899s 1234567z")
+	tiles34, err := util.StrToTiles34("1235m 1223478p 345899s 1234567z")
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, discards, err := convert("22m 158p 123789s 6z") //
+	discardTiles34, err := util.StrToTiles34("22m 158p 123789s 6z") //
 	if err != nil {
 		t.Fatal(err)
 	}
-	for i, c := range counts {
+	for i, c := range tiles34 {
 		if c == 0 {
 			continue
 		}
@@ -28,7 +31,7 @@ func TestAnalysisTilesRisk(t *testing.T) {
 			t.Fatal("参数有误: ", mahjong[c])
 		}
 	}
-	for i, c := range discards {
+	for i, c := range discardTiles34 {
 		if c == 0 {
 			continue
 		}
@@ -47,7 +50,7 @@ func TestAnalysisTilesRisk(t *testing.T) {
 	d.players[2].discardTiles = []int{1, 1, 1, 1, 1}
 
 	table := d.analysisTilesRisk()
-	table.printWithHands(counts, d.leftCounts)
+	table.printWithHands(tiles34, d.leftCounts)
 }
 
 func TestReg(t *testing.T) {
