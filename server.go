@@ -49,18 +49,14 @@ func (h *mjHandler) analysis(c echo.Context) error {
 	d := struct {
 		Reset      bool   `json:"reset"`
 		Tiles      string `json:"tiles"`
-		TargetTile string `json:"target_tile"`
-		ShowDetail bool   `json:"show_detail"`
+		//TargetTile string `json:"target_tile"`
+		//ShowDetail bool   `json:"show_detail"`
 	}{}
 	if err := c.Bind(&d); err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	if d.ShowDetail {
-		detailFlag = true
-		defer func() { detailFlag = false }()
-	}
 	if _, err := analysisHumanTiles(d.Tiles); err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusBadRequest, err.Error())
