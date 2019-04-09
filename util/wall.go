@@ -3,10 +3,11 @@ package util
 import "sort"
 
 const (
-	WallSafeTypeNC = iota
-	WallSafeTypeOC_Double
-	WallSafeTypeOC_Mix
-	WallSafeTypeOC_Single
+	WallSafeTypeDoubleNoChance = iota // 只输单骑对碰
+	WallSafeTypeNoChance              // 单骑对碰边张坎张
+	WallSafeTypeDoubleOneChance
+	WallSafeTypeMixedOneChance  // 对于456来说，一半 double，一半不是 double
+	WallSafeTypeOneChance
 )
 
 type WallSafeTile struct {
@@ -56,7 +57,7 @@ func (l WallSafeTileList) FilterWithHands(handsTiles34 []int) WallSafeTileList {
 }
 
 // 根据剩余牌 leftTiles34 中的某些牌是否为 0，来判断哪些牌非常安全（Double No Chance：只输单骑、双碰）
-func CalcDNCSafeTiles(leftTiles34 []int) (dncSafeTiles []int) {
+func CalcDNCSafeTiles(leftTiles34 []int) (dncSafeTiles WallSafeTileList) {
 	nc := func(idx int) bool {
 		return leftTiles34[idx] == 0
 	}
@@ -77,31 +78,33 @@ func CalcDNCSafeTiles(leftTiles34 []int) (dncSafeTiles []int) {
 		return true
 	}
 
+	const safeType = WallSafeTypeDoubleNoChance
 	for i := 0; i < 3; i++ {
 		// 2/3断的1
 		if or(9*i+1, 9*i+2) {
-			dncSafeTiles = append(dncSafeTiles, 9*i)
+			dncSafeTiles = append(dncSafeTiles, WallSafeTile{9 * i, safeType})
 		}
 		// 3/14断的2
 		if nc(9*i+2) || and(9*i, 9*i+3) {
-			dncSafeTiles = append(dncSafeTiles, 9*i+1)
+			dncSafeTiles = append(dncSafeTiles, WallSafeTile{9*i + 1, safeType})
 		}
 		// 14/24/25断的3（4567同理）
 		for j := 2; j <= 6; j++ {
 			idx := 9*i + j
 			if and(idx-2, idx+1) || and(idx-1, idx+1) || and(idx-1, idx+2) {
-				dncSafeTiles = append(dncSafeTiles, idx)
+				dncSafeTiles = append(dncSafeTiles, WallSafeTile{idx, safeType})
 			}
 		}
 		// 7/69断的8
 		if nc(9*i+6) || and(9*i+5, 9*i+8) {
-			dncSafeTiles = append(dncSafeTiles, 9*i+7)
+			dncSafeTiles = append(dncSafeTiles, WallSafeTile{9*i + 7, safeType})
 		}
 		// 7/8断的9
 		if or(9*i+6, 9*i+7) {
-			dncSafeTiles = append(dncSafeTiles, 9*i+8)
+			dncSafeTiles = append(dncSafeTiles, WallSafeTile{9*i + 8, safeType})
 		}
 	}
+	dncSafeTiles.sort()
 	return
 }
 
@@ -119,7 +122,7 @@ func CalcNCSafeTiles(leftTiles34 []int) (ncSafeTiles WallSafeTileList) {
 		return false
 	}
 
-	const safeType = WallSafeTypeNC
+	const safeType = WallSafeTypeNoChance
 	for i := 0; i < 3; i++ {
 		for j := 0; j < 3; j++ {
 			idx := 9*i + j
@@ -170,9 +173,9 @@ func CalcOCSafeTiles(leftTiles34 []int) (ocSafeTiles WallSafeTileList) {
 		for j := 0; j < 3; j++ {
 			idx := 9*i + j
 			if and(idx+1, idx+2) {
-				ocSafeTiles = append(ocSafeTiles, WallSafeTile{idx, WallSafeTypeOC_Double})
+				ocSafeTiles = append(ocSafeTiles, WallSafeTile{idx, WallSafeTypeDoubleOneChance})
 			} else if or(idx+1, idx+2) {
-				ocSafeTiles = append(ocSafeTiles, WallSafeTile{idx, WallSafeTypeOC_Single})
+				ocSafeTiles = append(ocSafeTiles, WallSafeTile{idx, WallSafeTypeOneChance})
 			}
 		}
 		for j := 3; j < 6; j++ {
@@ -180,21 +183,21 @@ func CalcOCSafeTiles(leftTiles34 []int) (ocSafeTiles WallSafeTileList) {
 			if or(idx-2, idx-1) && or(idx+1, idx+2) {
 				if and(idx-2, idx-1, idx+1, idx+2) {
 					// 两边都是 double
-					ocSafeTiles = append(ocSafeTiles, WallSafeTile{idx, WallSafeTypeOC_Double})
+					ocSafeTiles = append(ocSafeTiles, WallSafeTile{idx, WallSafeTypeDoubleOneChance})
 				} else if and(idx-2, idx-1) || and(idx+1, idx+2) {
 					// 一半 double，一半不是 double
-					ocSafeTiles = append(ocSafeTiles, WallSafeTile{idx, WallSafeTypeOC_Mix})
+					ocSafeTiles = append(ocSafeTiles, WallSafeTile{idx, WallSafeTypeMixedOneChance})
 				} else {
-					ocSafeTiles = append(ocSafeTiles, WallSafeTile{idx, WallSafeTypeOC_Single})
+					ocSafeTiles = append(ocSafeTiles, WallSafeTile{idx, WallSafeTypeOneChance})
 				}
 			}
 		}
 		for j := 6; j < 9; j++ {
 			idx := 9*i + j
 			if and(idx-2, idx-1) {
-				ocSafeTiles = append(ocSafeTiles, WallSafeTile{idx, WallSafeTypeOC_Double})
+				ocSafeTiles = append(ocSafeTiles, WallSafeTile{idx, WallSafeTypeDoubleOneChance})
 			} else if or(idx-2, idx-1) {
-				ocSafeTiles = append(ocSafeTiles, WallSafeTile{idx, WallSafeTypeOC_Single})
+				ocSafeTiles = append(ocSafeTiles, WallSafeTile{idx, WallSafeTypeOneChance})
 			}
 		}
 	}

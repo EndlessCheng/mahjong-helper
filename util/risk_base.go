@@ -106,8 +106,8 @@ func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, roun
 	// 更新铳率表：DNC且剩余枚数为0的也当作安牌（忽略国士）
 	dncSafeTiles := CalcDNCSafeTiles(leftTiles34)
 	for _, dncSafeTile := range dncSafeTiles {
-		if leftTiles34[dncSafeTile] == 0 {
-			risk34[dncSafeTile] = 0
+		if leftTiles34[dncSafeTile.Tile34] == 0 {
+			risk34[dncSafeTile.Tile34] = 0
 		}
 	}
 
