@@ -53,5 +53,5 @@ func TestAnalysis(t *testing.T) {
 
 	raw = "3456667m 345566p"
 	raw = "3456667m 34566p 5s"
-	analysis(raw)
+	analysisHumanTiles(raw)
 }

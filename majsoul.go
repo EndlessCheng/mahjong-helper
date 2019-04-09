@@ -130,22 +130,15 @@ func (d *majsoulRoundData) parseWho(seat int) int {
 	return who
 }
 
-func (d *majsoulRoundData) mustParseMajsoulTile(tile string) int {
-	if tile[0] == '0' {
-		tile = "5" + tile[1:]
+func (d *majsoulRoundData) mustParseMajsoulTile(humanTile string) int {
+	if humanTile[0] == '0' {
+		humanTile = "5" + humanTile[1:]
 	}
-	idx, err := _convert(tile)
+	tile34, err := util.StrToTile34(humanTile)
 	if err != nil {
 		panic(err)
 	}
-	return idx
-}
-
-func (d *majsoulRoundData) parseMajsoulTile(tile string) (int, error) {
-	if tile[0] == '0' {
-		tile = "5" + tile[1:]
-	}
-	return _convert(tile)
+	return tile34
 }
 
 func (d *majsoulRoundData) mustParseMajsoulTiles(tiles []string) []int {

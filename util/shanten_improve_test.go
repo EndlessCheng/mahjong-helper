@@ -12,7 +12,7 @@ func TestCalculateShantenWithImproveClosed(t *testing.T) {
 		"123456789m 1234z",
 	} {
 		tiles34 := MustStrToTiles34(tiles)
-		if CountOfTiles(tiles34) != 13 {
+		if CountOfTiles34(tiles34) != 13 {
 			t.Error(tiles, "不是13张牌")
 			continue
 		}
@@ -45,7 +45,7 @@ func TestCalculateShantenWithImproves13Closed(t *testing.T) {
 		"6m 12668p 5678s 222z",
 	} {
 		tiles34 := MustStrToTiles34(tiles)
-		if CountOfTiles(tiles34) != 13 {
+		if CountOfTiles34(tiles34) != 13 {
 			t.Error(tiles, "不是13张牌")
 			continue
 		}

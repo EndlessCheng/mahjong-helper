@@ -106,8 +106,8 @@ type tenhouRoundData struct {
 // 36-71 p
 // 72-107 s
 // 108- z
-func (*tenhouRoundData) _parseTenhouTile(tile string) int {
-	t, err := strconv.Atoi(tile)
+func (*tenhouRoundData) _parseTenhouTile(tenhouTile string) int {
+	t, err := strconv.Atoi(tenhouTile)
 	if err != nil {
 		panic(err)
 	}

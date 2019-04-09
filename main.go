@@ -56,18 +56,19 @@ func _printIncShantenResults14(shanten int, results14, incShantenResults14 util.
 	}
 }
 
-func _analysis(num int, tiles34 []int, leftTiles34 []int, isOpen bool) error {
-	raw := util.Tiles34ToStr(tiles34)
-	fmt.Println(raw)
-	fmt.Println(strings.Repeat("=", len(raw)))
+func analysisTiles34(tiles34 []int, leftTiles34 []int, isOpen bool) error {
+	humanTiles := util.Tiles34ToStr(tiles34)
+	fmt.Println(humanTiles)
+	fmt.Println(strings.Repeat("=", len(humanTiles)))
 
-	switch {
-	case num%3 == 1:
+	countOfTiles := util.CountOfTiles34(tiles34)
+	switch countOfTiles % 3 {
+	case 1:
 		result := util.CalculateShantenWithImproves13(tiles34, isOpen)
 		result.Waits.FixCountsWithLeftCounts(leftTiles34)
 		fmt.Println(util.NumberToChineseShanten(result.Shanten) + "：")
 		printWaitsWithImproves13(result, -1, nil)
-	case num%3 == 2:
+	case 2:
 		shanten, results14, incShantenResults14 := util.CalculateShantenWithImproves14(tiles34, isOpen)
 
 		if shanten == -1 {
@@ -93,8 +94,7 @@ func _analysis(num int, tiles34 []int, leftTiles34 []int, isOpen bool) error {
 		// 不好的牌会打印出向听倒退的分析
 		_printIncShantenResults14(shanten, results14, incShantenResults14)
 	default:
-		err := fmt.Errorf("参数错误: %d 张牌", num)
-		return err
+		return fmt.Errorf("参数错误: %d 张牌", countOfTiles)
 	}
 
 	//fmt.Println("checkWin", checkWinCount)
@@ -150,16 +150,16 @@ func analysisMeld(tiles34 []int, leftTiles34 []int, targetTile34 int, allowChi b
 	_printIncShantenResults14(shanten, results14, shownIncResults14)
 }
 
-func analysis(raw string) (num int, tiles34 []int, err error) {
-	splits := strings.Split(raw, "+")
+func analysisHumanTiles(humanTiles string) (tiles34 []int, err error) {
+	splits := strings.Split(humanTiles, "+")
 	if len(splits) == 2 {
-		num, tiles34, err = convert(splits[0])
+		tiles34, err = util.StrToTiles34(splits[0])
 		if err != nil {
 			return
 		}
 
 		var targetTile34 int
-		targetTile34, err = _convert(splits[1])
+		targetTile34, err = util.StrToTile34(splits[1])
 		if err != nil {
 			return
 		}
@@ -168,40 +168,41 @@ func analysis(raw string) (num int, tiles34 []int, err error) {
 		return
 	}
 
-	num, tiles34, err = convert(raw)
+	tiles34, err = util.StrToTiles34(humanTiles)
 	if err != nil {
 		return
 	}
 
-	err = _analysis(num, tiles34, nil, false)
+	err = analysisTiles34(tiles34, nil, false)
 	return
 }
 
 func interact(raw string) {
-	num, tiles34, err := analysis(raw)
+	tiles34, err := analysisHumanTiles(raw)
 	if err != nil {
 		_errorExit(err)
 	}
 	printed := true
+	countOfTiles := util.CountOfTiles34(tiles34)
 
 	var tile string
 	for {
 		for {
-			if num < 14 {
-				num = 999
+			if countOfTiles < 14 {
+				countOfTiles = 999
 				break
 			}
 			printed = false
 			fmt.Print("> 切 ")
 			fmt.Scanf("%s\n", &tile)
-			idx, err := _convert(tile)
+			tile34, err := util.StrToTile34(tile)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
 			} else {
-				if tiles34[idx] == 0 {
+				if tiles34[tile34] == 0 {
 					fmt.Fprintln(os.Stderr, "切掉的牌不存在")
 				} else {
-					tiles34[idx]--
+					tiles34[tile34]--
 					break
 				}
 			}
@@ -211,7 +212,7 @@ func interact(raw string) {
 			// 交互模式时，13张牌的一向听分析显示改良具体情况
 			detailFlag = true
 			raw = util.Tiles34ToStr(tiles34)
-			if _, _, err := analysis(raw); err != nil {
+			if _, err := analysisHumanTiles(raw); err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
 			}
 			detailFlag = false
@@ -224,14 +225,14 @@ func interact(raw string) {
 
 			fmt.Print("> 摸 ")
 			fmt.Scanf("%s\n", &tile)
-			idx, err := _convert(tile)
+			tile34, err := util.StrToTile34(tile)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
 			} else {
-				if tiles34[idx] == 4 {
+				if tiles34[tile34] == 4 {
 					fmt.Fprintln(os.Stderr, "不可能摸更多的牌了")
 				} else {
-					tiles34[idx]++
+					tiles34[tile34]++
 					break
 				}
 			}
@@ -239,7 +240,7 @@ func interact(raw string) {
 
 		if !printed {
 			raw = util.Tiles34ToStr(tiles34)
-			if _, _, err := analysis(raw); err != nil {
+			if _, err := analysisHumanTiles(raw); err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
 			}
 
@@ -312,7 +313,7 @@ func main() {
 	}
 
 	t0 := time.Now()
-	if _, _, err := analysis(raw); err != nil {
+	if _, err := analysisHumanTiles(raw); err != nil {
 		fmt.Println(err)
 	}
 	fmt.Printf("耗时 %.2f 秒\n", float64(time.Now().UnixNano()-t0.UnixNano())/float64(time.Second))

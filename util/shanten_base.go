@@ -10,7 +10,7 @@ const AgariState = -1
 // tiles34 手牌
 // isOpen 是否副露，未副露的手牌会考虑七对子
 func CalculateShanten(tiles34 []int, isOpen bool) int {
-	countOfTiles := CountOfTiles(tiles34)
+	countOfTiles := CountOfTiles34(tiles34)
 	if countOfTiles > 14 {
 		panic(fmt.Sprintln("[CalculateShanten] 参数错误 >14", tiles34, countOfTiles))
 	}

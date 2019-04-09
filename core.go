@@ -380,7 +380,7 @@ func (d *roundData) analysis() error {
 		}
 
 		if len(hands) == 14 {
-			return _analysis(14, d.counts, d.leftCounts, false)
+			return analysisTiles34(d.counts, d.leftCounts, false)
 		}
 	case d.parser.IsOpen():
 		// 某家鸣牌（含暗杠、加杠）
@@ -467,7 +467,7 @@ func (d *roundData) analysis() error {
 		// 何切
 		// TODO: 根据是否听牌/一向听、打点、巡目、和率等进行攻守判断
 		isOpen := len(d.players[0].melds) > 0
-		return _analysis(14, d.counts, d.leftCounts, isOpen)
+		return analysisTiles34(d.counts, d.leftCounts, isOpen)
 	case d.parser.IsDiscard():
 		who, tile, isTsumogiri, isReach, canBeMeld, kanDoraIndicator := d.parser.ParseDiscard()
 
