@@ -4,10 +4,6 @@ import (
 	"testing"
 )
 
-func init() {
-	debug = true
-}
-
 func TestAnalysis(t *testing.T) {
 	var raw string
 	raw = "11222333789s 11z"
