@@ -46,7 +46,7 @@ func welcome() int {
 }
 
 func main() {
-	flags, restArgs := parseArgs(os.Args)
+	flags, restArgs := parseArgs(os.Args[1:])
 	isMajsoul := flags.Bool("majsoul")
 	isTenhou := flags.Bool("tenhou")
 	isAnalysis := flags.Bool("analysis")
