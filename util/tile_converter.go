@@ -62,8 +62,8 @@ func StrToTiles34(humanTiles string) ([]int, error) {
 	return tiles34, nil
 }
 
-func MustStrToTiles34(tiles string) []int {
-	tiles34, err := StrToTiles34(tiles)
+func MustStrToTiles34(humanTiles string) []int {
+	tiles34, err := StrToTiles34(humanTiles)
 	if err != nil {
 		panic(err)
 	}
@@ -73,58 +73,58 @@ func MustStrToTiles34(tiles string) []int {
 //
 
 // e.g. [9, 11, 27] => "13p 1z"
-func TilesToStr(tiles []int) (res string) {
+func TilesToStr(tiles []int) (humanTiles string) {
 	sort.Ints(tiles)
 	convert := func(lowerIndex, upperIndex int, endsWith string) {
 		found := false
 		for _, idx := range tiles {
 			if idx >= lowerIndex && idx < upperIndex {
 				found = true
-				res += string('1' + idx - lowerIndex)
+				humanTiles += string('1' + idx - lowerIndex)
 			}
 		}
 		if found {
-			res += endsWith
+			humanTiles += endsWith
 		}
 	}
 	convert(0, 9, "m ")
 	convert(9, 18, "p ")
 	convert(18, 27, "s ")
 	convert(27, 34, "z")
-	return strings.TrimSpace(res)
+	return strings.TrimSpace(humanTiles)
 }
 
 func Tile34ToStr(tile34 int) string {
 	return TilesToStr([]int{tile34})
 }
 
-func Tiles34ToStr(tiles34 []int) (res string) {
+func Tiles34ToStr(tiles34 []int) (humanTiles string) {
 	merge := func(lowerIndex, upperIndex int, endsWith string) {
 		found := false
 		for i, c := range tiles34 {
 			if i >= lowerIndex && i < upperIndex {
 				for j := 0; j < c; j++ {
 					found = true
-					res += string('1' + i - lowerIndex)
+					humanTiles += string('1' + i - lowerIndex)
 				}
 			}
 		}
 		if found {
-			res += endsWith
+			humanTiles += endsWith
 		}
 	}
 	merge(0, 9, "m ")
 	merge(9, 18, "p ")
 	merge(18, 27, "s ")
 	merge(27, 34, "z")
-	return strings.TrimSpace(res)
+	return strings.TrimSpace(humanTiles)
 }
 
 // e.g. [9, 11, 27] => "[13p 1z]"
-func TilesToStrWithBracket(tiles []int) (res string) {
+func TilesToStrWithBracket(tiles []int) string {
 	return "[" + TilesToStr(tiles) + "]"
 }
 
-func Tiles34ToStrWithBracket(tiles34 []int) (res string) {
+func Tiles34ToStrWithBracket(tiles34 []int) string {
 	return "[" + Tiles34ToStr(tiles34) + "]"
 }
