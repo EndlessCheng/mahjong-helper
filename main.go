@@ -7,246 +7,10 @@ import (
 	"time"
 	"github.com/fatih/color"
 	"math/rand"
-	"github.com/EndlessCheng/mahjong-helper/util"
 )
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
-}
-
-var debug = false
-
-var detailFlag = false
-var interactFlag = false // 交互模式
-
-func _printIncShantenResults14(shanten int, results14, incShantenResults14 util.WaitsWithImproves14List) {
-	if len(incShantenResults14) == 0 {
-		return
-	}
-
-	if len(results14) > 0 {
-		bestWaitsCount := results14[0].Result13.Waits.AllCount()
-		bestIncShantenWaitsCount := incShantenResults14[0].Result13.Waits.AllCount()
-
-		// TODO: 待调整
-		// 1 - 12
-		// 2 - 24
-		// 3 - 36
-		// ...
-		incShantenWaitsCountLimit := 12
-		for i := 1; i < shanten; i++ {
-			incShantenWaitsCountLimit *= 2
-		}
-
-		needPrintIncShanten := bestWaitsCount <= incShantenWaitsCountLimit && bestIncShantenWaitsCount >= 2*bestWaitsCount
-		if shanten == 0 {
-			needPrintIncShanten = bestIncShantenWaitsCount >= 18
-		}
-		if !needPrintIncShanten {
-			return
-		}
-	}
-
-	if len(incShantenResults14[0].OpenTiles) > 0 {
-		fmt.Print("鸣牌后")
-	}
-	fmt.Println(util.NumberToChineseShanten(shanten+1) + "：")
-	for _, result := range incShantenResults14 {
-		printWaitsWithImproves13(result.Result13, result.DiscardTile, result.OpenTiles)
-	}
-}
-
-func analysisTiles34(tiles34 []int, leftTiles34 []int, isOpen bool) error {
-	humanTiles := util.Tiles34ToStr(tiles34)
-	fmt.Println(humanTiles)
-	fmt.Println(strings.Repeat("=", len(humanTiles)))
-
-	countOfTiles := util.CountOfTiles34(tiles34)
-	switch countOfTiles % 3 {
-	case 1:
-		result := util.CalculateShantenWithImproves13(tiles34, isOpen)
-		result.Waits.FixCountsWithLeftCounts(leftTiles34)
-		fmt.Println(util.NumberToChineseShanten(result.Shanten) + "：")
-		printWaitsWithImproves13(result, -1, nil)
-	case 2:
-		shanten, results14, incShantenResults14 := util.CalculateShantenWithImproves14(tiles34, isOpen)
-
-		if shanten == -1 {
-			color.Red("【已胡牌】")
-			break
-		}
-
-		if shanten == 0 {
-			color.Red("【已听牌】")
-		}
-
-		// TODO: 若两向听的进张<=15，则添加向听倒退的提示（拒绝做七对子）
-
-		// TODO: 改良没算，还是放到解析中去处理比较好
-		results14.FilterWithLeftTiles34(leftTiles34)
-		incShantenResults14.FilterWithLeftTiles34(leftTiles34)
-
-		fmt.Println(util.NumberToChineseShanten(shanten) + "：")
-		for _, result := range results14 {
-			printWaitsWithImproves13(result.Result13, result.DiscardTile, result.OpenTiles)
-		}
-
-		// 不好的牌会打印出向听倒退的分析
-		_printIncShantenResults14(shanten, results14, incShantenResults14)
-	default:
-		return fmt.Errorf("参数错误: %d 张牌", countOfTiles)
-	}
-
-	//fmt.Println("checkWin", checkWinCount)
-	fmt.Println()
-
-	return nil
-}
-
-func analysisMeld(tiles34 []int, leftTiles34 []int, targetTile34 int, allowChi bool) {
-	// 原始手牌分析
-	result := util.CalculateShantenWithImproves13(tiles34, true)
-	result.Waits.FixCountsWithLeftCounts(leftTiles34)
-
-	// 副露分析
-	shanten, results14, incShantenResults14 := util.CalculateMeld(tiles34, targetTile34, allowChi)
-	results14.FilterWithLeftTiles34(leftTiles34)
-	incShantenResults14.FilterWithLeftTiles34(leftTiles34)
-
-	if len(results14) == 0 && len(incShantenResults14) == 0 {
-		return
-	}
-
-	raw := util.Tiles34ToStr(tiles34) + " + " + util.Tile34ToStr(targetTile34) + "?"
-	fmt.Println(raw)
-	fmt.Println(strings.Repeat("=", len(raw)))
-
-	fmt.Println("当前" + util.NumberToChineseShanten(result.Shanten) + "：")
-	printWaitsWithImproves13(result, -1, nil)
-
-	if shanten == -1 {
-		color.Red("【已胡牌】")
-		return
-	}
-
-	// 打印结果
-	const maxShown = 8
-
-	if len(results14) > 0 {
-		fmt.Println("鸣牌后" + util.NumberToChineseShanten(shanten) + "：")
-		shownResults14 := results14
-		if len(shownResults14) > maxShown {
-			shownResults14 = shownResults14[:maxShown]
-		}
-		for _, result := range shownResults14 {
-			printWaitsWithImproves13(result.Result13, result.DiscardTile, result.OpenTiles)
-		}
-	}
-
-	shownIncResults14 := incShantenResults14
-	if len(shownIncResults14) > maxShown {
-		shownIncResults14 = shownIncResults14[:maxShown]
-	}
-	_printIncShantenResults14(shanten, results14, shownIncResults14)
-}
-
-func analysisHumanTiles(humanTiles string) (tiles34 []int, err error) {
-	splits := strings.Split(humanTiles, "+")
-	if len(splits) == 2 {
-		tiles34, err = util.StrToTiles34(splits[0])
-		if err != nil {
-			return
-		}
-
-		var targetTile34 int
-		targetTile34, err = util.StrToTile34(splits[1])
-		if err != nil {
-			return
-		}
-
-		analysisMeld(tiles34, nil, targetTile34, true)
-		return
-	}
-
-	tiles34, err = util.StrToTiles34(humanTiles)
-	if err != nil {
-		return
-	}
-
-	err = analysisTiles34(tiles34, nil, false)
-	return
-}
-
-func interact(raw string) {
-	tiles34, err := analysisHumanTiles(raw)
-	if err != nil {
-		_errorExit(err)
-	}
-	printed := true
-	countOfTiles := util.CountOfTiles34(tiles34)
-
-	var tile string
-	for {
-		for {
-			if countOfTiles < 14 {
-				countOfTiles = 999
-				break
-			}
-			printed = false
-			fmt.Print("> 切 ")
-			fmt.Scanf("%s\n", &tile)
-			tile34, err := util.StrToTile34(tile)
-			if err != nil {
-				fmt.Fprintln(os.Stderr, err.Error())
-			} else {
-				if tiles34[tile34] == 0 {
-					fmt.Fprintln(os.Stderr, "切掉的牌不存在")
-				} else {
-					tiles34[tile34]--
-					break
-				}
-			}
-		}
-
-		if !printed {
-			// 交互模式时，13张牌的一向听分析显示改良具体情况
-			detailFlag = true
-			raw = util.Tiles34ToStr(tiles34)
-			if _, err := analysisHumanTiles(raw); err != nil {
-				fmt.Fprintln(os.Stderr, err.Error())
-			}
-			detailFlag = false
-
-			printed = true
-		}
-
-		for {
-			printed = false
-
-			fmt.Print("> 摸 ")
-			fmt.Scanf("%s\n", &tile)
-			tile34, err := util.StrToTile34(tile)
-			if err != nil {
-				fmt.Fprintln(os.Stderr, err.Error())
-			} else {
-				if tiles34[tile34] == 4 {
-					fmt.Fprintln(os.Stderr, "不可能摸更多的牌了")
-				} else {
-					tiles34[tile34]++
-					break
-				}
-			}
-		}
-
-		if !printed {
-			raw = util.Tiles34ToStr(tiles34)
-			if _, err := analysisHumanTiles(raw); err != nil {
-				fmt.Fprintln(os.Stderr, err.Error())
-			}
-
-			printed = true
-		}
-	}
 }
 
 func welcome() int {
@@ -282,39 +46,32 @@ func welcome() int {
 }
 
 func main() {
-	// TODO: github.com/urfave/cli
-	// TODO: flag 比较下二者
-	// TODO: -majsoul -tenhou 快捷方式
-	if len(os.Args) <= 1 {
+	flags, restArgs := parseArgs(os.Args)
+	isMajsoul := flags.Bool("majsoul")
+	isTenhou := flags.Bool("tenhou")
+	isAnalysis := flags.Bool("analysis")
+	isInteractive := flags.Bool("i", "interactive")
+	//isDetail := flags.Bool("d", "detail")
+
+	switch {
+	case len(flags) == 0 && len(restArgs) == 0:
 		// 服务器模式
 		isHTTPS := welcome() == 1
 		runServer(isHTTPS)
-		return
-	}
-
-	if os.Args[len(os.Args)-1] == "-analysis" {
+	case isMajsoul:
+		runServer(true)
+	case isTenhou || isAnalysis:
 		runServer(false)
-		return
-	}
-
-	if os.Args[len(os.Args)-1] == "-i" {
-		// （一向听）交互模式
-		interactFlag = true
-
+	case isInteractive:
+		// 交互模式
 		raw := strings.Join(os.Args[1:len(os.Args)-1], " ")
 		interact(raw)
+	case len(restArgs) > 0:
+		humanTiles := strings.Join(restArgs, " ")
+		t0 := time.Now()
+		if _, err := analysisHumanTiles(humanTiles); err != nil {
+			fmt.Println(err)
+		}
+		fmt.Printf("耗时 %.2f 秒\n", float64(time.Now().UnixNano()-t0.UnixNano())/float64(time.Second))
 	}
-
-	raw := strings.Join(os.Args[1:], " ")
-	if os.Args[len(os.Args)-1] == "-d" {
-		// 显示改良细节
-		detailFlag = true
-		raw = strings.Join(os.Args[1:len(os.Args)-1], " ")
-	}
-
-	t0 := time.Now()
-	if _, err := analysisHumanTiles(raw); err != nil {
-		fmt.Println(err)
-	}
-	fmt.Printf("耗时 %.2f 秒\n", float64(time.Now().UnixNano()-t0.UnixNano())/float64(time.Second))
 }
