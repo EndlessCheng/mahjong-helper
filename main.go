@@ -57,7 +57,7 @@ func _printIncShantenResults14(shanten int, results14, incShantenResults14 util.
 }
 
 func _analysis(num int, tiles34 []int, leftTiles34 []int, isOpen bool) error {
-	raw := util.Tiles34ToMergedStr(tiles34)
+	raw := util.Tiles34ToStr(tiles34)
 	fmt.Println(raw)
 	fmt.Println(strings.Repeat("=", len(raw)))
 
@@ -117,7 +117,7 @@ func analysisMeld(tiles34 []int, leftTiles34 []int, targetTile34 int, allowChi b
 		return
 	}
 
-	raw := util.Tiles34ToMergedStr(tiles34) + " + " + util.Tile34ToMergedStr(targetTile34) + "?"
+	raw := util.Tiles34ToStr(tiles34) + " + " + util.Tile34ToStr(targetTile34) + "?"
 	fmt.Println(raw)
 	fmt.Println(strings.Repeat("=", len(raw)))
 

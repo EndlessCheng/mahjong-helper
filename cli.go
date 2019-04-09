@@ -172,7 +172,7 @@ func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 
 		fmt.Print("]")
 		fmt.Println()
 	} else {
-		fmt.Println(util.TilesToMergedStrWithBracket(waitTiles))
+		fmt.Println(util.TilesToStrWithBracket(waitTiles))
 	}
 
 	if result13.ImproveWayCount > 0 {

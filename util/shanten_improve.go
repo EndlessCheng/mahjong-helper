@@ -86,7 +86,7 @@ func (r *WaitsWithImproves13) String() string {
 	s := fmt.Sprintf("%d 进张 %s\n%.2f [%d 改良]",
 		r.Waits.AllCount(),
 		//r.Waits.AllCount()+r.MeldWaits.AllCount(),
-		TilesToMergedStrWithBracket(r.Waits.indexes()),
+		TilesToStrWithBracket(r.Waits.indexes()),
 		r.AvgImproveWaitsCount,
 		r.ImproveWayCount,
 	)
@@ -254,7 +254,7 @@ func CalculateShantenWithImproves13(tiles34 []int, isOpen bool) (waitsWithImprov
 							improveWaitsCount34[i] = improveWaitsCount
 							improves[i] = improveWaits
 						}
-						//fmt.Println(fmt.Sprintf("    摸 %s 切 %s 改良:", mahjongZH[i], mahjongZH[j]), improveWaitsCount, TilesToMergedStrWithBracket(improveWaits.indexes()))
+						//fmt.Println(fmt.Sprintf("    摸 %s 切 %s 改良:", mahjongZH[i], mahjongZH[j]), improveWaitsCount, TilesToStrWithBracket(improveWaits.indexes()))
 					}
 				}
 				tiles34[j]++

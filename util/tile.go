@@ -1,8 +1,6 @@
 package util
 
 import (
-	"strings"
-	"errors"
 	"fmt"
 	"sort"
 )
@@ -90,7 +88,7 @@ func (w Waits) tilesZH() []string {
 }
 
 func (w Waits) String() string {
-	return fmt.Sprintf("%d 进张 %s", w.AllCount(), TilesToMergedStrWithBracket(w.indexes()))
+	return fmt.Sprintf("%d 进张 %s", w.AllCount(), TilesToStrWithBracket(w.indexes()))
 }
 
 func (w Waits) containAllIndexes(anotherNeeds Waits) bool {
@@ -122,130 +120,9 @@ func (w Waits) FixCountsWithLeftCounts(leftCounts []int) {
 
 //
 
-// TODO: 相关 1z<->27的转换代码，手牌解析等
-
 func CountOfTiles(tiles []int) (count int) {
 	for _, c := range tiles {
 		count += c
 	}
 	return
-}
-
-func StrToTile34(tile string) (tile34 int, err error) {
-	idx := byteAtStr(tile[1], "mpsz")
-	if idx == -1 {
-		return -1, fmt.Errorf("[StrToTile34] 参数错误: %s", tile)
-	}
-	i := tile[0]
-	if i == '0' {
-		i = '5'
-	}
-	return 9*idx + int(i-'1'), nil
-}
-
-// e.g. "22m 24p" => (4, [0, 2, 0, 0, ...,0, 10, 12])
-func StrToTiles34(tiles string) (num int, tiles34 []int, err error) {
-	tiles = strings.TrimSpace(tiles)
-	if tiles == "" {
-		return 0, nil, errors.New("参数错误: 处理的手牌不能为空")
-	}
-
-	var hands []int
-	for _, split := range strings.Split(tiles, " ") {
-		split = strings.TrimSpace(split)
-		if len(split) <= 1 {
-			return 0, nil, errors.New("参数错误: " + split)
-		}
-		for i := range split[:len(split)-1] {
-			single := split[i:i+1] + split[len(split)-1:]
-			tile, err := StrToTile34(single)
-			if err != nil {
-				return -1, nil, err
-			}
-			hands = append(hands, tile)
-		}
-	}
-
-	tiles34 = make([]int, 34)
-	for _, index := range hands {
-		tiles34[index]++
-		if tiles34[index] > 4 {
-			return 0, nil, errors.New("参数错误: 超过4张一样的牌！")
-		}
-	}
-
-	return len(hands), tiles34, nil
-}
-
-func MustStrToTiles34(tiles string) []int {
-	_, tiles34, err := StrToTiles34(tiles)
-	if err != nil {
-		panic(err)
-	}
-	return tiles34
-}
-
-func MustStrToTile34(tile string) int {
-	tile34, err := StrToTile34(tile)
-	if err != nil {
-		panic(err)
-	}
-	return tile34
-}
-
-// [0, 2, 9] => "13m 1p"
-func TilesToMergedStr(tiles []int) (res string) {
-	sort.Ints(tiles)
-	merge := func(lowerIndex, upperIndex int, endsWith string) {
-		found := false
-		for _, idx := range tiles {
-			if idx >= lowerIndex && idx < upperIndex {
-				found = true
-				res += string('1' + idx - lowerIndex)
-			}
-		}
-		if found {
-			res += endsWith
-		}
-	}
-	merge(0, 9, "m ")
-	merge(9, 18, "p ")
-	merge(18, 27, "s ")
-	merge(27, 34, "z")
-	return strings.TrimSpace(res)
-}
-
-func Tile34ToMergedStr(tile34 int) (res string) {
-	return TilesToMergedStr([]int{tile34})
-}
-
-// [0, 2, 9] => "[13m 1p]"
-func TilesToMergedStrWithBracket(tiles []int) (res string) {
-	return "[" + TilesToMergedStr(tiles) + "]"
-}
-
-func Tiles34ToMergedStr(tiles34 []int) (res string) {
-	merge := func(lowerIndex, upperIndex int, endsWith string) {
-		found := false
-		for i, c := range tiles34 {
-			if i >= lowerIndex && i < upperIndex {
-				for j := 0; j < c; j++ {
-					found = true
-					res += string('1' + i - lowerIndex)
-				}
-			}
-		}
-		if found {
-			res += endsWith
-		}
-	}
-	merge(0, 9, "m ")
-	merge(9, 18, "p ")
-	merge(18, 27, "s ")
-	merge(27, 34, "z")
-	return strings.TrimSpace(res)
-}
-
-func Tiles34ToMergedStrWithBracket(tiles34 []int) (res string) {
-	return "[" + Tiles34ToMergedStr(tiles34) + "]"
 }
