@@ -167,27 +167,6 @@ func getNumRiskColor(risk float64) color.Attribute {
 
 //
 
-func maxInt(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
-
-func maxFloat64(a, b float64) float64 {
-	if a > b {
-		return a
-	}
-	return b
-}
-
-func minInt(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
 func lower(c byte) byte {
 	if c >= 'A' && c <= 'Z' {
 		c += 32
@@ -200,28 +179,4 @@ func upper(c byte) byte {
 		c -= 32
 	}
 	return c
-}
-
-func boolToInt(b bool) int {
-	if b {
-		return 1
-	}
-	return 0
-}
-
-func inInts(e int, arr []int) bool {
-	for _, _e := range arr {
-		if e == _e {
-			return true
-		}
-	}
-	return false
-}
-
-func stringToSlice(str string) []string {
-	arr := make([]string, len(str))
-	for i, c := range str {
-		arr[i] = string(c)
-	}
-	return arr
 }
