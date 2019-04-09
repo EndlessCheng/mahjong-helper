@@ -254,7 +254,7 @@ func CalculateShantenWithImproves13(tiles34 []int, isOpen bool) (waitsWithImprov
 							improveWaitsCount34[i] = improveWaitsCount
 							improves[i] = improveWaits
 						}
-						//fmt.Println(fmt.Sprintf("    摸 %s 切 %s 改良:", mahjongZH[i], mahjongZH[j]), improveWaitsCount, TilesToStrWithBracket(improveWaits.indexes()))
+						//fmt.Println(fmt.Sprintf("    摸 %s 切 %s 改良:", MahjongZH[i], MahjongZH[j]), improveWaitsCount, TilesToStrWithBracket(improveWaits.indexes()))
 					}
 				}
 				tiles34[j]++
@@ -303,9 +303,9 @@ func (r *WaitsWithImproves14) String() string {
 		if r.OpenTiles[0] == r.OpenTiles[1] {
 			meldType = "碰"
 		}
-		meldInfo = fmt.Sprintf("用 %s%s %s，", string([]rune(mahjongZH[r.OpenTiles[0]])[:1]), mahjongZH[r.OpenTiles[1]], meldType)
+		meldInfo = fmt.Sprintf("用 %s%s %s，", string([]rune(MahjongZH[r.OpenTiles[0]])[:1]), MahjongZH[r.OpenTiles[1]], meldType)
 	}
-	return meldInfo + fmt.Sprintf("切 %s: %s", mahjongZH[r.DiscardTile], r.Result13.String())
+	return meldInfo + fmt.Sprintf("切 %s: %s", MahjongZH[r.DiscardTile], r.Result13.String())
 }
 
 type WaitsWithImproves14List []*WaitsWithImproves14
