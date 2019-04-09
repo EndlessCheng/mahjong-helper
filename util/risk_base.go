@@ -12,39 +12,40 @@ type RiskTiles34 []float64
 func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, roundWindTile int, playerWindTile int) (risk34 RiskTiles34) {
 	// 生成用来计算筋牌的「安牌」
 	sujiSafeTiles34 := make([]int, 34)
+	const _true = 1
 	for i, safe := range safeTiles34 {
 		if safe {
-			sujiSafeTiles34[i] = 1
+			sujiSafeTiles34[i] = _true
 		}
 	}
 	for i := 0; i < 3; i++ {
 		// 2断，当做打过1
 		if leftTiles34[9*i+1] == 0 {
-			sujiSafeTiles34[9*i] = 1
+			sujiSafeTiles34[9*i] = _true
 		}
 		// 3断，当做打过12
 		if leftTiles34[9*i+2] == 0 {
-			sujiSafeTiles34[9*i] = 1
-			sujiSafeTiles34[9*i+1] = 1
+			sujiSafeTiles34[9*i] = _true
+			sujiSafeTiles34[9*i+1] = _true
 		}
 		// 4断，当做打过23
 		if leftTiles34[9*i+3] == 0 {
-			sujiSafeTiles34[9*i+1] = 1
-			sujiSafeTiles34[9*i+2] = 1
+			sujiSafeTiles34[9*i+1] = _true
+			sujiSafeTiles34[9*i+2] = _true
 		}
 		// 6断，当做打过78
 		if leftTiles34[9*i+5] == 0 {
-			sujiSafeTiles34[9*i+6] = 1
-			sujiSafeTiles34[9*i+7] = 1
+			sujiSafeTiles34[9*i+6] = _true
+			sujiSafeTiles34[9*i+7] = _true
 		}
 		// 7断，当做打过89
 		if leftTiles34[9*i+6] == 0 {
-			sujiSafeTiles34[9*i+7] = 1
-			sujiSafeTiles34[9*i+8] = 1
+			sujiSafeTiles34[9*i+7] = _true
+			sujiSafeTiles34[9*i+8] = _true
 		}
 		// 8断，当做打过9
 		if leftTiles34[9*i+7] == 0 {
-			sujiSafeTiles34[9*i+8] = 1
+			sujiSafeTiles34[9*i+8] = _true
 		}
 	}
 
