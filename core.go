@@ -134,9 +134,9 @@ func (p *playerInfo) printDiscards() {
 		fgColor := color.FgWhite
 		var tile string
 		if disTile >= 0 { // 手切
-			tile = mahjong[disTile]
+			tile = util.Mahjong[disTile]
 			if disTile >= 27 {
-				tile = mahjongU[disTile] // 关注字牌的手切
+				tile = util.MahjongU[disTile] // 关注字牌的手切
 			}
 			if len(p.melds) == 0 { // 未副露
 			} else { // 副露
@@ -148,7 +148,7 @@ func (p *playerInfo) printDiscards() {
 			}
 		} else { // 摸切
 			disTile = ^disTile
-			tile = mahjong[disTile]
+			tile = util.Mahjong[disTile]
 			fgColor = color.FgHiBlack // 暗色显示
 		}
 		color.New(bgColor, fgColor).Print(tile)
@@ -226,7 +226,7 @@ func (d *roundData) reset(roundNumber int, dealer int) {
 func (d *roundData) descLeftCounts(tile int) {
 	d.leftCounts[tile]--
 	if d.leftCounts[tile] < 0 {
-		info := fmt.Sprintf("数据异常: %s 数量为 %d", mahjongZH[tile], d.leftCounts[tile])
+		info := fmt.Sprintf("数据异常: %s 数量为 %d", util.MahjongZH[tile], d.leftCounts[tile])
 		if debugMode {
 			panic(info)
 		} else {
@@ -236,7 +236,7 @@ func (d *roundData) descLeftCounts(tile int) {
 }
 
 func (d *roundData) newDora(kanDoraIndicator int) {
-	color.Yellow("杠宝牌指示牌是 %s", mahjongZH[kanDoraIndicator])
+	color.Yellow("杠宝牌指示牌是 %s", util.MahjongZH[kanDoraIndicator])
 	d.doraIndicators = append(d.doraIndicators, kanDoraIndicator)
 	d.descLeftCounts(kanDoraIndicator)
 }
@@ -354,7 +354,7 @@ func (d *roundData) analysis() error {
 
 				fmt.Printf("游戏即将开始，您分配到的座位是：")
 				windTile := 27 + (playerNumber-dealer)%playerNumber
-				color.Yellow(mahjongZH[windTile])
+				color.Yellow(util.MahjongZH[windTile])
 
 				return nil
 			} else {
@@ -368,9 +368,9 @@ func (d *roundData) analysis() error {
 			panic("not impl!")
 		}
 
-		fmt.Printf("%s%d局开始，自风为%s\n", mahjongZH[d.roundWindTile], roundNumber%4+1, mahjongZH[d.players[0].selfWindTile])
+		fmt.Printf("%s%d局开始，自风为%s\n", util.MahjongZH[d.roundWindTile], roundNumber%4+1, util.MahjongZH[d.players[0].selfWindTile])
 
-		color.Yellow("宝牌指示牌是 %s", mahjongZH[doraIndicator])
+		color.Yellow("宝牌指示牌是 %s", util.MahjongZH[doraIndicator])
 		d.doraIndicators = []int{doraIndicator}
 		d.descLeftCounts(doraIndicator)
 

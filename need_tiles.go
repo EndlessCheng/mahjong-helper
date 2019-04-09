@@ -3,6 +3,7 @@ package main
 import (
 	"sort"
 	"fmt"
+	"github.com/EndlessCheng/mahjong-helper/util"
 )
 
 // map[mahjong下标]数量
@@ -54,11 +55,11 @@ func (nt needTiles) _parse(template [34]string) (allCount int, tiles []string) {
 }
 
 func (nt needTiles) parse() (allCount int, tiles []string) {
-	return nt._parse(mahjong)
+	return nt._parse(util.Mahjong)
 }
 
 func (nt needTiles) parseZH() (allCount int, tilesZH []string) {
-	return nt._parse(mahjongZH)
+	return nt._parse(util.MahjongZH)
 }
 
 func (nt needTiles) tilesZH() []string {
