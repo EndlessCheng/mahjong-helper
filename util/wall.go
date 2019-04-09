@@ -57,9 +57,8 @@ func (l WallSafeTileList) FilterWithHands(handsTiles34 []int) WallSafeTileList {
 
 // 根据剩余牌 leftTiles34 中的某些牌是否为 0，来判断哪些牌非常安全（Double No Chance：只输单骑、双碰）
 func CalcDNCSafeTiles(leftTiles34 []int) (dncSafeTiles []int) {
-	const leftLimit = 0
 	nc := func(idx int) bool {
-		return leftTiles34[idx] == leftLimit
+		return leftTiles34[idx] == 0
 	}
 	or := func(idx ...int) bool {
 		for _, i := range idx {
@@ -108,9 +107,8 @@ func CalcDNCSafeTiles(leftTiles34 []int) (dncSafeTiles []int) {
 
 // 根据剩余牌 leftTiles34 中的某些牌是否为 0，来判断哪些牌较为安全（No Chance：只输单骑、双碰、边张、坎张）
 func CalcNCSafeTiles(leftTiles34 []int) (ncSafeTiles WallSafeTileList) {
-	const leftLimit = 0
 	nc := func(idx int) bool {
-		return leftTiles34[idx] == leftLimit
+		return leftTiles34[idx] == 0
 	}
 	or := func(idx ...int) bool {
 		for _, i := range idx {
@@ -148,13 +146,12 @@ func CalcNCSafeTiles(leftTiles34 []int) (ncSafeTiles WallSafeTileList) {
 
 // 根据剩余牌 leftTiles34 中的某些牌是否为 1，来判断哪些牌较为安全（One Chance：早巡大概率只输单骑、双碰、边张、坎张）
 func CalcOCSafeTiles(leftTiles34 []int) (ocSafeTiles WallSafeTileList) {
-	const leftLimit = 1
-	nc := func(idx int) bool {
-		return leftTiles34[idx] == leftLimit
+	oc := func(idx int) bool {
+		return leftTiles34[idx] == 1
 	}
 	or := func(idx ...int) bool {
 		for _, i := range idx {
-			if nc(i) {
+			if oc(i) {
 				return true
 			}
 		}
@@ -162,7 +159,7 @@ func CalcOCSafeTiles(leftTiles34 []int) (ocSafeTiles WallSafeTileList) {
 	}
 	and := func(idx ...int) bool {
 		for _, i := range idx {
-			if !nc(i) {
+			if !oc(i) {
 				return false
 			}
 		}
