@@ -31,7 +31,7 @@ func (t riskTable) printWithHands(counts []int) {
 	fmt.Printf(tab)
 	for i, c := range counts {
 		if c > 0 && t[i] == 0 {
-			color.New(color.FgHiBlue).Printf(" " + mahjongZH[i])
+			color.New(color.FgHiBlue).Printf(" " + util.MahjongZH[i])
 		}
 	}
 	fmt.Println()
@@ -48,7 +48,7 @@ func (t riskTable) printWithHands(counts []int) {
 	})
 	fmt.Printf(tab)
 	for _, hr := range handsRisks {
-		color.New(getNumRiskColor(hr.risk)).Printf(" " + mahjongZH[hr.tile])
+		color.New(getNumRiskColor(hr.risk)).Printf(" " + util.MahjongZH[hr.tile])
 	}
 	fmt.Println()
 }
@@ -76,14 +76,14 @@ func (ts riskTables) printWithHands(counts []int, leftCounts []int) {
 		if len(ncSafeTileList) > 0 {
 			fmt.Printf("NC:")
 			for _, safeTile := range ncSafeTileList {
-				fmt.Printf(" " + mahjongZH[safeTile.Tile34])
+				fmt.Printf(" " + util.MahjongZH[safeTile.Tile34])
 			}
 			fmt.Println()
 		}
 		if len(ocSafeTileList) > 0 {
 			fmt.Printf("OC:")
 			for _, safeTile := range ocSafeTileList {
-				fmt.Printf(" " + mahjongZH[safeTile.Tile34])
+				fmt.Printf(" " + util.MahjongZH[safeTile.Tile34])
 			}
 			fmt.Println()
 		}
@@ -98,7 +98,7 @@ func (ts riskTables) printWithHands(counts []int, leftCounts []int) {
 		//		printedNC = true
 		//		fmt.Printf("NC:")
 		//	}
-		//	fmt.Printf(" " + mahjongZH[i])
+		//	fmt.Printf(" " + util.MahjongZH[i])
 		//}
 		//if printedNC {
 		//	fmt.Println()
@@ -112,7 +112,7 @@ func (ts riskTables) printWithHands(counts []int, leftCounts []int) {
 		//		printedOC = true
 		//		fmt.Printf("OC:")
 		//	}
-		//	fmt.Printf(" " + mahjongZH[i])
+		//	fmt.Printf(" " + util.MahjongZH[i])
 		//}
 		//if printedOC {
 		//	fmt.Println()
@@ -150,24 +150,24 @@ func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 
 			if openTiles34[0] == openTiles34[1] {
 				meldType = "碰"
 			}
-			color.New(color.FgHiWhite).Printf("%s%s", string([]rune(mahjongZH[openTiles34[0]])[:1]), mahjongZH[openTiles34[1]])
+			color.New(color.FgHiWhite).Printf("%s%s", string([]rune(util.MahjongZH[openTiles34[0]])[:1]), util.MahjongZH[openTiles34[1]])
 			fmt.Printf("%s，", meldType)
 		}
 		fmt.Print("切 ")
 		if shanten <= 1 {
-			color.New(getSimpleRiskColor(discardTile34)).Print(mahjongZH[discardTile34])
+			color.New(getSimpleRiskColor(discardTile34)).Print(util.MahjongZH[discardTile34])
 		} else {
-			fmt.Print(mahjongZH[discardTile34])
+			fmt.Print(util.MahjongZH[discardTile34])
 		}
 		fmt.Print(" ")
 	}
 	//fmt.Print("等")
 	if shanten <= 1 {
 		fmt.Print("[")
-		color.New(getSafeColor(waitTiles[0])).Print(mahjongZH[waitTiles[0]])
+		color.New(getSafeColor(waitTiles[0])).Print(util.MahjongZH[waitTiles[0]])
 		for _, index := range waitTiles[1:] {
 			fmt.Print(", ")
-			color.New(getSafeColor(index)).Print(mahjongZH[index])
+			color.New(getSafeColor(index)).Print(util.MahjongZH[index])
 		}
 		fmt.Print("]")
 		fmt.Println()
