@@ -459,7 +459,7 @@ func calculateMeldShanten(tiles34 []int, tile int, allowChi bool) (minShanten in
 		tiles34[c[0]]--
 		tiles34[c[1]]--
 		shanten := CalculateShanten(tiles34, true)
-		minShanten = minInt(minShanten, shanten)
+		minShanten = MinInt(minShanten, shanten)
 		shantens = append(shantens, shanten)
 		tiles34[c[0]]++
 		tiles34[c[1]]++

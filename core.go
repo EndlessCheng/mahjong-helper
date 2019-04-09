@@ -141,7 +141,7 @@ func (p *playerInfo) printDiscards() {
 			if len(p.melds) == 0 { // 未副露
 			} else { // 副露
 				fgColor = getDiscardAlertColor(disTile) // 高亮中张手切
-				if inInts(i, p.meldDiscardsAt) {
+				if util.InInts(i, p.meldDiscardsAt) {
 					bgColor = color.BgWhite // 鸣牌时切的那张牌要背景高亮
 					fgColor = color.FgBlack
 				}
@@ -261,7 +261,7 @@ func (d *roundData) analysisTilesRisk() (tables riskTables) {
 		}
 
 		// 该玩家的巡目 = 为其切过的牌的数目
-		turns := minInt(len(player.discardTiles), util.MaxTurns)
+		turns := util.MinInt(len(player.discardTiles), util.MaxTurns)
 		if turns == 0 {
 			continue
 		}
