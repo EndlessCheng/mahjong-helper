@@ -52,6 +52,7 @@ func main() {
 	isAnalysis := flags.Bool("analysis")
 	isInteractive := flags.Bool("i", "interactive")
 	//isDetail := flags.Bool("d", "detail")
+	humanTiles := strings.Join(restArgs, " ")
 
 	switch {
 	case len(flags) == 0 && len(restArgs) == 0:
@@ -64,14 +65,12 @@ func main() {
 		runServer(false)
 	case isInteractive:
 		// 交互模式
-		raw := strings.Join(os.Args[1:len(os.Args)-1], " ")
-		interact(raw)
+		interact(humanTiles)
 	case len(restArgs) > 0:
-		humanTiles := strings.Join(restArgs, " ")
-		t0 := time.Now()
+		//t0 := time.Now()
 		if _, err := analysisHumanTiles(humanTiles); err != nil {
 			fmt.Println(err)
 		}
-		fmt.Printf("耗时 %.2f 秒\n", float64(time.Now().UnixNano()-t0.UnixNano())/float64(time.Second))
+		//fmt.Printf("耗时 %.2f 秒\n", float64(time.Now().UnixNano()-t0.UnixNano())/float64(time.Second))
 	}
 }

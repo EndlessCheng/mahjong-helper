@@ -8,7 +8,13 @@ import (
 )
 
 // e.g. "3m" => 2
-func StrToTile34(humanTile string) (int, error) {
+func StrToTile34(humanTile string) (tile34 int, err error) {
+	defer func() {
+		if er := recover(); er != nil {
+			err = errors.New("[StrToTile34] 参数错误: " + humanTile)
+		}
+	}()
+
 	humanTile = strings.TrimSpace(humanTile)
 	if len(humanTile) != 2 {
 		return -1, errors.New("[StrToTile34] 参数错误: " + humanTile)
@@ -34,13 +40,19 @@ func MustStrToTile34(humanTile string) int {
 }
 
 // e.g. "224m 24p" => [0, 2, 0, 1, 0, ..., 1, 0, 1, ...]
-func StrToTiles34(humanTiles string) ([]int, error) {
+func StrToTiles34(humanTiles string) (tiles34 []int, err error) {
+	defer func() {
+		if er := recover(); er != nil {
+			err = errors.New("[StrToTiles34] 参数错误: " + humanTiles)
+		}
+	}()
+
 	humanTiles = strings.TrimSpace(humanTiles)
 	if humanTiles == "" {
 		return nil, errors.New("[StrToTiles34] 参数错误: 处理的手牌不能为空")
 	}
 
-	tiles34 := make([]int, 34)
+	tiles34 = make([]int, 34)
 	for _, split := range strings.Split(humanTiles, " ") {
 		split = strings.TrimSpace(split)
 		if len(split) < 2 {
@@ -49,9 +61,9 @@ func StrToTiles34(humanTiles string) ([]int, error) {
 		tileType := split[len(split)-1:]
 		for _, c := range split[:len(split)-1] {
 			tile := string(c) + tileType
-			tile34, err := StrToTile34(tile)
-			if err != nil {
-				return nil, err
+			tile34, er := StrToTile34(tile)
+			if er != nil {
+				return nil, er
 			}
 			tiles34[tile34]++
 			if tiles34[tile34] > 4 {
@@ -59,7 +71,7 @@ func StrToTiles34(humanTiles string) ([]int, error) {
 			}
 		}
 	}
-	return tiles34, nil
+	return
 }
 
 func MustStrToTiles34(humanTiles string) []int {
