@@ -18,7 +18,7 @@ func byteAtStr(b byte, s string) int {
 	return -1
 }
 
-func inInts(e int, arr []int) bool {
+func InInts(e int, arr []int) bool {
 	for _, _e := range arr {
 		if e == _e {
 			return true

@@ -17,16 +17,3 @@ func TestConvert(t *testing.T) {
 		t.Fatal(cnt)
 	}
 }
-
-func TestCountToString(t *testing.T) {
-	cnt := []int{
-		2, 1, 1, 1, 0, 0, 0, 0, 0,
-		0, 1, 1, 1, 2, 1, 1, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 1, 1, 0, 0,
-	}
-	raw, _ := countsToString(cnt)
-	if raw != "11234m 2345567p 45z" {
-		t.Error(raw)
-	}
-}

@@ -178,7 +178,7 @@ func analysis(raw string) (num int, tiles34 []int, err error) {
 }
 
 func interact(raw string) {
-	num, counts, err := analysis(raw)
+	num, tiles34, err := analysis(raw)
 	if err != nil {
 		_errorExit(err)
 	}
@@ -198,10 +198,10 @@ func interact(raw string) {
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
 			} else {
-				if counts[idx] == 0 {
+				if tiles34[idx] == 0 {
 					fmt.Fprintln(os.Stderr, "切掉的牌不存在")
 				} else {
-					counts[idx]--
+					tiles34[idx]--
 					break
 				}
 			}
@@ -210,7 +210,7 @@ func interact(raw string) {
 		if !printed {
 			// 交互模式时，13张牌的一向听分析显示改良具体情况
 			detailFlag = true
-			raw, _ = countsToString(counts)
+			raw = util.Tiles34ToStr(tiles34)
 			if _, _, err := analysis(raw); err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
 			}
@@ -228,17 +228,17 @@ func interact(raw string) {
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
 			} else {
-				if counts[idx] == 4 {
+				if tiles34[idx] == 4 {
 					fmt.Fprintln(os.Stderr, "不可能摸更多的牌了")
 				} else {
-					counts[idx]++
+					tiles34[idx]++
 					break
 				}
 			}
 		}
 
 		if !printed {
-			raw, _ = countsToString(counts)
+			raw = util.Tiles34ToStr(tiles34)
 			if _, _, err := analysis(raw); err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
 			}

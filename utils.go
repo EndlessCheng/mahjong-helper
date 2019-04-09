@@ -5,9 +5,7 @@ import (
 	"os"
 	"strings"
 	"github.com/fatih/color"
-	"sort"
-	"strconv"
-	"errors"
+			"errors"
 	"bufio"
 )
 
@@ -82,83 +80,6 @@ func convert(tiles string) (num int, counts []int, err error) {
 	}
 
 	return len(indexes), counts, nil
-}
-
-func countsToString(counts []int) (string, error) {
-	if len(counts) != len(mahjong) {
-		return "", fmt.Errorf("counts 长度必须为 %d", len(mahjong))
-	}
-
-	sb := strings.Builder{}
-	for i, type_ := range [...]string{"m", "p", "s", "z"} {
-		wrote := false
-		for j := 0; j < 9; j++ {
-			idx := 9*i + j
-			if idx >= len(mahjong) {
-				break
-			}
-			for k := 0; k < counts[idx]; k++ {
-				sb.WriteString(strconv.Itoa(j + 1))
-				wrote = true
-			}
-		}
-		if wrote {
-			sb.WriteString(type_ + " ")
-		}
-	}
-	return strings.TrimSpace(sb.String()), nil
-}
-
-func inStrSlice(a string, arr []string) bool {
-	for _, _a := range arr {
-		if _a == a {
-			return true
-		}
-	}
-	return false
-}
-
-func inIntSlice(a int, arr []int) bool {
-	for _, _a := range arr {
-		if _a == a {
-			return true
-		}
-	}
-	return false
-}
-
-func intAtSlice(a int, arr []int) int {
-	for i, _a := range arr {
-		if _a == a {
-			return i
-		}
-	}
-	return -1
-}
-
-func uniqueStrings(strings []string) []string {
-	u := make([]string, 0, len(strings))
-	mp := make(map[string]struct{}, len(strings))
-
-	for _, val := range strings {
-		if _, ok := mp[val]; !ok {
-			mp[val] = struct{}{}
-			u = append(u, val)
-		}
-	}
-
-	sort.Strings(u)
-	return u
-}
-
-func countPairs(counts []int) int {
-	pairs := 0
-	for i := 0; i < len(mahjong); i++ {
-		if counts[i] >= 2 {
-			pairs++
-		}
-	}
-	return pairs
 }
 
 //
