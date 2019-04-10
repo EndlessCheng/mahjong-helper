@@ -75,7 +75,7 @@ func (st *shanten) removeCharacterTiles(countOfTiles int) {
 	}
 
 	if st.numberJidahai != 0 && (countOfTiles%3) == 2 {
-		st.numberJidahai -= 1
+		st.numberJidahai--
 	}
 
 	if isolated != 0 {
@@ -209,7 +209,7 @@ func (st *shanten) run(depth int) {
 	}
 
 	for st.tiles[depth] == 0 {
-		depth += 1
+		depth++
 
 		if depth >= 27 {
 			break
@@ -358,7 +358,7 @@ func (st *shanten) updateResult() {
 		nMentsuKouho += st.numberPairs - 1
 	} else if st.numberCharacters != 0 && st.numberIsolatedTiles != 0 {
 		if (st.numberCharacters | st.numberIsolatedTiles) == st.numberCharacters {
-			retShanten += 1
+			retShanten++
 		}
 	}
 
@@ -377,68 +377,68 @@ func (st *shanten) updateResult() {
 
 func (st *shanten) increaseSet(k int) {
 	st.tiles[k] -= 3
-	st.numberMelds += 1
+	st.numberMelds++
 }
 
 func (st *shanten) decreaseSet(k int) {
 	st.tiles[k] += 3
-	st.numberMelds -= 1
+	st.numberMelds--
 }
 
 func (st *shanten) increasePair(k int) {
 	st.tiles[k] -= 2
-	st.numberPairs += 1
+	st.numberPairs++
 }
 
 func (st *shanten) decreasePair(k int) {
 	st.tiles[k] += 2
-	st.numberPairs -= 1
+	st.numberPairs--
 }
 
 func (st *shanten) increaseSyuntsu(k int) {
-	st.tiles[k] -= 1
-	st.tiles[k+1] -= 1
-	st.tiles[k+2] -= 1
-	st.numberMelds += 1
+	st.tiles[k]--
+	st.tiles[k+1]--
+	st.tiles[k+2]--
+	st.numberMelds++
 }
 
 func (st *shanten) decreaseSyuntsu(k int) {
-	st.tiles[k] += 1
-	st.tiles[k+1] += 1
-	st.tiles[k+2] += 1
-	st.numberMelds -= 1
+	st.tiles[k]++
+	st.tiles[k+1]++
+	st.tiles[k+2]++
+	st.numberMelds--
 }
 
 func (st *shanten) increaseTatsuFirst(k int) {
-	st.tiles[k] -= 1
-	st.tiles[k+1] -= 1
-	st.numberTatsu += 1
+	st.tiles[k]--
+	st.tiles[k+1]--
+	st.numberTatsu++
 }
 
 func (st *shanten) decreaseTatsuFirst(k int) {
-	st.tiles[k] += 1
-	st.tiles[k+1] += 1
-	st.numberTatsu -= 1
+	st.tiles[k]++
+	st.tiles[k+1]++
+	st.numberTatsu--
 }
 
 func (st *shanten) increaseTatsuSecond(k int) {
-	st.tiles[k] -= 1
-	st.tiles[k+2] -= 1
-	st.numberTatsu += 1
+	st.tiles[k]--
+	st.tiles[k+2]--
+	st.numberTatsu++
 }
 
 func (st *shanten) decreaseTatsuSecond(k int) {
-	st.tiles[k] += 1
-	st.tiles[k+2] += 1
-	st.numberTatsu -= 1
+	st.tiles[k]++
+	st.tiles[k+2]++
+	st.numberTatsu--
 }
 
 func (st *shanten) increaseIsolatedTile(k int) {
-	st.tiles[k] -= 1
+	st.tiles[k]--
 	st.numberIsolatedTiles |= 1 << uint(k)
 }
 
 func (st *shanten) decreaseIsolatedTile(k int) {
-	st.tiles[k] += 1
+	st.tiles[k]++
 	st.numberIsolatedTiles |= 1 << uint(k)
 }
