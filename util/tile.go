@@ -109,14 +109,14 @@ func (w Waits) containHonors() bool {
 	return indexes[len(indexes)-1] >= 27
 }
 
-func (w Waits) FixCountsWithLeftCounts(leftCounts []int) {
-	if len(leftCounts) != 34 {
-		return
-	}
-	for k := range w {
-		w[k] = leftCounts[k]
-	}
-}
+//func (w Waits) FixCountsWithLeftCounts(leftCounts []int) {
+//	if len(leftCounts) != 34 {
+//		return
+//	}
+//	for k := range w {
+//		w[k] = leftCounts[k]
+//	}
+//}
 
 //
 
@@ -125,4 +125,20 @@ func CountOfTiles34(tiles34 []int) (count int) {
 		count += c
 	}
 	return
+}
+
+func InitLeftTiles34() []int {
+	leftTiles34 := make([]int, 34)
+	for i := range leftTiles34 {
+		leftTiles34[i] = 4
+	}
+	return leftTiles34
+}
+
+func InitLeftTiles34WithTiles34(tiles34 []int)  []int {
+	leftTiles34 := make([]int, 34)
+	for i, count := range tiles34 {
+		leftTiles34[i] = 4 - count
+	}
+	return leftTiles34
 }

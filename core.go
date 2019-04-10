@@ -196,10 +196,6 @@ func newRoundData(parser DataParser, roundNumber int, dealer int) *roundData {
 	for i := 0; i < playerNumber; i++ {
 		playerWindTile[i] = 27 + (playerNumber-dealer+i)%playerNumber
 	}
-	leftCounts := make([]int, 34)
-	for i := range leftCounts {
-		leftCounts[i] = 4
-	}
 	globalDiscardTiles := []int{}
 	return &roundData{
 		parser:             parser,
@@ -207,7 +203,7 @@ func newRoundData(parser DataParser, roundNumber int, dealer int) *roundData {
 		roundWindTile:      roundWindTile,
 		dealer:             dealer,
 		counts:             make([]int, 34),
-		leftCounts:         leftCounts,
+		leftCounts:         util.InitLeftTiles34(),
 		globalDiscardTiles: globalDiscardTiles,
 		players: []*playerInfo{
 			newPlayerInfo("自家", playerWindTile[0], &globalDiscardTiles),

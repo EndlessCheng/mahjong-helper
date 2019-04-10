@@ -129,7 +129,7 @@ func (ts riskTables) printWithHands(counts []int, leftCounts []int) {
 9.20  [20 改良]  4.00 听牌数
 
 4     听 [2万, 7万]
-4.50  [ 4 改良]  55.36% 和了率
+4.50  [ 4 改良]  55.36% 参考和率
 
 
 8     45万吃，切 4万 听[2万, 7万]
@@ -175,12 +175,8 @@ func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 
 		fmt.Println(util.TilesToStrWithBracket(waitTiles))
 	}
 
-	if result13.ImproveWayCount > 0 {
-		if result13.ImproveWayCount >= 100 { // 三位数
-			fmt.Printf("%-6.2f[%3d改良]", result13.AvgImproveWaitsCount, result13.ImproveWayCount)
-		} else {
-			fmt.Printf("%-6.2f[%2d 改良]", result13.AvgImproveWaitsCount, result13.ImproveWayCount)
-		}
+	if len(result13.Improves) > 0 {
+		fmt.Printf("%-6.2f[%2d 改良]", result13.AvgImproveWaitsCount, len(result13.Improves))
 	} else {
 		fmt.Print(strings.Repeat(" ", 15))
 	}
@@ -197,7 +193,7 @@ func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 
 			fmt.Printf("数")
 			//fmt.Printf("（%.2f%% 参考和率）", result13.AvgAgariRate)
 		}
-		mixedScore := float64(waitsCount) * result13.AvgNextShantenWaitsCount
+		mixedScore := result13.AvgImproveWaitsCount * result13.AvgNextShantenWaitsCount
 		for i := 2; i <= shanten; i++ {
 			mixedScore /= 4
 		}
