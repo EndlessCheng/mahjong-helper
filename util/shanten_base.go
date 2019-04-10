@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-const AgariState = -1
+const agariState = -1
 
 // 根据手牌计算向听数
 // tiles34 手牌
@@ -204,7 +204,7 @@ func (st *shanten) scan(initMentsu int) {
 }
 
 func (st *shanten) run(depth int) {
-	if st.minShanten == AgariState {
+	if st.minShanten == agariState {
 		return
 	}
 
@@ -366,7 +366,7 @@ func (st *shanten) updateResult() {
 		retShanten += nMentsuKouho - 4
 	}
 
-	if retShanten != AgariState && retShanten < st.numberJidahai {
+	if retShanten != agariState && retShanten < st.numberJidahai {
 		retShanten = st.numberJidahai
 	}
 
