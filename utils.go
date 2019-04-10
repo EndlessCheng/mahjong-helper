@@ -20,7 +20,7 @@ func _getTingCountAttr(n float64) []color.Attribute {
 	var colors []color.Attribute
 	switch {
 	case n < 14:
-		colors = append(colors, color.FgBlue)
+		colors = append(colors, color.FgHiBlue)
 	case n <= 18:
 		colors = append(colors, color.FgYellow)
 	case n < 24:
@@ -46,7 +46,7 @@ func getShantenWaitsCountColors(shanten int, waitsCount int) []color.Attribute {
 func getTingCountColor(count float64) color.Attribute {
 	switch {
 	case count < 5:
-		return color.FgBlue
+		return color.FgHiBlue
 	case count <= 6:
 		return color.FgYellow
 	case count <= 8:
@@ -71,7 +71,7 @@ func getSimpleRiskColor(index int) color.Attribute {
 		_i := index%9 + 1
 		switch _i {
 		case 1, 9:
-			return color.FgBlue
+			return color.FgHiBlue
 		case 2, 8:
 			return color.FgYellow
 		case 3, 7:
@@ -119,7 +119,7 @@ func getSafeColor(index int) color.Attribute {
 		case 3, 7:
 			return color.FgYellow
 		case 4, 5, 6:
-			return color.FgBlue
+			return color.FgHiBlue
 		default:
 			_errorExit("代码有误: _i = ", _i)
 		}
@@ -132,7 +132,7 @@ func getNumRiskColor(risk float64) color.Attribute {
 	case risk < 3:
 		return color.FgHiBlue
 	case risk < 5:
-		return color.FgBlue
+		return color.FgHiCyan
 	case risk < 7.5:
 		return color.FgYellow
 	case risk < 10:
