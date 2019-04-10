@@ -6,12 +6,12 @@ import (
 	"math"
 )
 
-// map[改良牌]进张
+// map[改良牌]进张（选择进张数最大的）
 type Improves map[int]Waits
 
 // 1/4/7/10/13 张手牌的分析结果
 type WaitsWithImproves13 struct {
-	// 手牌
+	// 原手牌
 	Tiles34 []int
 
 	// 向听数
@@ -20,85 +20,55 @@ type WaitsWithImproves13 struct {
 	// 进张：摸到这张牌能让向听数前进
 	Waits Waits
 
-	// 鸣牌进张：他家打出这张牌，可以鸣牌，且能让向听数前进
-	MeldWaits Waits
+	// TODO: 鸣牌进张：他家打出这张牌，可以鸣牌，且能让向听数前进
+	//MeldWaits Waits
 
-	// map[进张牌]向听前进后的进张数（这里让向听前进的切牌是最优切牌，即让向听前进后的进张数最大的切牌）
+	// map[进张牌]向听前进后的进张数（这里让向听前进的切牌选择的是使「向听前进后的进张数最大」的切牌）
 	NextShantenWaitsCountMap map[int]int
-
-	// 改良：摸到这张牌虽不能让向听数前进，但可以让进张变多
-	Improves Improves
-
-	// 改良情况数
-	ImproveWayCount int
-
-	// 对于每张牌，摸到之后的手牌进张数（如果摸到的是 Waits 中的牌，则进张数视作摸到之前的进张数）
-	ImproveWaitsCount34 []int
-
-	// 在没有摸到进张时的改良进张数的加权均值
-	AvgImproveWaitsCount float64
 
 	// 向听前进后的进张数的加权均值
 	AvgNextShantenWaitsCount float64
 
+	// 改良：摸到这张牌虽不能让向听数前进，但可以让进张变多
+	// len(Improves) 即为改良的牌的种数
+	Improves Improves
+
+	// 改良情况数，这里计算的是有多少种使进张增加的切牌方式
+	ImproveWayCount int
+
+	// 在没有摸到进张时的改良后进张数的加权均值（计算时，对于既不是进张也不是改良的牌，其进张数为 Waits.AllCount()）
+	// 这里只考虑一巡的改良均值
+	// TODO: 在考虑改良的情况下，如何计算向听前进所需要的摸牌次数的期望值？
+	AvgImproveWaitsCount float64
+
 	// 向听前进后，若听牌，其最大和率的加权均值
+	// 若已听牌，则该值为当前手牌和率
 	AvgAgariRate float64
 
-	// TODO: 提醒切这张牌可以断幺
+	// TODO: 役种提醒
 	// TODO: 赤牌改良提醒
-	// TODO: 5万(赤)
-}
-
-func (r *WaitsWithImproves13) analysis() (avgImproveWaitsCount float64, avgNextShantenWaitsCount float64) {
-	const leftTile = 4
-
-	if len(r.Improves) > 0 {
-		improveScore := 0
-		weight := 0
-		for i := 0; i < 34; i++ {
-			w := leftTile - r.Tiles34[i]
-			improveScore += w * r.ImproveWaitsCount34[i]
-			weight += w
-		}
-		avgImproveWaitsCount = float64(improveScore) / float64(weight)
-		r.AvgImproveWaitsCount = avgImproveWaitsCount
-	} else {
-		r.AvgImproveWaitsCount = float64(r.Waits.AllCount())
-	}
-
-	if len(r.NextShantenWaitsCountMap) > 0 {
-		nextShantenWaitsSum := 0
-		weight := 0
-		for tile, c := range r.NextShantenWaitsCountMap {
-			w := leftTile - r.Tiles34[tile]
-			nextShantenWaitsSum += w * c
-			weight += w
-		}
-		avgNextShantenWaitsCount = float64(nextShantenWaitsSum) / float64(weight)
-		r.AvgNextShantenWaitsCount = avgNextShantenWaitsCount
-	}
-
-	return
+	// TODO: 打点均值？
 }
 
 // 调试用
 func (r *WaitsWithImproves13) String() string {
-	s := fmt.Sprintf("%d 进张 %s\n%.2f [%d 改良]",
+	s := fmt.Sprintf("%d 进张 %s\n%.2f 改良进张 [%d(%d) 种]",
 		r.Waits.AllCount(),
 		//r.Waits.AllCount()+r.MeldWaits.AllCount(),
 		TilesToStrWithBracket(r.Waits.indexes()),
 		r.AvgImproveWaitsCount,
+		len(r.Improves),
 		r.ImproveWayCount,
 	)
 	if r.Shanten >= 1 {
-		mixedScore := float64(r.Waits.AllCount()) * r.AvgNextShantenWaitsCount
+		mixedScore := r.AvgImproveWaitsCount * r.AvgNextShantenWaitsCount
 		for i := 2; i <= r.Shanten; i++ {
 			mixedScore /= 4
 		}
 		s += fmt.Sprintf(" %.2f %s进张（%.2f 综合分）",
 			r.AvgNextShantenWaitsCount,
 			NumberToChineseShanten(r.Shanten-1),
-			float64(r.Waits.AllCount())*r.AvgNextShantenWaitsCount,
+			mixedScore,
 		)
 	}
 	if r.Shanten >= 0 && r.Shanten <= 1 {
@@ -107,11 +77,13 @@ func (r *WaitsWithImproves13) String() string {
 	return s
 }
 
-// 1/4/7/10/13 张牌，计算向听数和进张
-func CalculateShantenAndWaits13(tiles34 []int, isOpen bool) (shanten int, waits Waits, meldWaits Waits) {
-	shanten = CalculateShanten(tiles34, isOpen)
+// 1/4/7/10/13 张牌，计算向听数、进张（考虑了剩余枚数）
+func CalculateShantenAndWaits13(tiles34 []int, leftTiles34 []int, isOpen bool) (shanten int, waits Waits) {
+	if len(leftTiles34) == 0 {
+		leftTiles34 = InitLeftTiles34WithTiles34(tiles34)
+	}
 
-	const leftTile = 4
+	shanten = CalculateShanten(tiles34, isOpen)
 
 	// 剪枝：检测非浮牌，在不考虑国士无双的情况下，这种牌是不可能让向听数前进的（但有改良的可能，不过 CalculateShantenAndWaits13 函数不考虑这个）
 	// 此处优化提升了约 30% 的性能
@@ -157,47 +129,41 @@ func CalculateShantenAndWaits13(tiles34 []int, isOpen bool) (shanten int, waits 
 	//}
 
 	waits = Waits{}
-	meldWaits = Waits{}
 	for i := 0; i < 34; i++ {
 		//if !needCheck34[i] {
 		//	continue
 		//}
 
-		// 摸牌的情况
+		if leftTiles34[i] == 0 {
+			// 无法摸到这张牌
+			continue
+		}
+
+		// 摸牌
 		tiles34[i]++
 		if newShanten := CalculateShanten(tiles34, isOpen); newShanten < shanten {
-			// 向听前进了，则换的这张牌为进张
-			waits[i] = leftTile - (tiles34[i] - 1)
+			// 向听前进了，则换的这张牌为进张，进张数即剩余枚数
+			waits[i] = leftTiles34[i]
 		}
 		tiles34[i]--
-
-		// 鸣牌的情况
-		//if isOpen {
-		//if newShanten, combinations, shantens := calculateMeldShanten(tiles34, i, true); newShanten < shanten {
-		//	// 向听前进了，说明鸣牌成功，则换的这张牌为鸣牌进张
-		//	// 计算进张数：若能碰则 =剩余数*3，否则 =剩余数
-		//	meldWaits[i] = leftTile - tiles34[i]
-		//	for i, comb := range combinations {
-		//		if comb[0] == comb[1] && shantens[i] == newShanten {
-		//			meldWaits[i] *= 3
-		//			break
-		//		}
-		//	}
-		//}
-		//}
 	}
 
 	return
 }
 
-// 1/4/7/10/13 张牌，计算向听数、进张、改良等
-func CalculateShantenWithImproves13(tiles34 []int, isOpen bool) (waitsWithImproves *WaitsWithImproves13) {
-	shanten13, waits, _ := CalculateShantenAndWaits13(tiles34, isOpen)
+// 1/4/7/10/13 张牌，计算向听数、进张、改良等（考虑了剩余枚数）
+func CalculateShantenWithImproves13(tiles34 []int, leftTiles34 []int, isOpen bool) (r *WaitsWithImproves13) {
+	if len(leftTiles34) == 0 {
+		leftTiles34 = InitLeftTiles34WithTiles34(tiles34)
+	}
+
+	shanten13, waits := CalculateShantenAndWaits13(tiles34, leftTiles34, isOpen)
 	waitsCount := waits.AllCount()
 
 	nextShantenWaitsCountMap := map[int]int{} // map[进张牌]听多少张牌
 	improves := Improves{}
 	improveWayCount := 0
+	// 对于每张牌，摸到之后的手牌进张数（如果摸到的是 waits 中的牌，则进张数视作 waitsCount）
 	improveWaitsCount34 := make([]int, 34)
 	// 初始化成基本进张
 	for i := 0; i < 34; i++ {
@@ -205,16 +171,16 @@ func CalculateShantenWithImproves13(tiles34 []int, isOpen bool) (waitsWithImprov
 	}
 	avgAgariRate := 0.0
 
-	const leftTile = 4
-
 	for i := 0; i < 34; i++ {
-		if tiles34[i] == leftTile {
+		if leftTiles34[i] == 0 {
+			// 无法摸到这张牌
 			continue
 		}
-		// 摸牌
+		// 从剩余牌中摸牌
+		leftTiles34[i]--
 		tiles34[i]++
 		if _, ok := waits[i]; ok {
-			// 是进张
+			// 摸到的是进张
 			maxAgariRate := 0.0
 			for j := 0; j < 34; j++ {
 				if tiles34[j] == 0 || j == i {
@@ -222,23 +188,24 @@ func CalculateShantenWithImproves13(tiles34 []int, isOpen bool) (waitsWithImprov
 				}
 				// 切牌
 				tiles34[j]--
-				// 正确的切牌
-				if newShanten13, _waits, _ := CalculateShantenAndWaits13(tiles34, isOpen); newShanten13 < shanten13 {
+				// 向听前进才是正确的切牌
+				if newShanten13, newWaits := CalculateShantenAndWaits13(tiles34, leftTiles34, isOpen); newShanten13 < shanten13 {
 					// 切牌一般切进张最多的
-					if waitsCount := _waits.AllCount(); waitsCount > nextShantenWaitsCountMap[i] {
+					if waitsCount := newWaits.AllCount(); waitsCount > nextShantenWaitsCountMap[i] {
 						nextShantenWaitsCountMap[i] = waitsCount
 					}
 					// 听牌一般切和率最高的，TODO: 除非打点更高
+					// TODO: add selfDiscards
 					if newShanten13 == 0 {
-						maxAgariRate = math.Max(maxAgariRate, CalculateAgariRate(_waits, nil))
+						maxAgariRate = math.Max(maxAgariRate, CalculateAgariRate(newWaits, nil))
 					}
 				}
 				tiles34[j]++
 			}
-			// 加权
-			avgAgariRate += float64(leftTile-tiles34[i]+1) * maxAgariRate
+			// 加权：进张牌的剩余枚数*和率
+			avgAgariRate += float64(leftTiles34[i]+1) * maxAgariRate
 		} else {
-			// 不是进张，但可能有改良
+			// 摸到的不是进张，但可能有改良
 			for j := 0; j < 34; j++ {
 				if tiles34[j] == 0 || j == i {
 					continue
@@ -246,12 +213,13 @@ func CalculateShantenWithImproves13(tiles34 []int, isOpen bool) (waitsWithImprov
 				// 切牌
 				tiles34[j]--
 				// 正确的切牌
-				if newShanten13, improveWaits, _ := CalculateShantenAndWaits13(tiles34, isOpen); newShanten13 == shanten13 {
+				if newShanten13, improveWaits := CalculateShantenAndWaits13(tiles34, leftTiles34, isOpen); newShanten13 == shanten13 {
 					// 若进张数变多，则为改良
 					if improveWaitsCount := improveWaits.AllCount(); improveWaitsCount > waitsCount {
 						improveWayCount++
 						if improveWaitsCount > improveWaitsCount34[i] {
 							improveWaitsCount34[i] = improveWaitsCount
+							// improves 选的是进张数最大的改良
 							improves[i] = improveWaits
 						}
 						//fmt.Println(fmt.Sprintf("    摸 %s 切 %s 改良:", MahjongZH[i], MahjongZH[j]), improveWaitsCount, TilesToStrWithBracket(improveWaits.indexes()))
@@ -261,25 +229,48 @@ func CalculateShantenWithImproves13(tiles34 []int, isOpen bool) (waitsWithImprov
 			}
 		}
 		tiles34[i]--
+		leftTiles34[i]++
 	}
 	avgAgariRate /= float64(waitsCount)
 	if shanten13 == 0 {
+		// TODO: add selfDiscards
 		avgAgariRate = CalculateAgariRate(waits, nil)
 	}
 
 	_tiles34 := make([]int, 34)
 	copy(_tiles34, tiles34)
-	waitsWithImproves = &WaitsWithImproves13{
-		Tiles34: _tiles34,
-		Shanten: shanten13,
-		Waits:   waits,
+	r = &WaitsWithImproves13{
+		Tiles34:                  _tiles34,
+		Shanten:                  shanten13,
+		Waits:                    waits,
 		NextShantenWaitsCountMap: nextShantenWaitsCountMap,
 		Improves:                 improves,
 		ImproveWayCount:          improveWayCount,
-		ImproveWaitsCount34:      improveWaitsCount34,
+		AvgImproveWaitsCount:     float64(waitsCount),
 		AvgAgariRate:             avgAgariRate,
 	}
-	waitsWithImproves.analysis()
+
+	// 分析
+	if len(nextShantenWaitsCountMap) > 0 {
+		nextShantenWaitsSum := 0
+		weight := 0
+		for tile, c := range nextShantenWaitsCountMap {
+			w := leftTiles34[tile]
+			nextShantenWaitsSum += w * c
+			weight += w
+		}
+		r.AvgNextShantenWaitsCount = float64(nextShantenWaitsSum) / float64(weight)
+	}
+	if len(improves) > 0 {
+		improveWaitsSum := 0
+		weight := 0
+		for i := 0; i < 34; i++ {
+			w := leftTiles34[i]
+			improveWaitsSum += w * improveWaitsCount34[i]
+			weight += w
+		}
+		r.AvgImproveWaitsCount = float64(improveWaitsSum) / float64(weight)
+	}
 
 	return
 }
@@ -319,43 +310,24 @@ func (l WaitsWithImproves14List) Sort() {
 			return ri.AvgAgariRate > rj.AvgAgariRate
 		}
 
-		// 「大差距排序」：进张*前进后的进张 - 前进后的进张 - 进张 - 和率 - 改良
+		// 改良*前进后的进张 - 改良 - 前进后的进张 - 进张 - 和率
 
-		riWaitsCount, rjWaitsCount := ri.Waits.AllCount(), rj.Waits.AllCount()
-		riM, rjM := float64(riWaitsCount)*ri.AvgNextShantenWaitsCount, float64(rjWaitsCount)*rj.AvgNextShantenWaitsCount
-		//if rateAboveOneFloat64(riM, rjM) > 1.1 {
-		//	return riM > rjM
-		//}
+		// 对于一向听，考虑到未听牌之前要听的牌会被他家打出而造成听牌时的枚数降低，所以听牌枚数比和率更重要
+
+		riM, rjM := ri.AvgImproveWaitsCount*ri.AvgNextShantenWaitsCount, rj.AvgImproveWaitsCount*rj.AvgNextShantenWaitsCount
 		if riM != rjM {
 			return riM > rjM
 		}
 
-		//if rateAboveOne(riWaitsCount, rjWaitsCount) > 1.1 {
-		//	return riWaitsCount > rjWaitsCount
-		//}
-		//
-		//if rateAboveOneFloat64(ri.AvgNextShantenWaitsCount, rj.AvgNextShantenWaitsCount) > 1.1 {
-		//	return ri.AvgNextShantenWaitsCount > rj.AvgNextShantenWaitsCount
-		//}
-		//
-		//if rateAboveOneFloat64(ri.AvgAgariRate, rj.AvgAgariRate) > 1.1 {
-		//	return ri.AvgAgariRate > rj.AvgAgariRate
-		//}
-		//
-		//if rateAboveOneFloat64(ri.AvgImproveWaitsCount, rj.AvgImproveWaitsCount) > 1.1 {
-		//	return ri.AvgImproveWaitsCount > rj.AvgImproveWaitsCount
-		//}
-
-		// 「微差距排序」：同上
-
-		if riM != rjM {
-			return riM > rjM
+		if ri.AvgImproveWaitsCount != rj.AvgImproveWaitsCount {
+			return ri.AvgImproveWaitsCount > rj.AvgImproveWaitsCount
 		}
 
 		if ri.AvgNextShantenWaitsCount != rj.AvgNextShantenWaitsCount {
 			return ri.AvgNextShantenWaitsCount > rj.AvgNextShantenWaitsCount
 		}
 
+		riWaitsCount, rjWaitsCount := ri.Waits.AllCount(), rj.Waits.AllCount()
 		if riWaitsCount != rjWaitsCount {
 			return riWaitsCount > rjWaitsCount
 		}
@@ -364,11 +336,10 @@ func (l WaitsWithImproves14List) Sort() {
 			return ri.AvgAgariRate > rj.AvgAgariRate
 		}
 
-		if ri.AvgImproveWaitsCount != rj.AvgImproveWaitsCount {
-			return ri.AvgImproveWaitsCount > rj.AvgImproveWaitsCount
+		// 改良种类、方式多的优先
+		if len(ri.Improves) != len(rj.Improves) {
+			return len(ri.Improves) > len(rj.Improves)
 		}
-
-		// 改良类型多的优先
 		if ri.ImproveWayCount != rj.ImproveWayCount {
 			return ri.ImproveWayCount > rj.ImproveWayCount
 		}
@@ -377,12 +348,12 @@ func (l WaitsWithImproves14List) Sort() {
 	})
 }
 
-func (l WaitsWithImproves14List) FilterWithLeftTiles34(leftTiles34 []int) {
-	for _, r := range l {
-		r.Result13.Waits.FixCountsWithLeftCounts(leftTiles34)
-	}
-	l.Sort()
-}
+//func (l WaitsWithImproves14List) FilterWithLeftTiles34(leftTiles34 []int) {
+//	for _, r := range l {
+//		r.Result13.Waits.FixCountsWithLeftCounts(leftTiles34)
+//	}
+//	l.Sort()
+//}
 
 func (l *WaitsWithImproves14List) filterOutDiscard(cantDiscardTile int) {
 	newResults := WaitsWithImproves14List{}
@@ -401,7 +372,11 @@ func (l WaitsWithImproves14List) addOpenTile(openTiles []int) {
 }
 
 // 2/5/8/11/14 张牌，计算向听数、进张、改良、向听倒退等
-func CalculateShantenWithImproves14(tiles34 []int, isOpen bool) (shanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
+func CalculateShantenWithImproves14(tiles34 []int, leftTiles34 []int, isOpen bool) (shanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
+	if len(leftTiles34) == 0 {
+		leftTiles34 = InitLeftTiles34WithTiles34(tiles34)
+	}
+
 	shanten = CalculateShanten(tiles34, isOpen)
 
 	for i := 0; i < 34; i++ {
@@ -409,7 +384,7 @@ func CalculateShantenWithImproves14(tiles34 []int, isOpen bool) (shanten int, wa
 			continue
 		}
 		tiles34[i]-- // 切牌
-		result13 := CalculateShantenWithImproves13(tiles34, isOpen)
+		result13 := CalculateShantenWithImproves13(tiles34, leftTiles34, isOpen)
 		r := &WaitsWithImproves14{
 			Result13:    result13,
 			DiscardTile: i,
@@ -468,13 +443,33 @@ func calculateMeldShanten(tiles34 []int, tile int, allowChi bool) (minShanten in
 	return
 }
 
-func CalculateMeld(tiles34 []int, tile int, allowChi bool) (shanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
+// TODO 鸣牌的情况判断（待重构）
+// 编程时注意他家切掉的这张牌是否算到剩余数中
+//if isOpen {
+//if newShanten, combinations, shantens := calculateMeldShanten(tiles34, i, true); newShanten < shanten {
+//	// 向听前进了，说明鸣牌成功，则换的这张牌为鸣牌进张
+//	// 计算进张数：若能碰则 =剩余数*3，否则 =剩余数
+//	meldWaits[i] = leftTile - tiles34[i]
+//	for i, comb := range combinations {
+//		if comb[0] == comb[1] && shantens[i] == newShanten {
+//			meldWaits[i] *= 3
+//			break
+//		}
+//	}
+//}
+//}
+
+func CalculateMeld(tiles34 []int, tile int, allowChi bool, leftTiles34 []int) (shanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
+	if len(leftTiles34) == 0 {
+		leftTiles34 = InitLeftTiles34WithTiles34(tiles34)
+	}
+
 	shanten, combinations, _ := calculateMeldShanten(tiles34, tile, allowChi)
 
 	for _, c := range combinations {
 		tiles34[c[0]]--
 		tiles34[c[1]]--
-		_shanten, _waitsWithImproves, _incShantenResults := CalculateShantenWithImproves14(tiles34, true)
+		_shanten, _waitsWithImproves, _incShantenResults := CalculateShantenWithImproves14(tiles34, leftTiles34, true)
 		tiles34[c[0]]++
 		tiles34[c[1]]++
 

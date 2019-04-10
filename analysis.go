@@ -52,12 +52,11 @@ func analysisTiles34(tiles34 []int, leftTiles34 []int, isOpen bool) error {
 	countOfTiles := util.CountOfTiles34(tiles34)
 	switch countOfTiles % 3 {
 	case 1:
-		result := util.CalculateShantenWithImproves13(tiles34, isOpen)
-		result.Waits.FixCountsWithLeftCounts(leftTiles34)
+		result := util.CalculateShantenWithImproves13(tiles34, leftTiles34, isOpen)
 		fmt.Println(util.NumberToChineseShanten(result.Shanten) + "：")
 		printWaitsWithImproves13(result, -1, nil)
 	case 2:
-		shanten, results14, incShantenResults14 := util.CalculateShantenWithImproves14(tiles34, isOpen)
+		shanten, results14, incShantenResults14 := util.CalculateShantenWithImproves14(tiles34, leftTiles34, isOpen)
 
 		if shanten == -1 {
 			color.Red("【已胡牌】")
@@ -70,10 +69,6 @@ func analysisTiles34(tiles34 []int, leftTiles34 []int, isOpen bool) error {
 
 		// TODO: 若两向听的进张<=15，则添加向听倒退的提示（拒绝做七对子）
 
-		// TODO: 改良没算，还是放到解析中去处理比较好
-		results14.FilterWithLeftTiles34(leftTiles34)
-		incShantenResults14.FilterWithLeftTiles34(leftTiles34)
-
 		fmt.Println(util.NumberToChineseShanten(shanten) + "：")
 		for _, result := range results14 {
 			printWaitsWithImproves13(result.Result13, result.DiscardTile, result.OpenTiles)
@@ -85,7 +80,6 @@ func analysisTiles34(tiles34 []int, leftTiles34 []int, isOpen bool) error {
 		return fmt.Errorf("参数错误: %d 张牌", countOfTiles)
 	}
 
-	//fmt.Println("checkWin", checkWinCount)
 	fmt.Println()
 
 	return nil
@@ -93,13 +87,10 @@ func analysisTiles34(tiles34 []int, leftTiles34 []int, isOpen bool) error {
 
 func analysisMeld(tiles34 []int, leftTiles34 []int, targetTile34 int, allowChi bool) {
 	// 原始手牌分析
-	result := util.CalculateShantenWithImproves13(tiles34, true)
-	result.Waits.FixCountsWithLeftCounts(leftTiles34)
+	result := util.CalculateShantenWithImproves13(tiles34, leftTiles34, true)
 
 	// 副露分析
-	shanten, results14, incShantenResults14 := util.CalculateMeld(tiles34, targetTile34, allowChi)
-	results14.FilterWithLeftTiles34(leftTiles34)
-	incShantenResults14.FilterWithLeftTiles34(leftTiles34)
+	shanten, results14, incShantenResults14 := util.CalculateMeld(tiles34, targetTile34, allowChi, leftTiles34)
 
 	if len(results14) == 0 && len(incShantenResults14) == 0 {
 		return
