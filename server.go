@@ -198,7 +198,7 @@ func runServer(isHTTPS bool) {
 		// 检查是否为端口占用错误
 		if opErr, ok := err.(*net.OpError); ok && opErr.Op == "listen" {
 			if syscallErr, ok := opErr.Err.(*os.SyscallError); ok && syscallErr.Syscall == "bind" {
-				color.Red(addr + " 端口已被占用，程序无法启动（是否已经开启了本程序？）")
+				color.HiRed(addr + " 端口已被占用，程序无法启动（是否已经开启了本程序？）")
 			}
 		}
 		_errorExit(err)
