@@ -10,7 +10,7 @@ import (
 
 func printAccountInfo(accountID int) {
 	fmt.Printf("您的账号 ID 为 ")
-	color.New(color.FgMagenta).Printf("%d", accountID)
+	color.New(color.FgHiGreen).Printf("%d", accountID)
 	fmt.Printf("，该数字为雀魂服务器账号数据库中的 ID，该值越小表示您的注册时间越早\n")
 }
 
@@ -131,7 +131,6 @@ func (ts riskTables) printWithHands(counts []int, leftCounts []int) {
 4     听 [2万, 7万]
 4.50  [ 4 改良]  55.36% 参考和率
 
-
 8     45万吃，切 4万 听[2万, 7万]
 9.20  [20 改良]  4.00 听牌数
 
@@ -142,8 +141,8 @@ func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 
 	waits := result13.Waits
 
 	waitsCount, waitTiles := waits.ParseIndex()
-	colors := getShantenWaitsCountColors(shanten, waitsCount)
-	color.New(colors...).Printf("%-6d", waitsCount)
+	c := getWaitsCountColor(shanten, float64(waitsCount))
+	color.New(c).Printf("%-6d", waitsCount)
 	if discardTile34 != -1 {
 		if len(openTiles34) > 0 {
 			meldType := "吃"
@@ -155,7 +154,7 @@ func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 
 		}
 		fmt.Print("切 ")
 		if shanten <= 1 {
-			color.New(getSimpleRiskColor(discardTile34)).Print(util.MahjongZH[discardTile34])
+			color.New(getSelfDiscardRiskColor(discardTile34)).Print(util.MahjongZH[discardTile34])
 		} else {
 			fmt.Print(util.MahjongZH[discardTile34])
 		}
@@ -184,8 +183,8 @@ func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 
 	fmt.Print(" ")
 
 	if shanten >= 1 {
-		_color := getNextShantenWaitsCountColor(shanten, result13.AvgNextShantenWaitsCount)
-		color.New(_color).Printf("%5.2f", result13.AvgNextShantenWaitsCount)
+		c := getWaitsCountColor(shanten, result13.AvgNextShantenWaitsCount)
+		color.New(c).Printf("%5.2f", result13.AvgNextShantenWaitsCount)
 		fmt.Printf(" %s", util.NumberToChineseShanten(shanten-1))
 		if shanten >= 2 {
 			fmt.Printf("进张")
