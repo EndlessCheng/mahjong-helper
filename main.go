@@ -13,8 +13,8 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-// go build -ldflags "-X main.CurrentVersionTag=v0.1.6"
-const CurrentVersionTag = "dev"
+// go build -ldflags "-X main.version=$(git describe --abbrev=0 --tags)" -o mj
+var version string
 
 var (
 	showAgariAboveShanten1 bool
@@ -54,9 +54,9 @@ func welcome() int {
 }
 
 func main() {
-	color.HiGreen("日本麻将助手 %s (by EndlessCheng)", CurrentVersionTag)
-	if CurrentVersionTag != "dev" {
-		go alertNewVersion(CurrentVersionTag)
+	color.HiGreen("日本麻将助手 %s (by EndlessCheng)", version)
+	if version != "dev" {
+		go alertNewVersion(version)
 	}
 
 	flags, restArgs := parseArgs(os.Args[1:])
