@@ -183,7 +183,7 @@ func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 
 	fmt.Print(" ")
 
 	if shanten >= 1 {
-		c := getWaitsCountColor(shanten, result13.AvgNextShantenWaitsCount)
+		c := getWaitsCountColor(shanten-1, result13.AvgNextShantenWaitsCount)
 		color.New(c).Printf("%5.2f", result13.AvgNextShantenWaitsCount)
 		fmt.Printf(" %s", util.NumberToChineseShanten(shanten-1))
 		if shanten >= 2 {
