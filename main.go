@@ -13,8 +13,8 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-// go build -ldflags "-X main.version=$(git describe --abbrev=0 --tags)" -o mj
-var version string
+// go build -ldflags "-X main.version=$(git describe --abbrev=0 --tags)" -o mahjong-helper
+var version = "dev"
 
 var (
 	showAgariAboveShanten1 bool
