@@ -3,10 +3,10 @@ package main
 import "testing"
 
 func Test_checkNewVersion(t *testing.T) {
-	newVersionTag, err := checkNewVersion()
+	latestVersionTag, err := fetchLatestVersionTag()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	t.Log(newVersionTag)
+	t.Log(latestVersionTag)
 }
