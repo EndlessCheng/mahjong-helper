@@ -147,7 +147,7 @@ func (d *majsoulRoundData) CheckMessage() bool {
 		if d.accountID > 0 {
 			// 有 accountID 时，检查 accountID 是否正确
 			if !util.InInts(d.accountID, msg.SeatList) {
-				color.Red("尚未正确获取到玩家账号 ID，请您刷新网页，或开启一局人机对战（错误信息：您的账号 ID %d 不在对战列表 %v 中）", d.accountID, msg.SeatList)
+				color.HiRed("尚未正确获取到玩家账号 ID，请您刷新网页，或开启一局人机对战（错误信息：您的账号 ID %d 不在对战列表 %v 中）", d.accountID, msg.SeatList)
 				return false
 			}
 		} else {

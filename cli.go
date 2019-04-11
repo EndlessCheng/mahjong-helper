@@ -164,13 +164,13 @@ func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 
 	//fmt.Print("等")
 	if shanten <= 1 {
 		fmt.Print("[")
-		color.New(getSafeColor(waitTiles[0])).Print(util.MahjongZH[waitTiles[0]])
-		for _, index := range waitTiles[1:] {
-			fmt.Print(", ")
-			color.New(getSafeColor(index)).Print(util.MahjongZH[index])
+		if len(waitTiles) > 0 {
+			fmt.Print(util.MahjongZH[waitTiles[0]])
+			for _, idx := range waitTiles[1:] {
+				fmt.Print(", " + util.MahjongZH[idx])
+			}
 		}
-		fmt.Print("]")
-		fmt.Println()
+		fmt.Println("]")
 	} else {
 		fmt.Println(util.TilesToStrWithBracket(waitTiles))
 	}
@@ -189,15 +189,19 @@ func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 
 		fmt.Printf(" %s", util.NumberToChineseShanten(shanten-1))
 		if shanten >= 2 {
 			fmt.Printf("进张")
-		} else {
+		} else { // shanten == 1
 			fmt.Printf("数")
-			//fmt.Printf("（%.2f%% 参考和率）", result13.AvgAgariRate)
+			if showAgariAboveShanten1 {
+				fmt.Printf("（%.2f%% 参考和率）", result13.AvgAgariRate)
+			}
 		}
-		mixedScore := result13.AvgImproveWaitsCount * result13.AvgNextShantenWaitsCount
-		for i := 2; i <= shanten; i++ {
-			mixedScore /= 4
+		if showScore {
+			mixedScore := result13.AvgImproveWaitsCount * result13.AvgNextShantenWaitsCount
+			for i := 2; i <= shanten; i++ {
+				mixedScore /= 4
+			}
+			fmt.Printf("（%.2f 综合分）", mixedScore)
 		}
-		fmt.Printf("（%.2f 综合分）", mixedScore)
 	} else { // shanten == 0
 		fmt.Printf("%5.2f%% 参考和率", result13.AvgAgariRate)
 	}

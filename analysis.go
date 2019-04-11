@@ -59,12 +59,12 @@ func analysisTiles34(tiles34 []int, leftTiles34 []int, isOpen bool) error {
 		shanten, results14, incShantenResults14 := util.CalculateShantenWithImproves14(tiles34, leftTiles34, isOpen)
 
 		if shanten == -1 {
-			color.Red("【已胡牌】")
+			color.HiRed("【已胡牌】")
 			break
 		}
 
 		if shanten == 0 {
-			color.Red("【已听牌】")
+			color.HiRed("【已听牌】")
 		}
 
 		// TODO: 若两向听的进张<=15，则添加向听倒退的提示（拒绝做七对子）
@@ -104,7 +104,7 @@ func analysisMeld(tiles34 []int, leftTiles34 []int, targetTile34 int, allowChi b
 	printWaitsWithImproves13(result, -1, nil)
 
 	if shanten == -1 {
-		color.Red("【已胡牌】")
+		color.HiRed("【已胡牌】")
 		return
 	}
 

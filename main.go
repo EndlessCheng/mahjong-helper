@@ -13,6 +13,11 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
+var (
+	showAgariAboveShanten1 bool
+	showScore              bool
+)
+
 func welcome() int {
 	platforms := map[int]string{
 		0: "天凤",
@@ -52,13 +57,11 @@ func main() {
 	isAnalysis := flags.Bool("analysis")
 	isInteractive := flags.Bool("i", "interactive")
 	//isDetail := flags.Bool("d", "detail")
+	showAgariAboveShanten1 = flags.Bool("a", "agari")
+	showScore = flags.Bool("s", "score")
 	humanTiles := strings.Join(restArgs, " ")
 
 	switch {
-	case len(flags) == 0 && len(restArgs) == 0:
-		// 服务器模式
-		isHTTPS := welcome() == 1
-		runServer(isHTTPS)
 	case isMajsoul:
 		runServer(true)
 	case isTenhou || isAnalysis:
@@ -72,5 +75,9 @@ func main() {
 			fmt.Println(err)
 		}
 		//fmt.Printf("耗时 %.2f 秒\n", float64(time.Now().UnixNano()-t0.UnixNano())/float64(time.Second))
+	default:
+		// 服务器模式
+		isHTTPS := welcome() == 1
+		runServer(isHTTPS)
 	}
 }
