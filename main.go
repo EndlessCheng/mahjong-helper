@@ -13,6 +13,9 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
+// go build -ldflags "-X main.CurrentVersionTag=v0.1.6"
+const CurrentVersionTag = "dev"
+
 var (
 	showAgariAboveShanten1 bool
 	showScore              bool
@@ -24,7 +27,7 @@ func welcome() int {
 		1: "雀魂",
 	}
 
-	fmt.Println("使用前，请确认相关配置已完成，详见 https://github.com/EndlessCheng/mahjong-helper")
+	fmt.Println("使用前，请确认已按安装步骤完成安装，详见 https://github.com/EndlessCheng/mahjong-helper")
 	fmt.Println("请输入数字，以选择对应的平台：")
 	for k, v := range platforms {
 		fmt.Printf("%d - %s\n", k, v)
@@ -51,7 +54,10 @@ func welcome() int {
 }
 
 func main() {
-	go alertNewVersion()
+	color.HiGreen("日本麻将助手 %s (by EndlessCheng)", CurrentVersionTag)
+	if CurrentVersionTag != "dev" {
+		go alertNewVersion(CurrentVersionTag)
+	}
 
 	flags, restArgs := parseArgs(os.Args[1:])
 	isMajsoul := flags.Bool("majsoul")

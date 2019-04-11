@@ -8,8 +8,6 @@ import (
 	"github.com/fatih/color"
 )
 
-const CurrentVersionTag = "dev"
-
 func checkNewVersion() (newVersionTag string, err error) {
 	const getLatestReleaseAPI = "https://api.github.com/repos/EndlessCheng/mahjong-helper/releases/latest"
 	const timeout = 10 * time.Second
@@ -34,7 +32,7 @@ func checkNewVersion() (newVersionTag string, err error) {
 	return d.TagName, nil
 }
 
-func alertNewVersion() {
+func alertNewVersion(currentVersionTag string) {
 	const releasePage = "https://github.com/EndlessCheng/mahjong-helper/releases"
 
 	newVersionTag, err := checkNewVersion()
@@ -43,7 +41,7 @@ func alertNewVersion() {
 		return
 	}
 
-	if newVersionTag != CurrentVersionTag {
+	if newVersionTag != currentVersionTag {
 		color.HiGreen("检测到新版本: %s！请前往 %s 下载", newVersionTag, releasePage)
 	}
 }
