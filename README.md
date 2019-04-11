@@ -4,7 +4,7 @@
 
 分下面几步：
 
-1. 前往 [release](https://github.com/EndlessCheng/mahjong-helper/releases) 页面下载程序
+1. 前往 [release](https://github.com/EndlessCheng/mahjong-helper/releases/latest) 页面下载程序
 
 2. 安装浏览器扩展 Header Editor，具体操作可以参考[这篇](https://tieba.baidu.com/p/5956122477)，
 
