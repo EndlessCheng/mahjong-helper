@@ -51,6 +51,8 @@ func welcome() int {
 }
 
 func main() {
+	go alertNewVersion()
+
 	flags, restArgs := parseArgs(os.Args[1:])
 	isMajsoul := flags.Bool("majsoul")
 	isTenhou := flags.Bool("tenhou")
