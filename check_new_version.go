@@ -33,7 +33,7 @@ func fetchLatestVersionTag() (latestVersionTag string, err error) {
 }
 
 func alertNewVersion(currentVersionTag string) {
-	const releasePage = "https://github.com/EndlessCheng/mahjong-helper/releases"
+	const latestReleasePage = "https://github.com/EndlessCheng/mahjong-helper/releases/latest"
 
 	latestVersionTag, err := fetchLatestVersionTag()
 	if err != nil {
@@ -42,6 +42,6 @@ func alertNewVersion(currentVersionTag string) {
 	}
 
 	if latestVersionTag != currentVersionTag {
-		color.HiGreen("检测到新版本: %s！请前往 %s 下载", latestVersionTag, releasePage)
+		color.HiGreen("检测到新版本: %s！请前往 %s 下载", latestVersionTag, latestReleasePage)
 	}
 }
