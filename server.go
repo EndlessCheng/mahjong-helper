@@ -201,7 +201,7 @@ func runServer(isHTTPS bool) {
 				color.HiRed(addr + " 端口已被占用，程序无法启动（是否已经开启了本程序？）")
 			}
 		}
-		_errorExit(err)
+		errorExit(err)
 	}
 }
 

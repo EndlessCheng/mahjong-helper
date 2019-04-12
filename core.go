@@ -140,7 +140,7 @@ func (p *playerInfo) printDiscards() {
 			}
 			if len(p.melds) == 0 { // 未副露
 			} else { // 副露
-				fgColor = getDiscardAlertColor(disTile) // 高亮中张手切
+				fgColor = getOtherDiscardAlertColor(disTile) // 高亮中张手切
 				if util.InInts(i, p.meldDiscardsAt) {
 					bgColor = color.BgWhite // 鸣牌时切的那张牌要背景高亮
 					fgColor = color.FgBlack
@@ -350,7 +350,7 @@ func (d *roundData) analysis() error {
 
 				fmt.Printf("游戏即将开始，您分配到的座位是：")
 				windTile := 27 + (playerNumber-dealer)%playerNumber
-				color.Yellow(util.MahjongZH[windTile])
+				color.HiGreen(util.MahjongZH[windTile])
 
 				return nil
 			} else {
@@ -366,7 +366,7 @@ func (d *roundData) analysis() error {
 
 		fmt.Printf("%s%d局开始，自风为%s\n", util.MahjongZH[d.roundWindTile], roundNumber%4+1, util.MahjongZH[d.players[0].selfWindTile])
 
-		color.Yellow("宝牌指示牌是 %s", util.MahjongZH[doraIndicator])
+		color.HiYellow("宝牌指示牌是 %s", util.MahjongZH[doraIndicator])
 		d.doraIndicators = []int{doraIndicator}
 		d.descLeftCounts(doraIndicator)
 
@@ -434,7 +434,7 @@ func (d *roundData) analysis() error {
 		//	// 重连
 	case d.parser.IsFuriten():
 		// 振听
-		color.Yellow("振听")
+		color.HiYellow("振听")
 		//case "U", "V", "W":
 		//	//（下家,对家,上家 不要其上家的牌）摸牌
 		//case "HELO", "RANKING", "TAIKYOKU", "UN", "LN", "SAIKAI":
@@ -510,7 +510,7 @@ func (d *roundData) analysis() error {
 
 			// 若该玩家摸切立直，打印提示信息
 			if isTsumogiri {
-				color.Yellow("%s 摸切立直！", d.players[who].name)
+				color.HiYellow("%s 摸切立直！", d.players[who].name)
 			}
 		} else if len(player.meldDiscardsAt) != len(player.melds) {
 			// 标记鸣牌的舍牌
@@ -545,9 +545,9 @@ func (d *roundData) analysis() error {
 		fmt.Println("和牌，本局结束")
 		whos, points := d.parser.ParseRoundWin()
 		if len(whos) == 3 {
-			color.Yellow("凤 凰 级 避 铳")
+			color.HiYellow("凤 凰 级 避 铳")
 			if d.parser.GetDataSourceType() == dataSourceTypeMajsoul {
-				color.Yellow("（快醒醒，这是雀魂）")
+				color.HiYellow("（快醒醒，这是雀魂）")
 			}
 		}
 		for i, who := range whos {

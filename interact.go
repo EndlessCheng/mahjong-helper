@@ -9,7 +9,7 @@ import (
 func interact(raw string) {
 	tiles34, err := analysisHumanTiles(raw)
 	if err != nil {
-		_errorExit(err)
+		errorExit(err)
 	}
 	printed := true
 	countOfTiles := util.CountOfTiles34(tiles34)

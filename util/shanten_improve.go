@@ -310,9 +310,10 @@ func (l WaitsWithImproves14List) Sort() {
 			return ri.AvgAgariRate > rj.AvgAgariRate
 		}
 
-		// 改良*前进后的进张 - 改良 - 前进后的进张 - 进张 - 和率
-
+		// 排序规则：改良进张均值*前进后的进张 - 改良进张均值 - 前进后的进张 - 进张 - 和率
+		// 必须注意到的一点是，随着游戏的进行，进张会被他家打出，所以进张是有减少的趋势的
 		// 对于一向听，考虑到未听牌之前要听的牌会被他家打出而造成听牌时的枚数降低，所以听牌枚数比和率更重要
+		// 对比当前进张与前进后的进张，在二者乘积相近的情况下（注意这个前提），由于进张越大听牌速度越快，听牌时的进张数也就越接近预期进张数，所以进张越多越好（再次强调是在二者乘积相近的情况下）
 
 		riM, rjM := ri.AvgImproveWaitsCount*ri.AvgNextShantenWaitsCount, rj.AvgImproveWaitsCount*rj.AvgNextShantenWaitsCount
 		if riM != rjM {
