@@ -195,7 +195,7 @@ func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 
 			}
 		}
 		if showScore {
-			mixedScore := result13.AvgImproveWaitsCount * result13.AvgNextShantenWaitsCount
+			mixedScore := result13.WaitsScore() * result13.AvgNextShantenWaitsCount
 			for i := 2; i <= shanten; i++ {
 				mixedScore /= 4
 			}
