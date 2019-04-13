@@ -153,7 +153,14 @@ func (d *tenhouRoundData) _parseKan(data int) (meldType int, tiles []int, called
 	calledTile = tiles[called]
 
 	// 通过判断 calledTile 的来源来是否为上一张舍牌，来判断是明杠还是暗杠
-	if len(d.globalDiscardTiles) > 0 && calledTile == d.globalDiscardTiles[len(d.globalDiscardTiles)-1] {
+	latestDiscard := -1
+	if len(d.globalDiscardTiles) > 0 {
+		latestDiscard := d.globalDiscardTiles[len(d.globalDiscardTiles)-1]
+		if latestDiscard < 0 {
+			latestDiscard = ^latestDiscard
+		}
+	}
+	if calledTile == latestDiscard {
 		// 明杠
 		meldType = meldTypeMinKan
 	} else {

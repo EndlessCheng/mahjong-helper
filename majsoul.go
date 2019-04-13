@@ -288,11 +288,21 @@ func (d *majsoulRoundData) ParseOpen() (who int, meldType int, meldTiles []int, 
 		} else {
 			meldType = meldTypeChi
 			calledTile = d.globalDiscardTiles[len(d.globalDiscardTiles)-1]
+			if calledTile < 0 {
+				calledTile = ^calledTile
+			}
 		}
 	} else if len(meldTiles) == 4 {
 		calledTile = meldTiles[0]
 		// 通过判断 calledTile 的来源来是否为上一张舍牌，来判断是大明杠还是加杠
-		if len(d.globalDiscardTiles) > 0 && calledTile == d.globalDiscardTiles[len(d.globalDiscardTiles)-1] {
+		latestDiscard := -1
+		if len(d.globalDiscardTiles) > 0 {
+			latestDiscard := d.globalDiscardTiles[len(d.globalDiscardTiles)-1]
+			if latestDiscard < 0 {
+				latestDiscard = ^latestDiscard
+			}
+		}
+		if calledTile == latestDiscard {
 			// 大明杠
 			meldType = meldTypeMinKan
 		} else {
@@ -301,9 +311,6 @@ func (d *majsoulRoundData) ParseOpen() (who int, meldType int, meldTiles []int, 
 		}
 	} else {
 		panic("鸣牌数据解析失败！")
-	}
-	if calledTile < 0 {
-		calledTile = ^calledTile
 	}
 
 	return
