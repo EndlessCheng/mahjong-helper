@@ -339,7 +339,7 @@ func (l WaitsWithImproves14List) Sort() {
 			return ri.AvgAgariRate > rj.AvgAgariRate
 		}
 
-		// 排序规则：综合评分 - 进张 - 前进后的进张 - 改良 - 和率 - 其他
+		// 排序规则：综合评分 - 进张 - 前进后的进张 - 改良 - 和率 - 好牌先走
 		// 必须注意到的一点是，随着游戏的进行，进张会被他家打出，所以进张是有减少的趋势的
 		// 对于一向听，考虑到未听牌之前要听的牌会被他家打出而造成听牌时的枚数降低，所以听牌枚数比和率更重要
 		// 对比当前进张与前进后的进张，在二者乘积相近的情况下（注意这个前提），由于进张越大听牌速度越快，听牌时的进张数也就越接近预期进张数，所以进张越多越好（再次强调是在二者乘积相近的情况下）
@@ -365,15 +365,28 @@ func (l WaitsWithImproves14List) Sort() {
 			return ri.AvgAgariRate > rj.AvgAgariRate
 		}
 
-		// 改良种类、方式多的优先
-		if len(ri.Improves) != len(rj.Improves) {
-			return len(ri.Improves) > len(rj.Improves)
+		// 好牌先走
+		idxI, idxJ := l[i].DiscardTile, l[j].DiscardTile
+		if idxI < 27 && idxJ < 27 {
+			idxI %= 9
+			if idxI > 4 {
+				idxI = 8 - idxI
+			}
+			idxJ %= 9
+			if idxJ > 4 {
+				idxJ = 8 - idxJ
+			}
+			return idxI > idxJ
 		}
-		if ri.ImproveWayCount != rj.ImproveWayCount {
-			return ri.ImproveWayCount > rj.ImproveWayCount
-		}
+		return idxI < idxJ
 
-		return l[i].DiscardTile > l[j].DiscardTile
+		//// 改良种类、方式多的优先
+		//if len(ri.Improves) != len(rj.Improves) {
+		//	return len(ri.Improves) > len(rj.Improves)
+		//}
+		//if ri.ImproveWayCount != rj.ImproveWayCount {
+		//	return ri.ImproveWayCount > rj.ImproveWayCount
+		//}
 	})
 }
 
