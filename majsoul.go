@@ -297,7 +297,7 @@ func (d *majsoulRoundData) ParseOpen() (who int, meldType int, meldTiles []int, 
 		// 通过判断 calledTile 的来源来是否为上一张舍牌，来判断是大明杠还是加杠
 		latestDiscard := -1
 		if len(d.globalDiscardTiles) > 0 {
-			latestDiscard := d.globalDiscardTiles[len(d.globalDiscardTiles)-1]
+			latestDiscard = d.globalDiscardTiles[len(d.globalDiscardTiles)-1]
 			if latestDiscard < 0 {
 				latestDiscard = ^latestDiscard
 			}
