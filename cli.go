@@ -195,10 +195,10 @@ func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 
 			}
 		}
 		if showScore {
-			mixedScore := result13.WaitsScore() * result13.AvgNextShantenWaitsCount
-			for i := 2; i <= shanten; i++ {
-				mixedScore /= 4
-			}
+			mixedScore := result13.MixedWaitsScore
+			//for i := 2; i <= shanten; i++ {
+			//	mixedScore /= 4
+			//}
 			fmt.Printf("（%.2f 综合分）", mixedScore)
 		}
 	} else { // shanten == 0

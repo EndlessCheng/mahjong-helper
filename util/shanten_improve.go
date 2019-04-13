@@ -32,6 +32,9 @@ type WaitsWithImproves13 struct {
 	// 向听前进后的进张数的加权均值
 	AvgNextShantenWaitsCount float64
 
+	// 综合了进张与向听前进后进张的评分
+	MixedWaitsScore float64
+
 	// 改良：摸到这张牌虽不能让向听数前进，但可以让进张变多
 	// len(Improves) 即为改良的牌的种数
 	Improves Improves
@@ -53,11 +56,25 @@ type WaitsWithImproves13 struct {
 	// TODO: 打点均值？
 }
 
-// 进张和改良的评分
-func (r *WaitsWithImproves13) WaitsScore() float64 {
-	waitsCount := float64(r.Waits.AllCount())
+// waitsCount := float64(r.Waits.AllCount())
+// return (waitsCount + (1-waitsCount/leftCount)*r.AvgImproveWaitsCount) * 100 / leftCount
+
+// 进张和向听前进后进张的评分
+// 这里粗略地近似为向听前进两次的概率
+func (r *WaitsWithImproves13) mixedWaitsScore() float64 {
 	leftCount := float64(CountOfTiles34(r.LeftTiles34))
-	return (waitsCount + (1-waitsCount/leftCount)*r.AvgImproveWaitsCount) * 100 / leftCount
+	p2 := float64(r.Waits.AllCount()) / leftCount
+	//p2 := r.AvgImproveWaitsCount / leftCount
+	p1 := r.AvgNextShantenWaitsCount / leftCount
+	//if r.Shanten == 1 {
+	//	p1 *= 2.5
+	//}
+	p2_, p1_ := 1-p2, 1-p1
+	const leftTurns = 10.0 // math.Max(5.0, leftCount/4)
+	sumP2 := p2_ * (1 - math.Pow(p2_, leftTurns)) / p2
+	sumP1 := p1_ * (1 - math.Pow(p1_, leftTurns)) / p1
+	result := p2 * p1 * (sumP2 - sumP1) / (p2_ - p1_)
+	return result * 100
 }
 
 // 调试用
@@ -71,10 +88,10 @@ func (r *WaitsWithImproves13) String() string {
 		r.ImproveWayCount,
 	)
 	if r.Shanten >= 1 {
-		mixedScore := r.WaitsScore() * r.AvgNextShantenWaitsCount
-		for i := 2; i <= r.Shanten; i++ {
-			mixedScore /= 4
-		}
+		mixedScore := r.MixedWaitsScore
+		//for i := 2; i <= r.Shanten; i++ {
+		//	mixedScore /= 4
+		//}
 		s += fmt.Sprintf(" %.2f %s进张（%.2f 综合分）",
 			r.AvgNextShantenWaitsCount,
 			NumberToChineseShanten(r.Shanten-1),
@@ -282,6 +299,7 @@ func CalculateShantenWithImproves13(tiles34 []int, leftTiles34 []int, isOpen boo
 		}
 		r.AvgImproveWaitsCount = float64(improveWaitsSum) / float64(weight)
 	}
+	r.MixedWaitsScore = r.mixedWaitsScore()
 
 	return
 }
@@ -321,28 +339,22 @@ func (l WaitsWithImproves14List) Sort() {
 			return ri.AvgAgariRate > rj.AvgAgariRate
 		}
 
-		// 排序规则：进张评分*前进后的进张 - 进张评分 - 前进后的进张 - 进张 - 改良 - 和率 - 其他
+		// 排序规则：综合评分 - 进张 - 前进后的进张 - 改良 - 和率 - 其他
 		// 必须注意到的一点是，随着游戏的进行，进张会被他家打出，所以进张是有减少的趋势的
 		// 对于一向听，考虑到未听牌之前要听的牌会被他家打出而造成听牌时的枚数降低，所以听牌枚数比和率更重要
 		// 对比当前进张与前进后的进张，在二者乘积相近的情况下（注意这个前提），由于进张越大听牌速度越快，听牌时的进张数也就越接近预期进张数，所以进张越多越好（再次强调是在二者乘积相近的情况下）
 
-		riWS, rjWS := ri.WaitsScore(), rj.WaitsScore()
-		riM, rjM := riWS*ri.AvgNextShantenWaitsCount, rjWS*rj.AvgNextShantenWaitsCount
-		if riM != rjM {
-			return riM > rjM
-		}
-
-		if riWS != rjWS {
-			return riWS > rjWS
-		}
-
-		if ri.AvgNextShantenWaitsCount != rj.AvgNextShantenWaitsCount {
-			return ri.AvgNextShantenWaitsCount > rj.AvgNextShantenWaitsCount
+		if ri.MixedWaitsScore != rj.MixedWaitsScore {
+			return ri.MixedWaitsScore > rj.MixedWaitsScore
 		}
 
 		riWaitsCount, rjWaitsCount := ri.Waits.AllCount(), rj.Waits.AllCount()
 		if riWaitsCount != rjWaitsCount {
 			return riWaitsCount > rjWaitsCount
+		}
+
+		if ri.AvgNextShantenWaitsCount != rj.AvgNextShantenWaitsCount {
+			return ri.AvgNextShantenWaitsCount > rj.AvgNextShantenWaitsCount
 		}
 
 		if ri.AvgImproveWaitsCount != rj.AvgImproveWaitsCount {
