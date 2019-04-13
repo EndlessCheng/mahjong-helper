@@ -13,6 +13,7 @@ import (
 	"crypto/tls"
 	"net"
 	"github.com/fatih/color"
+	"net/url"
 )
 
 type mjHandler struct {
@@ -47,8 +48,8 @@ func (h *mjHandler) analysis(c echo.Context) error {
 	defer func() { h.analysing = false }()
 
 	d := struct {
-		Reset      bool   `json:"reset"`
-		Tiles      string `json:"tiles"`
+		Reset bool   `json:"reset"`
+		Tiles string `json:"tiles"`
 		//TargetTile string `json:"target_tile"`
 		//ShowDetail bool   `json:"show_detail"`
 	}{}
@@ -93,6 +94,15 @@ func (h *mjHandler) runAnalysisTenhouMessageTask() {
 		originJSON := string(msg)
 		h.log.Info(originJSON)
 
+		// 登录验证通过
+		if d.Tag == "HELO" {
+			username, err := url.QueryUnescape(d.UserName)
+			if err != nil {
+				fmt.Println(err)
+			}
+			fmt.Printf("%s 登录成功\n", username)
+		}
+
 		h.tenhouRoundData.msg = &d
 		h.tenhouRoundData.originJSON = originJSON
 		if err := h.tenhouRoundData.analysis(); err != nil {
@@ -124,6 +134,7 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 		originJSON := string(msg)
 		h.log.Info(originJSON)
 
+		// 登录验证通过
 		if d.AccountID > 0 && h.majsoulRoundData.accountID != d.AccountID {
 			h.majsoulRoundData.accountID = d.AccountID
 			printAccountInfo(d.AccountID)

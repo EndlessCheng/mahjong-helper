@@ -13,7 +13,7 @@ type tenhouMessage struct {
 	//Name string `json:"name"` // id
 	//Sex  string `json:"sx"`
 
-	//UserName    string `json:"uname"`
+	UserName string `json:"uname"`
 	//RatingScale string `json:"ratingscale"`
 
 	//N string `json:"n"`
