@@ -1,4 +1,4 @@
-# mahjong-helper
+# 日本麻将辅助
 
 ## 安装
 
