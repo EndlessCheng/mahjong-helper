@@ -11,6 +11,12 @@ type Improves map[int]Waits
 
 // 1/4/7/10/13 张手牌的分析结果
 type WaitsWithImproves13 struct {
+	// 场风
+	RoundWindTile34 int
+
+	// 自风
+	SelfWindTile34 int
+
 	// 原手牌
 	Tiles34 []int
 
@@ -179,7 +185,7 @@ func CalculateShantenAndWaits13(tiles34 []int, leftTiles34 []int, isOpen bool) (
 }
 
 // 1/4/7/10/13 张牌，计算向听数、进张、改良等（考虑了剩余枚数）
-func CalculateShantenWithImproves13(tiles34 []int, leftTiles34 []int, isOpen bool) (r *WaitsWithImproves13) {
+func CalculateShantenWithImproves13(roundWindTile34 int, selfWindTile34 int, tiles34 []int, leftTiles34 []int, isOpen bool) (r *WaitsWithImproves13) {
 	if len(leftTiles34) == 0 {
 		leftTiles34 = InitLeftTiles34WithTiles34(tiles34)
 	}
@@ -267,10 +273,12 @@ func CalculateShantenWithImproves13(tiles34 []int, leftTiles34 []int, isOpen boo
 	_tiles34 := make([]int, 34)
 	copy(_tiles34, tiles34)
 	r = &WaitsWithImproves13{
-		Tiles34:     _tiles34,
-		LeftTiles34: leftTiles34,
-		Shanten:     shanten13,
-		Waits:       waits,
+		RoundWindTile34: roundWindTile34,
+		SelfWindTile34:  selfWindTile34,
+		Tiles34:         _tiles34,
+		LeftTiles34:     leftTiles34,
+		Shanten:         shanten13,
+		Waits:           waits,
 		NextShantenWaitsCountMap: nextShantenWaitsCountMap,
 		Improves:                 improves,
 		ImproveWayCount:          improveWayCount,
@@ -366,8 +374,12 @@ func (l WaitsWithImproves14List) Sort() {
 			return ri.AvgImproveWaitsCount > rj.AvgImproveWaitsCount
 		}
 
-		// 好牌先走
 		idxI, idxJ := l[i].DiscardTile, l[j].DiscardTile
+		if idxI >= 27 && idxJ >= 27 {
+			// TODO 场风不为自风时：下家风 > 对家风 > 上家风 > 场风
+		}
+
+		// 好牌先走
 		if idxI < 27 && idxJ < 27 {
 			idxI %= 9
 			if idxI > 4 {
@@ -415,7 +427,7 @@ func (l WaitsWithImproves14List) addOpenTile(openTiles []int) {
 }
 
 // 2/5/8/11/14 张牌，计算向听数、进张、改良、向听倒退等
-func CalculateShantenWithImproves14(tiles34 []int, leftTiles34 []int, isOpen bool) (shanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
+func CalculateShantenWithImproves14(roundWindTile34 int, selfWindTile34 int, tiles34 []int, leftTiles34 []int, isOpen bool) (shanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
 	if len(leftTiles34) == 0 {
 		leftTiles34 = InitLeftTiles34WithTiles34(tiles34)
 	}
@@ -427,7 +439,7 @@ func CalculateShantenWithImproves14(tiles34 []int, leftTiles34 []int, isOpen boo
 			continue
 		}
 		tiles34[i]-- // 切牌
-		result13 := CalculateShantenWithImproves13(tiles34, leftTiles34, isOpen)
+		result13 := CalculateShantenWithImproves13(roundWindTile34, selfWindTile34, tiles34, leftTiles34, isOpen)
 		r := &WaitsWithImproves14{
 			Result13:    result13,
 			DiscardTile: i,
@@ -502,7 +514,7 @@ func calculateMeldShanten(tiles34 []int, tile int, allowChi bool) (minShanten in
 //}
 //}
 
-func CalculateMeld(tiles34 []int, tile int, allowChi bool, leftTiles34 []int) (shanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
+func CalculateMeld(roundWindTile34 int, selfWindTile34 int, tiles34 []int, tile int, allowChi bool, leftTiles34 []int) (shanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
 	if len(leftTiles34) == 0 {
 		leftTiles34 = InitLeftTiles34WithTiles34(tiles34)
 	}
@@ -512,7 +524,7 @@ func CalculateMeld(tiles34 []int, tile int, allowChi bool, leftTiles34 []int) (s
 	for _, c := range combinations {
 		tiles34[c[0]]--
 		tiles34[c[1]]--
-		_shanten, _waitsWithImproves, _incShantenResults := CalculateShantenWithImproves14(tiles34, leftTiles34, true)
+		_shanten, _waitsWithImproves, _incShantenResults := CalculateShantenWithImproves14(roundWindTile34, selfWindTile34, tiles34, leftTiles34, true)
 		tiles34[c[0]]++
 		tiles34[c[1]]++
 

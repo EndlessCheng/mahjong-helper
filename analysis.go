@@ -7,32 +7,9 @@ import (
 	"github.com/fatih/color"
 )
 
-func _printIncShantenResults14(shanten int, results14, incShantenResults14 util.WaitsWithImproves14List) {
+func _printIncShantenResults14(shanten int, incShantenResults14 util.WaitsWithImproves14List) {
 	if len(incShantenResults14) == 0 {
 		return
-	}
-
-	if len(results14) > 0 {
-		bestWaitsCount := results14[0].Result13.Waits.AllCount()
-		bestIncShantenWaitsCount := incShantenResults14[0].Result13.Waits.AllCount()
-
-		// TODO: 待调整
-		// 1 - 12
-		// 2 - 24
-		// 3 - 36
-		// ...
-		incShantenWaitsCountLimit := 12
-		for i := 1; i < shanten; i++ {
-			incShantenWaitsCountLimit *= 2
-		}
-
-		needPrintIncShanten := bestWaitsCount <= incShantenWaitsCountLimit && bestIncShantenWaitsCount >= 2*bestWaitsCount
-		if shanten == 0 {
-			needPrintIncShanten = bestIncShantenWaitsCount >= 18
-		}
-		if !needPrintIncShanten {
-			return
-		}
 	}
 
 	if len(incShantenResults14[0].OpenTiles) > 0 {
@@ -44,7 +21,7 @@ func _printIncShantenResults14(shanten int, results14, incShantenResults14 util.
 	}
 }
 
-func analysisTiles34(tiles34 []int, leftTiles34 []int, isOpen bool) error {
+func analysisTiles34(roundWindTile34 int, selfWindTile34 int, tiles34 []int, leftTiles34 []int, isOpen bool) error {
 	humanTiles := util.Tiles34ToStr(tiles34)
 	fmt.Println(humanTiles)
 	fmt.Println(strings.Repeat("=", len(humanTiles)))
@@ -52,11 +29,11 @@ func analysisTiles34(tiles34 []int, leftTiles34 []int, isOpen bool) error {
 	countOfTiles := util.CountOfTiles34(tiles34)
 	switch countOfTiles % 3 {
 	case 1:
-		result := util.CalculateShantenWithImproves13(tiles34, leftTiles34, isOpen)
+		result := util.CalculateShantenWithImproves13(roundWindTile34, selfWindTile34, tiles34, leftTiles34, isOpen)
 		fmt.Println(util.NumberToChineseShanten(result.Shanten) + "：")
 		printWaitsWithImproves13(result, -1, nil)
 	case 2:
-		shanten, results14, incShantenResults14 := util.CalculateShantenWithImproves14(tiles34, leftTiles34, isOpen)
+		shanten, results14, incShantenResults14 := util.CalculateShantenWithImproves14(roundWindTile34, selfWindTile34, tiles34, leftTiles34, isOpen)
 
 		if shanten == -1 {
 			color.HiRed("【已胡牌】")
@@ -67,15 +44,11 @@ func analysisTiles34(tiles34 []int, leftTiles34 []int, isOpen bool) error {
 			color.HiRed("【已听牌】")
 		}
 
-		// TODO: 若两向听的进张<=15，则添加向听倒退的提示（拒绝做七对子）
-
 		fmt.Println(util.NumberToChineseShanten(shanten) + "：")
 		for _, result := range results14 {
 			printWaitsWithImproves13(result.Result13, result.DiscardTile, result.OpenTiles)
 		}
-
-		// 不好的牌会打印出向听倒退的分析
-		_printIncShantenResults14(shanten, results14, incShantenResults14)
+		_printIncShantenResults14(shanten, incShantenResults14)
 	default:
 		return fmt.Errorf("参数错误: %d 张牌", countOfTiles)
 	}
@@ -85,12 +58,16 @@ func analysisTiles34(tiles34 []int, leftTiles34 []int, isOpen bool) error {
 	return nil
 }
 
-func analysisMeld(tiles34 []int, leftTiles34 []int, targetTile34 int, allowChi bool) {
+func analysisMeld(roundWindTile34 int, selfWindTile34 int, tiles34 []int, leftTiles34 []int, targetTile34 int, allowChi bool) {
 	// 原始手牌分析
-	result := util.CalculateShantenWithImproves13(tiles34, leftTiles34, true)
+	isOpen := util.CountOfTiles34(tiles34) < 13
+	if !isOpen {
+		fmt.Println()
+	}
+	result := util.CalculateShantenWithImproves13(roundWindTile34, selfWindTile34, tiles34, leftTiles34, isOpen)
 
 	// 副露分析
-	shanten, results14, incShantenResults14 := util.CalculateMeld(tiles34, targetTile34, allowChi, leftTiles34)
+	shanten, results14, incShantenResults14 := util.CalculateMeld(roundWindTile34, selfWindTile34, tiles34, targetTile34, allowChi, leftTiles34)
 
 	if len(results14) == 0 && len(incShantenResults14) == 0 {
 		return
@@ -109,6 +86,7 @@ func analysisMeld(tiles34 []int, leftTiles34 []int, targetTile34 int, allowChi b
 	}
 
 	// 打印结果
+	// FIXME: 选择很多时如何精简何切选项？
 	const maxShown = 8
 
 	if len(results14) > 0 {
@@ -126,7 +104,7 @@ func analysisMeld(tiles34 []int, leftTiles34 []int, targetTile34 int, allowChi b
 	if len(shownIncResults14) > maxShown {
 		shownIncResults14 = shownIncResults14[:maxShown]
 	}
-	_printIncShantenResults14(shanten, results14, shownIncResults14)
+	_printIncShantenResults14(shanten, shownIncResults14)
 }
 
 func analysisHumanTiles(humanTiles string) (tiles34 []int, err error) {
@@ -143,7 +121,7 @@ func analysisHumanTiles(humanTiles string) (tiles34 []int, err error) {
 			return
 		}
 
-		analysisMeld(tiles34, nil, targetTile34, true)
+		analysisMeld(27, 27, tiles34, nil, targetTile34, true)
 		return
 	}
 
@@ -152,6 +130,6 @@ func analysisHumanTiles(humanTiles string) (tiles34 []int, err error) {
 		return
 	}
 
-	err = analysisTiles34(tiles34, nil, false)
+	err = analysisTiles34(27, 27, tiles34, nil, false)
 	return
 }

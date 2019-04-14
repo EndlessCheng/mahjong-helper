@@ -29,6 +29,11 @@ type DataParser interface {
 	// 解析前，根据消息内容来决定是否要进行后续解析
 	CheckMessage() bool
 
+	// 登录成功
+	// 目前是在 server 逻辑上解析的
+	//IsLogin() bool
+	//HandleLogin()
+
 	// round 开始/重连
 	// roundNumber: 场数（如东1为0，东2为1，...，南1为4，...）
 	// dealer: 庄家 0-3
@@ -376,7 +381,7 @@ func (d *roundData) analysis() error {
 		}
 
 		if len(hands) == 14 {
-			return analysisTiles34(d.counts, d.leftCounts, false)
+			return analysisTiles34(d.roundWindTile, d.players[0].selfWindTile, d.counts, d.leftCounts, false)
 		}
 	case d.parser.IsOpen():
 		// 某家鸣牌（含暗杠、加杠）
@@ -463,7 +468,7 @@ func (d *roundData) analysis() error {
 		// 何切
 		// TODO: 根据是否听牌/一向听、打点、巡目、和率等进行攻守判断
 		isOpen := len(d.players[0].melds) > 0
-		return analysisTiles34(d.counts, d.leftCounts, isOpen)
+		return analysisTiles34(d.roundWindTile, d.players[0].selfWindTile, d.counts, d.leftCounts, isOpen)
 	case d.parser.IsDiscard():
 		who, tile, isTsumogiri, isReach, canBeMeld, kanDoraIndicator := d.parser.ParseDiscard()
 
@@ -536,7 +541,7 @@ func (d *roundData) analysis() error {
 		if canBeMeld {
 			// TODO: 消除海底/避免河底/型听提醒
 			allowChi := who == 3
-			analysisMeld(d.counts, d.leftCounts, tile, allowChi)
+			analysisMeld(d.roundWindTile, d.players[0].selfWindTile, d.counts, d.leftCounts, tile, allowChi)
 		}
 	case d.parser.IsRoundWin():
 		if !debugMode {
