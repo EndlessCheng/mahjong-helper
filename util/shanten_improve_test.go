@@ -110,7 +110,10 @@ func BenchmarkCalculateShantenWithImproves14Closed(b *testing.B) {
 
 func TestCalculateShantenWithImproves14Open(t *testing.T) {
 	tiles := "35m"
-	shanten, results, incShantenResults := CalculateShantenWithImproves14(27, 27, MustStrToTiles34(tiles), nil, true)
+	tiles = "13m 456s 778p"
+	left := InitLeftTiles34WithTiles34(MustStrToTiles34(tiles))
+	left[1] = 0
+	shanten, results, incShantenResults := CalculateShantenWithImproves14(27, 27, MustStrToTiles34(tiles), left, true)
 	t.Log(NumberToChineseShanten(shanten))
 	for _, result := range results {
 		t.Log(result)

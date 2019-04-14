@@ -161,18 +161,18 @@ func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 
 		fmt.Print(" ")
 	}
 	//fmt.Print("等")
-	if shanten <= 1 {
-		fmt.Print("[")
-		if len(waitTiles) > 0 {
-			fmt.Print(util.MahjongZH[waitTiles[0]])
-			for _, idx := range waitTiles[1:] {
-				fmt.Print(", " + util.MahjongZH[idx])
-			}
-		}
-		fmt.Println("]")
-	} else {
-		fmt.Println(util.TilesToStrWithBracket(waitTiles))
-	}
+	//if shanten <= 1 {
+	//	fmt.Print("[")
+	//	if len(waitTiles) > 0 {
+	//		fmt.Print(util.MahjongZH[waitTiles[0]])
+	//		for _, idx := range waitTiles[1:] {
+	//			fmt.Print(", " + util.MahjongZH[idx])
+	//		}
+	//	}
+	//	fmt.Println("]")
+	//} else {
+	fmt.Println(util.TilesToStrWithBracket(waitTiles))
+	//}
 
 	if len(result13.Improves) > 0 {
 		fmt.Printf("%-6.2f[%2d 改良]", result13.AvgImproveWaitsCount, len(result13.Improves))
