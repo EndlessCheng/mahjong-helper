@@ -17,7 +17,7 @@ func _printIncShantenResults14(shanten int, incShantenResults14 util.WaitsWithIm
 	}
 	fmt.Println(util.NumberToChineseShanten(shanten+1) + "：")
 	for _, result := range incShantenResults14 {
-		printWaitsWithImproves13(result.Result13, result.DiscardTile, result.OpenTiles)
+		printWaitsWithImproves13_oneRow(result.Result13, result.DiscardTile, result.OpenTiles)
 	}
 }
 
@@ -31,7 +31,7 @@ func analysisTiles34(roundWindTile34 int, selfWindTile34 int, tiles34 []int, lef
 	case 1:
 		result := util.CalculateShantenWithImproves13(roundWindTile34, selfWindTile34, tiles34, leftTiles34, isOpen)
 		fmt.Println(util.NumberToChineseShanten(result.Shanten) + "：")
-		printWaitsWithImproves13(result, -1, nil)
+		printWaitsWithImproves13_oneRow(result, -1, nil)
 	case 2:
 		shanten, results14, incShantenResults14 := util.CalculateShantenWithImproves14(roundWindTile34, selfWindTile34, tiles34, leftTiles34, isOpen)
 
@@ -46,7 +46,7 @@ func analysisTiles34(roundWindTile34 int, selfWindTile34 int, tiles34 []int, lef
 
 		fmt.Println(util.NumberToChineseShanten(shanten) + "：")
 		for _, result := range results14 {
-			printWaitsWithImproves13(result.Result13, result.DiscardTile, result.OpenTiles)
+			printWaitsWithImproves13_oneRow(result.Result13, result.DiscardTile, result.OpenTiles)
 		}
 		_printIncShantenResults14(shanten, incShantenResults14)
 	default:
@@ -61,9 +61,6 @@ func analysisTiles34(roundWindTile34 int, selfWindTile34 int, tiles34 []int, lef
 func analysisMeld(roundWindTile34 int, selfWindTile34 int, tiles34 []int, leftTiles34 []int, targetTile34 int, allowChi bool) {
 	// 原始手牌分析
 	isOpen := util.CountOfTiles34(tiles34) < 13
-	if !isOpen {
-		fmt.Println()
-	}
 	result := util.CalculateShantenWithImproves13(roundWindTile34, selfWindTile34, tiles34, leftTiles34, isOpen)
 
 	// 副露分析
@@ -78,7 +75,7 @@ func analysisMeld(roundWindTile34 int, selfWindTile34 int, tiles34 []int, leftTi
 	fmt.Println(strings.Repeat("=", len(raw)))
 
 	fmt.Println("当前" + util.NumberToChineseShanten(result.Shanten) + "：")
-	printWaitsWithImproves13(result, -1, nil)
+	printWaitsWithImproves13_oneRow(result, -1, nil)
 
 	if shanten == -1 {
 		color.HiRed("【已胡牌】")
@@ -87,7 +84,7 @@ func analysisMeld(roundWindTile34 int, selfWindTile34 int, tiles34 []int, leftTi
 
 	// 打印结果
 	// FIXME: 选择很多时如何精简何切选项？
-	const maxShown = 8
+	const maxShown = 10
 
 	if len(results14) > 0 {
 		fmt.Println("鸣牌后" + util.NumberToChineseShanten(shanten) + "：")
@@ -96,7 +93,7 @@ func analysisMeld(roundWindTile34 int, selfWindTile34 int, tiles34 []int, leftTi
 			shownResults14 = shownResults14[:maxShown]
 		}
 		for _, result := range shownResults14 {
-			printWaitsWithImproves13(result.Result13, result.DiscardTile, result.OpenTiles)
+			printWaitsWithImproves13_oneRow(result.Result13, result.DiscardTile, result.OpenTiles)
 		}
 	}
 

@@ -135,8 +135,8 @@ func (ts riskTables) printWithHands(counts []int, leftCounts []int) {
 9.20  [20 改良]  4.00 听牌数
 
 */
-// 打印何切分析结果
-func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 int, openTiles34 []int) {
+// 打印何切分析结果（双行）
+func printWaitsWithImproves13_twoRows(result13 *util.WaitsWithImproves13, discardTile34 int, openTiles34 []int) {
 	shanten := result13.Shanten
 	waits := result13.Waits
 
@@ -208,6 +208,105 @@ func printWaitsWithImproves13(result13 *util.WaitsWithImproves13, discardTile34 
 	//if dangerous {
 	//	// TODO: 提示危险度！
 	//}
+
+	fmt.Println()
+}
+
+/*
+4[ 4.56] 切 8饼 => 44.50% 参考和率[ 4 改良] [7p 7s]
+
+31[33.58] 切7索 => 5.23听牌数 [16改良] [6789p 56789s]
+
+48[50.64] 切5饼 => 24.25一向听进张 [12改良] [123456789p 56789s]
+
+31[33.62] 77索碰,切5饼 => 5.48听牌数 [15 改良] [123456789p]
+
+*/
+// 打印何切分析结果（单行）
+func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discardTile34 int, openTiles34 []int) {
+	shanten := result13.Shanten
+
+	// 打印进张数
+	waitsCount, waitTiles := result13.Waits.ParseIndex()
+	c := getWaitsCountColor(shanten, float64(waitsCount))
+	color.New(c).Printf("%2d", waitsCount)
+	// 打印改良进张均值
+	if len(result13.Improves) > 0 {
+		fmt.Printf("[%5.2f]", result13.AvgImproveWaitsCount)
+	} else {
+		fmt.Print(strings.Repeat(" ", 7))
+	}
+
+	fmt.Print(" ")
+
+	// 是否为3k+2张牌的何切分析
+	if discardTile34 != -1 {
+		// 打印鸣牌分析
+		if len(openTiles34) > 0 {
+			meldType := "吃"
+			if openTiles34[0] == openTiles34[1] {
+				meldType = "碰"
+			}
+			color.New(color.FgHiWhite).Printf("%s%s", string([]rune(util.MahjongZH[openTiles34[0]])[:1]), util.MahjongZH[openTiles34[1]])
+			fmt.Printf("%s,", meldType)
+		}
+		// 打印舍牌
+		fmt.Print("切")
+		tileZH := util.MahjongZH[discardTile34]
+		if discardTile34 >= 27 {
+			tileZH = " " + tileZH
+		}
+		if shanten <= 1 {
+			color.New(getSelfDiscardRiskColor(discardTile34)).Print(tileZH)
+		} else {
+			fmt.Print(tileZH)
+		}
+	}
+
+	fmt.Print(" => ")
+
+	if shanten >= 1 {
+		// 打印前进后的进张数均值
+		c := getWaitsCountColor(shanten-1, result13.AvgNextShantenWaitsCount)
+		color.New(c).Printf("%5.2f", result13.AvgNextShantenWaitsCount)
+		fmt.Printf("%s", util.NumberToChineseShanten(shanten-1))
+		if shanten >= 2 {
+			//fmt.Printf("进张")
+		} else { // shanten == 1
+			fmt.Printf("数")
+			if showAgariAboveShanten1 {
+				fmt.Printf("（%.2f%% 参考和率）", result13.AvgAgariRate)
+			}
+		}
+		if showScore {
+			mixedScore := result13.MixedWaitsScore
+			//for i := 2; i <= shanten; i++ {
+			//	mixedScore /= 4
+			//}
+			fmt.Printf("（%.2f 综合分）", mixedScore)
+		}
+	} else { // shanten == 0
+		fmt.Printf("%5.2f%% 参考和率", result13.AvgAgariRate)
+	}
+
+	//if dangerous {
+	//	// TODO: 提示危险度！
+	//}
+
+	fmt.Print(" ")
+
+	// 打印改良数
+	if len(result13.Improves) > 0 {
+		fmt.Printf("[%2d改良]", len(result13.Improves))
+	} else {
+		fmt.Print(strings.Repeat(" ", 4))
+		fmt.Print(strings.Repeat("　", 2)) // 全角空格
+	}
+
+	fmt.Print(" ")
+
+	// 打印进张类型
+	fmt.Print(util.TilesToStrWithBracket(waitTiles))
 
 	fmt.Println()
 }
