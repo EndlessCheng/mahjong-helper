@@ -57,7 +57,7 @@ type riskInfo struct {
 	// 各种牌的危险度表
 	riskTable riskTable
 
-	// 剩余无筋 123789 数量（总共 18 种）
+	// 剩余无筋 123789（总共 18 种）
 	leftNoSujiTiles []int
 }
 
