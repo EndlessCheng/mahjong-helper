@@ -1,5 +1,47 @@
 package util
 
+// 计算安牌以及可以视作筋牌的 123789 牌
+func calcSujiSafeTiles27(safeTiles34 []bool, leftTiles34 []int) []int {
+	sujiSafeTiles27 := make([]int, 27)
+	const _true = 1
+	for i, safe := range safeTiles34[:27] {
+		if safe {
+			sujiSafeTiles27[i] = _true
+		}
+	}
+	for i := 0; i < 3; i++ {
+		// 2断，当做打过1
+		if leftTiles34[9*i+1] == 0 {
+			sujiSafeTiles27[9*i] = _true
+		}
+		// 3断，当做打过12
+		if leftTiles34[9*i+2] == 0 {
+			sujiSafeTiles27[9*i] = _true
+			sujiSafeTiles27[9*i+1] = _true
+		}
+		// 4断，当做打过23
+		if leftTiles34[9*i+3] == 0 {
+			sujiSafeTiles27[9*i+1] = _true
+			sujiSafeTiles27[9*i+2] = _true
+		}
+		// 6断，当做打过78
+		if leftTiles34[9*i+5] == 0 {
+			sujiSafeTiles27[9*i+6] = _true
+			sujiSafeTiles27[9*i+7] = _true
+		}
+		// 7断，当做打过89
+		if leftTiles34[9*i+6] == 0 {
+			sujiSafeTiles27[9*i+7] = _true
+			sujiSafeTiles27[9*i+8] = _true
+		}
+		// 8断，当做打过9
+		if leftTiles34[9*i+7] == 0 {
+			sujiSafeTiles27[9*i+8] = _true
+		}
+	}
+	return sujiSafeTiles27
+}
+
 type RiskTiles34 []float64
 
 // 根据巡目（对于对手而言）、现物、立直后通过的牌的、NC，来计算基础铳率
@@ -10,61 +52,24 @@ type RiskTiles34 []float64
 // roundWindTile: 场风
 // playerWindTile: 自风
 func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, roundWindTile int, playerWindTile int) (risk34 RiskTiles34) {
-	// 生成用来计算筋牌的「安牌」
-	sujiSafeTiles34 := make([]int, 34)
-	const _true = 1
-	for i, safe := range safeTiles34 {
-		if safe {
-			sujiSafeTiles34[i] = _true
-		}
-	}
-	for i := 0; i < 3; i++ {
-		// 2断，当做打过1
-		if leftTiles34[9*i+1] == 0 {
-			sujiSafeTiles34[9*i] = _true
-		}
-		// 3断，当做打过12
-		if leftTiles34[9*i+2] == 0 {
-			sujiSafeTiles34[9*i] = _true
-			sujiSafeTiles34[9*i+1] = _true
-		}
-		// 4断，当做打过23
-		if leftTiles34[9*i+3] == 0 {
-			sujiSafeTiles34[9*i+1] = _true
-			sujiSafeTiles34[9*i+2] = _true
-		}
-		// 6断，当做打过78
-		if leftTiles34[9*i+5] == 0 {
-			sujiSafeTiles34[9*i+6] = _true
-			sujiSafeTiles34[9*i+7] = _true
-		}
-		// 7断，当做打过89
-		if leftTiles34[9*i+6] == 0 {
-			sujiSafeTiles34[9*i+7] = _true
-			sujiSafeTiles34[9*i+8] = _true
-		}
-		// 8断，当做打过9
-		if leftTiles34[9*i+7] == 0 {
-			sujiSafeTiles34[9*i+8] = _true
-		}
-	}
-
 	risk34 = make(RiskTiles34, 34)
 
+	// 生成用来计算筋牌的「安牌」
+	sujiSafeTiles27 := calcSujiSafeTiles27(safeTiles34, leftTiles34)
 	// 利用「安牌」计算无筋、筋、半筋、双筋的铳率
 	// TODO: 单独处理宣言牌的筋牌、宣言牌的同色牌的铳率
 	for i := 0; i < 3; i++ {
 		for j := 0; j < 3; j++ {
-			t := TileTypeTable[j][sujiSafeTiles34[9*i+j+3]]
+			t := TileTypeTable[j][sujiSafeTiles27[9*i+j+3]]
 			risk34[9*i+j] = RiskData[turns][t]
 		}
 		for j := 3; j < 6; j++ {
-			mixSafeTile := sujiSafeTiles34[9*i+j-3]<<1 | sujiSafeTiles34[9*i+j+3]
+			mixSafeTile := sujiSafeTiles27[9*i+j-3]<<1 | sujiSafeTiles27[9*i+j+3]
 			t := TileTypeTable[j][mixSafeTile]
 			risk34[9*i+j] = RiskData[turns][t]
 		}
 		for j := 6; j < 9; j++ {
-			t := TileTypeTable[j][sujiSafeTiles34[9*i+j-3]]
+			t := TileTypeTable[j][sujiSafeTiles27[9*i+j-3]]
 			risk34[9*i+j] = RiskData[turns][t]
 		}
 		// 5断，37视作安牌筋
@@ -118,6 +123,43 @@ func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, roun
 	for i, isSafe := range safeTiles34 {
 		if isSafe {
 			risk34[i] = 0
+		}
+	}
+
+	return
+}
+
+// 计算剩余的无筋 123789 牌
+// 总计 18 种。无筋牌数量越少，该无筋牌越危险
+func CalculateLeftNoSujiTiles(safeTiles34 []bool, leftTiles34 []int) (leftNoSujiTiles []int) {
+	isNoSujiTiles27 := make([]bool, 34)
+
+	for i := 0; i < 3; i++ {
+		for j := 3; j < 6; j++ {
+			if !safeTiles34[9*i+j] {
+				isNoSujiTiles27[9*i+j-3] = true
+				isNoSujiTiles27[9*i+j+3] = true
+			}
+		}
+		// 5断，37视作安牌筋
+		if leftTiles34[9*i+4] == 0 {
+			isNoSujiTiles27[9*i+2] = false
+			isNoSujiTiles27[9*i+6] = false
+		}
+	}
+
+	// 更新 isNoSujiTiles27
+	sujiSafeTiles27 := calcSujiSafeTiles27(safeTiles34, leftTiles34)
+	const _true = 1
+	for i, isSafe := range sujiSafeTiles27 {
+		if isSafe == _true {
+			isNoSujiTiles27[i] = false
+		}
+	}
+
+	for i, isNoSujiTile := range isNoSujiTiles27 {
+		if isNoSujiTile {
+			leftNoSujiTiles = append(leftNoSujiTiles, i)
 		}
 	}
 

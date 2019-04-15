@@ -34,6 +34,7 @@ func (t riskTable) printWithHands(counts []int) {
 			color.New(color.FgHiBlue).Printf(" " + util.MahjongZH[i])
 		}
 	}
+
 	fmt.Println()
 
 	// 打印危险牌，按照铳率排序&高亮
@@ -50,26 +51,38 @@ func (t riskTable) printWithHands(counts []int) {
 	for _, hr := range handsRisks {
 		color.New(getNumRiskColor(hr.risk)).Printf(" " + util.MahjongZH[hr.tile])
 	}
-	fmt.Println()
 }
 
-// 对手的各自危险度
-type riskTables []riskTable
+type riskInfo struct {
+	// 各种牌的危险度表
+	riskTable riskTable
 
-func (ts riskTables) printWithHands(counts []int, leftCounts []int) {
+	// 剩余无筋 123789 数量（总共 18 种）
+	leftNoSujiTiles []int
+}
+
+type riskInfoList []riskInfo
+
+func (ri riskInfoList) printWithHands(counts []int, leftCounts []int) {
 	// 打印安牌，危险牌
 	printed := false
 	names := []string{"", "下家", "对家", "上家"}
-	for i := len(ts) - 1; i >= 1; i-- {
-		riskTable := ts[i]
+	for i := len(ri) - 1; i >= 1; i-- {
+		riskTable := ri[i].riskTable
 		if len(riskTable) > 0 {
 			printed = true
 			fmt.Println(names[i] + "安牌:")
 			riskTable.printWithHands(counts)
+
+			// 打印无筋数量和种类
+			fmt.Printf(" [%d无筋: %s]", len(ri[i].leftNoSujiTiles), util.TilesToStr(ri[i].leftNoSujiTiles))
+
+			fmt.Println()
 		}
 	}
 
 	// 打印因 NC OC 产生的安牌
+	// TODO: 重构至其他函数
 	if printed {
 		ncSafeTileList := util.CalcNCSafeTiles(leftCounts).FilterWithHands(counts)
 		ocSafeTileList := util.CalcOCSafeTiles(leftCounts).FilterWithHands(counts)

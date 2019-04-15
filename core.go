@@ -250,8 +250,8 @@ func (d *roundData) printDiscards() {
 
 // 分析34种牌的危险度
 // 可以用来判断自家手牌的安全度，以及他家是否在进攻（多次切出危险度高的牌）
-func (d *roundData) analysisTilesRisk() (tables riskTables) {
-	tables = make(riskTables, len(d.players))
+func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
+	riList = make(riskInfoList, len(d.players))
 
 	for who, player := range d.players {
 		// TODO: 对于副露者，根据他的副露情况、手切数、巡目计算其听牌率
@@ -308,10 +308,14 @@ func (d *roundData) analysisTilesRisk() (tables riskTables) {
 		}
 
 		risk34 := util.CalculateRiskTiles34(turns, safeTiles34, d.leftCounts, d.roundWindTile, player.selfWindTile)
-		tables[who] = riskTable(risk34)
+		leftNoSujiTiles := util.CalculateLeftNoSujiTiles(safeTiles34, d.leftCounts)
+		riList[who] = riskInfo{
+			riskTable:       riskTable(risk34),
+			leftNoSujiTiles: leftNoSujiTiles,
+		}
 	}
 
-	return tables
+	return riList
 }
 
 func (d *roundData) analysis() error {
