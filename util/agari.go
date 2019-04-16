@@ -3,7 +3,7 @@ package util
 import "fmt"
 
 // 14 张牌的某种拆解结果
-// 若该拆解没有刻子和顺子则为七对子/国士
+// 若该拆解没有刻子和顺子则为七对子
 type DivideResult struct {
 	// 雀头牌
 	pairTile int
@@ -25,8 +25,8 @@ func (d *DivideResult) String() string {
 	return fmt.Sprint(humanTiles)
 }
 
-// 判断是否为特殊牌型（七对子/国士）
-func (d *DivideResult) IsSpecial() bool {
+// 判断是否为七对子
+func (d *DivideResult) IsChiitoitsu() bool {
 	return len(d.KotsuTiles) == 0 && len(d.ShuntsuFirstTiles) == 0
 }
 
