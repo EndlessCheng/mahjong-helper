@@ -1,5 +1,8 @@
 #! /usr/bin/ruby
 
+# http://hp.vector.co.jp/authors/VA046927/mjscore/mjalgorism.html
+# http://hp.vector.co.jp/authors/VA046927/mjscore/ptn.rb
+
 # 順列生成
 class Array
   def perms

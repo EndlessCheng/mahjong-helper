@@ -9,16 +9,7 @@ func init() {
 //var checkWinCount = 0
 
 // 14张牌，检查是否和牌
-/*
-「１」 →「０」
-「２」 →「１１０」
-「３」 →「１１１１０」
-「４」 →「１１１１１１０」
-「１０」→「１０」
-「２０」→「１１１０」
-「３０」→「１１１１１０」
-「４０」→「１１１１１１１０」
-*/
+// http://hp.vector.co.jp/authors/VA046927/mjscore/mjalgorism.html
 func CheckWin(tiles34 []int) bool {
 	//checkWinCount++
 
