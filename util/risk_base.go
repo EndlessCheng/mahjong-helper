@@ -174,7 +174,6 @@ func CalculateLeftNoSujiTiles(safeTiles34 []bool, leftTiles34 []int) (leftNoSuji
 	return
 }
 
-// TODO: 利用剩余牌是否为 0 或者 1 计算 No Chance, One Chance, Double One Chance, Double Two Chance(待定) 等
 // TODO: 利用舍牌计算无筋早外
 // TODO:（待定）有早外的半筋（早巡打过8m时，3m的半筋6m）
 // TODO:（待定）利用赤宝牌计算铳率
