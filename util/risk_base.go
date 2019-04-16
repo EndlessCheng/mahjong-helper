@@ -130,7 +130,7 @@ func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, roun
 }
 
 // 计算剩余的无筋 123789 牌
-// 总计 18 种。无筋牌数量越少，该无筋牌越危险
+// 总计 18 种。剩余无筋牌数量越少，该无筋牌越危险
 func CalculateLeftNoSujiTiles(safeTiles34 []bool, leftTiles34 []int) (leftNoSujiTiles []int) {
 	isNoSujiTiles27 := make([]bool, 34)
 
