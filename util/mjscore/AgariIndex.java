@@ -1,6 +1,8 @@
 import java.util.Arrays;
 import java.util.TreeMap;
 
+// http://hp.vector.co.jp/authors/VA046927/mjscore/mjalgorism.html
+// http://hp.vector.co.jp/authors/VA046927/mjscore/AgariIndex.java
 public class AgariIndex {
     static final int MAN = 0;
     static final int MAN1 = 0;
@@ -48,8 +50,8 @@ public class AgariIndex {
         tbl = new TreeMap<Integer, int[]>();
         init(tbl);
     }
-    
-    // ”v‚Ìí—Ş‚²‚Æ‚ÌŒÂ”‚ğ‹‚ß‚é
+
+    // ç‰Œã®ç¨®é¡ã”ã¨ã®å€‹æ•°ã‚’æ±‚ã‚ã‚‹
     static int[] analyse(int[] hai) {
         int[] n = n_zero.clone();
 
@@ -58,13 +60,13 @@ public class AgariIndex {
         }
         return n;
     }
-    
+
     static int calc_key(int[] n, int[] pos) {
         int p = -1;
         int x = 0;
-        int pos_p = 0; // pos‚Ì”z—ñƒCƒ“ƒfƒbƒNƒX
-        boolean b = false; // ‚Ğ‚Æ‚Â‘O‚ª0ˆÈŠO
-        // ””v
+        int pos_p = 0; // posã®é…åˆ—ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹
+        boolean b = false; // ã²ã¨ã¤å‰ãŒ0ä»¥å¤–
+        // æ•°ç‰Œ
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 9; j++) {
                 if (n[i * 9 + j] == 0) {
@@ -99,7 +101,7 @@ public class AgariIndex {
                 p++;
             }
         }
-        // š”v
+        // å­—ç‰Œ
         for (int i = TON; i <= CHU; i++) {
             if (n[i] > 0) {
                 p++;
@@ -128,7 +130,7 @@ public class AgariIndex {
     public static int[] agari(int key) {
         return tbl.get(key);
     }
-    
+
     public static void main(String[] args) {
         int[] hai = {
             MAN1, MAN1, MAN1,
@@ -140,7 +142,7 @@ public class AgariIndex {
         int[] n = null;
         int[] pos = new int[14];
         int[] ret = null;
-        
+
         long time = System.currentTimeMillis();
         for (int i = 0; i < 100000; i++) {
             n = analyse(hai);
@@ -148,30 +150,30 @@ public class AgariIndex {
             ret = agari(key);
         }
         System.out.println(System.currentTimeMillis() - time);
-        
+
         for (int r : ret) {
-            System.out.print("“ª=");
+            System.out.print("é›€é ­=");
             System.out.println(pos[(r>>6)&0xF]);
             int num_kotsu = r&0x7;
             int num_shuntsu = (r>>3)&0x7;
             for (int i = 0; i < num_kotsu; i++) {
-                System.out.print("q=");
+                System.out.print("åˆ»å­=");
                 System.out.println(pos[(r>>(10+i*4))&0xF]);
             }
             for (int i = 0; i < num_shuntsu; i++) {
-                System.out.print("‡q=");
+                System.out.print("é †å­=");
                 System.out.println(pos[(r>>(10+num_kotsu*4+i*4))&0xF]);
             }
         }
     }
-    
+
     private static void init(TreeMap<Integer, int[]> tbl) {
         init1(tbl);
         init2(tbl);
         init3(tbl);
         init4(tbl);
     }
-    
+
     private static void init1(TreeMap<Integer, int[]> tbl) {
         tbl.put(0x74444, new int[] {0x258c320});
         tbl.put(0x47444, new int[] {0x298c260});

@@ -248,27 +248,27 @@ chitoi.delete_if {|x|
     ptn([[1, 1, 1], [3], [3], [3], [2]]) +
     ptn([[3], [3], [3], [3], [2]]) +
     chitoi).uniq.each do |x|
-  printf("tbl[0x%X] = struct{}{}\n", calc_key(x))
+  printf("winTable[0x%X] = []int{%s}\n", calc_key(x), find_hai_pos(x))
 end
 
 (ptn([[1, 1, 1], [1, 1, 1], [1, 1, 1], [2]]) +
     ptn([[1, 1, 1], [1, 1, 1], [3], [2]]) +
     ptn([[1, 1, 1], [3], [3], [2]]) +
     ptn([[3], [3], [3], [2]])).uniq.each do |x|
-  printf("tbl[0x%X] = struct{}{}\n", calc_key(x))
+  printf("winTable[0x%X] = []int{%s}\n", calc_key(x), find_hai_pos(x))
 end
 
 (ptn([[1, 1, 1], [1, 1, 1], [2]]) +
     ptn([[1, 1, 1], [3], [2]]) +
     ptn([[3], [3], [2]])).uniq.each do |x|
-  printf("tbl[0x%X] = struct{}{}\n", calc_key(x))
+  printf("winTable[0x%X] = []int{%s}\n", calc_key(x), find_hai_pos(x))
 end
 
 (ptn([[1, 1, 1], [2]]) +
     ptn([[3], [2]])).uniq.each do |x|
-  printf("tbl[0x%X] = struct{}{}\n", calc_key(x))
+  printf("winTable[0x%X] = []int{%s}\n", calc_key(x), find_hai_pos(x))
 end
 
 (ptn([[2]])).uniq.each do |x|
-  printf("tbl[0x%X] = struct{}{}\n", calc_key(x))
+  printf("winTable[0x%X] = []int{%s}\n", calc_key(x), find_hai_pos(x))
 end
