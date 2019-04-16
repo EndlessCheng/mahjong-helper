@@ -132,9 +132,10 @@ func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, roun
 // 计算剩余的无筋 123789 牌
 // 总计 18 种。剩余无筋牌数量越少，该无筋牌越危险
 func CalculateLeftNoSujiTiles(safeTiles34 []bool, leftTiles34 []int) (leftNoSujiTiles []int) {
-	isNoSujiTiles27 := make([]bool, 34)
+	isNoSujiTiles27 := make([]bool, 27)
 
 	for i := 0; i < 3; i++ {
+		// 根据 456 中张是否为安牌来判断相应筋牌是否安全
 		for j := 3; j < 6; j++ {
 			if !safeTiles34[9*i+j] {
 				isNoSujiTiles27[9*i+j-3] = true
@@ -148,7 +149,14 @@ func CalculateLeftNoSujiTiles(safeTiles34 []bool, leftTiles34 []int) (leftNoSuji
 		}
 	}
 
-	// 更新 isNoSujiTiles27
+	// 根据打过 4 张的壁牌更新 isNoSujiTiles27
+	for i, c := range leftTiles34[:27] {
+		if c == 0 {
+			isNoSujiTiles27[i] = false
+		}
+	}
+
+	// 根据 No Chance 的安牌更新 isNoSujiTiles27
 	sujiSafeTiles27 := calcSujiSafeTiles27(safeTiles34, leftTiles34)
 	const _true = 1
 	for i, isSafe := range sujiSafeTiles27 {
