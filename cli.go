@@ -54,10 +54,11 @@ func (t riskTable) printWithHands(counts []int) {
 }
 
 type riskInfo struct {
-	// 各种牌的危险度表
+	// 各种牌的铳率表
 	riskTable riskTable
 
-	// 剩余无筋 123789（总共 18 种）
+	// 剩余无筋 123789
+	// 总计 18 种。剩余无筋牌数量越少，该无筋牌越危险
 	leftNoSujiTiles []int
 }
 
