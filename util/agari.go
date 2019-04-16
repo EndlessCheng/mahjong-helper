@@ -9,7 +9,7 @@ type DivideResult struct {
 	pairTile int
 	// 刻子牌
 	KotsuTiles []int
-	// 顺子牌（第一张，如 678s 的 6s）
+	// 顺子牌的第一张（如 678s 的 6s）
 	ShuntsuFirstTiles []int
 }
 
