@@ -99,7 +99,7 @@ func DivideTiles34(tiles34 []int) (divideResults []DivideResult) {
 
 	results, ok := winTable[key]
 	if !ok {
-		return nil
+		return
 	}
 
 	for _, r := range results {
