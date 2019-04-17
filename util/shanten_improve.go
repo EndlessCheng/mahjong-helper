@@ -68,6 +68,9 @@ type WaitsWithImproves13 struct {
 // 进张和向听前进后进张的评分
 // 这里粗略地近似为向听前进两次的概率
 func (r *WaitsWithImproves13) mixedWaitsScore() float64 {
+	if r.Waits.AllCount() == 0 || r.AvgNextShantenWaitsCount == 0 {
+		return 0
+	}
 	leftCount := float64(CountOfTiles34(r.LeftTiles34))
 	p2 := float64(r.Waits.AllCount()) / leftCount
 	//p2 := r.AvgImproveWaitsCount / leftCount

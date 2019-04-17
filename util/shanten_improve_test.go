@@ -84,7 +84,9 @@ func TestCalculateShantenWithImproves14Closed(t *testing.T) {
 	tiles = "2468m 33578p 22356s"
 	tiles = "57m 4455p 12345699s"
 	tiles = "57m 3445667p 12399s"
-	shanten, results, incShantenResults := CalculateShantenWithImproves14(27, 27, MustStrToTiles34(tiles), nil, false)
+	tiles = "2335578899m 5677p"
+	leftTiles34 := InitLeftTiles34WithTiles34(MustStrToTiles34("7777m"))
+	shanten, results, incShantenResults := CalculateShantenWithImproves14(27, 27, MustStrToTiles34(tiles), leftTiles34, false)
 	t.Log(NumberToChineseShanten(shanten))
 	for _, result := range results {
 		t.Log(result)
