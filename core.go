@@ -76,6 +76,9 @@ type DataParser interface {
 	IsRoundWin() bool
 	ParseRoundWin() (whos []int, points []int)
 
+	// 是否流局
+	//IsRyuukyoku() bool
+
 	// 这一项放在末尾处理
 	// 杠宝牌（IsNewDora 对于雀魂来说恒为 false，见 ParseSelfDraw ParseDiscard ParseOpen）
 	// kanDoraIndicator: 0-33

@@ -61,7 +61,7 @@ func Test_tenhou_analysis(t *testing.T) {
 	//
 	startLo := 9131
 
-	tenhouRoundData := &tenhouRoundData{}
+	tenhouRoundData := &tenhouRoundData{isRoundEnd: true}
 	tenhouRoundData.roundData = newRoundData(tenhouRoundData, 0, 0)
 
 	for lo, line := range strings.Split(string(logData), "\n")[startLo-1:] {

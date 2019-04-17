@@ -91,8 +91,19 @@ func (h *mjHandler) runAnalysisTenhouMessageTask() {
 			continue
 		}
 
+		// FIX: 如果在 isRoundEnd 为 true 时收到了 IsSelfDraw()，则（等待收到 INIT）将其放入后面再解析
+		if h.tenhouRoundData.isRoundEnd {
+			if isTenhouSelfDraw(d.Tag) {
+				time.Sleep(100 * time.Millisecond)
+				h.tenhouMessageQueue <- msg
+				continue
+			}
+		}
+
 		originJSON := string(msg)
-		h.log.Info(originJSON)
+		if h.log != nil {
+			h.log.Info(originJSON)
+		}
 
 		// 登录验证通过
 		if d.Tag == "HELO" {
@@ -135,7 +146,9 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 		}
 
 		originJSON := string(msg)
-		h.log.Info(originJSON)
+		if h.log != nil {
+			h.log.Info(originJSON)
+		}
 
 		// 登录验证通过
 		if d.AccountID > 0 && h.majsoulRoundData.accountID != d.AccountID {
@@ -184,7 +197,7 @@ func runServer(isHTTPS bool) {
 		log: e.Logger,
 
 		tenhouMessageQueue:  make(chan []byte, 100),
-		tenhouRoundData:     &tenhouRoundData{},
+		tenhouRoundData:     &tenhouRoundData{isRoundEnd: true},
 		majsoulMessageQueue: make(chan []byte, 100),
 		majsoulRoundData:    &majsoulRoundData{accountID: -1},
 	}

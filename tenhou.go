@@ -91,6 +91,7 @@ type tenhouRoundData struct {
 	originJSON string
 	username   string
 	msg        *tenhouMessage
+	isRoundEnd bool // 某人和牌或流局，初始化为 true
 }
 
 //func (d *tenhouRoundData) mergeCachedTile() {
@@ -199,6 +200,11 @@ func (d *tenhouRoundData) GetMessage() string {
 }
 
 func (d *tenhouRoundData) CheckMessage() bool {
+	if d.msg.Tag == "AGARI" || d.msg.Tag == "RYUUKYOKU" {
+		d.isRoundEnd = true
+	} else if d.IsInit() {
+		d.isRoundEnd = false
+	}
 	return true
 }
 
@@ -223,8 +229,12 @@ func (d *tenhouRoundData) ParseInit() (roundNumber int, dealer int, doraIndicato
 
 var _selfDrawReg = regexp.MustCompile("^T[0-9]{1,3}$")
 
+func isTenhouSelfDraw(tag string) bool {
+	return _selfDrawReg.MatchString(tag)
+}
+
 func (d *tenhouRoundData) IsSelfDraw() bool {
-	return _selfDrawReg.MatchString(d.msg.Tag)
+	return isTenhouSelfDraw(d.msg.Tag)
 }
 
 func (d *tenhouRoundData) ParseSelfDraw() (tile int, kanDoraIndicator int) {
