@@ -100,7 +100,10 @@ func (h *mjHandler) runAnalysisTenhouMessageTask() {
 			if err != nil {
 				fmt.Println(err)
 			}
-			fmt.Printf("%s 登录成功\n", username)
+			if username != h.tenhouRoundData.username {
+				fmt.Printf("%s 登录成功\n", username)
+				h.tenhouRoundData.username = username
+			}
 		}
 
 		h.tenhouRoundData.msg = &d

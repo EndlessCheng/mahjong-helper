@@ -89,6 +89,7 @@ type tenhouRoundData struct {
 	*roundData
 
 	originJSON string
+	username   string
 	msg        *tenhouMessage
 }
 
@@ -279,11 +280,17 @@ func (d *tenhouRoundData) IsFuriten() bool {
 }
 
 func (d *tenhouRoundData) IsRoundWin() bool {
-	return false
+	return d.msg.Tag == "AGARI"
 }
 
 func (d *tenhouRoundData) ParseRoundWin() (whos []int, points []int) {
-	return
+	who, _ := strconv.Atoi(d.msg.Who)
+	splits := strings.Split(d.msg.Ten, ",")
+	if len(splits) < 2 {
+		return
+	}
+	point, _ := strconv.Atoi(splits[1])
+	return []int{who}, []int{point}
 }
 
 func (d *tenhouRoundData) IsNewDora() bool {
