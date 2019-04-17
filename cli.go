@@ -231,9 +231,9 @@ func printWaitsWithImproves13_twoRows(result13 *util.WaitsWithImproves13, discar
 }
 
 /*
-4[ 4.56] 切 8饼 => 44.50% 参考和率[ 4 改良] [7p 7s]
+4[ 4.56] 切 8饼 => 44.50% 参考和率[ 4 改良] [7p 7s] [振听]
 
-31[33.58] 切7索 => 5.23听牌数 [16改良] [6789p 56789s]
+31[33.58] 切7索 => 5.23听牌数 [16改良] [6789p 56789s] [可能振听]
 
 48[50.64] 切5饼 => 24.25一向听进张 [12改良] [123456789p 56789s]
 
@@ -325,6 +325,16 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 
 	// 打印进张类型
 	fmt.Print(util.TilesToStrWithBracket(waitTiles))
+
+	// 打印振听提示
+	if result13.FuritenRate > 0 {
+		fmt.Print(" ")
+		if result13.FuritenRate < 1 {
+			color.New(color.FgHiYellow).Printf("[可能振听]")
+		} else {
+			color.New(color.FgHiRed).Printf("[振听]")
+		}
+	}
 
 	fmt.Println()
 }

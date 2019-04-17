@@ -21,19 +21,19 @@ func _printIncShantenResults14(shanten int, incShantenResults14 util.WaitsWithIm
 	}
 }
 
-func analysisTiles34(roundWindTile34 int, selfWindTile34 int, tiles34 []int, leftTiles34 []int, isOpen bool) error {
-	humanTiles := util.Tiles34ToStr(tiles34)
+func analysisTiles34(playerInfo *util.PlayerInfo) error {
+	humanTiles := util.Tiles34ToStr(playerInfo.Tiles34)
 	fmt.Println(humanTiles)
 	fmt.Println(strings.Repeat("=", len(humanTiles)))
 
-	countOfTiles := util.CountOfTiles34(tiles34)
+	countOfTiles := util.CountOfTiles34(playerInfo.Tiles34)
 	switch countOfTiles % 3 {
 	case 1:
-		result := util.CalculateShantenWithImproves13(roundWindTile34, selfWindTile34, tiles34, leftTiles34, isOpen)
+		result := util.CalculateShantenWithImproves13(playerInfo)
 		fmt.Println(util.NumberToChineseShanten(result.Shanten) + "：")
 		printWaitsWithImproves13_oneRow(result, -1, nil)
 	case 2:
-		shanten, results14, incShantenResults14 := util.CalculateShantenWithImproves14(roundWindTile34, selfWindTile34, tiles34, leftTiles34, isOpen)
+		shanten, results14, incShantenResults14 := util.CalculateShantenWithImproves14(playerInfo)
 
 		if shanten == -1 {
 			color.HiRed("【已胡牌】")
@@ -58,19 +58,19 @@ func analysisTiles34(roundWindTile34 int, selfWindTile34 int, tiles34 []int, lef
 	return nil
 }
 
-func analysisMeld(roundWindTile34 int, selfWindTile34 int, tiles34 []int, leftTiles34 []int, targetTile34 int, allowChi bool) {
+func analysisMeld(playerInfo *util.PlayerInfo, targetTile34 int, allowChi bool) {
 	// 原始手牌分析
-	isOpen := util.CountOfTiles34(tiles34) < 13
-	result := util.CalculateShantenWithImproves13(roundWindTile34, selfWindTile34, tiles34, leftTiles34, isOpen)
+	playerInfo.IsOpen = util.CountOfTiles34(playerInfo.Tiles34) < 13
+	result := util.CalculateShantenWithImproves13(playerInfo)
 
 	// 副露分析
-	shanten, results14, incShantenResults14 := util.CalculateMeld(roundWindTile34, selfWindTile34, tiles34, targetTile34, allowChi, leftTiles34)
+	shanten, results14, incShantenResults14 := util.CalculateMeld(playerInfo, targetTile34, allowChi)
 
 	if len(results14) == 0 && len(incShantenResults14) == 0 {
 		return
 	}
 
-	raw := util.Tiles34ToStr(tiles34) + " + " + util.Tile34ToStr(targetTile34) + "?"
+	raw := util.Tiles34ToStr(playerInfo.Tiles34) + " + " + util.Tile34ToStr(targetTile34) + "?"
 	fmt.Println(raw)
 	fmt.Println(strings.Repeat("=", len(raw)))
 
@@ -118,7 +118,7 @@ func analysisHumanTiles(humanTiles string) (tiles34 []int, err error) {
 			return
 		}
 
-		analysisMeld(27, 27, tiles34, nil, targetTile34, true)
+		analysisMeld(util.NewSimplePlayerInfo(tiles34, true), targetTile34, true)
 		return
 	}
 
@@ -127,6 +127,6 @@ func analysisHumanTiles(humanTiles string) (tiles34 []int, err error) {
 		return
 	}
 
-	err = analysisTiles34(27, 27, tiles34, nil, false)
+	err = analysisTiles34(util.NewSimplePlayerInfo(tiles34, false))
 	return
 }

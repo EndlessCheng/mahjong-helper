@@ -496,7 +496,9 @@ func CalculateShantenWithImproves14(playerInfo *PlayerInfo) (shanten int, waitsW
 			continue
 		}
 		tiles34[i]-- // 切牌
+		playerInfo.DiscardTiles = append(playerInfo.DiscardTiles, i)
 		result13 := CalculateShantenWithImproves13(playerInfo)
+		playerInfo.DiscardTiles = playerInfo.DiscardTiles[:len(playerInfo.DiscardTiles)-1]
 		r := &WaitsWithImproves14{
 			Result13:    result13,
 			DiscardTile: i,

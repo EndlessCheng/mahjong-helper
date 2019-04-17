@@ -88,6 +88,20 @@ type DataParser interface {
 
 //
 
+// 负数变正数
+func normalDiscardTiles(discardTiles []int) []int {
+	newD := make([]int, len(discardTiles))
+	copy(newD, discardTiles)
+	for i, discardTile := range newD {
+		if discardTile < 0 {
+			newD[i] = ^discardTile
+		}
+	}
+	return newD
+}
+
+//
+
 type playerInfo struct {
 	name string // 自家 下家 对家 上家
 
@@ -272,19 +286,13 @@ func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
 
 		// 收集安牌
 		safeTiles34 := make([]bool, 34)
-		for _, tile := range player.discardTiles {
+		for _, tile := range normalDiscardTiles(player.discardTiles) {
 			// 该玩家的舍牌
-			if tile < 0 {
-				tile = ^tile
-			}
 			safeTiles34[tile] = true
 		}
 		if player.reachTileAtGlobal != -1 {
 			// 立直后其他家切出的牌
-			for _, tile := range d.globalDiscardTiles[player.reachTileAtGlobal:] {
-				if tile < 0 {
-					tile = ^tile
-				}
+			for _, tile := range normalDiscardTiles(d.globalDiscardTiles[player.reachTileAtGlobal:]) {
 				safeTiles34[tile] = true
 			}
 		} else {
@@ -388,7 +396,14 @@ func (d *roundData) analysis() error {
 		}
 
 		if len(hands) == 14 {
-			return analysisTiles34(d.roundWindTile, d.players[0].selfWindTile, d.counts, d.leftCounts, false)
+			return analysisTiles34(&util.PlayerInfo{
+				d.roundWindTile,
+				d.players[0].selfWindTile,
+				d.counts,
+				normalDiscardTiles(d.players[0].discardTiles),
+				d.leftCounts,
+				false,
+			})
 		}
 	case d.parser.IsOpen():
 		// 某家鸣牌（含暗杠、加杠）
@@ -475,7 +490,14 @@ func (d *roundData) analysis() error {
 		// 何切
 		// TODO: 根据是否听牌/一向听、打点、巡目、和率等进行攻守判断
 		isOpen := len(d.players[0].melds) > 0
-		return analysisTiles34(d.roundWindTile, d.players[0].selfWindTile, d.counts, d.leftCounts, isOpen)
+		return analysisTiles34(&util.PlayerInfo{
+			d.roundWindTile,
+			d.players[0].selfWindTile,
+			d.counts,
+			normalDiscardTiles(d.players[0].discardTiles),
+			d.leftCounts,
+			isOpen,
+		})
 	case d.parser.IsDiscard():
 		who, tile, isTsumogiri, isReach, canBeMeld, kanDoraIndicator := d.parser.ParseDiscard()
 
@@ -547,8 +569,16 @@ func (d *roundData) analysis() error {
 		// 若能副露，计算何切
 		if canBeMeld {
 			// TODO: 消除海底/避免河底/型听提醒
+			isOpen := len(d.players[0].melds) > 0
 			allowChi := who == 3
-			analysisMeld(d.roundWindTile, d.players[0].selfWindTile, d.counts, d.leftCounts, tile, allowChi)
+			analysisMeld(&util.PlayerInfo{
+				d.roundWindTile,
+				d.players[0].selfWindTile,
+				d.counts,
+				normalDiscardTiles(d.players[0].discardTiles),
+				d.leftCounts,
+				isOpen,
+			}, tile, allowChi)
 		}
 	case d.parser.IsRoundWin():
 		if !debugMode {

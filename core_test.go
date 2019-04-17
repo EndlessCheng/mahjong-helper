@@ -59,7 +59,7 @@ func Test_tenhou_analysis(t *testing.T) {
 	}{}
 
 	//
-	startLo := 9131
+	startLo := 10274
 
 	tenhouRoundData := &tenhouRoundData{isRoundEnd: true}
 	tenhouRoundData.roundData = newRoundData(tenhouRoundData, 0, 0)
