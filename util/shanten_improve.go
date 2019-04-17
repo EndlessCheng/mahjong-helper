@@ -83,8 +83,8 @@ type WaitsWithImproves13 struct {
 	// 若已听牌，则该值为当前手牌和率
 	AvgAgariRate float64
 
-	// 是否有振听可能（一向听和听牌时）
-	MayFuriten bool
+	// 振听可能率（一向听和听牌时）
+	FuritenRate float64
 
 	// TODO: 役种提醒
 	// TODO: 赤牌改良提醒
@@ -138,8 +138,12 @@ func (r *WaitsWithImproves13) String() string {
 	}
 	if r.Shanten >= 0 && r.Shanten <= 1 {
 		s += fmt.Sprintf("（%.2f%% 参考和率）", r.AvgAgariRate)
-		if r.MayFuriten {
-			s += "[可能振听]"
+		if r.FuritenRate > 0 {
+			if r.FuritenRate < 1 {
+				s += "[可能振听]"
+			} else {
+				s += "[振听]"
+			}
 		}
 	}
 	return s
@@ -329,8 +333,11 @@ func CalculateShantenWithImproves13(playerInfo *PlayerInfo) (r *WaitsWithImprove
 	if shanten13 <= 1 {
 		for _, discardTile := range playerInfo.DiscardTiles {
 			if _, ok := waits[discardTile]; ok {
-				r.MayFuriten = true
-				break
+				r.FuritenRate = 0.5 // TODO: 待完善
+				if shanten13 == 0 {
+					// 听牌时，若听的牌在舍牌中，则构成振听
+					r.FuritenRate = 1
+				}
 			}
 		}
 	}

@@ -52,7 +52,7 @@ func TestCalculateShantenWithImproves13Closed(t *testing.T) {
 			continue
 		}
 		playerInfo := NewSimplePlayerInfo(tiles34, false)
-		playerInfo.DiscardTiles = []int{12}
+		playerInfo.DiscardTiles = []int{MustStrToTile34("4s")}
 		result := CalculateShantenWithImproves13(playerInfo)
 		t.Log(tiles, "=\n"+result.String())
 	}
