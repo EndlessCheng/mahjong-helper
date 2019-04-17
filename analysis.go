@@ -112,8 +112,12 @@ func analysisHumanTiles(humanTiles string) (tiles34 []int, err error) {
 			return
 		}
 
+		rawTargetTile := strings.TrimSpace(splits[1])
+		if len(rawTargetTile) > 2 {
+			rawTargetTile = rawTargetTile[:2]
+		}
 		var targetTile34 int
-		targetTile34, err = util.StrToTile34(splits[1])
+		targetTile34, err = util.StrToTile34(rawTargetTile)
 		if err != nil {
 			return
 		}
