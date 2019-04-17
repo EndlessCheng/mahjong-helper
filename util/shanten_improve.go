@@ -6,6 +6,30 @@ import (
 	"math"
 )
 
+type PlayerInfo struct {
+	RoundWindTile34 int   // 场风
+	SelfWindTile34  int   // 自风
+	Tiles34         []int // 手牌
+	DiscardTiles    []int // 注意初始化的时候把负数调整成正的！
+	LeftTiles34     []int // 剩余牌
+	IsOpen          bool  // 是否鸣牌
+	//Melds           [][]int // 鸣牌信息
+}
+
+func NewSimplePlayerInfo(tiles34 []int, isOpen bool) *PlayerInfo {
+	return &PlayerInfo{
+		RoundWindTile34: 27,
+		SelfWindTile34:  27,
+		Tiles34:         tiles34,
+		LeftTiles34:     InitLeftTiles34WithTiles34(tiles34),
+		IsOpen:          isOpen,
+	}
+}
+
+func (pi *PlayerInfo) FillLeftTiles34() {
+	pi.LeftTiles34 = InitLeftTiles34WithTiles34(pi.Tiles34)
+}
+
 // map[改良牌]进张（选择进张数最大的）
 type Improves map[int]Waits
 
@@ -27,6 +51,8 @@ type WaitsWithImproves13 struct {
 	Shanten int
 
 	// 进张：摸到这张牌能让向听数前进
+	// 考虑了剩余枚数
+	// 若某个进张 4 枚都可见，则该进张的 value 值为 0
 	Waits Waits
 
 	// TODO: 鸣牌进张：他家打出这张牌，可以鸣牌，且能让向听数前进
@@ -56,6 +82,9 @@ type WaitsWithImproves13 struct {
 	// 向听前进后，若听牌，其最大和率的加权均值
 	// 若已听牌，则该值为当前手牌和率
 	AvgAgariRate float64
+
+	// 是否有振听可能（一向听和听牌时）
+	MayFuriten bool
 
 	// TODO: 役种提醒
 	// TODO: 赤牌改良提醒
@@ -109,6 +138,9 @@ func (r *WaitsWithImproves13) String() string {
 	}
 	if r.Shanten >= 0 && r.Shanten <= 1 {
 		s += fmt.Sprintf("（%.2f%% 参考和率）", r.AvgAgariRate)
+		if r.MayFuriten {
+			s += "[可能振听]"
+		}
 	}
 	return s
 }
@@ -170,7 +202,7 @@ func CalculateShantenAndWaits13(tiles34 []int, leftTiles34 []int, isOpen bool) (
 		//	continue
 		//}
 
-		if leftTiles34[i] == 0 {
+		if tiles34[i] == 4 {
 			// 无法摸到这张牌
 			continue
 		}
@@ -179,6 +211,7 @@ func CalculateShantenAndWaits13(tiles34 []int, leftTiles34 []int, isOpen bool) (
 		tiles34[i]++
 		if newShanten := CalculateShanten(tiles34, isOpen); newShanten < shanten {
 			// 向听前进了，则换的这张牌为进张，进张数即剩余枚数
+			// 有可能为 0，但这对于判断振听是有帮助的，所以记录
 			waits[i] = leftTiles34[i]
 		}
 		tiles34[i]--
@@ -188,11 +221,14 @@ func CalculateShantenAndWaits13(tiles34 []int, leftTiles34 []int, isOpen bool) (
 }
 
 // 1/4/7/10/13 张牌，计算向听数、进张、改良等（考虑了剩余枚数）
-func CalculateShantenWithImproves13(roundWindTile34 int, selfWindTile34 int, tiles34 []int, leftTiles34 []int, isOpen bool) (r *WaitsWithImproves13) {
-	if len(leftTiles34) == 0 {
-		leftTiles34 = InitLeftTiles34WithTiles34(tiles34)
+func CalculateShantenWithImproves13(playerInfo *PlayerInfo) (r *WaitsWithImproves13) {
+	if len(playerInfo.LeftTiles34) == 0 {
+		playerInfo.FillLeftTiles34()
 	}
 
+	tiles34 := playerInfo.Tiles34
+	leftTiles34 := playerInfo.LeftTiles34
+	isOpen := playerInfo.IsOpen
 	shanten13, waits := CalculateShantenAndWaits13(tiles34, leftTiles34, isOpen)
 	waitsCount := waits.AllCount()
 
@@ -233,7 +269,7 @@ func CalculateShantenWithImproves13(roundWindTile34 int, selfWindTile34 int, til
 					// 听牌一般切和率最高的，TODO: 除非打点更高
 					// TODO: add selfDiscards
 					if newShanten13 == 0 {
-						maxAgariRate = math.Max(maxAgariRate, CalculateAgariRate(newWaits, nil))
+						maxAgariRate = math.Max(maxAgariRate, CalculateAgariRate(newWaits, playerInfo.DiscardTiles))
 					}
 				}
 				tiles34[j]++
@@ -270,14 +306,14 @@ func CalculateShantenWithImproves13(roundWindTile34 int, selfWindTile34 int, til
 	avgAgariRate /= float64(waitsCount)
 	if shanten13 == 0 {
 		// TODO: add selfDiscards
-		avgAgariRate = CalculateAgariRate(waits, nil)
+		avgAgariRate = CalculateAgariRate(waits, playerInfo.DiscardTiles)
 	}
 
 	_tiles34 := make([]int, 34)
 	copy(_tiles34, tiles34)
 	r = &WaitsWithImproves13{
-		RoundWindTile34: roundWindTile34,
-		SelfWindTile34:  selfWindTile34,
+		RoundWindTile34: playerInfo.RoundWindTile34,
+		SelfWindTile34:  playerInfo.SelfWindTile34,
 		Tiles34:         _tiles34,
 		LeftTiles34:     leftTiles34,
 		Shanten:         shanten13,
@@ -287,6 +323,16 @@ func CalculateShantenWithImproves13(roundWindTile34 int, selfWindTile34 int, til
 		ImproveWayCount:          improveWayCount,
 		AvgImproveWaitsCount:     float64(waitsCount),
 		AvgAgariRate:             avgAgariRate,
+	}
+
+	// 对于听牌及一向听，判断是否有振听可能
+	if shanten13 <= 1 {
+		for _, discardTile := range playerInfo.DiscardTiles {
+			if _, ok := waits[discardTile]; ok {
+				r.MayFuriten = true
+				break
+			}
+		}
 	}
 
 	// 分析
@@ -430,19 +476,20 @@ func (l WaitsWithImproves14List) addOpenTile(openTiles []int) {
 }
 
 // 2/5/8/11/14 张牌，计算向听数、进张、改良、向听倒退等
-func CalculateShantenWithImproves14(roundWindTile34 int, selfWindTile34 int, tiles34 []int, leftTiles34 []int, isOpen bool) (shanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
-	if len(leftTiles34) == 0 {
-		leftTiles34 = InitLeftTiles34WithTiles34(tiles34)
+func CalculateShantenWithImproves14(playerInfo *PlayerInfo) (shanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
+	if len(playerInfo.LeftTiles34) == 0 {
+		playerInfo.FillLeftTiles34()
 	}
 
-	shanten = CalculateShanten(tiles34, isOpen)
+	tiles34 := playerInfo.Tiles34
+	shanten = CalculateShanten(tiles34, playerInfo.IsOpen)
 
 	for i := 0; i < 34; i++ {
 		if tiles34[i] == 0 {
 			continue
 		}
 		tiles34[i]-- // 切牌
-		result13 := CalculateShantenWithImproves13(roundWindTile34, selfWindTile34, tiles34, leftTiles34, isOpen)
+		result13 := CalculateShantenWithImproves13(playerInfo)
 		r := &WaitsWithImproves14{
 			Result13:    result13,
 			DiscardTile: i,
@@ -517,17 +564,19 @@ func calculateMeldShanten(tiles34 []int, tile int, allowChi bool) (minShanten in
 //}
 //}
 
-func CalculateMeld(roundWindTile34 int, selfWindTile34 int, tiles34 []int, tile int, allowChi bool, leftTiles34 []int) (shanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
-	if len(leftTiles34) == 0 {
-		leftTiles34 = InitLeftTiles34WithTiles34(tiles34)
+func CalculateMeld(playerInfo *PlayerInfo, tile int, allowChi bool) (shanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
+	if len(playerInfo.LeftTiles34) == 0 {
+		playerInfo.FillLeftTiles34()
 	}
 
+	tiles34 := playerInfo.Tiles34
 	shanten, combinations, _ := calculateMeldShanten(tiles34, tile, allowChi)
 
+	playerInfo.IsOpen = true
 	for _, c := range combinations {
 		tiles34[c[0]]--
 		tiles34[c[1]]--
-		_shanten, _waitsWithImproves, _incShantenResults := CalculateShantenWithImproves14(roundWindTile34, selfWindTile34, tiles34, leftTiles34, true)
+		_shanten, _waitsWithImproves, _incShantenResults := CalculateShantenWithImproves14(playerInfo)
 		tiles34[c[0]]++
 		tiles34[c[1]]++
 

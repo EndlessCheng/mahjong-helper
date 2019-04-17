@@ -18,7 +18,7 @@ var (
 	honorTileAgariTable = [3]float64{47.5, 58.0, 49.5}
 )
 
-// selfDiscards: 自家舍牌，用于分析骗筋时的和率
+// TODO: selfDiscards: 自家舍牌，用于分析骗筋时的和率
 func CalculateAgariRate(waits Waits, selfDiscards []int) float64 {
 	agariRate := 0.0
 	for tile, left := range waits {

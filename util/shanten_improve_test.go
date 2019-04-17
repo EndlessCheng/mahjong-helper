@@ -37,20 +37,23 @@ func TestCalculateShantenWithImproveOpen(t *testing.T) {
 
 func TestCalculateShantenWithImproves13Closed(t *testing.T) {
 	for _, tiles := range []string{
-		//"11357m 13579p 135s",
-		//"123456789m 1135s",
-		//"123456789m 1134s",
-		//"123456789m 1234z",
-		//"3m 12668p 5678s 222z",
-		//"6m 12668p 5678s 222z",
+		"11357m 13579p 135s",
+		"123456789m 1135s",
+		"123456789m 1134s",
+		"123456789m 1234z",
+		"3m 12668p 5678s 222z",
+		"6m 12668p 5678s 222z",
 		"557m 34789p 26s 111z",
+		"111333555m 23p 23s",
 	} {
 		tiles34 := MustStrToTiles34(tiles)
 		if CountOfTiles34(tiles34) != 13 {
 			t.Error(tiles, "不是13张牌")
 			continue
 		}
-		result := CalculateShantenWithImproves13(27, 27, tiles34, nil, false)
+		playerInfo := NewSimplePlayerInfo(tiles34, false)
+		playerInfo.DiscardTiles = []int{12}
+		result := CalculateShantenWithImproves13(playerInfo)
 		t.Log(tiles, "=\n"+result.String())
 	}
 }
@@ -62,7 +65,7 @@ func TestCalculateShantenWithImproves13Open(t *testing.T) {
 		"5p",
 	} {
 		tiles34 := MustStrToTiles34(tiles)
-		result := CalculateShantenWithImproves13(27, 27, tiles34, nil, true)
+		result := CalculateShantenWithImproves13(NewSimplePlayerInfo(tiles34, true))
 		t.Log(tiles, "=\n"+result.String())
 	}
 }
@@ -86,7 +89,9 @@ func TestCalculateShantenWithImproves14Closed(t *testing.T) {
 	tiles = "57m 3445667p 12399s"
 	tiles = "2335578899m 5677p"
 	leftTiles34 := InitLeftTiles34WithTiles34(MustStrToTiles34("7777m"))
-	shanten, results, incShantenResults := CalculateShantenWithImproves14(27, 27, MustStrToTiles34(tiles), leftTiles34, false)
+	playerInfo := NewSimplePlayerInfo(MustStrToTiles34(tiles), false)
+	playerInfo.LeftTiles34 = leftTiles34
+	shanten, results, incShantenResults := CalculateShantenWithImproves14(playerInfo)
 	t.Log(NumberToChineseShanten(shanten))
 	for _, result := range results {
 		t.Log(result)
@@ -106,16 +111,18 @@ func BenchmarkCalculateShantenWithImproves14Closed(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		// 剪枝前：0.28s
 		// 剪枝后：0.22s
-		CalculateShantenWithImproves14(27, 27, tiles34, nil, false)
+		CalculateShantenWithImproves14(NewSimplePlayerInfo(tiles34, false))
 	}
 }
 
 func TestCalculateShantenWithImproves14Open(t *testing.T) {
 	tiles := "35m"
 	tiles = "13m 456s 778p"
-	left := InitLeftTiles34WithTiles34(MustStrToTiles34(tiles))
-	left[1] = 0
-	shanten, results, incShantenResults := CalculateShantenWithImproves14(27, 27, MustStrToTiles34(tiles), left, true)
+	leftTiles34 := InitLeftTiles34WithTiles34(MustStrToTiles34(tiles))
+	leftTiles34[1] = 0
+	playerInfo := NewSimplePlayerInfo(MustStrToTiles34(tiles), true)
+	playerInfo.LeftTiles34 = leftTiles34
+	shanten, results, incShantenResults := CalculateShantenWithImproves14(playerInfo)
 	t.Log(NumberToChineseShanten(shanten))
 	for _, result := range results {
 		t.Log(result)
@@ -131,7 +138,8 @@ func TestCalculateMeld(t *testing.T) {
 	tiles = "23445667m 11z"
 	tiles = "112356799m 1233z"
 	tiles = "78m 12355p 789s" // ***
-	result := CalculateShantenWithImproves13(27, 27, MustStrToTiles34(tiles), nil, true)
+	tiles34 := MustStrToTiles34(tiles)
+	result := CalculateShantenWithImproves13(NewSimplePlayerInfo(tiles34, true))
 	t.Log("原手牌" + NumberToChineseShanten(result.Shanten))
 	t.Log(result)
 
@@ -139,7 +147,7 @@ func TestCalculateMeld(t *testing.T) {
 	tile = "3m" // "1z"
 	tile = "4m"
 	tile = "4p"
-	shanten, results, incShantenResults := CalculateMeld(27, 27, MustStrToTiles34(tiles), MustStrToTile34(tile), true, nil)
+	shanten, results, incShantenResults := CalculateMeld(NewSimplePlayerInfo(tiles34, true), MustStrToTile34(tile), true)
 	t.Log("鸣牌后" + NumberToChineseShanten(shanten))
 	for _, result := range results {
 		t.Log(result)

@@ -118,6 +118,18 @@ func (w Waits) containHonors() bool {
 //	}
 //}
 
+func isMan(tile int) bool {
+	return tile < 9
+}
+
+func isPin(tile int) bool {
+	return tile >= 9 && tile < 18
+}
+
+func isSou(tile int) bool {
+	return tile >= 18 && tile < 27
+}
+
 //
 
 func CountOfTiles34(tiles34 []int) (count int) {
@@ -135,7 +147,7 @@ func InitLeftTiles34() []int {
 	return leftTiles34
 }
 
-func InitLeftTiles34WithTiles34(tiles34 []int)  []int {
+func InitLeftTiles34WithTiles34(tiles34 []int) []int {
 	leftTiles34 := make([]int, 34)
 	for i, count := range tiles34 {
 		leftTiles34[i] = 4 - count
