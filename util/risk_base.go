@@ -61,22 +61,22 @@ func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, roun
 	for i := 0; i < 3; i++ {
 		for j := 0; j < 3; j++ {
 			t := TileTypeTable[j][sujiSafeTiles27[9*i+j+3]]
-			risk34[9*i+j] = RiskData[turns][t]
+			risk34[9*i+j] = RiskRate[turns][t]
 		}
 		for j := 3; j < 6; j++ {
 			mixSafeTile := sujiSafeTiles27[9*i+j-3]<<1 | sujiSafeTiles27[9*i+j+3]
 			t := TileTypeTable[j][mixSafeTile]
-			risk34[9*i+j] = RiskData[turns][t]
+			risk34[9*i+j] = RiskRate[turns][t]
 		}
 		for j := 6; j < 9; j++ {
 			t := TileTypeTable[j][sujiSafeTiles27[9*i+j-3]]
-			risk34[9*i+j] = RiskData[turns][t]
+			risk34[9*i+j] = RiskRate[turns][t]
 		}
 		// 5断，37视作安牌筋
 		if leftTiles34[9*i+4] == 0 {
 			t := tileTypeSuji37
-			risk34[9*i+2] = RiskData[turns][t]
-			risk34[9*i+6] = RiskData[turns][t]
+			risk34[9*i+2] = RiskRate[turns][t]
+			risk34[9*i+6] = RiskRate[turns][t]
 		}
 	}
 	for i := 27; i < 34; i++ {
@@ -84,7 +84,7 @@ func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, roun
 			// 该玩家的役牌 = 场风/其自风/白/发/中
 			isYakuHai := i == roundWindTile || i == playerWindTile || i >= 31
 			t := HonorTileType[boolToInt(isYakuHai)][leftTiles34[i]-1]
-			risk34[i] = RiskData[turns][t]
+			risk34[i] = RiskRate[turns][t]
 		} else {
 			// 剩余数为0可以视作安牌（只输国士）
 			risk34[i] = 0
@@ -99,15 +99,15 @@ func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, roun
 	for _, ncSafeTile := range ncSafeTile34 {
 		switch ncSafeTile.Tile34 % 9 {
 		case 1, 9:
-			risk34[ncSafeTile.Tile34] = RiskData[turns][tileTypeSuji19]
+			risk34[ncSafeTile.Tile34] = RiskRate[turns][tileTypeSuji19]
 		case 2, 8:
-			risk34[ncSafeTile.Tile34] = RiskData[turns][tileTypeSuji19] * 1.1
+			risk34[ncSafeTile.Tile34] = RiskRate[turns][tileTypeSuji19] * 1.1
 		case 3, 7:
-			risk34[ncSafeTile.Tile34] = RiskData[turns][tileTypeSuji28]
+			risk34[ncSafeTile.Tile34] = RiskRate[turns][tileTypeSuji28]
 		case 4, 6:
-			risk34[ncSafeTile.Tile34] = RiskData[turns][tileTypeDoubleSuji46]
+			risk34[ncSafeTile.Tile34] = RiskRate[turns][tileTypeDoubleSuji46]
 		case 5:
-			risk34[ncSafeTile.Tile34] = RiskData[turns][tileTypeDoubleSuji5]
+			risk34[ncSafeTile.Tile34] = RiskRate[turns][tileTypeDoubleSuji5]
 		}
 	}
 
