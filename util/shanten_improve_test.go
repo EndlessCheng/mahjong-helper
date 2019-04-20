@@ -88,9 +88,10 @@ func TestCalculateShantenWithImproves14Closed(t *testing.T) {
 	tiles = "57m 4455p 12345699s"
 	tiles = "57m 3445667p 12399s"
 	tiles = "2335578899m 5677p"
-	leftTiles34 := InitLeftTiles34WithTiles34(MustStrToTiles34("7777m"))
+	tiles = "123p 3445668m 6799s"
+	//leftTiles34 := InitLeftTiles34WithTiles34(MustStrToTiles34("7777m"))
 	playerInfo := NewSimplePlayerInfo(MustStrToTiles34(tiles), false)
-	playerInfo.LeftTiles34 = leftTiles34
+	//playerInfo.LeftTiles34 = leftTiles34
 	shanten, results, incShantenResults := CalculateShantenWithImproves14(playerInfo)
 	t.Log(NumberToChineseShanten(shanten))
 	for _, result := range results {

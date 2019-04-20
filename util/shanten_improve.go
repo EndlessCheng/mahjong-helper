@@ -88,7 +88,7 @@ type WaitsWithImproves13 struct {
 
 	// TODO: 役种提醒
 	// TODO: 赤牌改良提醒
-	// TODO: 打点均值？
+	// TODO: 打点期望
 }
 
 // waitsCount := float64(r.Waits.AllCount())
@@ -270,8 +270,7 @@ func CalculateShantenWithImproves13(playerInfo *PlayerInfo) (r *WaitsWithImprove
 					if waitsCount := newWaits.AllCount(); waitsCount > nextShantenWaitsCountMap[i] {
 						nextShantenWaitsCountMap[i] = waitsCount
 					}
-					// 听牌一般切和率最高的，TODO: 除非打点更高
-					// TODO: add selfDiscards
+					// 听牌一般切和率最高的，TODO: 除非打点更高，比如说听到 dora 上
 					if newShanten13 == 0 {
 						maxAgariRate = math.Max(maxAgariRate, CalculateAgariRate(newWaits, playerInfo.DiscardTiles))
 					}
@@ -309,7 +308,6 @@ func CalculateShantenWithImproves13(playerInfo *PlayerInfo) (r *WaitsWithImprove
 	}
 	avgAgariRate /= float64(waitsCount)
 	if shanten13 == 0 {
-		// TODO: add selfDiscards
 		avgAgariRate = CalculateAgariRate(waits, playerInfo.DiscardTiles)
 	}
 
@@ -401,7 +399,7 @@ func (l WaitsWithImproves14List) Sort() {
 		// 听牌的话和率优先
 		// TODO: 考虑打点
 		if l[0].Shanten == 0 {
-			if ri.AvgAgariRate != rj.AvgAgariRate {
+			if !Equal(ri.AvgAgariRate, rj.AvgAgariRate) {
 				return ri.AvgAgariRate > rj.AvgAgariRate
 			}
 		}
@@ -411,7 +409,7 @@ func (l WaitsWithImproves14List) Sort() {
 		// 对于一向听，考虑到未听牌之前要听的牌会被他家打出而造成听牌时的枚数降低，所以听牌枚数比和率更重要
 		// 对比当前进张与前进后的进张，在二者乘积相近的情况下（注意这个前提），由于进张越大听牌速度越快，听牌时的进张数也就越接近预期进张数，所以进张越多越好（再次强调是在二者乘积相近的情况下）
 
-		if ri.MixedWaitsScore != rj.MixedWaitsScore {
+		if !Equal(ri.MixedWaitsScore, rj.MixedWaitsScore) {
 			return ri.MixedWaitsScore > rj.MixedWaitsScore
 		}
 
@@ -420,16 +418,16 @@ func (l WaitsWithImproves14List) Sort() {
 			return riWaitsCount > rjWaitsCount
 		}
 
-		if ri.AvgNextShantenWaitsCount != rj.AvgNextShantenWaitsCount {
+		if !Equal(ri.AvgNextShantenWaitsCount, rj.AvgNextShantenWaitsCount) {
 			return ri.AvgNextShantenWaitsCount > rj.AvgNextShantenWaitsCount
 		}
 
 		// shanten == 1
-		if ri.AvgAgariRate != rj.AvgAgariRate {
+		if !Equal(ri.AvgAgariRate, rj.AvgAgariRate) {
 			return ri.AvgAgariRate > rj.AvgAgariRate
 		}
 
-		if ri.AvgImproveWaitsCount != rj.AvgImproveWaitsCount {
+		if !Equal(ri.AvgImproveWaitsCount, rj.AvgImproveWaitsCount) {
 			return ri.AvgImproveWaitsCount > rj.AvgImproveWaitsCount
 		}
 

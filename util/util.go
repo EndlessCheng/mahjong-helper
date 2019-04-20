@@ -67,3 +67,7 @@ func MinInt(a, b int) int {
 	}
 	return b
 }
+
+func Equal(a, b float64) bool {
+	return math.Abs(a-b) < 1e-5
+}
