@@ -398,9 +398,12 @@ func (l WaitsWithImproves14List) Sort() {
 	sort.Slice(l, func(i, j int) bool {
 		ri, rj := l[i].Result13, l[j].Result13
 
-		// 听牌的话直接按照和率排序，TODO: 考虑打点
+		// 听牌的话和率优先
+		// TODO: 考虑打点
 		if l[0].Shanten == 0 {
-			return ri.AvgAgariRate > rj.AvgAgariRate
+			if ri.AvgAgariRate != rj.AvgAgariRate {
+				return ri.AvgAgariRate > rj.AvgAgariRate
+			}
 		}
 
 		// 排序规则：综合评分 - 进张 - 前进后的进张 - 和率 - 改良 - 好牌先走
