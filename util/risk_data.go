@@ -2,6 +2,7 @@ package util
 
 type tileType int8
 
+// 与 RiskRate 的列一一对应
 const (
 	tileTypeNoSuji5 tileType = iota
 	tileTypeNoSuji46
@@ -16,12 +17,12 @@ const (
 	tileTypeSuji19
 	tileTypeDoubleSuji5
 	tileTypeDoubleSuji46
-	tileTypeYakuHaiLeft3  // 字牌-役牌-生牌
-	tileTypeYakuHaiLeft2  // 字牌-役牌-现1枚
-	tileTypeYakuHaiLeft1  // 字牌-役牌-现2枚
-	tileTypeOtaHaiLeft3   // 字牌-客风-生牌
-	tileTypeOtaHaiLeft2   // 字牌-客风-现1枚
-	tileTypeOtaHaiLeft1   // 字牌-客风-现2枚
+	tileTypeYakuHaiLeft3  // 字牌-役牌-剩余3
+	tileTypeYakuHaiLeft2  // 字牌-役牌-剩余2
+	tileTypeYakuHaiLeft1  // 字牌-役牌-剩余1
+	tileTypeOtakazeLeft3  // 字牌-客风-剩余3
+	tileTypeOtakazeLeft2  // 字牌-客风-剩余2
+	tileTypeOtakazeLeft1  // 字牌-客风-剩余1
 )
 
 // [巡目][类型]
@@ -49,6 +50,31 @@ var RiskRate = [][]float64{
 }
 var MaxTurns = len(RiskRate) - 1
 
+// 考虑失点的综合值（参考第9巡的数据）
+var FixedDoraRiskRateMulti = []float64{
+	14.9 / 12.8 * 78 / 58,
+	15.0 / 13.1 * 78 / 58,
+	12.1 / 9.5 * 75 / 56,
+	10.3 / 8.6 * 75 / 54,
+	8.9 / 7.4 * 77 / 53,
+
+	9.7 / 7.4 * 81 / 60,
+	8.9 / 7.2 * 81 / 60,
+	10.4 / 7.9 * 81 / 60,
+	8.0 / 5.5 * 75 / 56,
+	5.5 / 3.9 * 81 / 56,
+	3.5 / 1.8 * 92 / 58,
+	4.1 / 2.2 * 88 / 62,
+	4.1 / 2.3 * 88 / 62,
+
+	5.2 / 4.6 * 96 / 67,
+	2.9 / 1.9 * 96 / 67,
+	1.1 / 0.3 * 96 / 67,
+	5.1 / 4.0 * 92 / 56,
+	3.0 / 1.8 * 92 / 56,
+	0.8 / 0.2 * 92 / 56,
+}
+
 var (
 	// [需要判断危险度的牌号(0-8)][是否有对应的现物(0-1或0-3)]
 	// 123789: 无现物，有现物
@@ -67,7 +93,7 @@ var (
 	}
 	// [是否为役牌(0-1)][剩余数-1]
 	HonorTileType = [][]tileType{
-		{tileTypeOtaHaiLeft1, tileTypeOtaHaiLeft2, tileTypeOtaHaiLeft3, tileTypeOtaHaiLeft3},
-		{tileTypeYakuHaiLeft1, tileTypeYakuHaiLeft2, tileTypeYakuHaiLeft3, tileTypeOtaHaiLeft3},
+		{tileTypeOtakazeLeft1, tileTypeOtakazeLeft2, tileTypeOtakazeLeft3, tileTypeOtakazeLeft3},
+		{tileTypeYakuHaiLeft1, tileTypeYakuHaiLeft2, tileTypeYakuHaiLeft3, tileTypeYakuHaiLeft3},
 	}
 )

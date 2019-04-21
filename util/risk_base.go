@@ -44,15 +44,27 @@ func calcSujiSafeTiles27(safeTiles34 []bool, leftTiles34 []int) []int {
 
 type RiskTiles34 []float64
 
-// 根据巡目（对于对手而言）、现物、立直后通过的牌的、NC，来计算基础铳率
-// 至于早外、Dora、OC 和读牌交给后续的计算
+// 根据巡目（对于对手而言）、现物、立直后通过的牌的、NC、Dora，来计算基础铳率
+// 至于早外、OC 和读牌交给后续的计算
 // turns: 巡目，这里是对于对手而言的，也就是该玩家舍牌的次数
 // safeTiles34: 现物及立直后通过的牌
 // leftTiles34: 各个牌在山中剩余的枚数
 // roundWindTile: 场风
 // playerWindTile: 自风
-func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, roundWindTile int, playerWindTile int) (risk34 RiskTiles34) {
+func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, doraTiles []int, roundWindTile int, playerWindTile int) (risk34 RiskTiles34) {
 	risk34 = make(RiskTiles34, 34)
+
+	// 只对 dora 牌的危险度进行调整（综合了放铳率和失点）
+	// double dora 等的危险度会进一步升高
+	doraMulti := func(tile int, tileType tileType) float64 {
+		multi := 1.0
+		for _, dora := range doraTiles {
+			if tile == dora {
+				multi *= FixedDoraRiskRateMulti[tileType]
+			}
+		}
+		return multi
+	}
 
 	// 生成用来计算筋牌的「安牌」
 	sujiSafeTiles27 := calcSujiSafeTiles27(safeTiles34, leftTiles34)
@@ -60,23 +72,26 @@ func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, roun
 	// TODO: 单独处理宣言牌的筋牌、宣言牌的同色牌的铳率
 	for i := 0; i < 3; i++ {
 		for j := 0; j < 3; j++ {
-			t := TileTypeTable[j][sujiSafeTiles27[9*i+j+3]]
-			risk34[9*i+j] = RiskRate[turns][t]
+			idx := 9*i + j
+			t := TileTypeTable[j][sujiSafeTiles27[idx+3]]
+			risk34[idx] = RiskRate[turns][t] * doraMulti(idx, t)
 		}
 		for j := 3; j < 6; j++ {
-			mixSafeTile := sujiSafeTiles27[9*i+j-3]<<1 | sujiSafeTiles27[9*i+j+3]
+			idx := 9*i + j
+			mixSafeTile := sujiSafeTiles27[idx-3]<<1 | sujiSafeTiles27[idx+3]
 			t := TileTypeTable[j][mixSafeTile]
-			risk34[9*i+j] = RiskRate[turns][t]
+			risk34[idx] = RiskRate[turns][t] * doraMulti(idx, t)
 		}
 		for j := 6; j < 9; j++ {
-			t := TileTypeTable[j][sujiSafeTiles27[9*i+j-3]]
-			risk34[9*i+j] = RiskRate[turns][t]
+			idx := 9*i + j
+			t := TileTypeTable[j][sujiSafeTiles27[idx-3]]
+			risk34[idx] = RiskRate[turns][t] * doraMulti(idx, t)
 		}
 		// 5断，37视作安牌筋
 		if leftTiles34[9*i+4] == 0 {
 			t := tileTypeSuji37
-			risk34[9*i+2] = RiskRate[turns][t]
-			risk34[9*i+6] = RiskRate[turns][t]
+			risk34[9*i+2] = RiskRate[turns][t] * doraMulti(9*i+2, t)
+			risk34[9*i+6] = RiskRate[turns][t] * doraMulti(9*i+6, t)
 		}
 	}
 	for i := 27; i < 34; i++ {
@@ -84,7 +99,7 @@ func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, roun
 			// 该玩家的役牌 = 场风/其自风/白/发/中
 			isYakuHai := i == roundWindTile || i == playerWindTile || i >= 31
 			t := HonorTileType[boolToInt(isYakuHai)][leftTiles34[i]-1]
-			risk34[i] = RiskRate[turns][t]
+			risk34[i] = RiskRate[turns][t] * doraMulti(i, t)
 		} else {
 			// 剩余数为0可以视作安牌（只输国士）
 			risk34[i] = 0
@@ -97,17 +112,23 @@ func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, roun
 	// 456和两筋差不多（存疑？）
 	ncSafeTile34 := CalcNCSafeTiles(leftTiles34)
 	for _, ncSafeTile := range ncSafeTile34 {
-		switch ncSafeTile.Tile34 % 9 {
+		idx := ncSafeTile.Tile34
+		switch idx % 9 {
 		case 1, 9:
-			risk34[ncSafeTile.Tile34] = RiskRate[turns][tileTypeSuji19]
+			t := tileTypeSuji19
+			risk34[idx] = RiskRate[turns][t] * doraMulti(idx, t)
 		case 2, 8:
-			risk34[ncSafeTile.Tile34] = RiskRate[turns][tileTypeSuji19] * 1.1
+			t := tileTypeSuji19
+			risk34[idx] = RiskRate[turns][t] * 1.1 * doraMulti(idx, t)
 		case 3, 7:
-			risk34[ncSafeTile.Tile34] = RiskRate[turns][tileTypeSuji28]
+			t := tileTypeSuji28
+			risk34[idx] = RiskRate[turns][t] * doraMulti(idx, t)
 		case 4, 6:
-			risk34[ncSafeTile.Tile34] = RiskRate[turns][tileTypeDoubleSuji46]
+			t := tileTypeDoubleSuji46
+			risk34[idx] = RiskRate[turns][t] * doraMulti(idx, t)
 		case 5:
-			risk34[ncSafeTile.Tile34] = RiskRate[turns][tileTypeDoubleSuji5]
+			t := tileTypeDoubleSuji5
+			risk34[idx] = RiskRate[turns][t] * doraMulti(idx, t)
 		}
 	}
 

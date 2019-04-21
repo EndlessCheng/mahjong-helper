@@ -259,6 +259,34 @@ func (d *roundData) newDora(kanDoraIndicator int) {
 	d.descLeftCounts(kanDoraIndicator)
 }
 
+// 根据 dora 指示牌计算出 dora
+func (d *roundData) doraList() (dl []int) {
+	for _, doraIndicator := range d.doraIndicators {
+		var dora int
+		if doraIndicator < 27 {
+			if doraIndicator%9 < 8 {
+				dora = doraIndicator + 1
+			} else {
+				dora = doraIndicator - 8
+			}
+		} else if doraIndicator < 31 {
+			if doraIndicator < 30 {
+				dora = doraIndicator + 1
+			} else {
+				dora = 27
+			}
+		} else {
+			if doraIndicator < 33 {
+				dora = doraIndicator + 1
+			} else {
+				dora = 31
+			}
+		}
+		dl = append(dl, dora)
+	}
+	return
+}
+
 func (d *roundData) printDiscards() {
 	for i := len(d.players) - 1; i >= 1; i-- {
 		d.players[i].printDiscards()
@@ -318,7 +346,7 @@ func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
 
 		}
 
-		risk34 := util.CalculateRiskTiles34(turns, safeTiles34, d.leftCounts, d.roundWindTile, player.selfWindTile)
+		risk34 := util.CalculateRiskTiles34(turns, safeTiles34, d.leftCounts, d.doraList(), d.roundWindTile, player.selfWindTile)
 		leftNoSujiTiles := util.CalculateLeftNoSujiTiles(safeTiles34, d.leftCounts)
 		riList[who] = riskInfo{
 			riskTable:       riskTable(risk34),
