@@ -335,6 +335,8 @@ func CalculateShantenWithImproves13(playerInfo *PlayerInfo) (r *WaitsWithImprove
 				if shanten13 == 0 {
 					// 听牌时，若听的牌在舍牌中，则构成振听
 					r.FuritenRate = 1
+					// 修正振听时的和率
+					r.AvgAgariRate *= FuritenAgariMulti
 				}
 			}
 		}
