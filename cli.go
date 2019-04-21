@@ -24,22 +24,19 @@ type handsRisk struct {
 // 34 种牌的危险度
 type riskTable util.RiskTiles34
 
-func (t riskTable) printWithHands(counts []int) {
-	const tab = "   "
-
-	// 打印现物/NC且剩余数=0
-	fmt.Printf(tab)
-	for i, c := range counts {
+func (t riskTable) printWithHands(hands []int, fixedRiskMulti float64) {
+	// 打印铳率=0的牌（现物，或NC且剩余数=0）
+	safeCount := 0
+	for i, c := range hands {
 		if c > 0 && t[i] == 0 {
-			color.New(color.FgHiBlue).Printf(" " + util.MahjongZH[i])
+			fmt.Printf(" " + util.MahjongZH[i])
+			safeCount++
 		}
 	}
 
-	fmt.Println()
-
 	// 打印危险牌，按照铳率排序&高亮
 	handsRisks := []handsRisk{}
-	for i, c := range counts {
+	for i, c := range hands {
 		if c > 0 && t[i] > 0 {
 			handsRisks = append(handsRisks, handsRisk{i, t[i]})
 		}
@@ -47,50 +44,93 @@ func (t riskTable) printWithHands(counts []int) {
 	sort.Slice(handsRisks, func(i, j int) bool {
 		return handsRisks[i].risk < handsRisks[j].risk
 	})
-	fmt.Printf(tab)
-	for _, hr := range handsRisks {
-		color.New(getNumRiskColor(hr.risk)).Printf(" " + util.MahjongZH[hr.tile])
+	if len(handsRisks) > 0 {
+		if safeCount > 0 {
+			fmt.Print(" |")
+		}
+		for _, hr := range handsRisks {
+			// 颜色考虑了听牌率
+			color.New(getNumRiskColor(hr.risk * fixedRiskMulti)).Printf(" " + util.MahjongZH[hr.tile])
+		}
 	}
 }
 
 type riskInfo struct {
+	// 该玩家的听牌率（立直时为 100.0）
+	tenpaiRate float64
+
 	// 各种牌的铳率表
 	riskTable riskTable
 
 	// 剩余无筋 123789
 	// 总计 18 种。剩余无筋牌数量越少，该无筋牌越危险
 	leftNoSujiTiles []int
+
+	// 荣和点数
+	// 仅调试用
+	_ronPoint float64
 }
 
 type riskInfoList []riskInfo
 
-func (ri riskInfoList) printWithHands(counts []int, leftCounts []int) {
+func (l riskInfoList) printWithHands(hands []int, leftCounts []int) {
+	const tenpaiRateLimit = 50.0
+	dangerousPlayerCount := 0
 	// 打印安牌，危险牌
-	printed := false
 	names := []string{"", "下家", "对家", "上家"}
-	for i := len(ri) - 1; i >= 1; i-- {
-		riskTable := ri[i].riskTable
-		if len(riskTable) > 0 {
-			printed = true
-			fmt.Println(names[i] + "安牌:")
-			riskTable.printWithHands(counts)
+	for i := len(l) - 1; i >= 1; i-- {
+		// 听牌率超过 50% 就打印铳率
+		tenpaiRate := l[i].tenpaiRate
+		if len(l[i].riskTable) > 0 && (debugMode || tenpaiRate > tenpaiRateLimit) {
+			dangerousPlayerCount++
+			fmt.Print(names[i] + "安牌:")
+			//if debugMode {
+			//fmt.Printf("(%d*%2.2f%%听牌率)", int(l[i]._ronPoint), l[i].tenpaiRate)
+			//}
+			l[i].riskTable.printWithHands(hands, tenpaiRate/100)
 
 			// 打印无筋数量和种类
-			noSujiInfo := util.TilesToStr(ri[i].leftNoSujiTiles)
-			if len(ri[i].leftNoSujiTiles) == 0 {
+			noSujiInfo := util.TilesToStr(l[i].leftNoSujiTiles)
+			if len(l[i].leftNoSujiTiles) == 0 {
 				noSujiInfo = "非好型听牌/振听"
 			}
-			fmt.Printf(" [%d无筋: %s]", len(ri[i].leftNoSujiTiles), noSujiInfo)
+			if !debugMode {
+				fmt.Printf(" [%d无筋]", len(l[i].leftNoSujiTiles))
+			} else {
+				fmt.Printf(" [%d无筋: %s]", len(l[i].leftNoSujiTiles), noSujiInfo)
+			}
 
 			fmt.Println()
 		}
 	}
 
+	// 若不止一个玩家立直/副露，打印加权综合铳率（考虑了听牌率）
+	mixedPlayers := 0
+	for _, ri := range l[1:] {
+		if ri.tenpaiRate > 0 {
+			mixedPlayers++
+		}
+	}
+	if dangerousPlayerCount > 0 && mixedPlayers > 1 {
+		fmt.Print("综合安牌:")
+		mixedRiskTable := make(riskTable, 34)
+		for i := range mixedRiskTable {
+			mixedRisk := 0.0
+			for _, ri := range l[1:] {
+				_risk := ri.riskTable[i] * ri.tenpaiRate / 100
+				mixedRisk = mixedRisk + _risk - mixedRisk*_risk/100
+			}
+			mixedRiskTable[i] = mixedRisk
+		}
+		mixedRiskTable.printWithHands(hands, 1)
+		fmt.Println()
+	}
+
 	// 打印因 NC OC 产生的安牌
 	// TODO: 重构至其他函数
-	if printed {
-		ncSafeTileList := util.CalcNCSafeTiles(leftCounts).FilterWithHands(counts)
-		ocSafeTileList := util.CalcOCSafeTiles(leftCounts).FilterWithHands(counts)
+	if dangerousPlayerCount > 0 {
+		ncSafeTileList := util.CalcNCSafeTiles(leftCounts).FilterWithHands(hands)
+		ocSafeTileList := util.CalcOCSafeTiles(leftCounts).FilterWithHands(hands)
 		if len(ncSafeTileList) > 0 {
 			fmt.Printf("NC:")
 			for _, safeTile := range ncSafeTileList {

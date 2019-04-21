@@ -18,6 +18,7 @@ var (
 	honorTileAgariTable = [3]float64{47.5, 58.0, 49.5}
 )
 
+// 参考:「統計学」のマージャン戦術
 const FuritenAgariMulti = 0.4706727
 
 // TODO: selfDiscards: 自家舍牌，用于分析骗筋时的和率

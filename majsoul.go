@@ -242,10 +242,10 @@ func (d *majsoulRoundData) IsDiscard() bool {
 	return msg.Moqie != nil
 }
 
-func (d *majsoulRoundData) ParseDiscard() (who int, tile int, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int) {
+func (d *majsoulRoundData) ParseDiscard() (who int, discardTile int, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int) {
 	msg := d.msg
 	who = d.parseWho(*msg.Seat)
-	tile = d.mustParseMajsoulTile(msg.Tile)
+	discardTile = d.mustParseMajsoulTile(msg.Tile)
 	isTsumogiri = *msg.Moqie
 	isReach = *msg.IsLiqi || *msg.IsWliqi
 	canBeMeld = msg.Operation != nil
@@ -275,7 +275,7 @@ func (d *majsoulRoundData) ParseOpen() (who int, meldType int, meldTiles []int, 
 		meldType = meldTypeAnKan
 		calledTile = d.mustParseMajsoulTile(d.normalTiles(msg.Tiles)[0])
 		if d.leftCounts[calledTile] != 4 {
-			// TODO: 改成 panic
+			// TODO: 改成 panic?
 			fmt.Println("暗杠数据解析错误！")
 		}
 		return

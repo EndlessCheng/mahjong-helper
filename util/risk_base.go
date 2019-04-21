@@ -44,7 +44,7 @@ func calcSujiSafeTiles27(safeTiles34 []bool, leftTiles34 []int) []int {
 
 type RiskTiles34 []float64
 
-// 根据巡目（对于对手而言）、现物、立直后通过的牌的、NC、Dora，来计算基础铳率
+// 根据巡目（对于对手而言）、现物、立直后通过的牌、NC、Dora，来计算基础铳率
 // 至于早外、OC 和读牌交给后续的计算
 // turns: 巡目，这里是对于对手而言的，也就是该玩家舍牌的次数
 // safeTiles34: 现物及立直后通过的牌
@@ -150,6 +150,27 @@ func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, dora
 	return
 }
 
+// 对 5 巡前的外侧牌的危险度进行调整
+// 粗略调整为 *0.5
+func (l RiskTiles34) FixWithEarlyOutside(discardTiles []int) RiskTiles34 {
+	for _, dTile := range discardTiles {
+		l[dTile] *= 0.5
+	}
+	return l
+}
+
+func (l RiskTiles34) FixWithGlobalMulti(multi float64) RiskTiles34 {
+	for i := range l {
+		l[i] *= multi
+	}
+	return l
+}
+
+// 根据副露情况对危险度进行修正
+func (l RiskTiles34) FixWithPoint(ronPoint float64) RiskTiles34 {
+	return l.FixWithGlobalMulti(ronPoint / RonPointRiichiHiIppatsu)
+}
+
 // 计算剩余的无筋 123789 牌
 // 总计 18 种。剩余无筋牌数量越少，该无筋牌越危险
 func CalculateLeftNoSujiTiles(safeTiles34 []bool, leftTiles34 []int) (leftNoSujiTiles []int) {
@@ -195,8 +216,6 @@ func CalculateLeftNoSujiTiles(safeTiles34 []bool, leftTiles34 []int) (leftNoSuji
 	return
 }
 
-// TODO: 利用舍牌计算无筋早外
 // TODO:（待定）有早外的半筋（早巡打过8m时，3m的半筋6m）
 // TODO:（待定）利用赤宝牌计算铳率
 // TODO: 宝牌周边牌的危险度要增加一点
-// TODO:（待定）切过5的情况

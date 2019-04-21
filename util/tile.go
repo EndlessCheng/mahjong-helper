@@ -154,3 +154,23 @@ func InitLeftTiles34WithTiles34(tiles34 []int) []int {
 	}
 	return leftTiles34
 }
+
+func OutsideTiles(tile int) (outsideTiles []int) {
+	if tile >= 27 {
+		return
+	}
+	switch tile % 9 {
+	case 1, 2, 3:
+		for i := tile - tile%9; i < tile; i++ {
+			outsideTiles = append(outsideTiles, i)
+		}
+	case 4:
+		// 早巡切5，37 比较安全（TODO 还有片筋A 46）
+		outsideTiles = append(outsideTiles, tile-2, tile+2)
+	case 5, 6, 7:
+		for i := tile - tile%9 + 8; i > tile; i-- {
+			outsideTiles = append(outsideTiles, i)
+		}
+	}
+	return
+}

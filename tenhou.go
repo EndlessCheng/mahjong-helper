@@ -250,11 +250,11 @@ func (d *tenhouRoundData) IsDiscard() bool {
 	return _discardReg.MatchString(d.msg.Tag)
 }
 
-func (d *tenhouRoundData) ParseDiscard() (who int, tile int, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int) {
+func (d *tenhouRoundData) ParseDiscard() (who int, discardTile int, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int) {
 	// D=自家, e/E=下家, f/F=对家, g/G=上家
 	who = int(lower(d.msg.Tag[0]) - 'd')
 	rawTile := d.msg.Tag[1:]
-	tile = d._parseTenhouTile(rawTile)
+	discardTile = d._parseTenhouTile(rawTile)
 	if d.msg.Tag[0] != 'D' {
 		isTsumogiri = d.msg.Tag[0] >= 'a'
 		canBeMeld = d.msg.T != ""
