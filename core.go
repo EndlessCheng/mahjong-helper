@@ -36,7 +36,7 @@ type DataParser interface {
 
 	// 自家摸牌
 	// tile: 0-33
-	// kanDoraIndicator: 摸牌时，若为暗杠摸的岭上牌，则可以翻出杠宝牌指示牌，否则返回 -1 （天凤恒为 -1，见 IsNewDora）
+	// kanDoraIndicator: 摸牌时，若为暗杠摸的岭上牌，则可以翻出杠宝牌指示牌，否则返回 -1（目前恒为 -1，见 IsNewDora）
 	IsSelfDraw() bool
 	ParseSelfDraw() (tile int, kanDoraIndicator int)
 
@@ -69,7 +69,7 @@ type DataParser interface {
 	//IsRyuukyoku() bool
 
 	// 这一项放在末尾处理
-	// 杠宝牌（IsNewDora 对于雀魂来说恒为 false，见 ParseSelfDraw ParseDiscard ParseOpen）
+	// 杠宝牌（雀魂在暗杠后的摸牌时出现）
 	// kanDoraIndicator: 0-33
 	IsNewDora() bool
 	ParseNewDora() (kanDoraIndicator int)

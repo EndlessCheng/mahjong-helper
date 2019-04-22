@@ -164,7 +164,7 @@ func (d *tenhouRoundData) _parseKan(data int) (meldType int, tenhouMeldTiles []i
 	tenhouMeldTiles = []int{4 * base, 1 + 4*base, 2 + 4*base, 3 + 4*base}
 	tenhouCalledTile = d._tenhouTileToTile34(tenhouMeldTiles[called])
 
-	// 通过判断 calledTile 的来源来是否为上一张舍牌，来判断是明杠还是暗杠
+	// 通过判断 calledTile 的来源来是否为上一张舍牌，来判断是大明杠还是暗杠
 	latestDiscard := -1
 	if len(d.globalDiscardTiles) > 0 {
 		latestDiscard = d.globalDiscardTiles[len(d.globalDiscardTiles)-1]
@@ -173,7 +173,7 @@ func (d *tenhouRoundData) _parseKan(data int) (meldType int, tenhouMeldTiles []i
 		}
 	}
 	if d._tenhouTileToTile34(tenhouCalledTile) == latestDiscard {
-		// 明杠
+		// 大明杠
 		meldType = meldTypeMinKan
 	} else {
 		// 暗杠
