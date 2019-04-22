@@ -49,8 +49,13 @@ type majsoulMessage struct {
 	Operation *struct{} `json:"operation"`
 
 	// ActionChiPengGang || ActionAnGangAddGang
-	// {"seat":1,"type":1,"tiles":["1z","1z","1z"],"froms":[1,1,0],"operation":{"seat":1,"operation_list":[{"type":1,"combination":["1z"]}],"time_add":0,"time_fixed":60000},"zhenting":false,"tingpais":[{"tile":"4m","zhenting":false,"infos":[{"tile":"6s","haveyi":true},{"tile":"6p","haveyi":true}]},{"tile":"7m","zhenting":false,"infos":[{"tile":"6s","haveyi":true},{"tile":"6p","haveyi":true}]}]}
-	Froms []int `json:"froms,omitempty"`
+	// 他家吃 {"seat":0,"type":0,"tiles":["2s","3s","4s"],"froms":[0,0,3],"zhenting":false}
+	// 他家碰 {"seat":1,"type":1,"tiles":["1z","1z","1z"],"froms":[1,1,0],"operation":{"seat":1,"operation_list":[{"type":1,"combination":["1z"]}],"time_add":0,"time_fixed":60000},"zhenting":false,"tingpais":[{"tile":"4m","zhenting":false,"infos":[{"tile":"6s","haveyi":true},{"tile":"6p","haveyi":true}]},{"tile":"7m","zhenting":false,"infos":[{"tile":"6s","haveyi":true},{"tile":"6p","haveyi":true}]}]}
+	// 他家大明杠 {"seat":2,"type":2,"tiles":["3z","3z","3z","3z"],"froms":[2,2,2,0],"zhenting":false}
+	// 他家加杠 {"seat":2,"type":2,"tiles":"3z"}
+	// 他家暗杠 {"seat":2,"type":3,"tiles":"3s"}
+	Type  int   `json:"type"`
+	Froms []int `json:"froms"`
 
 	// ActionLiqi
 
@@ -68,6 +73,13 @@ type majsoulMessage struct {
 	// ActionBabei
 }
 
+const (
+	majsoulMeldTypeChi = iota
+	majsoulMeldTypePon
+	majsoulMeldTypeMinKanOrKaKan
+	majsoulMeldTypeAnKan
+)
+
 type majsoulRoundData struct {
 	*roundData
 
@@ -81,25 +93,25 @@ func (d *majsoulRoundData) fatalParse(info string, msg string) {
 	panic(fmt.Sprintln(info, len(msg), msg, []byte(msg)))
 }
 
-func (d *majsoulRoundData) normalTiles(tiles interface{}) []string {
+func (d *majsoulRoundData) normalTiles(tiles interface{}) (majsoulTiles []string) {
 	_tiles, ok := tiles.([]interface{})
 	if !ok {
 		_tile, ok := tiles.(string)
 		if !ok {
 			panic(fmt.Sprintln("[normalTiles] 解析错误", tiles))
 		}
-		return []string{_tile, _tile, _tile, _tile}
+		return []string{_tile}
 	}
 
-	results := make([]string, len(_tiles))
+	majsoulTiles = make([]string, len(_tiles))
 	for i, _tile := range _tiles {
 		_t, ok := _tile.(string)
 		if !ok {
 			panic(fmt.Sprintln("[normalTiles] 解析错误", tiles))
 		}
-		results[i] = _t
+		majsoulTiles[i] = _t
 	}
-	return results
+	return majsoulTiles
 }
 
 func (d *majsoulRoundData) parseWho(seat int) int {
@@ -214,7 +226,8 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicat
 
 	roundNumber = playerNumber*(*msg.Chang) + *msg.Ju
 	doraIndicator, _ = d.mustParseMajsoulTile(msg.Dora)
-	hands, _ = d.mustParseMajsoulTiles(d.normalTiles(msg.Tiles))
+	majsoulTiles := d.normalTiles(msg.Tiles)
+	hands, _ = d.mustParseMajsoulTiles(majsoulTiles)
 	return
 }
 
@@ -265,25 +278,46 @@ func (d *majsoulRoundData) IsOpen() bool {
 	msg := d.msg
 	// FIXME: 更好的判断？
 	// ActionChiPengGang || ActionAnGangAddGang
-	return msg.Tiles != nil && len(d.normalTiles(msg.Tiles)) <= 4
+	if msg.Tiles == nil {
+		return false
+	}
+	majsoulTiles := d.normalTiles(msg.Tiles)
+	return len(majsoulTiles) <= 4
 }
 
 func (d *majsoulRoundData) ParseOpen() (who int, meld *mjMeld, kanDoraIndicator int) {
 	msg := d.msg
 
 	who = d.parseWho(*msg.Seat)
-	meldTiles, containRedFive := d.mustParseMajsoulTiles(d.normalTiles(msg.Tiles))
-	kanDoraIndicator = -1
-	if d.isNewDora(msg.Doras) {
-		kanDoraIndicator, _ = d.mustParseMajsoulTile(msg.Doras[len(msg.Doras)-1])
 
-		calledTile := meldTiles[0]
-		if d.leftCounts[calledTile] != 4 {
-			// TODO: 改成 panic?
-			fmt.Println("暗杠数据解析错误！")
+	kanDoraIndicator = -1
+	if d.isNewDora(msg.Doras) { // 暗杠（有时会在玩家摸牌后才发送 doras，可能是因为需要考虑抢暗杠的情况）
+		kanDoraIndicator, _ = d.mustParseMajsoulTile(msg.Doras[len(msg.Doras)-1])
+	}
+
+	var meldType, calledTile int
+
+	majsoulTiles := d.normalTiles(msg.Tiles)
+	isSelfKan := len(majsoulTiles) == 1 // 加杠/暗杠
+	if isSelfKan {
+		majsoulTile := majsoulTiles[0]
+		majsoulTiles = []string{majsoulTile, majsoulTile, majsoulTile, majsoulTile}
+	}
+	meldTiles, containRedFive := d.mustParseMajsoulTiles(majsoulTiles)
+	if isSelfKan {
+		calledTile = meldTiles[0]
+		// 也可以通过副露来判断是加杠还是暗杠，这里简单地用 msg.Type 判断
+		if msg.Type == majsoulMeldTypeMinKanOrKaKan {
+			meldType = meldTypeKakan // 加杠
+		} else if msg.Type == majsoulMeldTypeAnKan {
+			meldType = meldTypeAnKan // 暗杠
+			if d.leftCounts[calledTile] != 4 {
+				// TODO: 改成 panic?
+				fmt.Println("暗杠数据解析错误！")
+			}
 		}
 		meld = &mjMeld{
-			meldType:       meldTypeAnKan,
+			meldType:       meldType,
 			tiles:          meldTiles,
 			calledTile:     calledTile,
 			containRedFive: containRedFive,
@@ -291,39 +325,23 @@ func (d *majsoulRoundData) ParseOpen() (who int, meld *mjMeld, kanDoraIndicator 
 		return
 	}
 
-	var meldType, calledTile int
 	if len(meldTiles) == 3 {
 		if meldTiles[0] == meldTiles[1] {
-			meldType = meldTypePon
+			meldType = meldTypePon // 碰
 			calledTile = meldTiles[0]
 		} else {
-			meldType = meldTypeChi
+			meldType = meldTypeChi // 吃
 			calledTile = d.globalDiscardTiles[len(d.globalDiscardTiles)-1]
 			if calledTile < 0 {
 				calledTile = ^calledTile
 			}
 		}
 	} else if len(meldTiles) == 4 {
+		meldType = meldTypeMinKan // 大明杠
 		calledTile = meldTiles[0]
-		// 通过判断 calledTile 的来源来是否为上一张舍牌，来判断是大明杠还是加杠
-		latestDiscard := -1
-		if len(d.globalDiscardTiles) > 0 {
-			latestDiscard = d.globalDiscardTiles[len(d.globalDiscardTiles)-1]
-			if latestDiscard < 0 {
-				latestDiscard = ^latestDiscard
-			}
-		}
-		if calledTile == latestDiscard {
-			// 大明杠
-			meldType = meldTypeMinKan
-		} else {
-			// 加杠
-			meldType = meldTypeKakan
-		}
 	} else {
 		panic("鸣牌数据解析失败！")
 	}
-
 	meld = &mjMeld{
 		meldType:       meldType,
 		tiles:          meldTiles,
