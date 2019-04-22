@@ -13,14 +13,6 @@ const (
 	dataSourceTypeMajsoul
 )
 
-const (
-	meldTypeChi    = iota // 吃
-	meldTypePon           // 碰
-	meldTypeAnKan         // 暗杠
-	meldTypeMinKan        // 大明杠
-	meldTypeKakan         // 加杠
-)
-
 type DataParser interface {
 	GetDataSourceType() int
 
@@ -58,12 +50,9 @@ type DataParser interface {
 	ParseDiscard() (who int, discardTile int, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int)
 
 	// 鸣牌（含暗杠、加杠）
-	// meldType: 鸣牌类型（吃、碰、暗杠、明杠、加杠）
-	// meldTiles: 副露的牌 [0-33]
-	// calledTile: 被鸣的牌 0-33
 	// kanDoraIndicator: 暗杠的杠宝牌指示牌，在他家暗杠时出现，没有则返回 -1（天凤恒为-1，见 IsNewDora）
 	IsOpen() bool
-	ParseOpen() (who int, meldType int, meldTiles []int, calledTile int, kanDoraIndicator int)
+	ParseOpen() (who int, meld *mjMeld, kanDoraIndicator int)
 
 	// 立直声明（IsReach 对于雀魂来说恒为 false，见 ParseDiscard）
 	IsReach() bool
@@ -102,12 +91,29 @@ func normalDiscardTiles(discardTiles []int) []int {
 
 //
 
+const (
+	meldTypeChi    = iota // 吃
+	meldTypePon           // 碰
+	meldTypeAnKan         // 暗杠
+	meldTypeMinKan        // 大明杠
+	meldTypeKakan         // 加杠
+)
+
+type mjMeld struct {
+	meldType       int   // 鸣牌类型（吃、碰、暗杠、大明杠、加杠）
+	tiles          []int // 副露的牌 [0-33]
+	calledTile     int   // 被鸣的牌 0-33
+	containRedFive bool  // 是否包含赤5
+}
+
+//
+
 type playerInfo struct {
 	name string // 自家/下家/对家/上家
 
 	selfWindTile int // 自风
 
-	melds                [][]int // 副露
+	melds                []*mjMeld // 副露
 	meldDiscardsAtGlobal []int
 	meldDiscardsAt       []int
 
@@ -308,7 +314,7 @@ func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
 		if player.isReached {
 			tenpaiRate = 100.0
 		} else {
-			tenpaiRate = util.CalcTenpaiRate(player.melds, player.discardTiles, player.meldDiscardsAt)
+			tenpaiRate = util.CalcTenpaiRate(len(player.melds), player.discardTiles, player.meldDiscardsAt)
 		}
 
 		// 该玩家的巡目 = 为其切过的牌的数目
@@ -361,14 +367,16 @@ func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
 			ronPoint = util.RonPointRiichiHiIppatsu
 		case len(player.melds) > 0:
 			// 副露时的荣和点数（非常粗略地估计）
-			// TODO: +赤宝牌
 			doraCount := 0
 			for _, dora := range d.doraList() {
 				for _, meld := range player.melds {
-					for _, tile := range meld {
+					for _, tile := range meld.tiles {
 						if tile == dora {
 							doraCount++
 						}
+					}
+					if meld.containRedFive {
+						doraCount++
 					}
 				}
 			}
@@ -476,7 +484,10 @@ func (d *roundData) analysis() error {
 		}
 	case d.parser.IsOpen():
 		// 某家鸣牌（含暗杠、加杠）
-		who, meldType, meldTiles, calledTile, kanDoraIndicator := d.parser.ParseOpen()
+		who, meld, kanDoraIndicator := d.parser.ParseOpen()
+		meldType := meld.meldType
+		meldTiles := meld.tiles
+		calledTile := meld.calledTile
 
 		// 任何形式的鸣牌都能破除一发
 		for _, player := range d.players {
@@ -499,10 +510,10 @@ func (d *roundData) analysis() error {
 				d.counts[calledTile]--
 			}
 			// 修改原副露
-			for i := range player.melds {
+			for _, _meld := range player.melds {
 				// 找到原有的碰副露
-				if player.melds[i][0] == calledTile {
-					player.melds[i] = append(player.melds[i], calledTile)
+				if _meld.tiles[0] == calledTile {
+					_meld.tiles = append(_meld.tiles, calledTile)
 					break
 				}
 			}
@@ -511,7 +522,7 @@ func (d *roundData) analysis() error {
 
 		// 处理牌山剩余量
 		// TODO: 添加 calledTile 等
-		d.players[who].melds = append(d.players[who].melds, meldTiles)
+		d.players[who].melds = append(d.players[who].melds, meld)
 		if who != 0 {
 			if meldType != meldTypeAnKan {
 				d.leftCounts[calledTile]++

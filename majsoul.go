@@ -108,23 +108,28 @@ func (d *majsoulRoundData) parseWho(seat int) int {
 	return who
 }
 
-func (d *majsoulRoundData) mustParseMajsoulTile(humanTile string) int {
+func (d *majsoulRoundData) mustParseMajsoulTile(humanTile string) (tile34 int, isRedFive bool) {
 	if humanTile[0] == '0' {
 		humanTile = "5" + humanTile[1:]
+		isRedFive = true
 	}
 	tile34, err := util.StrToTile34(humanTile)
 	if err != nil {
 		panic(err)
 	}
-	return tile34
+	return
 }
 
-func (d *majsoulRoundData) mustParseMajsoulTiles(tiles []string) []int {
-	hands := make([]int, len(tiles))
-	for i, tile := range tiles {
-		hands[i] = d.mustParseMajsoulTile(tile)
+func (d *majsoulRoundData) mustParseMajsoulTiles(majsoulTiles []string) (tiles []int, containRedFive bool) {
+	var isRedFive bool
+	tiles = make([]int, len(majsoulTiles))
+	for i, majsoulTile := range majsoulTiles {
+		tiles[i], isRedFive = d.mustParseMajsoulTile(majsoulTile)
+		if isRedFive {
+			containRedFive = true
+		}
 	}
-	return hands
+	return
 }
 
 func (d *majsoulRoundData) isNewDora(doras []string) bool {
@@ -208,8 +213,8 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicat
 	dealer = -1
 
 	roundNumber = playerNumber*(*msg.Chang) + *msg.Ju
-	doraIndicator = d.mustParseMajsoulTile(msg.Dora)
-	hands = d.mustParseMajsoulTiles(d.normalTiles(msg.Tiles))
+	doraIndicator, _ = d.mustParseMajsoulTile(msg.Dora)
+	hands, _ = d.mustParseMajsoulTiles(d.normalTiles(msg.Tiles))
 	return
 }
 
@@ -228,10 +233,10 @@ func (d *majsoulRoundData) IsSelfDraw() bool {
 
 func (d *majsoulRoundData) ParseSelfDraw() (tile int, kanDoraIndicator int) {
 	msg := d.msg
-	tile = d.mustParseMajsoulTile(msg.Tile)
+	tile, _ = d.mustParseMajsoulTile(msg.Tile)
 	kanDoraIndicator = -1
 	if d.isNewDora(msg.Doras) {
-		kanDoraIndicator = d.mustParseMajsoulTile(msg.Doras[len(msg.Doras)-1])
+		kanDoraIndicator, _ = d.mustParseMajsoulTile(msg.Doras[len(msg.Doras)-1])
 	}
 	return
 }
@@ -245,13 +250,13 @@ func (d *majsoulRoundData) IsDiscard() bool {
 func (d *majsoulRoundData) ParseDiscard() (who int, discardTile int, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int) {
 	msg := d.msg
 	who = d.parseWho(*msg.Seat)
-	discardTile = d.mustParseMajsoulTile(msg.Tile)
+	discardTile, _ = d.mustParseMajsoulTile(msg.Tile)
 	isTsumogiri = *msg.Moqie
 	isReach = *msg.IsLiqi || *msg.IsWliqi
 	canBeMeld = msg.Operation != nil
 	kanDoraIndicator = -1
 	if d.isNewDora(msg.Doras) {
-		kanDoraIndicator = d.mustParseMajsoulTile(msg.Doras[len(msg.Doras)-1])
+		kanDoraIndicator, _ = d.mustParseMajsoulTile(msg.Doras[len(msg.Doras)-1])
 	}
 	return
 }
@@ -263,31 +268,37 @@ func (d *majsoulRoundData) IsOpen() bool {
 	return msg.Tiles != nil && len(d.normalTiles(msg.Tiles)) <= 4
 }
 
-func (d *majsoulRoundData) ParseOpen() (who int, meldType int, meldTiles []int, calledTile int, kanDoraIndicator int) {
+func (d *majsoulRoundData) ParseOpen() (who int, meld *mjMeld, kanDoraIndicator int) {
 	msg := d.msg
 
 	who = d.parseWho(*msg.Seat)
-	meldTiles = d.mustParseMajsoulTiles(d.normalTiles(msg.Tiles))
+	meldTiles, containRedFive := d.mustParseMajsoulTiles(d.normalTiles(msg.Tiles))
 	kanDoraIndicator = -1
 	if d.isNewDora(msg.Doras) {
-		kanDoraIndicator = d.mustParseMajsoulTile(msg.Doras[len(msg.Doras)-1])
+		kanDoraIndicator, _ = d.mustParseMajsoulTile(msg.Doras[len(msg.Doras)-1])
 
-		meldType = meldTypeAnKan
-		calledTile = d.mustParseMajsoulTile(d.normalTiles(msg.Tiles)[0])
+		calledTile := meldTiles[0]
 		if d.leftCounts[calledTile] != 4 {
 			// TODO: 改成 panic?
 			fmt.Println("暗杠数据解析错误！")
 		}
+		meld = &mjMeld{
+			meldType:       meldTypeAnKan,
+			tiles:          meldTiles,
+			calledTile:     calledTile,
+			containRedFive: containRedFive,
+		}
 		return
 	}
 
+	var meldType, calledTile int
 	if len(meldTiles) == 3 {
 		if meldTiles[0] == meldTiles[1] {
 			meldType = meldTypePon
 			calledTile = meldTiles[0]
 		} else {
 			meldType = meldTypeChi
-			calledTile = d.globalDiscardTiles[len(d.globalDiscardTiles)-1]
+			calledTile := d.globalDiscardTiles[len(d.globalDiscardTiles)-1]
 			if calledTile < 0 {
 				calledTile = ^calledTile
 			}
@@ -313,6 +324,12 @@ func (d *majsoulRoundData) ParseOpen() (who int, meldType int, meldTiles []int, 
 		panic("鸣牌数据解析失败！")
 	}
 
+	meld = &mjMeld{
+		meldType:       meldType,
+		tiles:          meldTiles,
+		calledTile:     calledTile,
+		containRedFive: containRedFive,
+	}
 	return
 }
 
@@ -363,6 +380,6 @@ func (d *majsoulRoundData) IsNewDora() bool {
 func (d *majsoulRoundData) ParseNewDora() (kanDoraIndicator int) {
 	msg := d.msg
 
-	kanDoraIndicator = d.mustParseMajsoulTile(msg.Doras[len(msg.Doras)-1])
+	kanDoraIndicator, _ = d.mustParseMajsoulTile(msg.Doras[len(msg.Doras)-1])
 	return
 }

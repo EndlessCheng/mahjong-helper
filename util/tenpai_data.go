@@ -73,15 +73,15 @@ var tenpaiRate = [][][]float64{
 }
 
 // 根据玩家的副露、手切来判断其听牌率
-func CalcTenpaiRate(melds [][]int, discardTiles []int, meldDiscardsAt []int) float64 {
-	if len(melds) == 0 {
+func CalcTenpaiRate(meldCount int, discardTiles []int, meldDiscardsAt []int) float64 {
+	if meldCount == 0 {
 		return 0
 	}
-	if len(melds) == 4 {
+	if meldCount == 4 {
 		return 100
 	}
 
-	_tenpaiRate := tenpaiRate[len(melds)]
+	_tenpaiRate := tenpaiRate[meldCount]
 
 	turn := MinInt(len(discardTiles), len(_tenpaiRate)-1)
 	_tenpaiRateWithTurn := _tenpaiRate[turn]

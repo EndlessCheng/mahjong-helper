@@ -7,6 +7,12 @@ import (
 	"regexp"
 )
 
+const (
+	redFiveMan = 16
+	redFivePin = 52
+	redFiveSou = 88
+)
+
 type tenhouMessage struct {
 	Tag string `json:"tag"`
 
@@ -104,31 +110,35 @@ type tenhouRoundData struct {
 //	cachedTile = -1
 //}
 
+func (*tenhouRoundData) _tenhouTileToTile34(tenhouTile int) int {
+	return tenhouTile / 4
+}
+
 // 0-35 m
 // 36-71 p
 // 72-107 s
 // 108- z
-func (*tenhouRoundData) _parseTenhouTile(tenhouTile string) int {
+func (d *tenhouRoundData) _parseTenhouTile(tenhouTile string) int {
 	t, err := strconv.Atoi(tenhouTile)
 	if err != nil {
 		panic(err)
 	}
-	return t / 4
+	return d._tenhouTileToTile34(t)
 }
 
-func (*tenhouRoundData) _parseChi(data int) (meldType int, tiles []int, calledTile int) {
+func (d *tenhouRoundData) _parseChi(data int) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
 	// 吃
 	meldType = meldTypeChi
 	t0, t1, t2 := (data>>3)&0x3, (data>>5)&0x3, (data>>7)&0x3
 	baseAndCalled := data >> 10
 	base, called := baseAndCalled/3, baseAndCalled%3
 	base = (base/7)*9 + base%7
-	tiles = []int{(t0 + 4*(base+0)) / 4, (t1 + 4*(base+1)) / 4, (t2 + 4*(base+2)) / 4}
-	calledTile = tiles[called]
+	tenhouMeldTiles = []int{t0 + 4*(base+0), t1 + 4*(base+1), t2 + 4*(base+2)}
+	tenhouCalledTile = tenhouMeldTiles[called]
 	return
 }
 
-func (*tenhouRoundData) _parsePon(data int) (meldType int, tiles []int, calledTile int) {
+func (d *tenhouRoundData) _parsePon(data int) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
 	t4 := (data >> 5) & 0x3
 	_t := [4][3]int{{1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}}[t4]
 	t0, t1, t2 := _t[0], _t[1], _t[2]
@@ -137,22 +147,22 @@ func (*tenhouRoundData) _parsePon(data int) (meldType int, tiles []int, calledTi
 	if data&0x8 > 0 {
 		// 碰
 		meldType = meldTypePon
-		tiles = []int{(t0 + 4*base) / 4, (t1 + 4*base) / 4, (t2 + 4*base) / 4}
-		calledTile = tiles[called]
+		tenhouMeldTiles = []int{t0 + 4*base, t1 + 4*base, t2 + 4*base}
+		tenhouCalledTile = tenhouMeldTiles[called]
 	} else {
 		// 加杠
 		meldType = meldTypeKakan
-		tiles = []int{(t0 + 4*base) / 4, (t1 + 4*base) / 4, (t2 + 4*base) / 4, (t4 + 4*base) / 4}
-		calledTile = tiles[3]
+		tenhouMeldTiles = []int{t0 + 4*base, t1 + 4*base, t2 + 4*base, t4 + 4*base}
+		tenhouCalledTile = tenhouMeldTiles[3]
 	}
 	return
 }
 
-func (d *tenhouRoundData) _parseKan(data int) (meldType int, tiles []int, calledTile int) {
+func (d *tenhouRoundData) _parseKan(data int) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
 	baseAndCalled := data >> 8
 	base, called := baseAndCalled/4, baseAndCalled%4
-	tiles = []int{(4 * base) / 4, (1 + 4*base) / 4, (2 + 4*base) / 4, (3 + 4*base) / 4}
-	calledTile = tiles[called]
+	tenhouMeldTiles = []int{4 * base, 1 + 4*base, 2 + 4*base, 3 + 4*base}
+	tenhouCalledTile = d._tenhouTileToTile34(tenhouMeldTiles[called])
 
 	// 通过判断 calledTile 的来源来是否为上一张舍牌，来判断是明杠还是暗杠
 	latestDiscard := -1
@@ -162,7 +172,7 @@ func (d *tenhouRoundData) _parseKan(data int) (meldType int, tiles []int, called
 			latestDiscard = ^latestDiscard
 		}
 	}
-	if calledTile == latestDiscard {
+	if d._tenhouTileToTile34(tenhouCalledTile) == latestDiscard {
 		// 明杠
 		meldType = meldTypeMinKan
 	} else {
@@ -172,7 +182,7 @@ func (d *tenhouRoundData) _parseKan(data int) (meldType int, tiles []int, called
 	return
 }
 
-func (d *tenhouRoundData) _parseTenhouMeld(data string) (meldType int, tiles []int, calledTile int) {
+func (d *tenhouRoundData) _parseTenhouMeld(data string) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
 	bits, err := strconv.Atoi(data)
 	if err != nil {
 		panic(err)
@@ -189,6 +199,19 @@ func (d *tenhouRoundData) _parseTenhouMeld(data string) (meldType int, tiles []i
 	default:
 		return d._parseKan(bits)
 	}
+}
+
+func (*tenhouRoundData) isRedFive(tenhouTile int) bool {
+	return tenhouTile == redFiveMan || tenhouTile == redFivePin || tenhouTile == redFiveSou
+}
+
+func (d *tenhouRoundData) containRedFive(tenhouTiles []int) bool {
+	for _, tenhouTile := range tenhouTiles {
+		if d.isRedFive(tenhouTile) {
+			return true
+		}
+	}
+	return false
 }
 
 func (d *tenhouRoundData) GetDataSourceType() int {
@@ -267,9 +290,19 @@ func (d *tenhouRoundData) IsOpen() bool {
 	return d.msg.Tag == "N"
 }
 
-func (d *tenhouRoundData) ParseOpen() (who int, meldType int, meldTiles []int, calledTile int, kanDoraIndicator int) {
+func (d *tenhouRoundData) ParseOpen() (who int, meld *mjMeld, kanDoraIndicator int) {
 	who, _ = strconv.Atoi(d.msg.Who)
-	meldType, meldTiles, calledTile = d._parseTenhouMeld(d.msg.Meld)
+	meldType, tenhouMeldTiles, tenhouCalledTile := d._parseTenhouMeld(d.msg.Meld)
+	meldTiles := make([]int, len(tenhouMeldTiles))
+	for i, tenhouTile := range tenhouMeldTiles {
+		meldTiles[i] = d._tenhouTileToTile34(tenhouTile)
+	}
+	meld = &mjMeld{
+		meldType:       meldType,
+		tiles:          meldTiles,
+		calledTile:     d._tenhouTileToTile34(tenhouCalledTile),
+		containRedFive: d.containRedFive(tenhouMeldTiles),
+	}
 	kanDoraIndicator = -1
 	return
 }
