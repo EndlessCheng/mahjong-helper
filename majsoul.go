@@ -298,7 +298,7 @@ func (d *majsoulRoundData) ParseOpen() (who int, meld *mjMeld, kanDoraIndicator 
 			calledTile = meldTiles[0]
 		} else {
 			meldType = meldTypeChi
-			calledTile := d.globalDiscardTiles[len(d.globalDiscardTiles)-1]
+			calledTile = d.globalDiscardTiles[len(d.globalDiscardTiles)-1]
 			if calledTile < 0 {
 				calledTile = ^calledTile
 			}
