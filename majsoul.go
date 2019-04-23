@@ -76,8 +76,8 @@ type majsoulMessage struct {
 const (
 	majsoulMeldTypeChi = iota
 	majsoulMeldTypePon
-	majsoulMeldTypeMinKanOrKaKan
-	majsoulMeldTypeAnKan
+	majsoulMeldTypeMinkanOrKakan
+	majsoulMeldTypeAnkan
 )
 
 type majsoulRoundData struct {
@@ -307,10 +307,10 @@ func (d *majsoulRoundData) ParseOpen() (who int, meld *mjMeld, kanDoraIndicator 
 	if isSelfKan {
 		calledTile = meldTiles[0]
 		// 也可以通过副露来判断是加杠还是暗杠，这里简单地用 msg.Type 判断
-		if msg.Type == majsoulMeldTypeMinKanOrKaKan {
+		if msg.Type == majsoulMeldTypeMinkanOrKakan {
 			meldType = meldTypeKakan // 加杠
-		} else if msg.Type == majsoulMeldTypeAnKan {
-			meldType = meldTypeAnKan // 暗杠
+		} else if msg.Type == majsoulMeldTypeAnkan {
+			meldType = meldTypeAnkan // 暗杠
 			if d.leftCounts[calledTile] != 4 {
 				// TODO: 改成 panic?
 				fmt.Println("暗杠数据解析错误！")
@@ -337,7 +337,7 @@ func (d *majsoulRoundData) ParseOpen() (who int, meld *mjMeld, kanDoraIndicator 
 			}
 		}
 	} else if len(meldTiles) == 4 {
-		meldType = meldTypeMinKan // 大明杠
+		meldType = meldTypeMinkan // 大明杠
 		calledTile = meldTiles[0]
 	} else {
 		panic("鸣牌数据解析失败！")

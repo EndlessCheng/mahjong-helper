@@ -174,10 +174,10 @@ func (d *tenhouRoundData) _parseKan(data int) (meldType int, tenhouMeldTiles []i
 	}
 	if d._tenhouTileToTile34(tenhouCalledTile) == latestDiscard {
 		// 大明杠
-		meldType = meldTypeMinKan
+		meldType = meldTypeMinkan
 	} else {
 		// 暗杠
-		meldType = meldTypeAnKan
+		meldType = meldTypeAnkan
 	}
 	return
 }

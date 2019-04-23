@@ -94,8 +94,8 @@ func normalDiscardTiles(discardTiles []int) []int {
 const (
 	meldTypeChi    = iota // 吃
 	meldTypePon           // 碰
-	meldTypeAnKan         // 暗杠
-	meldTypeMinKan        // 大明杠
+	meldTypeAnkan         // 暗杠
+	meldTypeMinkan        // 大明杠
 	meldTypeKakan         // 加杠
 )
 
@@ -202,7 +202,7 @@ type roundData struct {
 	doraIndicators []int
 
 	// 自家手牌
-	counts    []int
+	counts []int
 
 	// 牌山剩余牌量
 	leftCounts []int
@@ -502,7 +502,7 @@ func (d *roundData) analysis() error {
 		player := d.players[who]
 
 		// 不是暗杠则标记该玩家鸣牌了
-		if meldType != meldTypeAnKan {
+		if meldType != meldTypeAnkan {
 			player.isNaki = true
 		}
 
@@ -532,7 +532,7 @@ func (d *roundData) analysis() error {
 		if who != 0 {
 			// （不是自家时）修改牌山剩余量
 			// 先增后减
-			if meldType != meldTypeAnKan {
+			if meldType != meldTypeAnkan {
 				d.leftCounts[calledTile]++
 			}
 			for _, tile := range meldTiles {
@@ -540,7 +540,7 @@ func (d *roundData) analysis() error {
 			}
 		} else {
 			// 自家，修改手牌
-			if meldType == meldTypeAnKan {
+			if meldType == meldTypeAnkan {
 				d.counts[meldTiles[0]] = 0
 			} else {
 				d.counts[calledTile]++
