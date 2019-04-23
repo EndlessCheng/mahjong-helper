@@ -56,6 +56,9 @@ func (t riskTable) printWithHands(hands []int, fixedRiskMulti float64) {
 }
 
 type riskInfo struct {
+	// 该玩家的安牌
+	safeTiles34 []bool
+
 	// 该玩家的听牌率（立直时为 100.0）
 	tenpaiRate float64
 

@@ -302,18 +302,43 @@ func (d *roundData) printDiscards() {
 // 可以用来判断自家手牌的安全度，以及他家是否在进攻（多次切出危险度高的牌）
 func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
 	riList = make(riskInfoList, len(d.players))
+	for who := range riList {
+		riList[who].safeTiles34 = make([]bool, 34)
+	}
 
+	// 先利用振听规则收集各家安牌
 	for who, player := range d.players {
 		if who == 0 {
 			// TODO: 暂时不计算自家的
 			continue
 		}
-		// TODO: 若某人一直摸切，然后突然手切了一张字牌，那他很有可能默听/一向听
-		var tenpaiRate float64
-		if player.isReached {
-			tenpaiRate = 100.0
+
+		// 该玩家的舍牌
+		for _, tile := range normalDiscardTiles(player.discardTiles) {
+			riList[who].safeTiles34[tile] = true
+		}
+		if player.reachTileAtGlobal != -1 {
+			// 立直后其他家切出的牌
+			for _, tile := range normalDiscardTiles(d.globalDiscardTiles[player.reachTileAtGlobal:]) {
+				riList[who].safeTiles34[tile] = true
+			}
 		} else {
-			tenpaiRate = util.CalcTenpaiRate(len(player.melds), player.discardTiles, player.meldDiscardsAt)
+			// 同巡舍牌
+			if who == 3 { // 对于下家和对家来说，同巡内上家打过的牌是安牌
+				// 标记下家和对家的安牌
+
+			} else if who == 2 { // 对于下家来说，同巡内对家打过的牌是安牌
+				// 标记下家的安牌
+
+			}
+		}
+	}
+
+	// 计算各种数据
+	for who, player := range d.players {
+		if who == 0 {
+			// TODO: 暂时不计算自家的
+			continue
 		}
 
 		// 该玩家的巡目 = 为其切过的牌的数目
@@ -322,43 +347,31 @@ func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
 			continue
 		}
 
-		// 收集安牌
-		safeTiles34 := make([]bool, 34)
-		for _, tile := range normalDiscardTiles(player.discardTiles) {
-			// 该玩家的舍牌
-			safeTiles34[tile] = true
-		}
-		if player.reachTileAtGlobal != -1 {
-			// 立直后其他家切出的牌
-			for _, tile := range normalDiscardTiles(d.globalDiscardTiles[player.reachTileAtGlobal:]) {
-				safeTiles34[tile] = true
-			}
+		// TODO: 若某人一直摸切，然后突然手切了一张字牌，那他很有可能默听/一向听
+		if player.isReached {
+			riList[who].tenpaiRate = 100.0
 		} else {
-			// TODO: 副露者三副露之后，其上家的舍牌大概率是安牌
-
-			// https://tieba.baidu.com/p/3418094524
-			// 副露家的上家的舍牌是重要的提示，副露家不鸣的牌也可以成为读牌的线索：
-			// ① 副露家的上家切过的牌高概率能通过
-			// ② 对于上一巡被切出来的牌（a）无反应，然后这一巡鸣牌后打牌（a）的情况，牌（a）的跨筋比较安全。
-			// 举个例子，对于被切出来的7p毫无反应的对手，34s鸣2s后打7p。假定他听69p或者58p，那么之前的形状就是778p切7p和677p切7p，这样的话，7p被打出来的时候就应该被碰了，所以不会是听69p或者58p。
-			// 顺带一提，这种情况并不限于鸣牌打7p的场合，其实在普通的手切7p的场合也是可以通用的。如果拿着677p或者778p这样的搭子的话，7p被切出来的时候就应该鸣了，如果是拿着67p或者78p的话，摸7p也不会特意手切一张7p来让别人注意防守7p的周边。（但是有的人可能会故意这样切牌，所以还是需要注意一下的）。
-			// ③ 副露家鸣牌之后将上家切过的牌的周边牌切出来了
-			// 鸣牌家的东家没有鸣北家切的7s，然后碰了南家的8p之后切8s。顺带一提，上家碰白打8m，吃4m打3m，3s是手切的。
-			// 这样的例子从舍牌和副露看，并不能推理出他的待牌，但是上家没有鸣7s是一个线索，而且这个线索十分关键。
-			// 东家2巡前切3s，上一巡摸切北，然后打的是8s。重视孤立牌靠张的话应该留3s，如果是需要安全牌的话应该留北才对，所以留8s的原因是他手里有和8s相关的搭子。
-			// 然后我们知道他没鸣7s，而且和8s有关又鸣不了7s的搭子只有78s和788s（和8s有关的搭子有468s，688s，668s，68s，778s，788s，78s，889s，899s，89s）。仔细想一下的话，如果他拿着78s的搭子就不会特意鸣8p变成7s单骑了，所以能够推断出他鸣8p之前手里的搭子是788s。
-			// 由此可知，东家是788s碰8p打8s听69s。像这样副露家不鸣哪一些牌也是一条挺重要的线索，所以请大家打牌的时候务必注意一下。
-
-			// 空切·振替 https://tieba.baidu.com/p/3471413696
-			//
-
-			// 食延的情况 https://tieba.baidu.com/p/3688516724
-
-			// TODO: 同巡舍牌
-
+			riList[who].tenpaiRate = util.CalcTenpaiRate(len(player.melds), player.discardTiles, player.meldDiscardsAt)
 		}
 
-		// 分析该玩家荣和点数
+		// 收集可能的安牌
+		// TODO: 副露者三副露之后，其上家的舍牌大概率是安牌
+		// https://tieba.baidu.com/p/3418094524
+		// 副露家的上家的舍牌是重要的提示，副露家不鸣的牌也可以成为读牌的线索：
+		// ① 副露家的上家切过的牌高概率能通过
+		// ② 对于上一巡被切出来的牌（a）无反应，然后这一巡鸣牌后打牌（a）的情况，牌（a）的跨筋比较安全。
+		// 举个例子，对于被切出来的7p毫无反应的对手，34s鸣2s后打7p。假定他听69p或者58p，那么之前的形状就是778p切7p和677p切7p，这样的话，7p被打出来的时候就应该被碰了，所以不会是听69p或者58p。
+		// 顺带一提，这种情况并不限于鸣牌打7p的场合，其实在普通的手切7p的场合也是可以通用的。如果拿着677p或者778p这样的搭子的话，7p被切出来的时候就应该鸣了，如果是拿着67p或者78p的话，摸7p也不会特意手切一张7p来让别人注意防守7p的周边。（但是有的人可能会故意这样切牌，所以还是需要注意一下的）。
+		// ③ 副露家鸣牌之后将上家切过的牌的周边牌切出来了
+		// 鸣牌家的东家没有鸣北家切的7s，然后碰了南家的8p之后切8s。顺带一提，上家碰白打8m，吃4m打3m，3s是手切的。
+		// 这样的例子从舍牌和副露看，并不能推理出他的待牌，但是上家没有鸣7s是一个线索，而且这个线索十分关键。
+		// 东家2巡前切3s，上一巡摸切北，然后打的是8s。重视孤立牌靠张的话应该留3s，如果是需要安全牌的话应该留北才对，所以留8s的原因是他手里有和8s相关的搭子。
+		// 然后我们知道他没鸣7s，而且和8s有关又鸣不了7s的搭子只有78s和788s（和8s有关的搭子有468s，688s，668s，68s，778s，788s，78s，889s，899s，89s）。仔细想一下的话，如果他拿着78s的搭子就不会特意鸣8p变成7s单骑了，所以能够推断出他鸣8p之前手里的搭子是788s。
+		// 由此可知，东家是788s碰8p打8s听69s。像这样副露家不鸣哪一些牌也是一条挺重要的线索，所以请大家打牌的时候务必注意一下。
+		// 空切·振替 https://tieba.baidu.com/p/3471413696
+		// 食延的情况 https://tieba.baidu.com/p/3688516724
+
+		// 估计该玩家荣和点数
 		var ronPoint float64
 		switch {
 		case player.canIppatsu:
@@ -391,18 +404,16 @@ func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
 		if who == d.dealer {
 			ronPoint *= 1.5
 		}
+		riList[who]._ronPoint = ronPoint
 
 		// 根据该玩家的巡目、现物、立直后通过的牌、NC、Dora、早外、荣和点数来计算每张牌的危险度
-		risk34 := util.CalculateRiskTiles34(turns, safeTiles34, d.leftCounts, d.doraList(), d.roundWindTile, player.selfWindTile).
+		risk34 := util.CalculateRiskTiles34(turns, riList[who].safeTiles34, d.leftCounts, d.doraList(), d.roundWindTile, player.selfWindTile).
 			FixWithEarlyOutside(player.earlyOutsideTiles).
 			FixWithPoint(ronPoint)
-		leftNoSujiTiles := util.CalculateLeftNoSujiTiles(safeTiles34, d.leftCounts)
-		riList[who] = riskInfo{
-			tenpaiRate:      tenpaiRate,
-			riskTable:       riskTable(risk34),
-			leftNoSujiTiles: leftNoSujiTiles,
-			_ronPoint:       ronPoint,
-		}
+		riList[who].riskTable = riskTable(risk34)
+
+		// 计算剩余筋牌
+		riList[who].leftNoSujiTiles = util.CalculateLeftNoSujiTiles(riList[who].safeTiles34, d.leftCounts)
 	}
 
 	return riList
