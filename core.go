@@ -119,9 +119,10 @@ type playerInfo struct {
 	isNaki               bool // 是否鸣牌（暗杠不算鸣牌）
 
 	// 注意负数（自摸切）要^
-	globalDiscardTiles *[]int // 全局舍牌
-	discardTiles       []int  // 该玩家的舍牌
-	earlyOutsideTiles  []int  // 立直前的1-5巡的外侧牌
+	globalDiscardTiles    *[]int // 全局舍牌
+	discardTiles          []int  // 该玩家的舍牌
+	latestDiscardAtGlobal int    // 该玩家最近一次舍牌在 globalDiscardTiles 中的下标，初始为 -1
+	earlyOutsideTiles     []int  // 立直前的1-5巡的外侧牌
 
 	isReached  bool // 是否立直
 	canIppatsu bool // 是否有一发
@@ -132,11 +133,12 @@ type playerInfo struct {
 
 func newPlayerInfo(name string, selfWindTile int, globalDiscardTiles *[]int) *playerInfo {
 	return &playerInfo{
-		name:               name,
-		selfWindTile:       selfWindTile,
-		globalDiscardTiles: globalDiscardTiles,
-		reachTileAtGlobal:  -1,
-		reachTileAt:        -1,
+		name:                  name,
+		selfWindTile:          selfWindTile,
+		globalDiscardTiles:    globalDiscardTiles,
+		latestDiscardAtGlobal: -1,
+		reachTileAtGlobal:     -1,
+		reachTileAt:           -1,
 	}
 }
 
@@ -313,23 +315,20 @@ func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
 			continue
 		}
 
-		// 该玩家的舍牌
+		// 舍牌振听产生的安牌
 		for _, tile := range normalDiscardTiles(player.discardTiles) {
 			riList[who].safeTiles34[tile] = true
 		}
 		if player.reachTileAtGlobal != -1 {
-			// 立直后其他家切出的牌
+			// 立直后振听产生的安牌
 			for _, tile := range normalDiscardTiles(d.globalDiscardTiles[player.reachTileAtGlobal:]) {
 				riList[who].safeTiles34[tile] = true
 			}
-		} else {
-			// 同巡舍牌
-			if who == 3 { // 对于下家和对家来说，同巡内上家打过的牌是安牌
-				// 标记下家和对家的安牌
-
-			} else if who == 2 { // 对于下家来说，同巡内对家打过的牌是安牌
-				// 标记下家的安牌
-
+		} else if player.latestDiscardAtGlobal != -1 {
+			// 同巡振听产生的安牌
+			// 即该玩家在最近一次舍牌后，其他玩家的舍牌
+			for _, tile := range normalDiscardTiles(d.globalDiscardTiles[player.latestDiscardAtGlobal:]) {
+				riList[who].safeTiles34[tile] = true
 			}
 		}
 	}
@@ -634,6 +633,7 @@ func (d *roundData) analysis() error {
 
 			d.globalDiscardTiles = append(d.globalDiscardTiles, discardTile)
 			player.discardTiles = append(player.discardTiles, discardTile)
+			player.latestDiscardAtGlobal = len(d.globalDiscardTiles) - 1
 
 			return nil
 		}
@@ -654,6 +654,7 @@ func (d *roundData) analysis() error {
 		}
 		d.globalDiscardTiles = append(d.globalDiscardTiles, _disTile)
 		player.discardTiles = append(player.discardTiles, _disTile)
+		player.latestDiscardAtGlobal = len(d.globalDiscardTiles) - 1
 
 		// 标记外侧牌
 		if !player.isReached && len(player.discardTiles) <= 5 {

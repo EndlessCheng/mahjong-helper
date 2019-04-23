@@ -16,16 +16,18 @@ func Test_parseTenhouMeld(t *testing.T) {
 }
 
 func TestAnalysisTilesRisk(t *testing.T) {
+	debugMode = true
+
 	d := newRoundData(&tenhouRoundData{}, 0, 0)
-	tiles34, err := util.StrToTiles34("1235m 1223478p 345899s 1234567z")
+	handsTiles34, err := util.StrToTiles34("123456789m 123456789p 123456789s 1234567z")
 	if err != nil {
 		t.Fatal(err)
 	}
-	discardTiles34, err := util.StrToTiles34("22m 158p 123789s 6z") //
+	globalDiscardTiles34, err := util.StrToTiles34("22m 158p 123789s 6z") //
 	if err != nil {
 		t.Fatal(err)
 	}
-	for i, c := range tiles34 {
+	for i, c := range handsTiles34 {
 		if c == 0 {
 			continue
 		}
@@ -34,7 +36,7 @@ func TestAnalysisTilesRisk(t *testing.T) {
 			t.Fatal("参数有误: ", util.Mahjong[c])
 		}
 	}
-	for i, c := range discardTiles34 {
+	for i, c := range globalDiscardTiles34 {
 		if c == 0 {
 			continue
 		}
@@ -51,9 +53,13 @@ func TestAnalysisTilesRisk(t *testing.T) {
 	d.players[2].isReached = true
 	d.players[2].reachTileAtGlobal = 7
 	d.players[2].discardTiles = []int{1, 1, 1, 1, 1}
+	d.players[3].discardTiles = []int{1, 1, 1, 1, 1}
+	d.players[3].melds = make([]*mjMeld, 2)
+	d.players[3].meldDiscardsAt = []int{2, 3}
+	d.players[3].latestDiscardAtGlobal = 10
 
 	table := d.analysisTilesRisk()
-	table.printWithHands(tiles34, d.leftCounts)
+	table.printWithHands(handsTiles34, d.leftCounts)
 }
 
 func TestReg(t *testing.T) {
