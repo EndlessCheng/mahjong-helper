@@ -116,6 +116,7 @@ type playerInfo struct {
 	melds                []*mjMeld // 副露
 	meldDiscardsAtGlobal []int
 	meldDiscardsAt       []int
+	isNaki               bool // 是否鸣牌（暗杠不算鸣牌）
 
 	// 注意负数（自摸切）要^
 	globalDiscardTiles *[]int // 全局舍牌
@@ -203,7 +204,6 @@ type roundData struct {
 
 	// 自家手牌
 	counts    []int
-	meldCount int
 
 	// 牌山剩余牌量
 	leftCounts []int
@@ -501,12 +501,18 @@ func (d *roundData) analysis() error {
 
 		player := d.players[who]
 
+		// 不是暗杠则标记该玩家鸣牌了
+		if meldType != meldTypeAnKan {
+			player.isNaki = true
+		}
+
 		// 加杠特殊处理
 		if meldType == meldTypeKakan {
 			if who != 0 {
+				// （不是自家时）修改牌山剩余量
 				d.descLeftCounts(calledTile)
 			} else {
-				// 自家加杠成功
+				// 自家加杠成功，修改手牌
 				d.counts[calledTile]--
 			}
 			// 修改原副露
@@ -520,20 +526,20 @@ func (d *roundData) analysis() error {
 			break
 		}
 
-		// 处理牌山剩余量
-		// TODO: 添加 calledTile 等
+		// 修改玩家副露数据
 		d.players[who].melds = append(d.players[who].melds, meld)
+
 		if who != 0 {
+			// （不是自家时）修改牌山剩余量
+			// 先增后减
 			if meldType != meldTypeAnKan {
 				d.leftCounts[calledTile]++
 			}
 			for _, tile := range meldTiles {
 				d.descLeftCounts(tile)
 			}
-		}
-
-		// 自家副露的处理
-		if who == 0 {
+		} else {
+			// 自家，修改手牌
 			if meldType == meldTypeAnKan {
 				d.counts[meldTiles[0]] = 0
 			} else {
@@ -542,7 +548,6 @@ func (d *roundData) analysis() error {
 					d.counts[tile]--
 				}
 			}
-			d.meldCount++
 		}
 	case d.parser.IsReach():
 		// 立直宣告
