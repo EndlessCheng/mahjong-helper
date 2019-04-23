@@ -167,8 +167,7 @@ func (p *playerInfo) printDiscards() {
 			if disTile >= 27 {
 				tile = util.MahjongU[disTile] // 关注字牌的手切
 			}
-			if len(p.melds) == 0 { // 未副露
-			} else { // 副露
+			if p.isNaki { // 副露
 				fgColor = getOtherDiscardAlertColor(disTile) // 高亮中张手切
 				if util.InInts(i, p.meldDiscardsAt) {
 					bgColor = color.BgWhite // 鸣牌时切的那张牌要背景高亮
@@ -361,11 +360,12 @@ func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
 		var ronPoint float64
 		switch {
 		case player.canIppatsu:
-			// 一发巡的荣和点数
+			// 立直一发巡的荣和点数
 			ronPoint = util.RonPointRiichiIppatsu
 		case player.isReached:
+			// 立直非一发巡的荣和点数
 			ronPoint = util.RonPointRiichiHiIppatsu
-		case len(player.melds) > 0:
+		case player.isNaki:
 			// 副露时的荣和点数（非常粗略地估计）
 			doraCount := 0
 			for _, dora := range d.doraList() {
