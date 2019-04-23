@@ -6,7 +6,7 @@
 - 有人立直或多副露时，显示各张牌的危险度
 - 显示他家手切摸切
 
-详见后面的图文说明
+详见后面的图文[示例](#示例)
 
 ### 支持平台
 
@@ -48,7 +48,8 @@
 
 雀魂需要先启动本程序，再登录网页
 
-## CLI
+
+## 示例
 
 ### 牌效率
 
@@ -168,3 +169,8 @@
 大致思路是根据 [liqi.json](https://github.com/EndlessCheng/mahjong-helper/blob/master/liqi.json) 文件提供的对分析玩家操作有用的字段查找相关关键字，如 `ActionDealTile` `ActionDiscardTile` `ActionChiPengGang` 等，具体修改了哪些内容可以对比雀魂的 JS 代码和我修改后的 https://jianyan.me/majsoul/code-v0.1.4.js
 
 PS: 在网页控制台输入 `GameMgr._inRelease = 0` 即可开启调试模式
+
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
