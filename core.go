@@ -119,10 +119,9 @@ type playerInfo struct {
 	isNaki               bool // 是否鸣牌（暗杠不算鸣牌）
 
 	// 注意负数（自摸切）要^
-	globalDiscardTiles    *[]int // 全局舍牌
-	discardTiles          []int  // 该玩家的舍牌
-	latestDiscardAtGlobal int    // 该玩家最近一次舍牌在 globalDiscardTiles 中的下标，初始为 -1
-	earlyOutsideTiles     []int  // 立直前的1-5巡的外侧牌
+	discardTiles          []int // 该玩家的舍牌
+	latestDiscardAtGlobal int   // 该玩家最近一次舍牌在 globalDiscardTiles 中的下标，初始为 -1
+	earlyOutsideTiles     []int // 立直前的1-5巡的外侧牌
 
 	isReached  bool // 是否立直
 	canIppatsu bool // 是否有一发
@@ -131,11 +130,10 @@ type playerInfo struct {
 	reachTileAt       int // 立直宣言牌在 discardTiles 中的下标，初始为 -1
 }
 
-func newPlayerInfo(name string, selfWindTile int, globalDiscardTiles *[]int) *playerInfo {
+func newPlayerInfo(name string, selfWindTile int) *playerInfo {
 	return &playerInfo{
 		name:                  name,
 		selfWindTile:          selfWindTile,
-		globalDiscardTiles:    globalDiscardTiles,
 		latestDiscardAtGlobal: -1,
 		reachTileAtGlobal:     -1,
 		reachTileAt:           -1,
@@ -225,7 +223,6 @@ func newRoundData(parser DataParser, roundNumber int, dealer int) *roundData {
 	for i := 0; i < playerNumber; i++ {
 		playerWindTile[i] = 27 + (playerNumber-dealer+i)%playerNumber
 	}
-	globalDiscardTiles := []int{}
 	return &roundData{
 		parser:             parser,
 		roundNumber:        roundNumber,
@@ -233,12 +230,12 @@ func newRoundData(parser DataParser, roundNumber int, dealer int) *roundData {
 		dealer:             dealer,
 		counts:             make([]int, 34),
 		leftCounts:         util.InitLeftTiles34(),
-		globalDiscardTiles: globalDiscardTiles,
+		globalDiscardTiles: []int{},
 		players: []*playerInfo{
-			newPlayerInfo("自家", playerWindTile[0], &globalDiscardTiles),
-			newPlayerInfo("下家", playerWindTile[1], &globalDiscardTiles),
-			newPlayerInfo("对家", playerWindTile[2], &globalDiscardTiles),
-			newPlayerInfo("上家", playerWindTile[3], &globalDiscardTiles),
+			newPlayerInfo("自家", playerWindTile[0]),
+			newPlayerInfo("下家", playerWindTile[1]),
+			newPlayerInfo("对家", playerWindTile[2]),
+			newPlayerInfo("上家", playerWindTile[3]),
 		},
 	}
 }
