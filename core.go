@@ -383,16 +383,17 @@ func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
 		case player.isNaki:
 			// 副露时的荣和点数（非常粗略地估计）
 			doraCount := 0
-			for _, dora := range d.doraList() {
-				for _, meld := range player.melds {
-					for _, tile := range meld.tiles {
+			doraList := d.doraList()
+			for _, meld := range player.melds {
+				for _, tile := range meld.tiles {
+					for _, dora := range doraList {
 						if tile == dora {
 							doraCount++
 						}
 					}
-					if meld.containRedFive {
-						doraCount++
-					}
+				}
+				if meld.containRedFive {
+					doraCount++
 				}
 			}
 			ronPoint = util.RonPointOtherNakiWithDora(doraCount)
