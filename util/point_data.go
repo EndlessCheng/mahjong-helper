@@ -14,17 +14,32 @@ const (
 	RonPointDama = 4536.0
 )
 
-// 简单地判断子家副露者的打点 3000-4200-5880-8232
+// 简单地判断子家副露者的打点
+// dora point fan
+// 0    3000  1-3
+// 1    4200  2-4
+// 2    5880  3-5
+// 3    8232  4-6
+// 4    10000 5-7
+// 5    13000 6-8
 // 亲家按 x1.5 算
 // TODO: 暗杠对打点的提升？
 func RonPointOtherNakiWithDora(doraCount int) (point float64) {
-	if doraCount > 3 {
-		doraCount = 3
-	}
 	point = RonPointOtherNaki
 	const doraMulti = 1.4 // TODO: 待调整？
-	for i := 0; i < doraCount; i++ {
+	for i := 0; i < MinInt(3, doraCount); i++ {
 		point *= doraMulti
 	}
+
+	doraCount -= 3
+	if doraCount <= 0 {
+		return point
+	}
+
+	const doraMulti2 = 1.3 // TODO: 待调整？
+	for i := 0; i < MinInt(2, doraCount); i++ {
+		point *= doraMulti2
+	}
+
 	return point
 }
