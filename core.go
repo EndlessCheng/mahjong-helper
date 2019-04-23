@@ -354,6 +354,8 @@ func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
 
 			// 食延的情况 https://tieba.baidu.com/p/3688516724
 
+			// TODO: 同巡舍牌
+
 		}
 
 		// 分析该玩家荣和点数
