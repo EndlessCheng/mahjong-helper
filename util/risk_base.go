@@ -2,7 +2,7 @@ package util
 
 // 根据实际信息，某些牌的危险度远低于无筋（如现物、NC），这些牌可以用来计算筋牌的危险度
 // TODO: 早外产生的筋牌可能要单独计算
-func calcLowRisks27(safeTiles34 []bool, leftTiles34 []int) []int {
+func calcLowRiskTiles27(safeTiles34 []bool, leftTiles34 []int) []int {
 	lowRiskTiles27 := make([]int, 27)
 	const _true = 1
 	for i, safe := range safeTiles34[:27] {
@@ -68,7 +68,7 @@ func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, dora
 	}
 
 	// 生成用来计算筋牌的「安牌」
-	lowRiskTiles27 := calcLowRisks27(safeTiles34, leftTiles34)
+	lowRiskTiles27 := calcLowRiskTiles27(safeTiles34, leftTiles34)
 	// 利用「安牌」计算无筋、筋、半筋、双筋的铳率
 	// TODO: 单独处理宣言牌的筋牌、宣言牌的同色牌的铳率
 	for i := 0; i < 3; i++ {
@@ -200,7 +200,7 @@ func CalculateLeftNoSujiTiles(safeTiles34 []bool, leftTiles34 []int) (leftNoSuji
 	}
 
 	// 根据 No Chance 的安牌更新 isNoSujiTiles27
-	lowRiskTiles27 := calcLowRisks27(safeTiles34, leftTiles34)
+	lowRiskTiles27 := calcLowRiskTiles27(safeTiles34, leftTiles34)
 	const _true = 1
 	for i, isSafe := range lowRiskTiles27 {
 		if isSafe == _true {
