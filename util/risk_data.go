@@ -4,25 +4,26 @@ type tileType int8
 
 // 与 RiskRate 的列一一对应
 const (
-	tileTypeNoSuji5 tileType = iota
-	tileTypeNoSuji46
-	tileTypeNoSuji37
-	tileTypeNoSuji28
-	tileTypeNoSuji19
-	tileTypeHalfSuji5
-	tileTypeHalfSuji46A  // 现物为19
-	tileTypeHalfSuji46B  // 现物为73
-	tileTypeSuji37
-	tileTypeSuji28
-	tileTypeSuji19
-	tileTypeDoubleSuji5
-	tileTypeDoubleSuji46
-	tileTypeYakuHaiLeft3  // 字牌-役牌-剩余3
-	tileTypeYakuHaiLeft2  // 字牌-役牌-剩余2
-	tileTypeYakuHaiLeft1  // 字牌-役牌-剩余1
-	tileTypeOtakazeLeft3  // 字牌-客风-剩余3
-	tileTypeOtakazeLeft2  // 字牌-客风-剩余2
-	tileTypeOtakazeLeft1  // 字牌-客风-剩余1
+	//                                      例如，第9巡的数据为
+	tileTypeNoSuji5      tileType = iota // 12.8
+	tileTypeNoSuji46                     // 13.1
+	tileTypeNoSuji37                     // 9.5
+	tileTypeNoSuji28                     // 8.6
+	tileTypeNoSuji19                     // 7.4
+	tileTypeHalfSuji5                    // 7.4
+	tileTypeHalfSuji46A                  // 7.2 现物为19
+	tileTypeHalfSuji46B                  // 7.9 现物为73
+	tileTypeSuji37                       // 5.5
+	tileTypeSuji28                       // 3.9
+	tileTypeSuji19                       // 1.8
+	tileTypeDoubleSuji5                  // 2.2
+	tileTypeDoubleSuji46                 // 2.3
+	tileTypeYakuHaiLeft3                 // 4.6 字牌-役牌-剩余3
+	tileTypeYakuHaiLeft2                 // 1.9 字牌-役牌-剩余2
+	tileTypeYakuHaiLeft1                 // 0.3 字牌-役牌-剩余1
+	tileTypeOtakazeLeft3                 // 4.0 字牌-客风-剩余3
+	tileTypeOtakazeLeft2                 // 1.8 字牌-客风-剩余2
+	tileTypeOtakazeLeft1                 // 0.2 字牌-客风-剩余1
 )
 
 // [巡目][类型]
