@@ -1,45 +1,46 @@
 package util
 
-// 计算安牌以及可以视作筋牌的 123789 牌
-func calcSujiSafeTiles27(safeTiles34 []bool, leftTiles34 []int) []int {
-	sujiSafeTiles27 := make([]int, 27)
+// 根据实际信息，某些牌的危险度远低于无筋（如现物、NC），这些牌可以用来计算筋牌的危险度
+// TODO: 早外产生的筋牌可能要单独计算
+func calcLowRiskTiles27(safeTiles34 []bool, leftTiles34 []int) []int {
+	lowRiskTiles27 := make([]int, 27)
 	const _true = 1
 	for i, safe := range safeTiles34[:27] {
 		if safe {
-			sujiSafeTiles27[i] = _true
+			lowRiskTiles27[i] = _true
 		}
 	}
 	for i := 0; i < 3; i++ {
 		// 2断，当做打过1
 		if leftTiles34[9*i+1] == 0 {
-			sujiSafeTiles27[9*i] = _true
+			lowRiskTiles27[9*i] = _true
 		}
 		// 3断，当做打过12
 		if leftTiles34[9*i+2] == 0 {
-			sujiSafeTiles27[9*i] = _true
-			sujiSafeTiles27[9*i+1] = _true
+			lowRiskTiles27[9*i] = _true
+			lowRiskTiles27[9*i+1] = _true
 		}
 		// 4断，当做打过23
 		if leftTiles34[9*i+3] == 0 {
-			sujiSafeTiles27[9*i+1] = _true
-			sujiSafeTiles27[9*i+2] = _true
+			lowRiskTiles27[9*i+1] = _true
+			lowRiskTiles27[9*i+2] = _true
 		}
 		// 6断，当做打过78
 		if leftTiles34[9*i+5] == 0 {
-			sujiSafeTiles27[9*i+6] = _true
-			sujiSafeTiles27[9*i+7] = _true
+			lowRiskTiles27[9*i+6] = _true
+			lowRiskTiles27[9*i+7] = _true
 		}
 		// 7断，当做打过89
 		if leftTiles34[9*i+6] == 0 {
-			sujiSafeTiles27[9*i+7] = _true
-			sujiSafeTiles27[9*i+8] = _true
+			lowRiskTiles27[9*i+7] = _true
+			lowRiskTiles27[9*i+8] = _true
 		}
 		// 8断，当做打过9
 		if leftTiles34[9*i+7] == 0 {
-			sujiSafeTiles27[9*i+8] = _true
+			lowRiskTiles27[9*i+8] = _true
 		}
 	}
-	return sujiSafeTiles27
+	return lowRiskTiles27
 }
 
 type RiskTiles34 []float64
@@ -67,24 +68,24 @@ func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, dora
 	}
 
 	// 生成用来计算筋牌的「安牌」
-	sujiSafeTiles27 := calcSujiSafeTiles27(safeTiles34, leftTiles34)
+	lowRiskTiles27 := calcLowRiskTiles27(safeTiles34, leftTiles34)
 	// 利用「安牌」计算无筋、筋、半筋、双筋的铳率
 	// TODO: 单独处理宣言牌的筋牌、宣言牌的同色牌的铳率
 	for i := 0; i < 3; i++ {
 		for j := 0; j < 3; j++ {
 			idx := 9*i + j
-			t := TileTypeTable[j][sujiSafeTiles27[idx+3]]
+			t := TileTypeTable[j][lowRiskTiles27[idx+3]]
 			risk34[idx] = RiskRate[turns][t] * doraMulti(idx, t)
 		}
 		for j := 3; j < 6; j++ {
 			idx := 9*i + j
-			mixSafeTile := sujiSafeTiles27[idx-3]<<1 | sujiSafeTiles27[idx+3]
+			mixSafeTile := lowRiskTiles27[idx-3]<<1 | lowRiskTiles27[idx+3]
 			t := TileTypeTable[j][mixSafeTile]
 			risk34[idx] = RiskRate[turns][t] * doraMulti(idx, t)
 		}
 		for j := 6; j < 9; j++ {
 			idx := 9*i + j
-			t := TileTypeTable[j][sujiSafeTiles27[idx-3]]
+			t := TileTypeTable[j][lowRiskTiles27[idx-3]]
 			risk34[idx] = RiskRate[turns][t] * doraMulti(idx, t)
 		}
 		// 5断，37视作安牌筋
@@ -199,9 +200,9 @@ func CalculateLeftNoSujiTiles(safeTiles34 []bool, leftTiles34 []int) (leftNoSuji
 	}
 
 	// 根据 No Chance 的安牌更新 isNoSujiTiles27
-	sujiSafeTiles27 := calcSujiSafeTiles27(safeTiles34, leftTiles34)
+	lowRiskTiles27 := calcLowRiskTiles27(safeTiles34, leftTiles34)
 	const _true = 1
-	for i, isSafe := range sujiSafeTiles27 {
+	for i, isSafe := range lowRiskTiles27 {
 		if isSafe == _true {
 			isNoSujiTiles27[i] = false
 		}
