@@ -54,7 +54,7 @@
 
 对于 Windows 用户，受 cmd 终端颜色所限，可能会有颜色过暗或过亮的问题
 
-建议下载增强版终端 Cmder（[官网下载](https://cmder.net/) | [百度云备份](https://pan.baidu.com/s/1dm-a01_6pXl3pVkkJ1PaDg) hnys）来获得更好的界面显示
+建议下载增强版终端 Cmder（[官网下载](https://cmder.net/) | [百度云备份](https://pan.baidu.com/s/1Hv1nEs4Wu2EHAnKOWOnRaQ) iug7）来获得更好的界面显示
 
 
 ## 示例
