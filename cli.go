@@ -92,15 +92,19 @@ func (l riskInfoList) printWithHands(hands []int, leftCounts []int) {
 			//}
 			l[i].riskTable.printWithHands(hands, tenpaiRate/100)
 
+			fmt.Print(" ")
+
 			// 打印无筋数量和种类
-			noSujiInfo := util.TilesToStr(l[i].leftNoSujiTiles)
+			noSujiInfo := "" // util.TilesToStr(l[i].leftNoSujiTiles)
 			if len(l[i].leftNoSujiTiles) == 0 {
-				noSujiInfo = "非好型听牌/振听"
+				noSujiInfo = "愚形听牌/振听"
+			} else if len(l[i].leftNoSujiTiles) <= 3 {
+				noSujiInfo = "可能愚形听牌/振听"
 			}
-			if !debugMode {
-				fmt.Printf(" [%d无筋]", len(l[i].leftNoSujiTiles))
+			if noSujiInfo != "" {
+				fmt.Printf("[%d无筋: %s]", len(l[i].leftNoSujiTiles), noSujiInfo)
 			} else {
-				fmt.Printf(" [%d无筋: %s]", len(l[i].leftNoSujiTiles), noSujiInfo)
+				fmt.Printf("[%d无筋]", len(l[i].leftNoSujiTiles))
 			}
 
 			fmt.Println()
