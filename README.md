@@ -19,7 +19,7 @@
 
 1. 前往 [release](https://github.com/EndlessCheng/mahjong-helper/releases/latest) 页面下载程序
 
-2. 安装浏览器扩展 Header Editor（不清楚如何安装可以参考[这篇](https://tieba.baidu.com/p/5956122477)）
+2. 安装浏览器扩展 Header Editor（不清楚如何安装可以参考[这篇](https://tieba.baidu.com/p/5956122477?pid=122936988723#122936988723)）
 
     安装好扩展后点进该扩展的`管理`界面，点击`导入和导出`，在下载规则中填入 `https://jianyan.me/js/mahjong-helper.json`，点击右侧的下载按钮，然后点击下方的`保存`
 
