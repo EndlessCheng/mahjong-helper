@@ -23,11 +23,16 @@ func Test_majsoul_analysis(t *testing.T) {
 	//
 	accountID := -1
 	startLo := 1
+	endLo := -1
 
 	majsoulRoundData := &majsoulRoundData{accountID: accountID}
 	majsoulRoundData.roundData = newRoundData(majsoulRoundData, 0, 0)
 
-	for lo, line := range strings.Split(string(logData), "\n")[startLo-1:] {
+	lines := strings.Split(string(logData), "\n")
+	if endLo == -1 {
+		endLo = len(lines)
+	}
+	for lo, line := range lines[startLo-1:endLo] {
 		fmt.Println(lo + 1)
 		json.Unmarshal([]byte(line), &s)
 
