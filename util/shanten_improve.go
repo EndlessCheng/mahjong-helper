@@ -87,6 +87,9 @@ type WaitsWithImproves13 struct {
 	FuritenRate float64
 
 	// TODO: 役种提醒
+	// 是否有三色同顺
+	CanSanshokuDoujun bool
+
 	// TODO: 赤牌改良提醒
 	// TODO: 打点期望
 }
@@ -246,6 +249,30 @@ func CalculateShantenWithImproves13(playerInfo *PlayerInfo) (r *WaitsWithImprove
 		improveWaitsCount34[i] = waitsCount
 	}
 	avgAgariRate := 0.0
+	canSanshokuDoujun := false
+	checkSanshokuDoujun := func(_shanten13 int, _waits Waits) {
+		// 对于听牌及一向听，判断是否有三色同顺可能
+		if playerInfo.IsOpen {
+			return
+		}
+		if _shanten13 != 0 {
+			return
+		}
+		for tile, left := range _waits {
+			if left == 0 {
+				continue
+			}
+			tiles34[tile]++
+			if FindNormalYakuSimple(tiles34) {
+				canSanshokuDoujun = true
+			}
+			tiles34[tile]--
+			if canSanshokuDoujun {
+				break
+			}
+		}
+	}
+	checkSanshokuDoujun(shanten13, waits)
 
 	for i := 0; i < 34; i++ {
 		if leftTiles34[i] == 0 {
@@ -274,6 +301,8 @@ func CalculateShantenWithImproves13(playerInfo *PlayerInfo) (r *WaitsWithImprove
 					if newShanten13 == 0 {
 						maxAgariRate = math.Max(maxAgariRate, CalculateAgariRate(newWaits, playerInfo.DiscardTiles))
 					}
+					// 若前进后听牌（当前为一向听），检查是否有三色同顺
+					checkSanshokuDoujun(newShanten13, newWaits)
 				}
 				tiles34[j]++
 			}
@@ -325,6 +354,7 @@ func CalculateShantenWithImproves13(playerInfo *PlayerInfo) (r *WaitsWithImprove
 		ImproveWayCount:          improveWayCount,
 		AvgImproveWaitsCount:     float64(waitsCount),
 		AvgAgariRate:             avgAgariRate,
+		CanSanshokuDoujun:        canSanshokuDoujun,
 	}
 
 	// 对于听牌及一向听，判断是否有振听可能

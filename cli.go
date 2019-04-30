@@ -278,11 +278,11 @@ func printWaitsWithImproves13_twoRows(result13 *util.WaitsWithImproves13, discar
 }
 
 /*
-4[ 4.56] 切 8饼 => 44.50% 参考和率[ 4 改良] [7p 7s] [振听]
+4[ 4.56] 切 8饼 => 44.50% 参考和率[ 4 改良] [7p 7s] [三色] [振听]
 
-31[33.58] 切7索 => 5.23听牌数 [16改良] [6789p 56789s] [可能振听]
+31[33.58] 切7索 =>  5.23听牌数 [16改良] [6789p 56789s] [可能振听]
 
-48[50.64] 切5饼 => 24.25一向听进张 [12改良] [123456789p 56789s]
+48[50.64] 切5饼 => 24.25一向听 [12改良] [123456789p 56789s]
 
 31[33.62] 77索碰,切5饼 => 5.48听牌数 [15 改良] [123456789p]
 
@@ -358,9 +358,8 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 	//	// TODO: 提示危险度！
 	//}
 
-	fmt.Print(" ")
-
 	// 打印改良数
+	fmt.Print(" ")
 	if len(result13.Improves) > 0 {
 		fmt.Printf("[%2d改良]", len(result13.Improves))
 	} else {
@@ -368,10 +367,15 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 		fmt.Print(strings.Repeat("　", 2)) // 全角空格
 	}
 
-	fmt.Print(" ")
-
 	// 打印进张类型
+	fmt.Print(" ")
 	fmt.Print(util.TilesToStrWithBracket(waitTiles))
+
+	// 打印容易忽略的役种
+	if result13.CanSanshokuDoujun {
+		fmt.Print(" ")
+		color.New(color.FgHiGreen).Printf("[三色]")
+	}
 
 	// 打印振听提示
 	if result13.FuritenRate > 0 {
