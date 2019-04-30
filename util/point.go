@@ -3,6 +3,9 @@ package util
 // TODO: 考虑大三元和大四喜的包牌？
 
 func roundUpPoint(point int) int {
+	if point == 0 {
+		return 0
+	}
 	return ((point-1)/100 + 1) * 100
 }
 
@@ -50,4 +53,14 @@ func CalcPointTsumo(han int, fu int, yakumanTimes int, isParent bool) (childPoin
 		parentPoint = 2 * basicPoint
 	}
 	return roundUpPoint(childPoint), roundUpPoint(parentPoint)
+}
+
+// 番数 符数 役满倍数 是否为亲家
+// 返回自摸时的点数
+func CalcPointTsumoSum(han int, fu int, yakumanTimes int, isParent bool) int {
+	childPoint, parentPoint := CalcPointTsumo(han, fu, yakumanTimes, isParent)
+	if isParent {
+		return 3 * childPoint
+	}
+	return 2*childPoint + parentPoint
 }
