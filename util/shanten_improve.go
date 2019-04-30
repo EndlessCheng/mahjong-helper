@@ -263,7 +263,7 @@ func CalculateShantenWithImproves13(playerInfo *PlayerInfo) (r *WaitsWithImprove
 				continue
 			}
 			tiles34[tile]++
-			if FindNormalYakuSimple(tiles34) {
+			if FindYakuList(nil) != nil {
 				canSanshokuDoujun = true
 			}
 			tiles34[tile]--

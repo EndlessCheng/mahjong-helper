@@ -7,9 +7,11 @@ func roundUpFu(fu int) int {
 }
 
 // 根据手牌拆解结果，结合场况计算符数
-func (d *DivideResult) Fu(winTile int, isTsumo bool, melds []model.Meld, roundWindTile int, selfWindTile int) int {
+func (hi *HandInfo) Fu() int {
+	divideResult := hi.Divide
+
 	// 特殊：七对子计 25 符
-	if d.IsChiitoi {
+	if divideResult.IsChiitoi {
 		return 25
 	}
 
@@ -19,10 +21,10 @@ func (d *DivideResult) Fu(winTile int, isTsumo bool, melds []model.Meld, roundWi
 	fu := baseFu
 
 	// 暗刻加符
-	for _, tile := range d.KotsuTiles {
+	for _, tile := range divideResult.KotsuTiles {
 		var _fu int
 		// 荣和算明刻
-		if !isTsumo && tile == winTile {
+		if !hi.IsTsumo && tile == hi.WinTile {
 			_fu = 2
 		} else {
 			_fu = 4
@@ -34,7 +36,7 @@ func (d *DivideResult) Fu(winTile int, isTsumo bool, melds []model.Meld, roundWi
 	}
 
 	// 明刻、明杠、暗杠加符
-	for _, meld := range melds {
+	for _, meld := range hi.Melds {
 		_fu := 0
 		switch meld.MeldType {
 		case model.MeldTypePon:
@@ -52,16 +54,16 @@ func (d *DivideResult) Fu(winTile int, isTsumo bool, melds []model.Meld, roundWi
 	}
 
 	// 雀头加符（场风与自风重合时计 4 符）
-	if d.PairTile == roundWindTile || d.PairTile == selfWindTile || d.PairTile >= 31 {
+	if divideResult.PairTile == hi.RoundWindTile || divideResult.PairTile == hi.SelfWindTile || divideResult.PairTile >= 31 {
 		fu += 2
-		if roundWindTile == selfWindTile {
+		if hi.RoundWindTile == hi.SelfWindTile && divideResult.PairTile == hi.RoundWindTile {
 			fu += 2
 		}
 	}
 
 	// 是否鸣牌
 	isNaki := false
-	for _, meld := range melds {
+	for _, meld := range hi.Melds {
 		if meld.MeldType != model.MeldTypeAnkan {
 			isNaki = true
 			break
@@ -69,10 +71,10 @@ func (d *DivideResult) Fu(winTile int, isTsumo bool, melds []model.Meld, roundWi
 	}
 
 	// 特殊：门清 + 两面自摸 + 平和型，计 20 符
-	if !isNaki && isTsumo && fu == baseFu {
+	if !isNaki && hi.IsTsumo && fu == baseFu {
 		// 考虑能否两面和牌
-		for _, tile := range d.ShuntsuFirstTiles {
-			if tile%9 < 6 && tile == winTile || tile%9 > 0 && tile+2 == winTile {
+		for _, tile := range divideResult.ShuntsuFirstTiles {
+			if tile%9 < 6 && tile == hi.WinTile || tile%9 > 0 && tile+2 == hi.WinTile {
 				return 20
 			}
 		}
@@ -84,21 +86,21 @@ func (d *DivideResult) Fu(winTile int, isTsumo bool, melds []model.Meld, roundWi
 	}
 
 	// 自摸加符
-	if isTsumo {
+	if hi.IsTsumo {
 		fu += 2
 	}
 
 	// 边张、坎张、单骑和牌加符
 	// 考虑能否不为两面和牌
-	if d.PairTile == winTile {
+	if divideResult.PairTile == hi.WinTile {
 		fu += 2 // 单骑和牌加符
 	} else {
-		for _, tile := range d.ShuntsuFirstTiles {
-			if tile+1 == winTile {
+		for _, tile := range divideResult.ShuntsuFirstTiles {
+			if tile+1 == hi.WinTile {
 				fu += 2 // 坎张和牌加符
 				break
 			}
-			if tile%9 == 0 && tile+2 == winTile || tile%9 == 6 && tile == winTile {
+			if tile%9 == 0 && tile+2 == hi.WinTile || tile%9 == 6 && tile == hi.WinTile {
 				fu += 2 // 边张和牌加符（123 和 3，789 和 7）
 				break
 			}

@@ -1,98 +1,129 @@
 package util
 
+type YakuType int
+
 const (
 	// https://en.wikipedia.org/wiki/Japanese_Mahjong_yaku
-	YakuChiitoi = iota
+	// Special criteria
+	YakuRiichi YakuType = iota
+	YakuChiitoi
 
+	// Yaku based on luck
+	YakuTsumo
+	YakuIppatsu
+	YakuHaitei
+	YakuHoutei
+	YakuRinshan
+	YakuChankan
+	YakuDaburii
+
+	// Yaku based on sequences
 	YakuPinfu
-	YakuIipeikou
 	YakuRyanpeikou
-	YakuSanshokuDoujun
-	YakuIttsuu
+	YakuIipeikou
+	YakuSanshokuDoujun  // *
+	YakuIttsuu          // *
 
+	// Yaku based on triplets and/or quads
 	YakuToitoi
-	YakuSanAnkou // TODO 注意荣和的刻子是明刻
+	YakuSanAnkou  // TODO 注意荣和的刻子是明刻
 	YakuSanshokuDoukou
-	YakuSanKantsu  // TODO
+	YakuSanKantsu
 
+	// Yaku based on terminal or honor tiles
 	YakuTanyao
 	YakuYakuhai
-	YakuChanta
-	YakuJunchan
-	YakuHonroutou
+	YakuChanta     // * 必须有顺子
+	YakuJunchan    // * 必须有顺子
+	YakuHonroutou  // 七对也算
 	YakuShousangen
 
-	YakuHonitsu
-	YakuChinitsu
+	// Yaku based on suits
+	YakuHonitsu   // *
+	YakuChinitsu  // *
 
 	// TODO: 役满
 )
 
-type handInfo struct {
-	divideResult  *DivideResult
-	melds         [][]int
-	winTile       int
-	roundWindTile int
-	selfWindTile  int
+var YakuHanMap = map[YakuType]int{
+	YakuRiichi:  1,
+	YakuChiitoi: 2,
+
+	YakuTsumo:   1,
+	YakuIppatsu: 1,
+	YakuHaitei:  1,
+	YakuHoutei:  1,
+	YakuRinshan: 1,
+	YakuChankan: 1,
+	YakuDaburii: 2,
+
+	YakuPinfu:          1,
+	YakuRyanpeikou:     3,
+	YakuIipeikou:       1,
+	YakuSanshokuDoujun: 2,
+	YakuIttsuu:         2,
+
+	YakuToitoi:         2,
+	YakuSanAnkou:       2,
+	YakuSanshokuDoukou: 2,
+	YakuSanKantsu:      2,
+
+	YakuTanyao:     1,
+	YakuYakuhai:    1,
+	YakuChanta:     2,
+	YakuJunchan:    3,
+	YakuHonroutou:  2,
+	YakuShousangen: 2,
+
+	YakuHonitsu:  3,
+	YakuChinitsu: 6,
 }
 
-type yakuCheckerFunc func(hi *handInfo, dr DivideResult, melds [][]int) bool
+var YakumanTimesMap = map[YakuType]int{
 
-func (hi *handInfo) isYakuTile(tile int) bool {
-	return tile >= 31 || tile == hi.roundWindTile || tile == hi.selfWindTile
 }
 
-func (hi *handInfo) chiitoi() bool {
-	return hi.divideResult.IsChiitoi
+//type yakuCheckerFunc func(hi *HandInfo, dr DivideResult, melds [][]int) bool
+
+func (hi *HandInfo) isYakuTile(tile int) bool {
+	return tile >= 31 || tile == hi.RoundWindTile || tile == hi.SelfWindTile
 }
 
-func (hi *handInfo) pinfu() bool {
+func (hi *HandInfo) chiitoi() bool {
+	return hi.Divide.IsChiitoi
+}
+
+func (hi *HandInfo) pinfu() bool {
 	// 雀头不能是役牌，且不能是单骑和牌
-	dr := hi.divideResult
-	if hi.isYakuTile(hi.winTile) || hi.winTile == dr.PairTile {
+	if hi.isYakuTile(hi.WinTile) || hi.WinTile == hi.Divide.PairTile {
 		return false
 	}
-	drs := hi.divideResult.ShuntsuFirstTiles
+	drs := hi.Divide.ShuntsuFirstTiles
+	// 不能有刻子
 	if len(drs) < 4 {
 		return false
 	}
-	for _, s := range drs {
-		if hi.winTile == s {
-			// 不能和 89 边张
-			return s%9 <= 5
-		}
-		if hi.winTile == s+2 {
-			// 不能和 12 边张
-			return s%9 >= 1
-		}
-	}
-	return false
-}
-
-func (hi *handInfo) ryanpeikou() bool {
-	drs := hi.divideResult.ShuntsuFirstTiles
-	if len(drs) < 4 {
-		return false
-	}
-	return drs[0] == drs[1] && drs[2] == drs[3]
-}
-
-// 需要先判断是否为两杯口
-func (hi *handInfo) iipeikou() bool {
-	drs := hi.divideResult.ShuntsuFirstTiles
-	if len(drs) < 2 {
-		return false
-	}
-	for i := range drs[:len(drs)-1] {
-		if drs[i] == drs[i+1] {
+	for _, tile := range drs {
+		// 可以两面和牌
+		if tile%9 < 6 && tile == hi.WinTile || tile%9 > 0 && tile+2 == hi.WinTile {
 			return true
 		}
 	}
+	// 没有两面和牌
 	return false
 }
 
-func (hi *handInfo) sanshokuDoujun() bool {
-	drs := hi.divideResult.ShuntsuFirstTiles
+func (hi *HandInfo) ryanpeikou() bool {
+	return hi.Divide.IsRyanpeikou
+}
+
+// 两杯口时无一杯口
+func (hi *HandInfo) iipeikou() bool {
+	return hi.Divide.IsIipeikou
+}
+
+func (hi *HandInfo) sanshokuDoujun() bool {
+	drs := hi.Divide.ShuntsuFirstTiles
 	if len(drs) < 3 {
 		return false
 	}
@@ -118,8 +149,8 @@ func (hi *handInfo) sanshokuDoujun() bool {
 	return false
 }
 
-func (hi *handInfo) ittsuu() bool {
-	drs := hi.divideResult.ShuntsuFirstTiles
+func (hi *HandInfo) ittsuu() bool {
+	drs := hi.Divide.ShuntsuFirstTiles
 	if len(drs) < 3 {
 		return false
 	}
@@ -137,47 +168,44 @@ func (hi *handInfo) ittsuu() bool {
 	//	len(uniqueS) == 4 && drs[1]%9 == 0 && drs[1] == drs[2]-3 && drs[1] == drs[3]-6
 }
 
-func (hi *handInfo) toitoi() bool {
-	return len(hi.divideResult.KotsuTiles) == 4
+func (hi *HandInfo) toitoi() bool {
+	return len(hi.Divide.KotsuTiles) == 4
 }
 
-//
-//func (hi *handInfo) sanAnkou() bool {
+//func (hi *HandInfo) sanAnkou() bool {
 //	cntAnkou := 0
 //	for
-//	return len(hi.divideResult.KotsuTiles) == 4
+//	return len(hi.Divide.KotsuTiles) == 4
 //}
 
-//
-
-//var yakuCheckerMap = map[int]yakuCheckerFunc{
-//	//1: (*handInfo).Chiitoi,
-//}
-//
-//var YakuMap = map[int]string{
-//
-//}
-//
-
-//type FullDivideResult struct {
-//	DivideResult
-//	Melds           []model.Meld
-//	RoundWindTile34 int // 场风
-//	SelfWindTile34  int // 自风
-//}
-
-
-
-// 先找个三色看看~
-func FindNormalYaku(hi *handInfo) bool {
-	return hi.sanshokuDoujun()
-}
-
-func FindNormalYakuSimple(tiles34 []int) bool {
-	for _, result := range DivideTiles34(tiles34) {
-		if FindNormalYaku(&handInfo{divideResult: result}) {
-			return true
+func (hi *HandInfo) sanshokuDoukou() bool {
+	drk := hi.Divide.KotsuTiles
+	if len(drk) < 3 {
+		return false
+	}
+	var kMan, kPin, kSou []int
+	for _, tile := range drk {
+		if isMan(tile) {
+			kMan = append(kMan, tile)
+		} else if isPin(tile) {
+			kPin = append(kPin, tile)
+		} else if isSou(tile) {
+			kSou = append(kSou, tile)
+		}
+	}
+	for _, man := range kMan {
+		for _, pin := range kPin {
+			for _, sou := range kSou {
+				if man == pin-9 && man == sou-18 {
+					return true
+				}
+			}
 		}
 	}
 	return false
+}
+
+func FindYakuList(hi *HandInfo) (yakuList []YakuType) {
+
+	return
 }

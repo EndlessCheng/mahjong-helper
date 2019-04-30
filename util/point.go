@@ -64,3 +64,22 @@ func CalcPointTsumoSum(han int, fu int, yakumanTimes int, isParent bool) int {
 	}
 	return 2*childPoint + parentPoint
 }
+
+// TODO: 振听只能自摸
+
+// 计算荣和的点数
+func CalcRonPointWithHands(handInfo *_handInfo) (ronPoint int) {
+	for _, result := range DivideTiles34(handInfo.HandTiles34) {
+		hi := &HandInfo{
+			handInfo,
+			result,
+		}
+		//yakuTypes := FindYakuList(hi)
+		han := 0
+		fu := hi.Fu()
+		yakumanTimes := 0
+		point := CalcPointRon(han, fu, yakumanTimes, handInfo.IsParent)
+		ronPoint = MaxInt(ronPoint, point)
+	}
+	return
+}

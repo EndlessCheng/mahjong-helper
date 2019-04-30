@@ -20,8 +20,8 @@ func TestFindNormalYaku(t *testing.T) {
 		tiles34 := MustStrToTiles34(tiles)
 		for _, result := range DivideTiles34(tiles34) {
 			fmt.Printf("%s ", result.String())
-			fmt.Printf("%v", FindNormalYaku(&handInfo{
-				divideResult: result,
+			fmt.Printf("%v", FindYakuList(&HandInfo{
+				Divide: result,
 			}))
 		}
 		fmt.Println()
