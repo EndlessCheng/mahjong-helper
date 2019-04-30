@@ -130,6 +130,15 @@ func isSou(tile int) bool {
 	return tile >= 18 && tile < 27
 }
 
+// 是否为幺九牌
+func isYaochupai(tile int) bool {
+	if tile >= 27 {
+		return true
+	}
+	t := tile % 9
+	return t == 0 || t == 8
+}
+
 //
 
 func CountOfTiles34(tiles34 []int) (count int) {

@@ -2,38 +2,41 @@ package util
 
 import "fmt"
 
-// 14 张牌的某种拆解结果
-// 若该拆解没有刻子和顺子则为七对子
+// 3k+2 张牌的某种拆解结果
 type DivideResult struct {
-	// 雀头牌
-	pairTile int
-	// 刻子牌
-	KotsuTiles []int
-	// 顺子牌的第一张（如 678s 的 6s）
-	ShuntsuFirstTiles []int
+	PairTile          int   // 雀头牌
+	KotsuTiles        []int // 刻子牌（len(KotsuTiles) == 4 即为对对和）
+	ShuntsuFirstTiles []int // 顺子牌的第一张（如 678s 的 6s）
+
+	// 由于生成 winTable 的代码是不考虑具体是什么牌的，
+	// 所以只能判断如对对和、七对子、九莲宝灯、一气通贯、两杯口、一杯口等和「形状」有关的役，
+	// 像国士无双、断幺、全带、三色、绿一色等，和具体的牌/位置有关的役是判断不出的，需要另加逻辑判断
+	IsChiitoi       bool // 七对子
+	IsChuurenPoutou bool // 九莲宝灯
+	IsIttsuu        bool // 一气通贯
+	IsRyanpeikou    bool // 两杯口
+	IsIipeikou      bool // 一杯口
 }
 
 // 调试用
 func (d *DivideResult) String() string {
-	humanTiles := []string{TilesToStr([]int{d.pairTile, d.pairTile})}
+	if d.IsChiitoi {
+		return "[七对子]"
+	}
+	humanTilesList := []string{TilesToStr([]int{d.PairTile, d.PairTile})}
 	for _, kotsuTile := range d.KotsuTiles {
-		humanTiles = append(humanTiles, TilesToStr([]int{kotsuTile, kotsuTile, kotsuTile}))
+		humanTilesList = append(humanTilesList, TilesToStr([]int{kotsuTile, kotsuTile, kotsuTile}))
 	}
 	for _, shuntsuFirstTile := range d.ShuntsuFirstTiles {
-		humanTiles = append(humanTiles, TilesToStr([]int{shuntsuFirstTile, shuntsuFirstTile + 1, shuntsuFirstTile + 2}))
+		humanTilesList = append(humanTilesList, TilesToStr([]int{shuntsuFirstTile, shuntsuFirstTile + 1, shuntsuFirstTile + 2}))
 	}
-	return fmt.Sprint(humanTiles)
+	return fmt.Sprint(humanTilesList)
 }
 
-// 判断是否为七对子
-func (d *DivideResult) IsChiitoitsu() bool {
-	return len(d.KotsuTiles) == 0 && len(d.ShuntsuFirstTiles) == 0
-}
-
-// 14张牌，返回所有可能的拆解，没有拆解表示未和牌
+// 3k+2 张牌，返回所有可能的拆解，没有拆解表示未和牌
 // http://hp.vector.co.jp/authors/VA046927/mjscore/mjalgorism.html
 // http://hp.vector.co.jp/authors/VA046927/mjscore/AgariIndex.java
-func DivideTiles34(tiles34 []int) (divideResults []DivideResult) {
+func DivideTiles34(tiles34 []int) (divideResults []*DivideResult) {
 	key := 0
 	bitPos := -1
 
@@ -102,6 +105,18 @@ func DivideTiles34(tiles34 []int) (divideResults []DivideResult) {
 		return
 	}
 
+	// 3bit  0: 刻子数(0～4)
+	// 3bit  3: 顺子数(0～4)
+	// 4bit  6: 雀头位置(1～13)
+	// 4bit 10: 面子位置1(0～13) 刻子在前，顺子在后
+	// 4bit 14: 面子位置2(0～13)
+	// 4bit 18: 面子位置3(0～13)
+	// 4bit 22: 面子位置4(0～13)
+	// 1bit 26: 七对子
+	// 1bit 27: 九莲宝灯
+	// 1bit 28: 一气通贯
+	// 1bit 29: 两杯口
+	// 1bit 30: 一杯口
 	for _, r := range results {
 		// 雀头
 		pairTile := pos34InHand14[(r>>6)&0xF]
@@ -120,10 +135,15 @@ func DivideTiles34(tiles34 []int) (divideResults []DivideResult) {
 			shuntsuFirstTiles[i] = pos34InHand14[(r>>uint(10+(numKotsu+i)*4))&0xF]
 		}
 
-		divideResults = append(divideResults, DivideResult{
-			pairTile:          pairTile,
+		divideResults = append(divideResults, &DivideResult{
+			PairTile:          pairTile,
 			KotsuTiles:        kotsuTiles,
 			ShuntsuFirstTiles: shuntsuFirstTiles,
+			IsChiitoi:         r&(1<<26) != 0,
+			IsChuurenPoutou:   r&(1<<27) != 0,
+			IsIttsuu:          r&(1<<28) != 0,
+			IsRyanpeikou:      r&(1<<29) != 0,
+			IsIipeikou:        r&(1<<30) != 0,
 		})
 	}
 

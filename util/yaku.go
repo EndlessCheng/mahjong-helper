@@ -11,7 +11,7 @@ const (
 	YakuIttsuu
 
 	YakuToitoi
-	YakuSanAnkou
+	YakuSanAnkou // TODO 注意荣和的刻子是明刻
 	YakuSanshokuDoukou
 	YakuSanKantsu  // TODO
 
@@ -29,7 +29,7 @@ const (
 )
 
 type handInfo struct {
-	divideResult  DivideResult
+	divideResult  *DivideResult
 	melds         [][]int
 	winTile       int
 	roundWindTile int
@@ -43,13 +43,13 @@ func (hi *handInfo) isYakuTile(tile int) bool {
 }
 
 func (hi *handInfo) chiitoi() bool {
-	return hi.divideResult.IsChiitoitsu()
+	return hi.divideResult.IsChiitoi
 }
 
 func (hi *handInfo) pinfu() bool {
 	// 雀头不能是役牌，且不能是单骑和牌
 	dr := hi.divideResult
-	if hi.isYakuTile(hi.winTile) || hi.winTile == dr.pairTile {
+	if hi.isYakuTile(hi.winTile) || hi.winTile == dr.PairTile {
 		return false
 	}
 	drs := hi.divideResult.ShuntsuFirstTiles
@@ -158,6 +158,15 @@ func (hi *handInfo) toitoi() bool {
 //
 //}
 //
+
+//type FullDivideResult struct {
+//	DivideResult
+//	Melds           []model.Meld
+//	RoundWindTile34 int // 场风
+//	SelfWindTile34  int // 自风
+//}
+
+
 
 // 先找个三色看看~
 func FindNormalYaku(hi *handInfo) bool {
