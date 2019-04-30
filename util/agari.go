@@ -5,16 +5,16 @@ import "fmt"
 // 3k+2 张牌的某种拆解结果
 type DivideResult struct {
 	PairTile          int   // 雀头牌
-	KotsuTiles        []int // 刻子牌（len(KotsuTiles) == 4 即为对对和）
+	KotsuTiles        []int // 刻子牌（注意 len(KotsuTiles) 为自摸时的暗刻数，荣和时的暗刻数需要另加逻辑判断）
 	ShuntsuFirstTiles []int // 顺子牌的第一张（如 678s 的 6s）
 
 	// 由于生成 winTable 的代码是不考虑具体是什么牌的，
-	// 所以只能判断如对对和、七对子、九莲宝灯、一气通贯、两杯口、一杯口等和「形状」有关的役，
+	// 所以只能判断如七对子、九莲宝灯、一气通贯、两杯口、一杯口等和「形状」有关的役，
 	// 像国士无双、断幺、全带、三色、绿一色等，和具体的牌/位置有关的役是判断不出的，需要另加逻辑判断
 	IsChiitoi       bool // 七对子
 	IsChuurenPoutou bool // 九莲宝灯
-	IsIttsuu        bool // 一气通贯
-	IsRyanpeikou    bool // 两杯口
+	IsIttsuu        bool // 一气通贯（注意：未考虑副露！）
+	IsRyanpeikou    bool // 两杯口（IsRyanpeikou == true 时 IsIipeikou == false）
 	IsIipeikou      bool // 一杯口
 }
 

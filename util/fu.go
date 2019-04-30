@@ -17,14 +17,16 @@ func (hi *HandInfo) Fu() int {
 
 	const baseFu = 20
 
-	// 符底
+	// 符底 20 符
 	fu := baseFu
 
 	// 暗刻加符
+	// 若刻子数不等于暗刻数，则荣和的牌被算到了刻子中
+	ronKotsu := len(divideResult.KotsuTiles) != hi.numAnkou()
 	for _, tile := range divideResult.KotsuTiles {
 		var _fu int
 		// 荣和算明刻
-		if !hi.IsTsumo && tile == hi.WinTile {
+		if ronKotsu && tile == hi.WinTile {
 			_fu = 2
 		} else {
 			_fu = 4
@@ -54,7 +56,7 @@ func (hi *HandInfo) Fu() int {
 	}
 
 	// 雀头加符（场风与自风重合时计 4 符）
-	if divideResult.PairTile == hi.RoundWindTile || divideResult.PairTile == hi.SelfWindTile || divideResult.PairTile >= 31 {
+	if hi.isYakuTile(divideResult.PairTile) {
 		fu += 2
 		if hi.RoundWindTile == hi.SelfWindTile && divideResult.PairTile == hi.RoundWindTile {
 			fu += 2
@@ -62,15 +64,9 @@ func (hi *HandInfo) Fu() int {
 	}
 
 	// 是否鸣牌
-	isNaki := false
-	for _, meld := range hi.Melds {
-		if meld.MeldType != model.MeldTypeAnkan {
-			isNaki = true
-			break
-		}
-	}
+	isNaki := hi.isNaki()
 
-	// 特殊：门清 + 两面自摸 + 平和型，计 20 符
+	// 特殊：门清 + 自摸 + 平和型，计 20 符
 	if !isNaki && hi.IsTsumo && fu == baseFu {
 		// 考虑能否两面和牌
 		for _, tile := range divideResult.ShuntsuFirstTiles {
@@ -80,8 +76,8 @@ func (hi *HandInfo) Fu() int {
 		}
 	}
 
-	// 门清加符
-	if !isNaki {
+	// 门清荣和加符
+	if !isNaki && !hi.IsTsumo {
 		fu += 10
 	}
 

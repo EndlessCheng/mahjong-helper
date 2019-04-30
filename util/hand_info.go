@@ -16,5 +16,7 @@ type _handInfo struct {
 
 type HandInfo struct {
 	*_handInfo
-	Divide *DivideResult // 手牌解析结果
+	Divide        *DivideResult // 手牌解析结果
+	_containHonor *bool
+	_isNaki       *bool
 }
