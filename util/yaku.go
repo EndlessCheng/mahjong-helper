@@ -161,7 +161,7 @@ func (hi *HandInfo) ittsuu() bool {
 			shuntsuFirstTiles = append(shuntsuFirstTiles, meld.Tiles[0])
 		}
 	}
-	// 若有 123，找是否有 456 和 789
+	// 若有 123，找是否有同色的 456 和 789
 	for _, tile := range shuntsuFirstTiles {
 		if tile%9 == 0 {
 			has456 := false

@@ -55,7 +55,7 @@ func (hi *HandInfo) Fu() int {
 		fu += _fu
 	}
 
-	// 雀头加符（场风与自风重合时计 4 符）
+	// 雀头加符（连风雀头计 4 符）
 	if hi.isYakuTile(divideResult.PairTile) {
 		fu += 2
 		if hi.RoundWindTile == hi.SelfWindTile && divideResult.PairTile == hi.RoundWindTile {
