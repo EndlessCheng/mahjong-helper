@@ -87,10 +87,14 @@ var YakuNameMap = map[int]string{
 	YakuChinitsu: "清一色",
 }
 
+// 调试用
 func YakuTypesToStr(yakuTypes []int) string {
 	names := []string{}
 	for _, t := range yakuTypes {
 		names = append(names, YakuNameMap[t])
+	}
+	if len(names) == 0 {
+		return "[无役]"
 	}
 	return fmt.Sprint(names)
 }

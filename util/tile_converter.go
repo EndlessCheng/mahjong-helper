@@ -82,6 +82,45 @@ func MustStrToTiles34(humanTiles string) []int {
 	return tiles34
 }
 
+// e.g. "11122z" => [27, 27, 27, 28, 28]
+func StrToTiles(humanTiles string) (tiles []int, err error) {
+	defer func() {
+		if er := recover(); er != nil {
+			err = errors.New("[StrToTiles34] 参数错误: " + humanTiles)
+		}
+	}()
+
+	humanTiles = strings.TrimSpace(humanTiles)
+	if humanTiles == "" {
+		return nil, errors.New("[StrToTiles34] 参数错误: 处理的手牌不能为空")
+	}
+
+	for _, split := range strings.Split(humanTiles, " ") {
+		split = strings.TrimSpace(split)
+		if len(split) < 2 {
+			return nil, errors.New("[StrToTiles34] 参数错误: " + humanTiles)
+		}
+		tileType := split[len(split)-1:]
+		for _, c := range split[:len(split)-1] {
+			tile := string(c) + tileType
+			tile34, er := StrToTile34(tile)
+			if er != nil {
+				return nil, er
+			}
+			tiles = append(tiles, tile34)
+		}
+	}
+	return
+}
+
+func MustStrToTiles(humanTiles string) []int {
+	tiles, err := StrToTiles(humanTiles)
+	if err != nil {
+		panic(err)
+	}
+	return tiles
+}
+
 //
 
 // e.g. [9, 11, 27] => "13p 1z"
