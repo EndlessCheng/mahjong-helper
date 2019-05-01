@@ -1,11 +1,11 @@
 package util
 
-type YakuType int
+import "fmt"
 
 const (
 	// https://en.wikipedia.org/wiki/Japanese_Mahjong_yaku
 	// Special criteria
-	YakuRiichi YakuType = iota
+	YakuRiichi int = iota
 	YakuChiitoi
 
 	// Yaku based on luck
@@ -45,7 +45,61 @@ const (
 	// TODO: 役满
 )
 
-var YakuHanMap = map[YakuType]int{
+const maxYakuType = 64
+
+var YakuNameMap = map[int]string{
+	// Special criteria
+	YakuRiichi:  "立直",
+	YakuChiitoi: "七对",
+
+	// Yaku based on luck
+	YakuTsumo:   "自摸",
+	YakuIppatsu: "一发",
+	YakuHaitei:  "海底",
+	YakuHoutei:  "河底",
+	YakuRinshan: "岭上",
+	YakuChankan: "抢杠",
+	YakuDaburii: "w立",
+
+	// Yaku based on sequences
+	YakuPinfu:          "平和",
+	YakuRyanpeikou:     "两杯口",
+	YakuIipeikou:       "一杯口",
+	YakuSanshokuDoujun: "三色",
+	YakuIttsuu:         "一气",
+
+	// Yaku based on triplets and/or quads
+	YakuToitoi:         "对对",
+	YakuSanAnkou:       "三暗刻",
+	YakuSanshokuDoukou: "三色同刻",
+	YakuSanKantsu:      "三杠子",
+
+	// Yaku based on terminal or honor tiles
+	YakuTanyao:     "断幺",
+	YakuYakuhai:    "役牌",
+	YakuChanta:     "混全",
+	YakuJunchan:    "纯全",
+	YakuHonroutou:  "混老头", // 七对也算
+	YakuShousangen: "小三元",
+
+	// Yaku based on suits
+	YakuHonitsu:  "混一色",
+	YakuChinitsu: "清一色",
+}
+
+func YakuTypesToStr(yakuTypes []int) string {
+	names := []string{}
+	for _, t := range yakuTypes {
+		names = append(names, YakuNameMap[t])
+	}
+	return fmt.Sprint(names)
+}
+
+//
+
+type _yakuHanMap map[int]int
+
+var YakuHanMap = _yakuHanMap{
 	YakuRiichi:  1,
 	YakuChiitoi: 2,
 
@@ -79,6 +133,53 @@ var YakuHanMap = map[YakuType]int{
 	YakuChinitsu: 6,
 }
 
-var YakumanTimesMap = map[YakuType]int{
+var NakiYakuHanMap = _yakuHanMap{
+	YakuHaitei:  1,
+	YakuHoutei:  1,
+	YakuRinshan: 1,
+	YakuChankan: 1,
+
+	YakuSanshokuDoujun: 1,
+	YakuIttsuu:         1,
+
+	YakuToitoi:         2,
+	YakuSanAnkou:       2,
+	YakuSanshokuDoukou: 2,
+	YakuSanKantsu:      2,
+
+	YakuTanyao:     1,
+	YakuYakuhai:    1,
+	YakuChanta:     1,
+	YakuJunchan:    2,
+	YakuHonroutou:  2,
+	YakuShousangen: 2,
+
+	YakuHonitsu:  2,
+	YakuChinitsu: 5,
+}
+
+var YakumanTimesMap = map[int]int{
 	// TODO
+}
+
+// 计算 yakuTypes 累积的番数
+func CalcYakuHan(yakuTypes []int, isNaki bool) (cntHan int) {
+	var yakuHanMap _yakuHanMap
+	if !isNaki {
+		yakuHanMap = YakuHanMap
+	} else {
+		yakuHanMap = NakiYakuHanMap
+	}
+
+	for _, yakuType := range yakuTypes {
+		if han, ok := yakuHanMap[yakuType]; ok {
+			cntHan += han
+		}
+	}
+	return
+}
+
+func CalcYakumanTimes() int {
+	// TODO
+	return 0
 }

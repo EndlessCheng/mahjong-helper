@@ -23,6 +23,9 @@ func (d *DivideResult) String() string {
 	if d.IsChiitoi {
 		return "[七对子]"
 	}
+
+	output := ""
+
 	humanTilesList := []string{TilesToStr([]int{d.PairTile, d.PairTile})}
 	for _, kotsuTile := range d.KotsuTiles {
 		humanTilesList = append(humanTilesList, TilesToStr([]int{kotsuTile, kotsuTile, kotsuTile}))
@@ -30,7 +33,22 @@ func (d *DivideResult) String() string {
 	for _, shuntsuFirstTile := range d.ShuntsuFirstTiles {
 		humanTilesList = append(humanTilesList, TilesToStr([]int{shuntsuFirstTile, shuntsuFirstTile + 1, shuntsuFirstTile + 2}))
 	}
-	return fmt.Sprint(humanTilesList)
+	output += fmt.Sprint(humanTilesList)
+
+	if d.IsChuurenPoutou {
+		output += "[九莲宝灯]"
+	}
+	if d.IsIttsuu {
+		output += "[一气通贯]"
+	}
+	if d.IsRyanpeikou {
+		output += "[两杯口]"
+	}
+	if d.IsIipeikou {
+		output += "[一杯口]"
+	}
+
+	return output
 }
 
 // 3k+2 张牌，返回所有可能的拆解，没有拆解表示未和牌

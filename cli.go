@@ -278,7 +278,9 @@ func printWaitsWithImproves13_twoRows(result13 *util.WaitsWithImproves13, discar
 }
 
 /*
-4[ 4.56] 切 8饼 => 44.50% 参考和率[ 4 改良] [7p 7s] [三色] [振听]
+4[ 4.56] 切 8饼 => 44.50% 参考和率[ 4 改良] [7p 7s] [三色] [振听] [2000点]
+
+4[ 4.56] 切 8饼 => 0.00% 参考和率[ 4 改良] [7p 7s] [无役]
 
 31[33.58] 切7索 =>  5.23听牌数 [16改良] [6789p 56789s] [可能振听]
 
@@ -291,11 +293,11 @@ func printWaitsWithImproves13_twoRows(result13 *util.WaitsWithImproves13, discar
 func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discardTile34 int, openTiles34 []int) {
 	shanten := result13.Shanten
 
-	// 打印进张数
+	// 进张数
 	waitsCount, waitTiles := result13.Waits.ParseIndex()
 	c := getWaitsCountColor(shanten, float64(waitsCount))
 	color.New(c).Printf("%2d", waitsCount)
-	// 打印改良进张均值
+	// 改良进张均值
 	if len(result13.Improves) > 0 {
 		fmt.Printf("[%5.2f]", result13.AvgImproveWaitsCount)
 	} else {
@@ -306,7 +308,7 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 
 	// 是否为3k+2张牌的何切分析
 	if discardTile34 != -1 {
-		// 打印鸣牌分析
+		// 鸣牌分析
 		if len(openTiles34) > 0 {
 			meldType := "吃"
 			if openTiles34[0] == openTiles34[1] {
@@ -315,7 +317,7 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 			color.New(color.FgHiWhite).Printf("%s%s", string([]rune(util.MahjongZH[openTiles34[0]])[:1]), util.MahjongZH[openTiles34[1]])
 			fmt.Printf("%s,", meldType)
 		}
-		// 打印舍牌
+		// 舍牌
 		fmt.Print("切")
 		tileZH := util.MahjongZH[discardTile34]
 		if discardTile34 >= 27 {
@@ -331,7 +333,7 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 	fmt.Print(" => ")
 
 	if shanten >= 1 {
-		// 打印前进后的进张数均值
+		// 前进后的进张数均值
 		c := getWaitsCountColor(shanten-1, result13.AvgNextShantenWaitsCount)
 		color.New(c).Printf("%5.2f", result13.AvgNextShantenWaitsCount)
 		fmt.Printf("%s", util.NumberToChineseShanten(shanten-1))
@@ -358,7 +360,7 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 	//	// TODO: 提示危险度！
 	//}
 
-	// 打印改良数
+	// 改良数
 	fmt.Print(" ")
 	if len(result13.Improves) > 0 {
 		fmt.Printf("[%2d改良]", len(result13.Improves))
@@ -367,17 +369,26 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 		fmt.Print(strings.Repeat("　", 2)) // 全角空格
 	}
 
-	// 打印进张类型
+	// 进张类型
 	fmt.Print(" ")
 	fmt.Print(util.TilesToStrWithBracket(waitTiles))
 
-	// 打印容易忽略的役种
-	if result13.CanSanshokuDoujun {
+	if len(result13.YakuTypes) > 0 {
+		// 容易忽略的役种
+		for _, yakuType := range result13.YakuTypes {
+			if yakuType == util.YakuSanshokuDoujun {
+				fmt.Print(" ")
+				color.New(color.FgHiGreen).Printf("[三色]")
+				break
+			}
+		}
+	} else if shanten >= 0 && shanten <= 1 {
+		// 无役提示
 		fmt.Print(" ")
-		color.New(color.FgHiGreen).Printf("[三色]")
+		color.New(color.FgHiRed).Printf("[无役]")
 	}
 
-	// 打印振听提示
+	// 振听提示
 	if result13.FuritenRate > 0 {
 		fmt.Print(" ")
 		if result13.FuritenRate < 1 {
@@ -385,6 +396,12 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 		} else {
 			color.New(color.FgHiRed).Printf("[振听]")
 		}
+	}
+
+	// 荣和点数
+	if result13.RonPoint > 0 {
+		fmt.Print(" ")
+		fmt.Printf("[%d点]", int(result13.RonPoint))
 	}
 
 	fmt.Println()

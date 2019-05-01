@@ -6,14 +6,15 @@ import (
 	"math"
 )
 
+// TODO: 移至 model
 type PlayerInfo struct {
 	RoundWindTile34 int   // 场风
 	SelfWindTile34  int   // 自风
 	Tiles34         []int // 手牌
 	DiscardTiles    []int // 注意初始化的时候把负数调整成正的！
 	LeftTiles34     []int // 剩余牌
-	IsOpen          bool  // 是否鸣牌
-	//Melds           [][]int // 鸣牌信息
+	IsOpen          bool  // 是否鸣牌或暗杠
+	//Melds           []model.Meld // 鸣牌信息
 }
 
 func NewSimplePlayerInfo(tiles34 []int, isOpen bool) *PlayerInfo {
@@ -86,12 +87,13 @@ type WaitsWithImproves13 struct {
 	// 振听可能率（一向听和听牌时）
 	FuritenRate float64
 
-	// TODO: 役种提醒
-	// 是否有三色同顺
-	CanSanshokuDoujun bool
+	// 役种
+	YakuTypes []int
+
+	// 打点期望
+	RonPoint float64
 
 	// TODO: 赤牌改良提醒
-	// TODO: 打点期望
 }
 
 // waitsCount := float64(r.Waits.AllCount())
@@ -148,6 +150,12 @@ func (r *WaitsWithImproves13) String() string {
 				s += "[振听]"
 			}
 		}
+		if len(r.YakuTypes) == 0 {
+			s += "[无役]"
+		} else {
+			s += fmt.Sprint(r.YakuTypes)
+		}
+		s += fmt.Sprintf("[%d荣和点数]", int(r.RonPoint))
 	}
 	return s
 }
@@ -249,12 +257,9 @@ func CalculateShantenWithImproves13(playerInfo *PlayerInfo) (r *WaitsWithImprove
 		improveWaitsCount34[i] = waitsCount
 	}
 	avgAgariRate := 0.0
-	canSanshokuDoujun := false
-	checkSanshokuDoujun := func(_shanten13 int, _waits Waits) {
-		// 对于听牌及一向听，判断是否有三色同顺可能
-		if playerInfo.IsOpen {
-			return
-		}
+
+	canYaku := make([]bool, maxYakuType)
+	fillYakuTypes := func(_shanten13 int, _waits Waits) {
 		if _shanten13 != 0 {
 			return
 		}
@@ -263,16 +268,19 @@ func CalculateShantenWithImproves13(playerInfo *PlayerInfo) (r *WaitsWithImprove
 				continue
 			}
 			tiles34[tile]++
-			if FindYakuList(nil) != nil {
-				canSanshokuDoujun = true
+			_yakuTypes := FindAllYakuTypes(&HandInfo{
+				HandTiles34: tiles34,
+				// TODO
+			})
+			for _, t := range _yakuTypes {
+				canYaku[t] = true
 			}
 			tiles34[tile]--
-			if canSanshokuDoujun {
-				break
-			}
 		}
 	}
-	checkSanshokuDoujun(shanten13, waits)
+
+	// 若听牌，计算役种
+	fillYakuTypes(shanten13, waits)
 
 	for i := 0; i < 34; i++ {
 		if leftTiles34[i] == 0 {
@@ -301,8 +309,8 @@ func CalculateShantenWithImproves13(playerInfo *PlayerInfo) (r *WaitsWithImprove
 					if newShanten13 == 0 {
 						maxAgariRate = math.Max(maxAgariRate, CalculateAgariRate(newWaits, playerInfo.DiscardTiles))
 					}
-					// 若前进后听牌（当前为一向听），检查是否有三色同顺
-					checkSanshokuDoujun(newShanten13, newWaits)
+					// 若前进后听牌（当前为一向听），计算役种
+					fillYakuTypes(newShanten13, newWaits)
 				}
 				tiles34[j]++
 			}
@@ -340,6 +348,13 @@ func CalculateShantenWithImproves13(playerInfo *PlayerInfo) (r *WaitsWithImprove
 		avgAgariRate = CalculateAgariRate(waits, playerInfo.DiscardTiles)
 	}
 
+	yakuTypes := []int{}
+	for yakuType, canYaku := range canYaku {
+		if canYaku {
+			yakuTypes = append(yakuTypes, yakuType)
+		}
+	}
+
 	_tiles34 := make([]int, 34)
 	copy(_tiles34, tiles34)
 	r = &WaitsWithImproves13{
@@ -354,7 +369,7 @@ func CalculateShantenWithImproves13(playerInfo *PlayerInfo) (r *WaitsWithImprove
 		ImproveWayCount:          improveWayCount,
 		AvgImproveWaitsCount:     float64(waitsCount),
 		AvgAgariRate:             avgAgariRate,
-		CanSanshokuDoujun:        canSanshokuDoujun,
+		YakuTypes:                yakuTypes,
 	}
 
 	// 对于听牌及一向听，判断是否有振听可能
@@ -370,6 +385,15 @@ func CalculateShantenWithImproves13(playerInfo *PlayerInfo) (r *WaitsWithImprove
 				}
 			}
 		}
+	}
+
+	// 荣和点数
+	if shanten13 == 0 {
+		ronPoint := CalcRonPointWithHands(&HandInfo{
+			HandTiles34: tiles34,
+			// TODO:
+		})
+		r.RonPoint = float64(ronPoint)
 	}
 
 	// 分析

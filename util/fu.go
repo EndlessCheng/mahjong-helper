@@ -7,8 +7,8 @@ func roundUpFu(fu int) int {
 }
 
 // 根据手牌拆解结果，结合场况计算符数
-func (hi *HandInfo) Fu() int {
-	divideResult := hi.Divide
+func (hi *_handInfo) calcFu() int {
+	divideResult := hi.divideResult
 
 	// 特殊：七对子计 25 符
 	if divideResult.IsChiitoi {
@@ -49,10 +49,12 @@ func (hi *HandInfo) Fu() int {
 		case model.MeldTypeAnkan:
 			_fu = 16
 		}
-		if isYaochupai(meld.Tiles[0]) {
-			_fu *= 2
+		if _fu > 0 {
+			if isYaochupai(meld.Tiles[0]) {
+				_fu *= 2
+			}
+			fu += _fu
 		}
-		fu += _fu
 	}
 
 	// 雀头加符（连风雀头计 4 符）

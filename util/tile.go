@@ -26,6 +26,8 @@ var MahjongZH = [...]string{
 	"东", "南", "西", "北", "白", "发", "中",
 }
 
+var YaochuTiles = [...]int{0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33}
+
 // map[进张牌]剩余数
 type Waits map[int]int
 
