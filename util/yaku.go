@@ -111,8 +111,8 @@ func (hi *_handInfo) chiitoi() bool {
 
 // 门清限定
 func (hi *_handInfo) pinfu() bool {
-	// 雀头不能是役牌，且不能是单骑和牌
-	if hi.isYakuTile(hi.WinTile) || hi.WinTile == hi.divideResult.PairTile {
+	// 不能是单骑和牌，雀头不能是役牌
+	if hi.WinTile == hi.divideResult.PairTile || hi.isYakuTile(hi.divideResult.PairTile) {
 		return false
 	}
 	drs := hi.divideResult.ShuntsuFirstTiles
