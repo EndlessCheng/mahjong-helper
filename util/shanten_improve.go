@@ -305,7 +305,7 @@ func CalculateShantenWithImproves13(playerInfo *PlayerInfo) (r *WaitsWithImprove
 					if waitsCount := newWaits.AllCount(); waitsCount > nextShantenWaitsCountMap[i] {
 						nextShantenWaitsCountMap[i] = waitsCount
 					}
-					// 听牌一般切和率最高的，TODO: 除非打点更高，比如说听到 dora 上
+					// 听牌一般切和率最高的，TODO: 除非打点更高，比如说听到 dora 上，或者有三色等
 					if newShanten13 == 0 {
 						maxAgariRate = math.Max(maxAgariRate, CalculateAgariRate(newWaits, playerInfo.DiscardTiles))
 					}

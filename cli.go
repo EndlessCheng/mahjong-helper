@@ -324,6 +324,7 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 			tileZH = " " + tileZH
 		}
 		if shanten <= 1 {
+			// TODO: 若有实际危险度，则根据实际危险度来调整！！
 			color.New(getSelfDiscardRiskColor(discardTile34)).Print(tileZH)
 		} else {
 			fmt.Print(tileZH)
