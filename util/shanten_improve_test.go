@@ -92,9 +92,10 @@ func TestCalculateShantenWithImproves14Closed(t *testing.T) {
 	tiles = "455678m 11566p 234s" // TODO 振听 9m 的场合，切 6p 振听听牌的概率比切 5m 低
 	tiles = "1245m 12789p 34588s"
 	tiles = "4456778p 2245s 111z"
+	tiles = "388m 113668p 56s 456z"
 	playerInfo := NewSimplePlayerInfo(MustStrToTiles34(tiles), false)
-	//playerInfo.LeftTiles34 = InitLeftTiles34WithTiles34(MustStrToTiles34("33p"))
-	playerInfo.DiscardTiles = []int{MustStrToTile34("9p")}
+	playerInfo.LeftTiles34 = InitLeftTiles34WithTiles34(MustStrToTiles34("388m 113668p 566s 45556z")) // 注意手牌也算上
+	//playerInfo.DiscardTiles = []int{MustStrToTile34("9p")}
 	shanten, results, incShantenResults := CalculateShantenWithImproves14(playerInfo)
 	t.Log(NumberToChineseShanten(shanten))
 	for _, result := range results {

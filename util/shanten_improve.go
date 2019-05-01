@@ -448,7 +448,8 @@ func (r *WaitsWithImproves14) String() string {
 
 type WaitsWithImproves14List []*WaitsWithImproves14
 
-func (l WaitsWithImproves14List) Sort() {
+// 排序，若 needImprove 为 true，则优先按照 AvgImproveWaitsCount 排序
+func (l WaitsWithImproves14List) Sort(needImprove bool) {
 	sort.Slice(l, func(i, j int) bool {
 		ri, rj := l[i].Result13, l[j].Result13
 
@@ -457,6 +458,12 @@ func (l WaitsWithImproves14List) Sort() {
 		if l[0].Shanten == 0 {
 			if !Equal(ri.AvgAgariRate, rj.AvgAgariRate) {
 				return ri.AvgAgariRate > rj.AvgAgariRate
+			}
+		}
+
+		if needImprove {
+			if !Equal(ri.AvgImproveWaitsCount, rj.AvgImproveWaitsCount) {
+				return ri.AvgImproveWaitsCount > rj.AvgImproveWaitsCount
 			}
 		}
 
@@ -516,13 +523,6 @@ func (l WaitsWithImproves14List) Sort() {
 	})
 }
 
-//func (l WaitsWithImproves14List) FilterWithLeftTiles34(leftTiles34 []int) {
-//	for _, r := range l {
-//		r.Result13.Waits.FixCountsWithLeftCounts(leftTiles34)
-//	}
-//	l.Sort()
-//}
-
 func (l *WaitsWithImproves14List) filterOutDiscard(cantDiscardTile int) {
 	newResults := WaitsWithImproves14List{}
 	for _, r := range *l {
@@ -569,8 +569,31 @@ func CalculateShantenWithImproves14(playerInfo *PlayerInfo) (shanten int, waitsW
 		}
 		tiles34[i]++
 	}
-	waitsWithImproves.Sort()
-	incShantenResults.Sort()
+
+	needImprove := func(l []*WaitsWithImproves14) bool {
+		if len(l) == 0 {
+			return false
+		}
+
+		shanten := l[0].Shanten
+		// 一向听及以下进张优先，改良其次
+		if shanten <= 1 {
+			return false
+		}
+
+		maxWaitsCount := 0
+		for _, r := range waitsWithImproves {
+			maxWaitsCount = MaxInt(maxWaitsCount, r.Result13.Waits.AllCount())
+		}
+
+		// 两向听及以上的七对子考虑改良
+		return maxWaitsCount <= 6*shanten+3
+	}
+
+	ni := needImprove(waitsWithImproves)
+	waitsWithImproves.Sort(ni)
+	ni = needImprove(incShantenResults)
+	incShantenResults.Sort(ni)
 	return
 }
 
@@ -673,8 +696,8 @@ func CalculateMeld(playerInfo *PlayerInfo, tile int, allowChi bool) (shanten int
 		}
 	}
 
-	waitsWithImproves.Sort()
-	incShantenResults.Sort()
+	waitsWithImproves.Sort(false)
+	incShantenResults.Sort(false)
 
 	return
 }
