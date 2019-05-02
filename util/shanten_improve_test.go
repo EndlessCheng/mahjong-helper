@@ -178,7 +178,7 @@ func TestCalculateMeld(t *testing.T) {
 	tile = "3m" // "1z"
 	tile = "4m"
 	tile = "4p"
-	shanten, results, incShantenResults := CalculateMeld(model.NewSimplePlayerInfo(tiles34, exampleMelds), MustStrToTile34(tile), true)
+	shanten, results, incShantenResults := CalculateMeld(model.NewSimplePlayerInfo(tiles34, exampleMelds), MustStrToTile34(tile), 0, true)
 	t.Log("鸣牌后" + NumberToChineseShanten(shanten))
 	for _, result := range results {
 		t.Log(result)

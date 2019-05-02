@@ -15,5 +15,5 @@ type Meld struct {
 	CalledTile int   // 被鸣的牌
 	// TODO: 重构
 	ContainRedFive    bool // 是否包含赤5
-	RedFiveFromOthers bool // 赤5是否来自他家
+	RedFiveFromOthers bool // 赤5是否来自他家（用于获取宝牌数）（待重构）
 }

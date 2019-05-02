@@ -290,6 +290,16 @@ func (d *roundData) doraList() (dl []int) {
 	return
 }
 
+// 这张牌算几个宝牌
+func (d *roundData) numDoraOfTile(tile int) (cnt int) {
+	for _, dora := range d.doraList() {
+		if tile == dora {
+			cnt++
+		}
+	}
+	return
+}
+
 func (d *roundData) printDiscards() {
 	for i := len(d.players) - 1; i >= 1; i-- {
 		d.players[i].printDiscards()
@@ -558,7 +568,7 @@ func (d *roundData) analysis() error {
 			player.isNaki = true
 		}
 
-		// 加杠特殊处理
+		// 加杠单独处理
 		if meldType == meldTypeKakan {
 			if who != 0 {
 				// （不是自家时）修改牌山剩余量
@@ -566,6 +576,7 @@ func (d *roundData) analysis() error {
 			} else {
 				// 自家加杠成功，修改手牌
 				d.counts[calledTile]--
+				// 由于均为自家操作，宝牌数是不变的
 			}
 			// 修改原副露
 			for _, _meld := range player.melds {
@@ -573,6 +584,7 @@ func (d *roundData) analysis() error {
 				if _meld.Tiles[0] == calledTile {
 					_meld.MeldType = meldTypeKakan
 					_meld.Tiles = append(_meld.Tiles, calledTile)
+					_meld.ContainRedFive = meld.ContainRedFive
 					break
 				}
 			}
@@ -742,9 +754,13 @@ func (d *roundData) analysis() error {
 		// 若能副露，计算何切
 		if canBeMeld {
 			// TODO: 消除海底/避免河底/型听提醒
+			numDoraOfDiscardTile := d.numDoraOfTile(discardTile)
+			if isRedFive {
+				numDoraOfDiscardTile++
+			}
 			allowChi := who == 3
 			mixedRiskTable := riskTables.mixedRiskTable()
-			analysisMeld(d.newModelPlayerInfo(), discardTile, allowChi, mixedRiskTable)
+			analysisMeld(d.newModelPlayerInfo(), discardTile, numDoraOfDiscardTile, allowChi, mixedRiskTable)
 		}
 	case d.parser.IsRoundWin():
 		if !debugMode {

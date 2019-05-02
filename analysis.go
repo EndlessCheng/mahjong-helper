@@ -59,12 +59,12 @@ func analysisTiles34(playerInfo *model.PlayerInfo, mixedRiskTable riskTable) err
 	return nil
 }
 
-func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, allowChi bool, mixedRiskTable riskTable) {
+func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, numDoraOfCalledTile int, allowChi bool, mixedRiskTable riskTable) {
 	// 原始手牌分析
 	result := util.CalculateShantenWithImproves13(playerInfo)
 
 	// 副露分析
-	shanten, results14, incShantenResults14 := util.CalculateMeld(playerInfo, targetTile34, allowChi)
+	shanten, results14, incShantenResults14 := util.CalculateMeld(playerInfo, targetTile34, numDoraOfCalledTile, allowChi)
 
 	if len(results14) == 0 && len(incShantenResults14) == 0 {
 		return
@@ -122,7 +122,11 @@ func analysisHumanTiles(humanTiles string) (tiles34 []int, err error) {
 			return
 		}
 
-		analysisMeld(model.NewSimplePlayerInfo(tiles34, nil), targetTile34, true, nil)
+		var melds []model.Meld
+		//melds = append(melds, model.Meld{MeldType: model.MeldTypePon, Tiles: util.MustStrToTiles("777z")})
+		playerInfo := model.NewSimplePlayerInfo(tiles34, melds)
+		//playerInfo.DoraCount = 1
+		analysisMeld(playerInfo, targetTile34, 0, true, nil)
 		return
 	}
 
@@ -132,7 +136,7 @@ func analysisHumanTiles(humanTiles string) (tiles34 []int, err error) {
 	}
 
 	playerInfo := model.NewSimplePlayerInfo(tiles34, nil)
-	playerInfo.IsTsumo = true
+	//playerInfo.IsTsumo = true
 	err = analysisTiles34(playerInfo, nil)
 	return
 }

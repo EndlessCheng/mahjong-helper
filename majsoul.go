@@ -305,6 +305,12 @@ func (d *majsoulRoundData) ParseOpen() (who int, meld *model.Meld, kanDoraIndica
 		majsoulTiles = []string{majsoulTile, majsoulTile, majsoulTile, majsoulTile}
 	}
 	meldTiles, numRedFive := d.mustParseMajsoulTiles(majsoulTiles)
+	containRedFive := numRedFive > 0
+	if len(majsoulTiles) == 4 && meldTiles[0] < 27 && meldTiles[0]%9 == 4 {
+		// 杠5意味着一定有赤5
+		containRedFive = true
+	}
+
 	if isSelfKan {
 		calledTile = meldTiles[0]
 		// 也可以通过副露来判断是加杠还是暗杠，这里简单地用 msg.Type 判断
@@ -321,7 +327,7 @@ func (d *majsoulRoundData) ParseOpen() (who int, meld *model.Meld, kanDoraIndica
 			MeldType:       meldType,
 			Tiles:          meldTiles,
 			CalledTile:     calledTile,
-			ContainRedFive: numRedFive > 0,
+			ContainRedFive: containRedFive,
 		}
 		return
 	}
@@ -359,7 +365,7 @@ func (d *majsoulRoundData) ParseOpen() (who int, meld *model.Meld, kanDoraIndica
 		MeldType:          meldType,
 		Tiles:             meldTiles,
 		CalledTile:        calledTile,
-		ContainRedFive:    numRedFive > 0,
+		ContainRedFive:    containRedFive,
 		RedFiveFromOthers: redFiveFromOthers,
 	}
 	return

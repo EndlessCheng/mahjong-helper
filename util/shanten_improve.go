@@ -676,7 +676,7 @@ func calculateMeldShanten(tiles34 []int, calledTile int, allowChi bool) (minShan
 //}
 //}
 
-func CalculateMeld(playerInfo *model.PlayerInfo, calledTile int, allowChi bool) (shanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
+func CalculateMeld(playerInfo *model.PlayerInfo, calledTile int, numDoraOfCalledTile int, allowChi bool) (shanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
 	if len(playerInfo.LeftTiles34) == 0 {
 		playerInfo.FillLeftTiles34()
 	}
@@ -688,7 +688,9 @@ func CalculateMeld(playerInfo *model.PlayerInfo, calledTile int, allowChi bool) 
 		tiles34[c.SelfTiles[0]]--
 		tiles34[c.SelfTiles[1]]--
 		playerInfo.Melds = append(playerInfo.Melds, c)
+		playerInfo.DoraCount += numDoraOfCalledTile
 		_shanten, _waitsWithImproves, _incShantenResults := CalculateShantenWithImproves14(playerInfo)
+		playerInfo.DoraCount -= numDoraOfCalledTile
 		playerInfo.Melds = playerInfo.Melds[:len(playerInfo.Melds)-1]
 		// reset naki
 		//playerInfo.ClearNakiCache()
