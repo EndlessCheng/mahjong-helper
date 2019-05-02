@@ -571,6 +571,7 @@ func (d *roundData) analysis() error {
 			for _, _meld := range player.melds {
 				// 找到原有的碰副露
 				if _meld.Tiles[0] == calledTile {
+					_meld.MeldType = meldTypeKakan
 					_meld.Tiles = append(_meld.Tiles, calledTile)
 					break
 				}
