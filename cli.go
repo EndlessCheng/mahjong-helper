@@ -325,7 +325,7 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 		if discardTile34 >= 27 {
 			tileZH = " " + tileZH
 		}
-		if shanten <= 1 && mixedRiskTable != nil {
+		if mixedRiskTable != nil {
 			// 若有实际危险度，则根据实际危险度来显示舍牌危险度
 			risk := mixedRiskTable[discardTile34]
 			if risk == 0 {
