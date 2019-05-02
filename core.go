@@ -339,7 +339,7 @@ func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
 		// 该玩家的巡目 = 为其切过的牌的数目
 		turns := util.MinInt(len(player.discardTiles), util.MaxTurns)
 		if turns == 0 {
-			continue
+			turns = 1
 		}
 
 		// TODO: 若某人一直摸切，然后突然手切了一张字牌，那他很有可能默听/一向听

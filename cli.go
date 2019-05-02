@@ -194,6 +194,16 @@ func (l riskInfoList) printWithHands(hands []int, leftCounts []int) {
 
 //
 
+// 需要提醒的役种
+var yakuTypesToAlert = []int{
+	util.YakuSanshokuDoujun,
+	util.YakuIttsuu,
+	util.YakuToitoi,
+	util.YakuSanshokuDoukou,
+	util.YakuHonitsu,
+	util.YakuChinitsu,
+}
+
 /*
 
 8     切 3索 听[2万, 7万]
@@ -276,7 +286,7 @@ func printWaitsWithImproves13_twoRows(result13 *util.WaitsWithImproves13, discar
 }
 
 /*
-4[ 4.56] 切 8饼 => 44.50% 参考和率[ 4 改良] [7p 7s] [三色] [振听] [默听2000]
+4[ 4.56] 切 8饼 => 44.50% 参考和率[ 4 改良] [7p 7s] [三色] [振听] [默听荣和2000]
 
 4[ 4.56] 切 8饼 => 0.00% 参考和率[ 4 改良] [7p 7s] [无役]
 
@@ -374,18 +384,23 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 	fmt.Print(util.TilesToStrWithBracket(waitTiles))
 
 	if len(result13.YakuTypes) > 0 {
-		if !showAllYakuTypes {
+		if !showAllYakuTypes && !debugMode {
 			// 容易忽略的役种
+			shownYakuTypes := []int{}
 			for _, yakuType := range result13.YakuTypes {
-				if yakuType == util.YakuSanshokuDoujun {
-					fmt.Print(" ")
-					color.New(color.FgHiGreen).Printf("[三色]")
-					break
+				for _, yt := range yakuTypesToAlert {
+					if yakuType == yt {
+						shownYakuTypes = append(shownYakuTypes, yakuType)
+					}
 				}
+			}
+			if len(shownYakuTypes) > 0 {
+				fmt.Print(" ")
+				color.New(color.FgHiGreen).Printf(util.YakuTypesToStr(shownYakuTypes))
 			}
 		} else {
 			fmt.Print(" ")
-			color.New(color.FgHiGreen).Printf(util.YakuTypesToStr(result13.YakuTypes))
+			color.New(color.FgHiGreen).Printf(util.YakuTypesWithDoraToStr(result13.YakuTypes, result13.DoraCount))
 		}
 	} else if shanten >= 0 && shanten <= 1 {
 		// 无役提示
@@ -403,10 +418,10 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 		}
 	}
 
-	// 默听荣和点数
+	// (默听)荣和点数
 	if result13.RonPoint > 0 {
 		fmt.Print(" ")
-		fmt.Printf("[默听%d]", int(math.Round(result13.RonPoint)))
+		fmt.Printf("[荣和%d]", int(math.Round(result13.RonPoint)))
 
 		// TODO: 根据场况提醒是否默听
 	}

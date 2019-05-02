@@ -99,6 +99,21 @@ func YakuTypesToStr(yakuTypes []int) string {
 	return fmt.Sprint(names)
 }
 
+// 调试用
+func YakuTypesWithDoraToStr(yakuTypes []int, numDora int) string {
+	names := []string{}
+	for _, t := range yakuTypes {
+		names = append(names, YakuNameMap[t])
+	}
+	if len(names) == 0 {
+		return "[无役]"
+	}
+	if numDora > 0 {
+		names = append(names, fmt.Sprintf("宝牌%d", numDora))
+	}
+	return fmt.Sprint(names)
+}
+
 //
 
 type _yakuHanMap map[int]int

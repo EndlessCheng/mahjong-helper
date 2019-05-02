@@ -32,9 +32,16 @@ func Test_majsoul_analysis(t *testing.T) {
 	if endLo == -1 {
 		endLo = len(lines)
 	}
-	for lo, line := range lines[startLo-1:endLo] {
+	for lo, line := range lines[startLo-1 : endLo] {
 		fmt.Println(lo + 1)
-		json.Unmarshal([]byte(line), &s)
+		if line == "" {
+			continue
+		}
+
+		if err := json.Unmarshal([]byte(line), &s); err != nil {
+			fmt.Println(err)
+			continue
+		}
 
 		msg := s.Message
 		d := majsoulMessage{}
@@ -71,7 +78,14 @@ func Test_tenhou_analysis(t *testing.T) {
 
 	for lo, line := range strings.Split(string(logData), "\n")[startLo-1:] {
 		fmt.Println(lo + 1)
-		json.Unmarshal([]byte(line), &s)
+		if line == "" {
+			continue
+		}
+
+		if err := json.Unmarshal([]byte(line), &s); err != nil {
+			fmt.Println(err)
+			continue
+		}
 
 		msg := s.Message
 		d := tenhouMessage{}

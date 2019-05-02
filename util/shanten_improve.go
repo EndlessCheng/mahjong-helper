@@ -66,6 +66,9 @@ type WaitsWithImproves13 struct {
 	// 役种
 	YakuTypes []int
 
+	// 宝牌个数（手牌+副露）
+	DoraCount int
+
 	// 荣和打点期望
 	RonPoint float64
 
@@ -129,7 +132,7 @@ func (r *WaitsWithImproves13) String() string {
 				s += "[振听]"
 			}
 		}
-		s += YakuTypesToStr(r.YakuTypes)
+		s += YakuTypesWithDoraToStr(r.YakuTypes, r.DoraCount)
 	}
 	if r.RonPoint > 0 {
 		s += fmt.Sprintf("[%d荣和点数]", int(math.Round(r.RonPoint)))
@@ -347,6 +350,7 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 		AvgImproveWaitsCount:     float64(waitsCount),
 		AvgAgariRate:             avgAgariRate,
 		YakuTypes:                yakuTypes,
+		DoraCount:                playerInfo.DoraCount,
 	}
 
 	// 对于听牌及一向听，判断是否有振听可能
@@ -364,7 +368,7 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 		}
 	}
 
-	// 非振听时计算荣和点数
+	// 非振听且待牌有役时计算荣和点数
 	// TODO: 立直时考虑中里的分数
 	if r.FuritenRate == 0 && shanten13 == 0 {
 		sum := 0
@@ -376,11 +380,16 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 			tiles34[tile]++
 			playerInfo.WinTile = tile
 			ronPoint := CalcRonPointWithHands(playerInfo)
-			sum += ronPoint * left
-			w += left
+			// 不考虑无役（如后附，片听）
+			if ronPoint > 0 {
+				sum += ronPoint * left
+				w += left
+			}
 			tiles34[tile]--
 		}
-		r.RonPoint = float64(sum) / float64(w)
+		if w > 0 {
+			r.RonPoint = float64(sum) / float64(w)
+		}
 	}
 
 	// TODO: 自摸点数
@@ -665,7 +674,9 @@ func CalculateMeld(playerInfo *model.PlayerInfo, calledTile int, allowChi bool) 
 	for _, c := range combinations {
 		tiles34[c.SelfTiles[0]]--
 		tiles34[c.SelfTiles[1]]--
+		playerInfo.Melds = append(playerInfo.Melds, c)
 		_shanten, _waitsWithImproves, _incShantenResults := CalculateShantenWithImproves14(playerInfo)
+		playerInfo.Melds = playerInfo.Melds[:len(playerInfo.Melds)-1]
 		tiles34[c.SelfTiles[0]]++
 		tiles34[c.SelfTiles[1]]++
 
