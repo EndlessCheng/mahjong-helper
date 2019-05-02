@@ -39,25 +39,6 @@ func getWaitsCountColor(shanten int, waitsCount float64) color.Attribute {
 	return _getWaitsCountColor(waitsCount / float64(weight))
 }
 
-// 自家舍牌危险度高低
-func getSelfDiscardRiskColor(index int) color.Attribute {
-	if index >= 27 {
-		return color.FgHiBlue
-	}
-	idx := index%9 + 1
-	switch idx {
-	case 1, 2, 8, 9:
-		return color.FgHiBlue
-	case 3, 7:
-		return color.FgHiYellow
-	case 4, 5, 6:
-		return color.FgHiRed
-	default:
-		errorExit("[getSelfDiscardRiskColor] 代码有误: idx = ", idx)
-		return -1
-	}
-}
-
 // 他家中张舍牌提示
 func getOtherDiscardAlertColor(index int) color.Attribute {
 	if index >= 27 {

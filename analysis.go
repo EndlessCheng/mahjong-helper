@@ -8,7 +8,7 @@ import (
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 )
 
-func _printIncShantenResults14(shanten int, incShantenResults14 util.WaitsWithImproves14List) {
+func _printIncShantenResults14(shanten int, incShantenResults14 util.WaitsWithImproves14List, mixedRiskTable riskTable) {
 	if len(incShantenResults14) == 0 {
 		return
 	}
@@ -18,11 +18,11 @@ func _printIncShantenResults14(shanten int, incShantenResults14 util.WaitsWithIm
 	}
 	fmt.Println(util.NumberToChineseShanten(shanten+1) + "：")
 	for _, result := range incShantenResults14 {
-		printWaitsWithImproves13_oneRow(result.Result13, result.DiscardTile, result.OpenTiles)
+		printWaitsWithImproves13_oneRow(result.Result13, result.DiscardTile, result.OpenTiles, mixedRiskTable)
 	}
 }
 
-func analysisTiles34(playerInfo *model.PlayerInfo) error {
+func analysisTiles34(playerInfo *model.PlayerInfo, mixedRiskTable riskTable) error {
 	humanTiles := util.Tiles34ToStr(playerInfo.HandTiles34)
 	fmt.Println(humanTiles)
 	fmt.Println(strings.Repeat("=", len(humanTiles)))
@@ -32,7 +32,7 @@ func analysisTiles34(playerInfo *model.PlayerInfo) error {
 	case 1:
 		result := util.CalculateShantenWithImproves13(playerInfo)
 		fmt.Println(util.NumberToChineseShanten(result.Shanten) + "：")
-		printWaitsWithImproves13_oneRow(result, -1, nil)
+		printWaitsWithImproves13_oneRow(result, -1, nil, mixedRiskTable)
 	case 2:
 		shanten, results14, incShantenResults14 := util.CalculateShantenWithImproves14(playerInfo)
 
@@ -47,9 +47,9 @@ func analysisTiles34(playerInfo *model.PlayerInfo) error {
 
 		fmt.Println(util.NumberToChineseShanten(shanten) + "：")
 		for _, result := range results14 {
-			printWaitsWithImproves13_oneRow(result.Result13, result.DiscardTile, result.OpenTiles)
+			printWaitsWithImproves13_oneRow(result.Result13, result.DiscardTile, result.OpenTiles, mixedRiskTable)
 		}
-		_printIncShantenResults14(shanten, incShantenResults14)
+		_printIncShantenResults14(shanten, incShantenResults14, mixedRiskTable)
 	default:
 		return fmt.Errorf("参数错误: %d 张牌", countOfTiles)
 	}
@@ -59,7 +59,7 @@ func analysisTiles34(playerInfo *model.PlayerInfo) error {
 	return nil
 }
 
-func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, allowChi bool) {
+func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, allowChi bool, mixedRiskTable riskTable) {
 	// 原始手牌分析
 	result := util.CalculateShantenWithImproves13(playerInfo)
 
@@ -75,7 +75,7 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, allowChi bool)
 	fmt.Println(strings.Repeat("=", len(raw)))
 
 	fmt.Println("当前" + util.NumberToChineseShanten(result.Shanten) + "：")
-	printWaitsWithImproves13_oneRow(result, -1, nil)
+	printWaitsWithImproves13_oneRow(result, -1, nil, mixedRiskTable)
 
 	if shanten == -1 {
 		color.HiRed("【已胡牌】")
@@ -93,7 +93,7 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, allowChi bool)
 			shownResults14 = shownResults14[:maxShown]
 		}
 		for _, result := range shownResults14 {
-			printWaitsWithImproves13_oneRow(result.Result13, result.DiscardTile, result.OpenTiles)
+			printWaitsWithImproves13_oneRow(result.Result13, result.DiscardTile, result.OpenTiles, mixedRiskTable)
 		}
 	}
 
@@ -101,7 +101,7 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, allowChi bool)
 	if len(shownIncResults14) > maxShown {
 		shownIncResults14 = shownIncResults14[:maxShown]
 	}
-	_printIncShantenResults14(shanten, shownIncResults14)
+	_printIncShantenResults14(shanten, shownIncResults14, mixedRiskTable)
 }
 
 func analysisHumanTiles(humanTiles string) (tiles34 []int, err error) {
@@ -122,7 +122,7 @@ func analysisHumanTiles(humanTiles string) (tiles34 []int, err error) {
 			return
 		}
 
-		analysisMeld(model.NewSimplePlayerInfo(tiles34, nil), targetTile34, true)
+		analysisMeld(model.NewSimplePlayerInfo(tiles34, nil), targetTile34, true, nil)
 		return
 	}
 
@@ -133,6 +133,6 @@ func analysisHumanTiles(humanTiles string) (tiles34 []int, err error) {
 
 	playerInfo := model.NewSimplePlayerInfo(tiles34, nil)
 	playerInfo.IsTsumo = true
-	err = analysisTiles34(playerInfo)
+	err = analysisTiles34(playerInfo, nil)
 	return
 }

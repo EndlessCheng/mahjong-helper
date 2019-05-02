@@ -77,6 +77,19 @@ type riskInfo struct {
 
 type riskInfoList []riskInfo
 
+func (l riskInfoList) mixedRiskTable() riskTable {
+	mixedRiskTable := make(riskTable, 34)
+	for i := range mixedRiskTable {
+		mixedRisk := 0.0
+		for _, ri := range l[1:] {
+			_risk := ri.riskTable[i] * ri.tenpaiRate / 100
+			mixedRisk = mixedRisk + _risk - mixedRisk*_risk/100
+		}
+		mixedRiskTable[i] = mixedRisk
+	}
+	return mixedRiskTable
+}
+
 func (l riskInfoList) printWithHands(hands []int, leftCounts []int) {
 	const tenpaiRateLimit = 50.0
 	dangerousPlayerCount := 0
@@ -121,15 +134,7 @@ func (l riskInfoList) printWithHands(hands []int, leftCounts []int) {
 	}
 	if dangerousPlayerCount > 0 && mixedPlayers > 1 {
 		fmt.Print("综合安牌:")
-		mixedRiskTable := make(riskTable, 34)
-		for i := range mixedRiskTable {
-			mixedRisk := 0.0
-			for _, ri := range l[1:] {
-				_risk := ri.riskTable[i] * ri.tenpaiRate / 100
-				mixedRisk = mixedRisk + _risk - mixedRisk*_risk/100
-			}
-			mixedRiskTable[i] = mixedRisk
-		}
+		mixedRiskTable := l.mixedRiskTable()
 		mixedRiskTable.printWithHands(hands, 1)
 		fmt.Println()
 	}
@@ -219,11 +224,7 @@ func printWaitsWithImproves13_twoRows(result13 *util.WaitsWithImproves13, discar
 			fmt.Printf("%s，", meldType)
 		}
 		fmt.Print("切 ")
-		if shanten <= 1 {
-			color.New(getSelfDiscardRiskColor(discardTile34)).Print(util.MahjongZH[discardTile34])
-		} else {
-			fmt.Print(util.MahjongZH[discardTile34])
-		}
+		fmt.Print(util.MahjongZH[discardTile34])
 		fmt.Print(" ")
 	}
 	//fmt.Print("等")
@@ -291,7 +292,7 @@ func printWaitsWithImproves13_twoRows(result13 *util.WaitsWithImproves13, discar
 
 */
 // 打印何切分析结果（单行）
-func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discardTile34 int, openTiles34 []int) {
+func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discardTile34 int, openTiles34 []int, mixedRiskTable riskTable) {
 	shanten := result13.Shanten
 
 	// 进张数
@@ -324,9 +325,14 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 		if discardTile34 >= 27 {
 			tileZH = " " + tileZH
 		}
-		if shanten <= 1 {
-			// TODO: 若有实际危险度，则根据实际危险度来调整！！
-			color.New(getSelfDiscardRiskColor(discardTile34)).Print(tileZH)
+		if shanten <= 1 && mixedRiskTable != nil {
+			// 若有实际危险度，则根据实际危险度来显示舍牌危险度
+			risk := mixedRiskTable[discardTile34]
+			if risk == 0 {
+				fmt.Print(tileZH)
+			} else {
+				color.New(getNumRiskColor(risk)).Print(tileZH)
+			}
 		} else {
 			fmt.Print(tileZH)
 		}
