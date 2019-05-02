@@ -6,6 +6,7 @@ import (
 	"strings"
 	"fmt"
 	"encoding/json"
+	"github.com/EndlessCheng/mahjong-helper/util/debug"
 )
 
 func Test_majsoul_analysis(t *testing.T) {
@@ -33,7 +34,8 @@ func Test_majsoul_analysis(t *testing.T) {
 		endLo = len(lines)
 	}
 	for lo, line := range lines[startLo-1 : endLo] {
-		fmt.Println(lo + 1)
+		debug.Lo = lo + 1
+		fmt.Println(debug.Lo)
 		if line == "" {
 			continue
 		}
@@ -77,7 +79,8 @@ func Test_tenhou_analysis(t *testing.T) {
 	tenhouRoundData.roundData = newRoundData(tenhouRoundData, 0, 0)
 
 	for lo, line := range strings.Split(string(logData), "\n")[startLo-1:] {
-		fmt.Println(lo + 1)
+		debug.Lo = lo + 1
+		fmt.Println(debug.Lo)
 		if line == "" {
 			continue
 		}

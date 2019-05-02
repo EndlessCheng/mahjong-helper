@@ -69,9 +69,10 @@ func CalcPointTsumoSum(han int, fu int, yakumanTimes int, isParent bool) int {
 
 // TODO: 振听只能自摸
 
-// 计算荣和点数
+// 计算荣和点数（未考虑里宝）
 // 调用前请设置 WinTile
 // 无役时返回 0
+// TODO 注意：剩余不到 4 张无法立直
 func CalcRonPointWithHands(playerInfo *model.PlayerInfo) (ronPoint int) {
 	for _, result := range DivideTiles34(playerInfo.HandTiles34) {
 		_hi := &_handInfo{
