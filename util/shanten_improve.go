@@ -594,7 +594,7 @@ func CalculateShantenWithImproves14(playerInfo *model.PlayerInfo) (shanten int, 
 		}
 
 		maxWaitsCount := 0
-		for _, r := range waitsWithImproves {
+		for _, r := range l {
 			maxWaitsCount = MaxInt(maxWaitsCount, r.Result13.Waits.AllCount())
 		}
 
