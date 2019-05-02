@@ -17,3 +17,4 @@ vendor/
 *.txt
 *.log
 *.bat
+config.json

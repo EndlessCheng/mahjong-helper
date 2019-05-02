@@ -22,8 +22,8 @@ func Test_majsoul_analysis(t *testing.T) {
 	}{}
 
 	//
-	accountID := -1
-	startLo := 1
+	accountID := gameConf.MajsoulAccountID
+	startLo := 24985
 	endLo := -1
 
 	majsoulRoundData := &majsoulRoundData{accountID: accountID}
