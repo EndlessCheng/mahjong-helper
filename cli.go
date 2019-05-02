@@ -109,10 +109,11 @@ func (l riskInfoList) printWithHands(hands []int, leftCounts []int) {
 			fmt.Print(" ")
 
 			// 打印无筋数量和种类
+			const badMachiLimit = 3
 			noSujiInfo := "" // util.TilesToStr(l[i].leftNoSujiTiles)
 			if len(l[i].leftNoSujiTiles) == 0 {
 				noSujiInfo = "愚形听牌/振听"
-			} else if len(l[i].leftNoSujiTiles) <= 3 {
+			} else if len(l[i].leftNoSujiTiles) <= badMachiLimit {
 				noSujiInfo = "可能愚形听牌/振听"
 			}
 			if noSujiInfo != "" {
