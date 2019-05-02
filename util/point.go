@@ -1,5 +1,7 @@
 package util
 
+import "github.com/EndlessCheng/mahjong-helper/util/model"
+
 // TODO: 考虑大三元和大四喜的包牌？
 
 func roundUpPoint(point int) int {
@@ -68,11 +70,12 @@ func CalcPointTsumoSum(han int, fu int, yakumanTimes int, isParent bool) int {
 // TODO: 振听只能自摸
 
 // 计算荣和点数
+// 调用前请设置 WinTile
 // 无役时返回 0
-func CalcRonPointWithHands(handInfo *HandInfo) (ronPoint int) {
-	for _, result := range DivideTiles34(handInfo.HandTiles34) {
+func CalcRonPointWithHands(playerInfo *model.PlayerInfo) (ronPoint int) {
+	for _, result := range DivideTiles34(playerInfo.HandTiles34) {
 		_hi := &_handInfo{
-			HandInfo:     handInfo,
+			PlayerInfo:   playerInfo,
 			divideResult: result,
 		}
 		yakuTypes := findYakuTypes(_hi)

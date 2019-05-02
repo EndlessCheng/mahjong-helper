@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"github.com/fatih/color"
+	"github.com/EndlessCheng/mahjong-helper/util/model"
 )
 
 func _printIncShantenResults14(shanten int, incShantenResults14 util.WaitsWithImproves14List) {
@@ -21,12 +22,12 @@ func _printIncShantenResults14(shanten int, incShantenResults14 util.WaitsWithIm
 	}
 }
 
-func analysisTiles34(playerInfo *util.PlayerInfo) error {
-	humanTiles := util.Tiles34ToStr(playerInfo.Tiles34)
+func analysisTiles34(playerInfo *model.PlayerInfo) error {
+	humanTiles := util.Tiles34ToStr(playerInfo.HandTiles34)
 	fmt.Println(humanTiles)
 	fmt.Println(strings.Repeat("=", len(humanTiles)))
 
-	countOfTiles := util.CountOfTiles34(playerInfo.Tiles34)
+	countOfTiles := util.CountOfTiles34(playerInfo.HandTiles34)
 	switch countOfTiles % 3 {
 	case 1:
 		result := util.CalculateShantenWithImproves13(playerInfo)
@@ -58,9 +59,8 @@ func analysisTiles34(playerInfo *util.PlayerInfo) error {
 	return nil
 }
 
-func analysisMeld(playerInfo *util.PlayerInfo, targetTile34 int, allowChi bool) {
+func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, allowChi bool) {
 	// 原始手牌分析
-	playerInfo.IsOpen = util.CountOfTiles34(playerInfo.Tiles34) < 13
 	result := util.CalculateShantenWithImproves13(playerInfo)
 
 	// 副露分析
@@ -70,7 +70,7 @@ func analysisMeld(playerInfo *util.PlayerInfo, targetTile34 int, allowChi bool) 
 		return
 	}
 
-	raw := util.Tiles34ToStr(playerInfo.Tiles34) + " + " + util.Tile34ToStr(targetTile34) + "?"
+	raw := util.Tiles34ToStr(playerInfo.HandTiles34) + " + " + util.Tile34ToStr(targetTile34) + "?"
 	fmt.Println(raw)
 	fmt.Println(strings.Repeat("=", len(raw)))
 
@@ -122,7 +122,7 @@ func analysisHumanTiles(humanTiles string) (tiles34 []int, err error) {
 			return
 		}
 
-		analysisMeld(util.NewSimplePlayerInfo(tiles34, true), targetTile34, true)
+		analysisMeld(model.NewSimplePlayerInfo(tiles34, nil), targetTile34, true)
 		return
 	}
 
@@ -131,6 +131,8 @@ func analysisHumanTiles(humanTiles string) (tiles34 []int, err error) {
 		return
 	}
 
-	err = analysisTiles34(util.NewSimplePlayerInfo(tiles34, false))
+	playerInfo := model.NewSimplePlayerInfo(tiles34, nil)
+	playerInfo.IsTsumo = true
+	err = analysisTiles34(playerInfo)
 	return
 }

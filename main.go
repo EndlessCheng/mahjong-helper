@@ -19,6 +19,7 @@ var version = "dev"
 var (
 	showAgariAboveShanten1 bool
 	showScore              bool
+	showAllYakuTypes       bool
 )
 
 func welcome() int {
@@ -67,6 +68,7 @@ func main() {
 	//isDetail := flags.Bool("d", "detail")
 	showAgariAboveShanten1 = flags.Bool("a", "agari")
 	showScore = flags.Bool("s", "score")
+	showAllYakuTypes = flags.Bool("y", "yaku")
 	humanTiles := strings.Join(restArgs, " ")
 
 	switch {

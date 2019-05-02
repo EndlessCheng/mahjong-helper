@@ -7,9 +7,7 @@ import (
 const agariState = -1
 
 // 根据手牌计算向听数
-// tiles34 手牌
-// isOpen 是否副露，未副露的手牌会考虑七对子
-func CalculateShanten(tiles34 []int, isOpen bool) int {
+func CalculateShanten(tiles34 []int) int {
 	countOfTiles := CountOfTiles34(tiles34)
 	if countOfTiles > 14 {
 		panic(fmt.Sprintln("[CalculateShanten] 参数错误 >14", tiles34, countOfTiles))
@@ -17,9 +15,12 @@ func CalculateShanten(tiles34 []int, isOpen bool) int {
 
 	_tiles34 := make([]int, 34)
 	copy(_tiles34, tiles34)
-	st := shanten{minShanten: 8, tiles: _tiles34}
+	st := shanten{
+		minShanten: 8, // 不考虑国士无双和七对子的最大向听
+		tiles:      _tiles34,
+	}
 
-	if !isOpen {
+	if countOfTiles >= 13 {
 		// 考虑七对子
 		st.minShanten = st.scanChitoitsu()
 	}
@@ -32,10 +33,6 @@ func CalculateShanten(tiles34 []int, isOpen bool) int {
 	st.scan(initMentsu)
 
 	return st.minShanten
-}
-
-func CalculateShantenWithoutChitoitsu(tiles34 []int) int {
-	return CalculateShanten(tiles34, true)
 }
 
 type shanten struct {

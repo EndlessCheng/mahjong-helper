@@ -5,6 +5,7 @@ import (
 	"time"
 	"github.com/fatih/color"
 	"github.com/EndlessCheng/mahjong-helper/util"
+	"github.com/EndlessCheng/mahjong-helper/util/model"
 )
 
 type majsoulMessage struct {
@@ -132,13 +133,13 @@ func (d *majsoulRoundData) mustParseMajsoulTile(humanTile string) (tile34 int, i
 	return
 }
 
-func (d *majsoulRoundData) mustParseMajsoulTiles(majsoulTiles []string) (tiles []int, containRedFive bool) {
-	var isRedFive bool
+func (d *majsoulRoundData) mustParseMajsoulTiles(majsoulTiles []string) (tiles []int, numRedFive int) {
 	tiles = make([]int, len(majsoulTiles))
 	for i, majsoulTile := range majsoulTiles {
+		var isRedFive bool
 		tiles[i], isRedFive = d.mustParseMajsoulTile(majsoulTile)
 		if isRedFive {
-			containRedFive = true
+			numRedFive++
 		}
 	}
 	return
@@ -206,7 +207,7 @@ func (d *majsoulRoundData) IsInit() bool {
 	return len(msg.SeatList) == playerNumber || msg.MD5 != ""
 }
 
-func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicator int, hands []int) {
+func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicator int, handTiles []int, numRedFive int) {
 	msg := d.msg
 	const playerNumber = 4
 
@@ -227,7 +228,7 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicat
 	roundNumber = playerNumber*(*msg.Chang) + *msg.Ju
 	doraIndicator, _ = d.mustParseMajsoulTile(msg.Dora)
 	majsoulTiles := d.normalTiles(msg.Tiles)
-	hands, _ = d.mustParseMajsoulTiles(majsoulTiles)
+	handTiles, numRedFive = d.mustParseMajsoulTiles(majsoulTiles)
 	return
 }
 
@@ -244,9 +245,9 @@ func (d *majsoulRoundData) IsSelfDraw() bool {
 	return who == 0
 }
 
-func (d *majsoulRoundData) ParseSelfDraw() (tile int, kanDoraIndicator int) {
+func (d *majsoulRoundData) ParseSelfDraw() (tile int, isRedFive bool, kanDoraIndicator int) {
 	msg := d.msg
-	tile, _ = d.mustParseMajsoulTile(msg.Tile)
+	tile, isRedFive = d.mustParseMajsoulTile(msg.Tile)
 	kanDoraIndicator = -1
 	if d.isNewDora(msg.Doras) {
 		kanDoraIndicator, _ = d.mustParseMajsoulTile(msg.Doras[len(msg.Doras)-1])
@@ -260,10 +261,10 @@ func (d *majsoulRoundData) IsDiscard() bool {
 	return msg.Moqie != nil
 }
 
-func (d *majsoulRoundData) ParseDiscard() (who int, discardTile int, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int) {
+func (d *majsoulRoundData) ParseDiscard() (who int, discardTile int, isRedFive bool, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int) {
 	msg := d.msg
 	who = d.parseWho(*msg.Seat)
-	discardTile, _ = d.mustParseMajsoulTile(msg.Tile)
+	discardTile, isRedFive = d.mustParseMajsoulTile(msg.Tile)
 	isTsumogiri = *msg.Moqie
 	isReach = *msg.IsLiqi || *msg.IsWliqi
 	canBeMeld = msg.Operation != nil
@@ -285,7 +286,7 @@ func (d *majsoulRoundData) IsOpen() bool {
 	return len(majsoulTiles) <= 4
 }
 
-func (d *majsoulRoundData) ParseOpen() (who int, meld *mjMeld, kanDoraIndicator int) {
+func (d *majsoulRoundData) ParseOpen() (who int, meld *model.Meld, kanDoraIndicator int) {
 	msg := d.msg
 
 	who = d.parseWho(*msg.Seat)
@@ -303,7 +304,7 @@ func (d *majsoulRoundData) ParseOpen() (who int, meld *mjMeld, kanDoraIndicator 
 		majsoulTile := majsoulTiles[0]
 		majsoulTiles = []string{majsoulTile, majsoulTile, majsoulTile, majsoulTile}
 	}
-	meldTiles, containRedFive := d.mustParseMajsoulTiles(majsoulTiles)
+	meldTiles, numRedFive := d.mustParseMajsoulTiles(majsoulTiles)
 	if isSelfKan {
 		calledTile = meldTiles[0]
 		// 也可以通过副露来判断是加杠还是暗杠，这里简单地用 msg.Type 判断
@@ -316,37 +317,50 @@ func (d *majsoulRoundData) ParseOpen() (who int, meld *mjMeld, kanDoraIndicator 
 				fmt.Println("暗杠数据解析错误！")
 			}
 		}
-		meld = &mjMeld{
-			meldType:       meldType,
-			tiles:          meldTiles,
-			calledTile:     calledTile,
-			containRedFive: containRedFive,
+		meld = &model.Meld{
+			MeldType:       meldType,
+			Tiles:          meldTiles,
+			CalledTile:     calledTile,
+			ContainRedFive: numRedFive > 0,
 		}
 		return
 	}
 
+	var rawCalledTile string
+	for i, seat := range msg.Froms {
+		fromWho := d.parseWho(seat)
+		if fromWho != who {
+			rawCalledTile = majsoulTiles[i]
+		}
+	}
+	if rawCalledTile == "" {
+		panic("数据解析异常: 未找到 rawCalledTile")
+	}
+	calledTile, redFiveFromOthers := d.mustParseMajsoulTile(rawCalledTile)
+
 	if len(meldTiles) == 3 {
 		if meldTiles[0] == meldTiles[1] {
 			meldType = meldTypePon // 碰
-			calledTile = meldTiles[0]
+			//calledTile = meldTiles[0]
 		} else {
 			meldType = meldTypeChi // 吃
-			calledTile = d.globalDiscardTiles[len(d.globalDiscardTiles)-1]
-			if calledTile < 0 {
-				calledTile = ^calledTile
-			}
+			//calledTile = d.globalDiscardTiles[len(d.globalDiscardTiles)-1]
+			//if calledTile < 0 {
+			//	calledTile = ^calledTile
+			//}
 		}
 	} else if len(meldTiles) == 4 {
 		meldType = meldTypeMinkan // 大明杠
-		calledTile = meldTiles[0]
+		//calledTile = meldTiles[0]
 	} else {
 		panic("鸣牌数据解析失败！")
 	}
-	meld = &mjMeld{
-		meldType:       meldType,
-		tiles:          meldTiles,
-		calledTile:     calledTile,
-		containRedFive: containRedFive,
+	meld = &model.Meld{
+		MeldType:          meldType,
+		Tiles:             meldTiles,
+		CalledTile:        calledTile,
+		ContainRedFive:    numRedFive > 0,
+		RedFiveFromOthers: redFiveFromOthers,
 	}
 	return
 }

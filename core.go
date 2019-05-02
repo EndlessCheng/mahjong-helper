@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/EndlessCheng/mahjong-helper/util"
+	"github.com/EndlessCheng/mahjong-helper/util/model"
 )
 
 var debugMode = false
@@ -29,16 +30,18 @@ type DataParser interface {
 	// round 开始/重连
 	// roundNumber: 场数（如东1为0，东2为1，...，南1为4，...）
 	// dealer: 庄家 0-3
-	// doraIndicator: 宝牌指示牌 0-33
-	// hands: 手牌 [0-33]
+	// doraIndicator: 宝牌指示牌
+	// handTiles: 手牌
+	// numRedFive: 赤5个数
 	IsInit() bool
-	ParseInit() (roundNumber int, dealer int, doraIndicator int, hands []int)
+	ParseInit() (roundNumber int, dealer int, doraIndicator int, handTiles []int, numRedFive int)
 
 	// 自家摸牌
 	// tile: 0-33
+	// isRedFive: 是否为赤5
 	// kanDoraIndicator: 摸牌时，若为暗杠摸的岭上牌，则可以翻出杠宝牌指示牌，否则返回 -1（目前恒为 -1，见 IsNewDora）
 	IsSelfDraw() bool
-	ParseSelfDraw() (tile int, kanDoraIndicator int)
+	ParseSelfDraw() (tile int, isRedFive bool, kanDoraIndicator int)
 
 	// 舍牌
 	// who: 0=自家, 1=下家, 2=对家, 3=上家
@@ -47,12 +50,12 @@ type DataParser interface {
 	// canBeMeld: 是否可以鸣牌（who=0 时忽略该值）
 	// kanDoraIndicator: 大明杠/加杠的杠宝牌指示牌，在切牌后出现，没有则返回 -1（天凤恒为-1，见 IsNewDora）
 	IsDiscard() bool
-	ParseDiscard() (who int, discardTile int, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int)
+	ParseDiscard() (who int, discardTile int, isRedFive bool, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int)
 
 	// 鸣牌（含暗杠、加杠）
 	// kanDoraIndicator: 暗杠的杠宝牌指示牌，在他家暗杠时出现，没有则返回 -1（天凤恒为-1，见 IsNewDora）
 	IsOpen() bool
-	ParseOpen() (who int, meld *mjMeld, kanDoraIndicator int)
+	ParseOpen() (who int, meld *model.Meld, kanDoraIndicator int)
 
 	// 立直声明（IsReach 对于雀魂来说恒为 false，见 ParseDiscard）
 	IsReach() bool
@@ -99,13 +102,6 @@ const (
 	meldTypeKakan         // 加杠
 )
 
-type mjMeld struct {
-	meldType       int   // 鸣牌类型（吃、碰、暗杠、大明杠、加杠）
-	tiles          []int // 副露的牌 [0-33]
-	calledTile     int   // 被鸣的牌 0-33
-	containRedFive bool  // 是否包含赤5
-}
-
 //
 
 type playerInfo struct {
@@ -113,7 +109,7 @@ type playerInfo struct {
 
 	selfWindTile int // 自风
 
-	melds                []*mjMeld // 副露
+	melds                []*model.Meld // 副露
 	meldDiscardsAtGlobal []int
 	meldDiscardsAt       []int
 	isNaki               bool // 是否鸣牌（暗杠不算鸣牌）
@@ -203,6 +199,9 @@ type roundData struct {
 
 	// 自家手牌
 	counts []int
+
+	// 自家赤5数量，包含副露的赤5
+	numRedFive int
 
 	// 牌山剩余牌量
 	leftCounts []int
@@ -381,14 +380,14 @@ func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
 			doraCount := 0
 			doraList := d.doraList()
 			for _, meld := range player.melds {
-				for _, tile := range meld.tiles {
+				for _, tile := range meld.Tiles {
 					for _, dora := range doraList {
 						if tile == dora {
 							doraCount++
 						}
 					}
 				}
-				if meld.containRedFive {
+				if meld.ContainRedFive {
 					doraCount++
 				}
 			}
@@ -414,6 +413,54 @@ func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
 	}
 
 	return riList
+}
+
+func (d *roundData) isPlayerDaburii(who int) bool {
+	// w立直成立的前提是没有任何玩家副露
+	for _, p := range d.players {
+		if len(p.melds) > 0 {
+			return false
+		}
+	}
+	return d.players[who].reachTileAt == 0
+}
+
+func (d *roundData) newModelPlayerInfo() *model.PlayerInfo {
+	melds := []model.Meld{}
+	for _, m := range d.players[0].melds {
+		melds = append(melds, *m)
+	}
+
+	doraCount := 0
+	doraList := d.doraList()
+	for _, dora := range doraList {
+		doraCount += d.counts[dora]
+		for _, m := range melds {
+			for _, tile := range m.Tiles {
+				if tile == dora {
+					doraCount++
+				}
+			}
+		}
+	}
+	// 手牌和副露中的赤5
+	doraCount += d.numRedFive
+
+	const self = 0
+	selfPlayer := d.players[self]
+
+	return &model.PlayerInfo{
+		HandTiles34:   d.counts,
+		Melds:         melds,
+		RoundWindTile: d.roundWindTile,
+		SelfWindTile:  selfPlayer.selfWindTile,
+		DoraCount:     doraCount,
+		IsParent:      d.dealer == self,
+		IsDaburii:     d.isPlayerDaburii(self),
+		IsRiichi:      selfPlayer.isReached,
+		DiscardTiles:  normalDiscardTiles(selfPlayer.discardTiles),
+		LeftTiles34:   d.leftCounts,
+	}
 }
 
 func (d *roundData) analysis() error {
@@ -446,7 +493,7 @@ func (d *roundData) analysis() error {
 			clearConsole()
 		}
 
-		roundNumber, dealer, doraIndicator, hands := d.parser.ParseInit()
+		roundNumber, dealer, doraIndicator, hands, numRedFive := d.parser.ParseInit()
 		switch d.parser.GetDataSourceType() {
 		case dataSourceTypeTenhou:
 			d.reset(roundNumber, dealer)
@@ -482,22 +529,17 @@ func (d *roundData) analysis() error {
 			d.descLeftCounts(tile)
 		}
 
+		d.numRedFive = numRedFive
+
 		if len(hands) == 14 {
-			return analysisTiles34(&util.PlayerInfo{
-				d.roundWindTile,
-				d.players[0].selfWindTile,
-				d.counts,
-				normalDiscardTiles(d.players[0].discardTiles),
-				d.leftCounts,
-				false,
-			})
+			return analysisTiles34(d.newModelPlayerInfo())
 		}
 	case d.parser.IsOpen():
 		// 某家鸣牌（含暗杠、加杠）
 		who, meld, kanDoraIndicator := d.parser.ParseOpen()
-		meldType := meld.meldType
-		meldTiles := meld.tiles
-		calledTile := meld.calledTile
+		meldType := meld.MeldType
+		meldTiles := meld.Tiles
+		calledTile := meld.CalledTile
 
 		// 任何形式的鸣牌都能破除一发
 		for _, player := range d.players {
@@ -528,8 +570,8 @@ func (d *roundData) analysis() error {
 			// 修改原副露
 			for _, _meld := range player.melds {
 				// 找到原有的碰副露
-				if _meld.tiles[0] == calledTile {
-					_meld.tiles = append(_meld.tiles, calledTile)
+				if _meld.Tiles[0] == calledTile {
+					_meld.Tiles = append(_meld.Tiles, calledTile)
 					break
 				}
 			}
@@ -556,6 +598,9 @@ func (d *roundData) analysis() error {
 				d.counts[calledTile]++
 				for _, tile := range meldTiles {
 					d.counts[tile]--
+				}
+				if meld.RedFiveFromOthers {
+					d.numRedFive++
 				}
 			}
 		}
@@ -585,9 +630,12 @@ func (d *roundData) analysis() error {
 			clearConsole()
 		}
 		// 自家（从牌山 d.leftCounts）摸牌（至手牌 d.counts）
-		tile, kanDoraIndicator := d.parser.ParseSelfDraw()
+		tile, isRedFive, kanDoraIndicator := d.parser.ParseSelfDraw()
 		d.descLeftCounts(tile)
 		d.counts[tile]++
+		if isRedFive {
+			d.numRedFive++
+		}
 		if kanDoraIndicator != -1 {
 			d.newDora(kanDoraIndicator)
 		}
@@ -602,17 +650,9 @@ func (d *roundData) analysis() error {
 
 		// 何切
 		// TODO: 根据是否听牌/一向听、打点、巡目、和率等进行攻守判断
-		isOpen := len(d.players[0].melds) > 0
-		return analysisTiles34(&util.PlayerInfo{
-			d.roundWindTile,
-			d.players[0].selfWindTile,
-			d.counts,
-			normalDiscardTiles(d.players[0].discardTiles),
-			d.leftCounts,
-			isOpen,
-		})
+		return analysisTiles34(d.newModelPlayerInfo())
 	case d.parser.IsDiscard():
-		who, discardTile, isTsumogiri, isReach, canBeMeld, kanDoraIndicator := d.parser.ParseDiscard()
+		who, discardTile, isRedFive, isTsumogiri, isReach, canBeMeld, kanDoraIndicator := d.parser.ParseDiscard()
 
 		if kanDoraIndicator != -1 {
 			d.newDora(kanDoraIndicator)
@@ -631,6 +671,10 @@ func (d *roundData) analysis() error {
 			d.globalDiscardTiles = append(d.globalDiscardTiles, discardTile)
 			player.discardTiles = append(player.discardTiles, discardTile)
 			player.latestDiscardAtGlobal = len(d.globalDiscardTiles) - 1
+
+			if isRedFive {
+				d.numRedFive--
+			}
 
 			return nil
 		}
@@ -695,16 +739,8 @@ func (d *roundData) analysis() error {
 		// 若能副露，计算何切
 		if canBeMeld {
 			// TODO: 消除海底/避免河底/型听提醒
-			isOpen := len(d.players[0].melds) > 0
 			allowChi := who == 3
-			analysisMeld(&util.PlayerInfo{
-				d.roundWindTile,
-				d.players[0].selfWindTile,
-				d.counts,
-				normalDiscardTiles(d.players[0].discardTiles),
-				d.leftCounts,
-				isOpen,
-			}, discardTile, allowChi)
+			analysisMeld(d.newModelPlayerInfo(), discardTile, allowChi)
 		}
 	case d.parser.IsRoundWin():
 		if !debugMode {

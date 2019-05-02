@@ -105,6 +105,11 @@ func (hi *_handInfo) riichi() bool {
 }
 
 // 门清限定
+func (hi *_handInfo) tsumo() bool {
+	return !hi.isNaki() && hi.IsTsumo
+}
+
+// 门清限定
 func (hi *_handInfo) chiitoi() bool {
 	return hi.divideResult.IsChiitoi
 }
@@ -448,8 +453,10 @@ func (hi *_handInfo) _numSuit() int {
 
 	if hi.divideResult.IsChiitoi {
 		// 七对子特殊判断
-		for _, tile := range hi.HandTiles34 {
-			cnt(tile)
+		for i, c := range hi.HandTiles34 {
+			if c > 0 {
+				cnt(i)
+			}
 		}
 	} else {
 		dr := hi.divideResult
@@ -492,6 +499,7 @@ var yakuCheckerMap = map[int]yakuChecker{
 	YakuDaburii:        (*_handInfo).daburii,
 	YakuRiichi:         (*_handInfo).riichi,
 	YakuChiitoi:        (*_handInfo).chiitoi,
+	YakuTsumo:          (*_handInfo).tsumo,
 	YakuPinfu:          (*_handInfo).pinfu,
 	YakuRyanpeikou:     (*_handInfo).ryanpeikou,
 	YakuIipeikou:       (*_handInfo).iipeikou,
@@ -538,11 +546,13 @@ func findYakuTypes(hi *_handInfo) (yakuTypes []int) {
 	return
 }
 
-func FindAllYakuTypes(handInfo *HandInfo) (yakuTypes []int) {
+// 寻找所有可能的役种
+// 调用前请设置 WinTile
+func FindAllYakuTypes(playerInfo *model.PlayerInfo) (yakuTypes []int) {
 	canYaku := make([]bool, maxYakuType)
-	for _, result := range DivideTiles34(handInfo.HandTiles34) {
+	for _, result := range DivideTiles34(playerInfo.HandTiles34) {
 		_hi := &_handInfo{
-			HandInfo:     handInfo,
+			PlayerInfo:   playerInfo,
 			divideResult: result,
 		}
 		yakuTypes := findYakuTypes(_hi)

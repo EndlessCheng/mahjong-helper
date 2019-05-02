@@ -4,32 +4,8 @@ import (
 	"fmt"
 	"sort"
 	"math"
+	"github.com/EndlessCheng/mahjong-helper/util/model"
 )
-
-// TODO: 移至 model
-type PlayerInfo struct {
-	RoundWindTile34 int   // 场风
-	SelfWindTile34  int   // 自风
-	Tiles34         []int // 手牌
-	DiscardTiles    []int // 注意初始化的时候把负数调整成正的！
-	LeftTiles34     []int // 剩余牌
-	IsOpen          bool  // 是否鸣牌或暗杠
-	//Melds           []model.Meld // 鸣牌信息
-}
-
-func NewSimplePlayerInfo(tiles34 []int, isOpen bool) *PlayerInfo {
-	return &PlayerInfo{
-		RoundWindTile34: 27,
-		SelfWindTile34:  27,
-		Tiles34:         tiles34,
-		LeftTiles34:     InitLeftTiles34WithTiles34(tiles34),
-		IsOpen:          isOpen,
-	}
-}
-
-func (pi *PlayerInfo) FillLeftTiles34() {
-	pi.LeftTiles34 = InitLeftTiles34WithTiles34(pi.Tiles34)
-}
 
 // map[改良牌]进张（选择进张数最大的）
 type Improves map[int]Waits
@@ -90,8 +66,11 @@ type WaitsWithImproves13 struct {
 	// 役种
 	YakuTypes []int
 
-	// 打点期望
+	// 荣和打点期望
 	RonPoint float64
+
+	// 自摸打点期望
+	TsumoPoint float64
 
 	// TODO: 赤牌改良提醒
 }
@@ -150,23 +129,24 @@ func (r *WaitsWithImproves13) String() string {
 				s += "[振听]"
 			}
 		}
-		if len(r.YakuTypes) == 0 {
-			s += "[无役]"
-		} else {
-			s += fmt.Sprint(r.YakuTypes)
-		}
-		s += fmt.Sprintf("[%d荣和点数]", int(r.RonPoint))
+		s += YakuTypesToStr(r.YakuTypes)
+	}
+	if r.RonPoint > 0 {
+		s += fmt.Sprintf("[%d荣和点数]", int(math.Round(r.RonPoint)))
+	}
+	if r.TsumoPoint > 0 {
+		s += fmt.Sprintf("[%d自摸点数]", int(math.Round(r.TsumoPoint)))
 	}
 	return s
 }
 
 // 1/4/7/10/13 张牌，计算向听数、进张（考虑了剩余枚数）
-func CalculateShantenAndWaits13(tiles34 []int, leftTiles34 []int, isOpen bool) (shanten int, waits Waits) {
+func CalculateShantenAndWaits13(tiles34 []int, leftTiles34 []int) (shanten int, waits Waits) {
 	if len(leftTiles34) == 0 {
 		leftTiles34 = InitLeftTiles34WithTiles34(tiles34)
 	}
 
-	shanten = CalculateShanten(tiles34, isOpen)
+	shanten = CalculateShanten(tiles34)
 
 	// 剪枝：检测非浮牌，在不考虑国士无双的情况下，这种牌是不可能让向听数前进的（但有改良的可能，不过 CalculateShantenAndWaits13 函数不考虑这个）
 	// 此处优化提升了约 30% 的性能
@@ -224,7 +204,7 @@ func CalculateShantenAndWaits13(tiles34 []int, leftTiles34 []int, isOpen bool) (
 
 		// 摸牌
 		tiles34[i]++
-		if newShanten := CalculateShanten(tiles34, isOpen); newShanten < shanten {
+		if newShanten := CalculateShanten(tiles34); newShanten < shanten {
 			// 向听前进了，则换的这张牌为进张，进张数即剩余枚数
 			// 有可能为 0，但这对于判断振听是有帮助的，所以记录
 			waits[i] = leftTiles34[i]
@@ -236,15 +216,14 @@ func CalculateShantenAndWaits13(tiles34 []int, leftTiles34 []int, isOpen bool) (
 }
 
 // 1/4/7/10/13 张牌，计算向听数、进张、改良等（考虑了剩余枚数）
-func CalculateShantenWithImproves13(playerInfo *PlayerInfo) (r *WaitsWithImproves13) {
+func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithImproves13) {
 	if len(playerInfo.LeftTiles34) == 0 {
 		playerInfo.FillLeftTiles34()
 	}
 
-	tiles34 := playerInfo.Tiles34
+	tiles34 := playerInfo.HandTiles34
 	leftTiles34 := playerInfo.LeftTiles34
-	isOpen := playerInfo.IsOpen
-	shanten13, waits := CalculateShantenAndWaits13(tiles34, leftTiles34, isOpen)
+	shanten13, waits := CalculateShantenAndWaits13(tiles34, leftTiles34)
 	waitsCount := waits.AllCount()
 
 	nextShantenWaitsCountMap := map[int]int{} // map[进张牌]听多少张牌
@@ -260,7 +239,7 @@ func CalculateShantenWithImproves13(playerInfo *PlayerInfo) (r *WaitsWithImprove
 
 	canYaku := make([]bool, maxYakuType)
 	fillYakuTypes := func(_shanten13 int, _waits Waits) {
-		if _shanten13 != 0 {
+		if _shanten13 != 0 { // 只考虑听牌
 			return
 		}
 		for tile, left := range _waits {
@@ -268,10 +247,8 @@ func CalculateShantenWithImproves13(playerInfo *PlayerInfo) (r *WaitsWithImprove
 				continue
 			}
 			tiles34[tile]++
-			_yakuTypes := FindAllYakuTypes(&HandInfo{
-				HandTiles34: tiles34,
-				// TODO
-			})
+			playerInfo.WinTile = tile
+			_yakuTypes := FindAllYakuTypes(playerInfo)
 			for _, t := range _yakuTypes {
 				canYaku[t] = true
 			}
@@ -300,7 +277,7 @@ func CalculateShantenWithImproves13(playerInfo *PlayerInfo) (r *WaitsWithImprove
 				// 切牌
 				tiles34[j]--
 				// 向听前进才是正确的切牌
-				if newShanten13, newWaits := CalculateShantenAndWaits13(tiles34, leftTiles34, isOpen); newShanten13 < shanten13 {
+				if newShanten13, newWaits := CalculateShantenAndWaits13(tiles34, leftTiles34); newShanten13 < shanten13 {
 					// 切牌一般切进张最多的
 					if waitsCount := newWaits.AllCount(); waitsCount > nextShantenWaitsCountMap[i] {
 						nextShantenWaitsCountMap[i] = waitsCount
@@ -325,7 +302,7 @@ func CalculateShantenWithImproves13(playerInfo *PlayerInfo) (r *WaitsWithImprove
 				// 切牌
 				tiles34[j]--
 				// 正确的切牌
-				if newShanten13, improveWaits := CalculateShantenAndWaits13(tiles34, leftTiles34, isOpen); newShanten13 == shanten13 {
+				if newShanten13, improveWaits := CalculateShantenAndWaits13(tiles34, leftTiles34); newShanten13 == shanten13 {
 					// 若进张数变多，则为改良
 					if improveWaitsCount := improveWaits.AllCount(); improveWaitsCount > waitsCount {
 						improveWayCount++
@@ -349,8 +326,8 @@ func CalculateShantenWithImproves13(playerInfo *PlayerInfo) (r *WaitsWithImprove
 	}
 
 	yakuTypes := []int{}
-	for yakuType, canYaku := range canYaku {
-		if canYaku {
+	for yakuType, can := range canYaku {
+		if can {
 			yakuTypes = append(yakuTypes, yakuType)
 		}
 	}
@@ -358,8 +335,8 @@ func CalculateShantenWithImproves13(playerInfo *PlayerInfo) (r *WaitsWithImprove
 	_tiles34 := make([]int, 34)
 	copy(_tiles34, tiles34)
 	r = &WaitsWithImproves13{
-		RoundWindTile34: playerInfo.RoundWindTile34,
-		SelfWindTile34:  playerInfo.SelfWindTile34,
+		RoundWindTile34: playerInfo.RoundWindTile,
+		SelfWindTile34:  playerInfo.SelfWindTile,
 		Tiles34:         _tiles34,
 		LeftTiles34:     leftTiles34,
 		Shanten:         shanten13,
@@ -387,14 +364,27 @@ func CalculateShantenWithImproves13(playerInfo *PlayerInfo) (r *WaitsWithImprove
 		}
 	}
 
-	// 荣和点数
-	if shanten13 == 0 {
-		ronPoint := CalcRonPointWithHands(&HandInfo{
-			HandTiles34: tiles34,
-			// TODO:
-		})
-		r.RonPoint = float64(ronPoint)
+	// 非振听时计算荣和点数
+	// TODO: 立直时考虑中里的分数
+	if r.FuritenRate == 0 && shanten13 == 0 {
+		sum := 0
+		w := 0
+		for tile, left := range waits {
+			if left == 0 {
+				continue
+			}
+			tiles34[tile]++
+			playerInfo.WinTile = tile
+			ronPoint := CalcRonPointWithHands(playerInfo)
+			sum += ronPoint * left
+			w += left
+			tiles34[tile]--
+		}
+		r.RonPoint = float64(sum) / float64(w)
 	}
+
+	// TODO: 自摸点数
+	// TODO: 立直时考虑中里的分数
 
 	// 分析
 	if len(nextShantenWaitsCountMap) > 0 {
@@ -540,13 +530,13 @@ func (l WaitsWithImproves14List) addOpenTile(openTiles []int) {
 }
 
 // 2/5/8/11/14 张牌，计算向听数、进张、改良、向听倒退等
-func CalculateShantenWithImproves14(playerInfo *PlayerInfo) (shanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
+func CalculateShantenWithImproves14(playerInfo *model.PlayerInfo) (shanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
 	if len(playerInfo.LeftTiles34) == 0 {
 		playerInfo.FillLeftTiles34()
 	}
 
-	tiles34 := playerInfo.Tiles34
-	shanten = CalculateShanten(tiles34, playerInfo.IsOpen)
+	tiles34 := playerInfo.HandTiles34
+	shanten = CalculateShanten(tiles34)
 
 	for i := 0; i < 34; i++ {
 		if tiles34[i] == 0 {
@@ -597,41 +587,52 @@ func CalculateShantenWithImproves14(playerInfo *PlayerInfo) (shanten int, waitsW
 	return
 }
 
-// 计算最小向听数，鸣牌方式，该鸣牌方式下的向听数
-func calculateMeldShanten(tiles34 []int, tile int, allowChi bool) (minShanten int, combinations [][]int, shantens []int) {
+// 计算最小向听数，鸣牌方式
+func calculateMeldShanten(tiles34 []int, calledTile int, allowChi bool) (minShanten int, combinations []model.Meld) {
 	// 是否能碰
-	if tiles34[tile] >= 2 {
-		combinations = append(combinations, []int{tile, tile})
+	if tiles34[calledTile] >= 2 {
+		combinations = append(combinations, model.Meld{
+			MeldType:   model.MeldTypePon,
+			Tiles:      []int{calledTile, calledTile, calledTile},
+			SelfTiles:  []int{calledTile, calledTile},
+			CalledTile: calledTile,
+		})
 	}
 	// 是否能吃
-	if allowChi && tile < 27 {
+	if allowChi && calledTile < 27 {
 		checkChi := func(tileA, tileB int) {
 			if tiles34[tileA] > 0 && tiles34[tileB] > 0 {
-				combinations = append(combinations, []int{tileA, tileB})
+				_tiles := []int{tileA, tileB, calledTile}
+				sort.Ints(_tiles)
+				combinations = append(combinations, model.Meld{
+					MeldType:   model.MeldTypeChi,
+					Tiles:      _tiles,
+					SelfTiles:  []int{tileA, tileB},
+					CalledTile: calledTile,
+				})
 			}
 		}
-		t9 := tile % 9
+		t9 := calledTile % 9
 		if t9 >= 2 {
-			checkChi(tile-2, tile-1)
+			checkChi(calledTile-2, calledTile-1)
 		}
 		if t9 >= 1 && t9 <= 7 {
-			checkChi(tile-1, tile+1)
+			checkChi(calledTile-1, calledTile+1)
 		}
 		if t9 <= 6 {
-			checkChi(tile+1, tile+2)
+			checkChi(calledTile+1, calledTile+2)
 		}
 	}
 
-	// 计算所有副露情况下的最小向听数
+	// 计算所有鸣牌下的最小向听数
 	minShanten = 99
 	for _, c := range combinations {
-		tiles34[c[0]]--
-		tiles34[c[1]]--
-		shanten := CalculateShanten(tiles34, true)
+		tiles34[c.SelfTiles[0]]--
+		tiles34[c.SelfTiles[1]]--
+		shanten := CalculateShanten(tiles34)
 		minShanten = MinInt(minShanten, shanten)
-		shantens = append(shantens, shanten)
-		tiles34[c[0]]++
-		tiles34[c[1]]++
+		tiles34[c.SelfTiles[0]]++
+		tiles34[c.SelfTiles[1]]++
 	}
 
 	return
@@ -653,40 +654,39 @@ func calculateMeldShanten(tiles34 []int, tile int, allowChi bool) (minShanten in
 //}
 //}
 
-func CalculateMeld(playerInfo *PlayerInfo, tile int, allowChi bool) (shanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
+func CalculateMeld(playerInfo *model.PlayerInfo, calledTile int, allowChi bool) (shanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
 	if len(playerInfo.LeftTiles34) == 0 {
 		playerInfo.FillLeftTiles34()
 	}
 
-	tiles34 := playerInfo.Tiles34
-	shanten, combinations, _ := calculateMeldShanten(tiles34, tile, allowChi)
+	tiles34 := playerInfo.HandTiles34
+	shanten, combinations := calculateMeldShanten(tiles34, calledTile, allowChi)
 
-	playerInfo.IsOpen = true
 	for _, c := range combinations {
-		tiles34[c[0]]--
-		tiles34[c[1]]--
+		tiles34[c.SelfTiles[0]]--
+		tiles34[c.SelfTiles[1]]--
 		_shanten, _waitsWithImproves, _incShantenResults := CalculateShantenWithImproves14(playerInfo)
-		tiles34[c[0]]++
-		tiles34[c[1]]++
+		tiles34[c.SelfTiles[0]]++
+		tiles34[c.SelfTiles[1]]++
 
 		// 去掉现物食替的情况
-		_waitsWithImproves.filterOutDiscard(tile)
-		_incShantenResults.filterOutDiscard(tile)
+		_waitsWithImproves.filterOutDiscard(calledTile)
+		_incShantenResults.filterOutDiscard(calledTile)
 
 		// 去掉筋食替的情况
 		cantDiscardTile := -1
-		if c[0] < tile && c[1] < tile && tile >= 3 {
-			cantDiscardTile = tile - 3
-		} else if c[0] > tile && c[1] > tile && tile <= 5 {
-			cantDiscardTile = tile + 3
+		if c.SelfTiles[0] < calledTile && c.SelfTiles[1] < calledTile && calledTile >= 3 {
+			cantDiscardTile = calledTile - 3
+		} else if c.SelfTiles[0] > calledTile && c.SelfTiles[1] > calledTile && calledTile <= 5 {
+			cantDiscardTile = calledTile + 3
 		}
 		if cantDiscardTile != -1 {
 			_waitsWithImproves.filterOutDiscard(cantDiscardTile)
 			_incShantenResults.filterOutDiscard(cantDiscardTile)
 		}
 
-		_waitsWithImproves.addOpenTile(c[:])
-		_incShantenResults.addOpenTile(c[:])
+		_waitsWithImproves.addOpenTile(c.SelfTiles)
+		_incShantenResults.addOpenTile(c.SelfTiles)
 
 		if _shanten == shanten {
 			waitsWithImproves = append(waitsWithImproves, _waitsWithImproves...)

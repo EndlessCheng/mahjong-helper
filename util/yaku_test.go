@@ -26,7 +26,7 @@ func Test_findYakuTypes(t *testing.T) {
 		tiles34 := MustStrToTiles34(tiles)
 		for _, result := range DivideTiles34(tiles34) {
 			yakuTypes := findYakuTypes(&_handInfo{
-				HandInfo: &HandInfo{
+				PlayerInfo: &model.PlayerInfo{
 					HandTiles34:   tiles34,
 					IsTsumo:       true,
 					WinTile:       MustStrToTile34("3m"),
@@ -51,7 +51,7 @@ func Test_findYakuTypes(t *testing.T) {
 		tiles34 := MustStrToTiles34(tiles)
 		for _, result := range DivideTiles34(tiles34) {
 			yakuTypes := findYakuTypes(&_handInfo{
-				HandInfo: &HandInfo{
+				PlayerInfo: &model.PlayerInfo{
 					HandTiles34:   tiles34,
 					IsTsumo:       false,
 					WinTile:       MustStrToTile34("3m"),
@@ -74,7 +74,7 @@ func Test_findYakuTypes(t *testing.T) {
 		tiles34 := MustStrToTiles34(tiles)
 		for _, result := range DivideTiles34(tiles34) {
 			yakuTypes := findYakuTypes(&_handInfo{
-				HandInfo: &HandInfo{
+				PlayerInfo: &model.PlayerInfo{
 					HandTiles34: tiles34,
 					Melds: []model.Meld{
 						{MeldType: model.MeldTypeMinkan, Tiles: MustStrToTiles("1111z")},
@@ -103,7 +103,7 @@ func Test_findYakuTypes(t *testing.T) {
 		tiles34 := MustStrToTiles34(tiles)
 		for _, result := range DivideTiles34(tiles34) {
 			yakuTypes := findYakuTypes(&_handInfo{
-				HandInfo: &HandInfo{
+				PlayerInfo: &model.PlayerInfo{
 					HandTiles34: tiles34,
 					Melds: []model.Meld{
 						{MeldType: model.MeldTypeChi, Tiles: MustStrToTiles("789p")},

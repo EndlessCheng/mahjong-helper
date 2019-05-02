@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"fmt"
 	"regexp"
+	"github.com/EndlessCheng/mahjong-helper/util/model"
 )
 
 const (
@@ -100,16 +101,6 @@ type tenhouRoundData struct {
 	isRoundEnd bool // 某人和牌或流局，初始化为 true
 }
 
-//func (d *tenhouRoundData) mergeCachedTile() {
-//	if cachedTile == -1 {
-//		return
-//	}
-//
-//
-//
-//	cachedTile = -1
-//}
-
 func (*tenhouRoundData) _tenhouTileToTile34(tenhouTile int) int {
 	return tenhouTile / 4
 }
@@ -118,12 +109,12 @@ func (*tenhouRoundData) _tenhouTileToTile34(tenhouTile int) int {
 // 36-71 p
 // 72-107 s
 // 108- z
-func (d *tenhouRoundData) _parseTenhouTile(tenhouTile string) int {
+func (d *tenhouRoundData) _parseTenhouTile(tenhouTile string) (tile int, isRedFive bool) {
 	t, err := strconv.Atoi(tenhouTile)
 	if err != nil {
 		panic(err)
 	}
-	return d._tenhouTileToTile34(t)
+	return d._tenhouTileToTile34(t), d.isRedFive(t)
 }
 
 func (d *tenhouRoundData) _parseChi(data int) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
@@ -235,17 +226,20 @@ func (d *tenhouRoundData) IsInit() bool {
 	return d.msg.Tag == "INIT" || d.msg.Tag == "REINIT"
 }
 
-func (d *tenhouRoundData) ParseInit() (roundNumber int, dealer int, doraIndicator int, hands []int) {
+func (d *tenhouRoundData) ParseInit() (roundNumber int, dealer int, doraIndicator int, handTiles []int, numRedFive int) {
 	splits := strings.Split(d.msg.Seed, ",")
 	if len(splits) != 6 {
 		panic(fmt.Sprintln("seed 解析失败", d.msg.Seed))
 	}
 	roundNumber, _ = strconv.Atoi(splits[0])
 	dealer, _ = strconv.Atoi(d.msg.Dealer)
-	doraIndicator = d._parseTenhouTile(splits[5])
+	doraIndicator, _ = d._parseTenhouTile(splits[5])
 	for _, tenhouTile := range strings.Split(d.msg.Hai, ",") {
-		tile := d._parseTenhouTile(tenhouTile)
-		hands = append(hands, tile)
+		tile, isRedFive := d._parseTenhouTile(tenhouTile)
+		handTiles = append(handTiles, tile)
+		if isRedFive {
+			numRedFive++
+		}
 	}
 	return
 }
@@ -260,9 +254,9 @@ func (d *tenhouRoundData) IsSelfDraw() bool {
 	return isTenhouSelfDraw(d.msg.Tag)
 }
 
-func (d *tenhouRoundData) ParseSelfDraw() (tile int, kanDoraIndicator int) {
+func (d *tenhouRoundData) ParseSelfDraw() (tile int, isRedFive bool, kanDoraIndicator int) {
 	rawTile := d.msg.Tag[1:]
-	tile = d._parseTenhouTile(rawTile)
+	tile, isRedFive = d._parseTenhouTile(rawTile)
 	kanDoraIndicator = -1
 	return
 }
@@ -273,11 +267,11 @@ func (d *tenhouRoundData) IsDiscard() bool {
 	return _discardReg.MatchString(d.msg.Tag)
 }
 
-func (d *tenhouRoundData) ParseDiscard() (who int, discardTile int, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int) {
+func (d *tenhouRoundData) ParseDiscard() (who int, discardTile int, isRedFive bool, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int) {
 	// D=自家, e/E=下家, f/F=对家, g/G=上家
 	who = int(lower(d.msg.Tag[0]) - 'd')
 	rawTile := d.msg.Tag[1:]
-	discardTile = d._parseTenhouTile(rawTile)
+	discardTile, isRedFive = d._parseTenhouTile(rawTile)
 	if d.msg.Tag[0] != 'D' {
 		isTsumogiri = d.msg.Tag[0] >= 'a'
 		canBeMeld = d.msg.T != ""
@@ -290,18 +284,21 @@ func (d *tenhouRoundData) IsOpen() bool {
 	return d.msg.Tag == "N"
 }
 
-func (d *tenhouRoundData) ParseOpen() (who int, meld *mjMeld, kanDoraIndicator int) {
+func (d *tenhouRoundData) ParseOpen() (who int, meld *model.Meld, kanDoraIndicator int) {
 	who, _ = strconv.Atoi(d.msg.Who)
 	meldType, tenhouMeldTiles, tenhouCalledTile := d._parseTenhouMeld(d.msg.Meld)
 	meldTiles := make([]int, len(tenhouMeldTiles))
 	for i, tenhouTile := range tenhouMeldTiles {
 		meldTiles[i] = d._tenhouTileToTile34(tenhouTile)
 	}
-	meld = &mjMeld{
-		meldType:       meldType,
-		tiles:          meldTiles,
-		calledTile:     d._tenhouTileToTile34(tenhouCalledTile),
-		containRedFive: d.containRedFive(tenhouMeldTiles),
+	calledTile := d._tenhouTileToTile34(tenhouCalledTile)
+	isCalledTileRedFive := d.isRedFive(tenhouCalledTile)
+	meld = &model.Meld{
+		MeldType:          meldType,
+		Tiles:             meldTiles,
+		CalledTile:        calledTile,
+		ContainRedFive:    d.containRedFive(tenhouMeldTiles),
+		RedFiveFromOthers: isCalledTileRedFive && (meldType == model.MeldTypeChi || meldType == model.MeldTypePon || meldType == model.MeldTypeMinkan),
 	}
 	kanDoraIndicator = -1
 	return
@@ -341,6 +338,6 @@ func (d *tenhouRoundData) IsNewDora() bool {
 }
 
 func (d *tenhouRoundData) ParseNewDora() (kanDoraIndicator int) {
-	kanDoraIndicator = d._parseTenhouTile(d.msg.Hai)
+	kanDoraIndicator, _ = d._parseTenhouTile(d.msg.Hai)
 	return
 }

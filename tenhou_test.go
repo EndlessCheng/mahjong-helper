@@ -3,6 +3,7 @@ package main
 import (
 	"testing"
 	"github.com/EndlessCheng/mahjong-helper/util"
+	"github.com/EndlessCheng/mahjong-helper/util/model"
 )
 
 func Test_parseTenhouMeld(t *testing.T) {
@@ -54,7 +55,7 @@ func TestAnalysisTilesRisk(t *testing.T) {
 	d.players[2].reachTileAtGlobal = 7
 	d.players[2].discardTiles = []int{1, 1, 1, 1, 1}
 	d.players[3].discardTiles = []int{1, 1, 1, 1, 1}
-	d.players[3].melds = make([]*mjMeld, 2)
+	d.players[3].melds = make([]*model.Meld, 2)
 	d.players[3].meldDiscardsAt = []int{2, 3}
 	d.players[3].latestDiscardAtGlobal = 10
 

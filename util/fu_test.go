@@ -24,7 +24,7 @@ func Test_handInfo_calcFu(t *testing.T) {
 		}
 		for _, result := range results {
 			_hi := &_handInfo{
-				HandInfo: &HandInfo{
+				PlayerInfo: &model.PlayerInfo{
 					HandTiles34:   tiles34,
 					IsTsumo:       true,
 					WinTile:       MustStrToTile34("3m"),
@@ -54,7 +54,7 @@ func Test_handInfo_calcFu(t *testing.T) {
 		}
 		for _, result := range results {
 			_hi := &_handInfo{
-				HandInfo: &HandInfo{
+				PlayerInfo: &model.PlayerInfo{
 					HandTiles34:   tiles34,
 					IsTsumo:       false,
 					WinTile:       MustStrToTile34("3m"),
@@ -83,7 +83,7 @@ func Test_handInfo_calcFu(t *testing.T) {
 		}
 		for _, result := range results {
 			_hi := &_handInfo{
-				HandInfo: &HandInfo{
+				PlayerInfo: &model.PlayerInfo{
 					HandTiles34:   tiles34,
 					Melds:         []model.Meld{{MeldType: model.MeldTypeChi}},
 					IsTsumo:       false,
@@ -103,7 +103,7 @@ func Benchmark_handInfo_calcFu(b *testing.B) {
 	tiles34 := MustStrToTiles34("111234678m 11122z")
 	results := DivideTiles34(tiles34)
 	_hi := &_handInfo{
-		HandInfo: &HandInfo{
+		PlayerInfo: &model.PlayerInfo{
 			HandTiles34:   tiles34,
 			Melds:         nil,
 			IsTsumo:       true,

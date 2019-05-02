@@ -6,6 +6,7 @@ import (
 	"github.com/fatih/color"
 	"sort"
 	"github.com/EndlessCheng/mahjong-helper/util"
+	"math"
 )
 
 func printAccountInfo(accountID int) {
@@ -278,7 +279,7 @@ func printWaitsWithImproves13_twoRows(result13 *util.WaitsWithImproves13, discar
 }
 
 /*
-4[ 4.56] 切 8饼 => 44.50% 参考和率[ 4 改良] [7p 7s] [三色] [振听] [2000点]
+4[ 4.56] 切 8饼 => 44.50% 参考和率[ 4 改良] [7p 7s] [三色] [振听] [默听2000]
 
 4[ 4.56] 切 8饼 => 0.00% 参考和率[ 4 改良] [7p 7s] [无役]
 
@@ -375,13 +376,18 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 	fmt.Print(util.TilesToStrWithBracket(waitTiles))
 
 	if len(result13.YakuTypes) > 0 {
-		// 容易忽略的役种
-		for _, yakuType := range result13.YakuTypes {
-			if yakuType == util.YakuSanshokuDoujun {
-				fmt.Print(" ")
-				color.New(color.FgHiGreen).Printf("[三色]")
-				break
+		if !showAllYakuTypes {
+			// 容易忽略的役种
+			for _, yakuType := range result13.YakuTypes {
+				if yakuType == util.YakuSanshokuDoujun {
+					fmt.Print(" ")
+					color.New(color.FgHiGreen).Printf("[三色]")
+					break
+				}
 			}
+		} else {
+			fmt.Print(" ")
+			color.New(color.FgHiGreen).Printf(util.YakuTypesToStr(result13.YakuTypes))
 		}
 	} else if shanten >= 0 && shanten <= 1 {
 		// 无役提示
@@ -399,10 +405,10 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 		}
 	}
 
-	// 荣和点数
+	// 默听荣和点数
 	if result13.RonPoint > 0 {
 		fmt.Print(" ")
-		fmt.Printf("[%d点]", int(result13.RonPoint))
+		fmt.Printf("[默听%d]", int(math.Round(result13.RonPoint)))
 	}
 
 	fmt.Println()

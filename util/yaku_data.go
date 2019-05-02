@@ -66,7 +66,7 @@ var YakuNameMap = map[int]string{
 	YakuRyanpeikou:     "两杯口",
 	YakuIipeikou:       "一杯口",
 	YakuSanshokuDoujun: "三色",
-	YakuIttsuu:         "一气",
+	YakuIttsuu:         "一通", // 一气
 
 	// Yaku based on triplets and/or quads
 	YakuToitoi:         "对对",

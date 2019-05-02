@@ -3,6 +3,7 @@ package util
 import (
 	"testing"
 	"fmt"
+	"github.com/EndlessCheng/mahjong-helper/util/model"
 )
 
 func TestCalcPointRon(t *testing.T) {
@@ -34,7 +35,7 @@ func TestCalcRonPointWithHands(t *testing.T) {
 	} {
 		fmt.Print(tiles + " = ")
 		tiles34 := MustStrToTiles34(tiles)
-		ronPoint := CalcRonPointWithHands(&HandInfo{
+		ronPoint := CalcRonPointWithHands(&model.PlayerInfo{
 			HandTiles34:   tiles34,
 			IsTsumo:       false,
 			WinTile:       MustStrToTile34("3m"),
@@ -54,7 +55,7 @@ func TestCalcRonPointWithHands(t *testing.T) {
 	} {
 		fmt.Print(tiles + " = ")
 		tiles34 := MustStrToTiles34(tiles)
-		ronPoint := CalcRonPointWithHands(&HandInfo{
+		ronPoint := CalcRonPointWithHands(&model.PlayerInfo{
 			HandTiles34:   tiles34,
 			IsTsumo:       false,
 			WinTile:       MustStrToTile34("3m"),
@@ -74,7 +75,7 @@ func TestCalcRonPointWithHands(t *testing.T) {
 		fmt.Print(tiles + " = ")
 		tiles34 := MustStrToTiles34(tiles)
 		for doraCount := 0; doraCount < 13; doraCount++ {
-			ronPoint := CalcRonPointWithHands(&HandInfo{
+			ronPoint := CalcRonPointWithHands(&model.PlayerInfo{
 				HandTiles34:   tiles34,
 				IsTsumo:       false,
 				WinTile:       MustStrToTile34("3m"),
@@ -97,7 +98,7 @@ func TestCalcRonPointWithHands(t *testing.T) {
 		fmt.Print(tiles + " = ")
 		tiles34 := MustStrToTiles34(tiles)
 		for doraCount := 0; doraCount < 13; doraCount++ {
-			ronPoint := CalcRonPointWithHands(&HandInfo{
+			ronPoint := CalcRonPointWithHands(&model.PlayerInfo{
 				HandTiles34:   tiles34,
 				IsTsumo:       false,
 				WinTile:       MustStrToTile34("3m"),
