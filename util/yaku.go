@@ -7,9 +7,10 @@ import (
 
 // 是否包含字牌
 func (hi *_handInfo) containHonor() bool {
-	if hi._containHonor != nil {
-		return *hi._containHonor
-	}
+	// cache 这货的话，其他地方都要 copy 了，目前项目采用引用的方式，不适合 cache
+	//if hi._containHonor != nil {
+	//	return *hi._containHonor
+	//}
 	f := func() bool {
 		// 门清时简化
 		if len(hi.Melds) == 0 {
@@ -36,7 +37,7 @@ func (hi *_handInfo) containHonor() bool {
 		return false
 	}
 	ct := f()
-	hi._containHonor = &ct
+	//hi._containHonor = &ct
 	return ct
 }
 
