@@ -241,10 +241,23 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 	avgAgariRate := 0.0
 
 	canYaku := make([]bool, maxYakuType)
+	if len(playerInfo.Melds) == 0 && CountPairsOfTiles34(tiles34)+shanten13 == 6 {
+		// 对于三向听，除非进张很差才会考虑七对子
+		if shanten13 == 3 {
+			if waitsCount <= 21 {
+				canYaku[YakuChiitoi] = true
+			}
+		} else if shanten13 == 1 || shanten13 == 2 {
+			// 一向听和两向听考虑七对子
+			canYaku[YakuChiitoi] = true
+		}
+	}
+
 	fillYakuTypes := func(_shanten13 int, _waits Waits) {
-		if _shanten13 != 0 { // 只考虑听牌
+		if _shanten13 != 0 {
 			return
 		}
+		// 听牌
 		for tile, left := range _waits {
 			if left == 0 {
 				continue
@@ -259,7 +272,7 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 		}
 	}
 
-	// 若听牌，计算役种
+	// 计算可能的役种
 	fillYakuTypes(shanten13, waits)
 
 	for i := 0; i < 34; i++ {
@@ -289,7 +302,7 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 					if newShanten13 == 0 {
 						maxAgariRate = math.Max(maxAgariRate, CalculateAgariRate(newWaits, playerInfo.DiscardTiles))
 					}
-					// 若前进后听牌（当前为一向听），计算役种
+					// 计算可能的役种
 					fillYakuTypes(newShanten13, newWaits)
 				}
 				tiles34[j]++
@@ -677,6 +690,8 @@ func CalculateMeld(playerInfo *model.PlayerInfo, calledTile int, allowChi bool) 
 		playerInfo.Melds = append(playerInfo.Melds, c)
 		_shanten, _waitsWithImproves, _incShantenResults := CalculateShantenWithImproves14(playerInfo)
 		playerInfo.Melds = playerInfo.Melds[:len(playerInfo.Melds)-1]
+		// reset naki
+		//playerInfo.ClearNakiCache()
 		tiles34[c.SelfTiles[0]]++
 		tiles34[c.SelfTiles[1]]++
 

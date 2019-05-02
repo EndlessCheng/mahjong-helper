@@ -150,6 +150,15 @@ func CountOfTiles34(tiles34 []int) (count int) {
 	return
 }
 
+func CountPairsOfTiles34(tiles34 []int) (count int) {
+	for _, c := range tiles34 {
+		if c >= 2 {
+			count++
+		}
+	}
+	return
+}
+
 func InitLeftTiles34() []int {
 	leftTiles34 := make([]int, 34)
 	for i := range leftTiles34 {
