@@ -193,13 +193,16 @@ func runServer(isHTTPS bool) {
 		e.Logger.Info("服务启动")
 	}()
 
+	if isHTTPS && fixedMajsoulAccountID != -1 {
+		color.HiYellow("[提醒] 从配置中读取出雀魂账号 %d", fixedMajsoulAccountID)
+	}
 	h := &mjHandler{
 		log: e.Logger,
 
 		tenhouMessageQueue:  make(chan []byte, 100),
 		tenhouRoundData:     &tenhouRoundData{isRoundEnd: true},
 		majsoulMessageQueue: make(chan []byte, 100),
-		majsoulRoundData:    &majsoulRoundData{accountID: -1},
+		majsoulRoundData:    &majsoulRoundData{accountID: fixedMajsoulAccountID},
 	}
 	h.tenhouRoundData.roundData = newRoundData(h.tenhouRoundData, 0, 0)
 	h.majsoulRoundData.roundData = newRoundData(h.majsoulRoundData, 0, 0)

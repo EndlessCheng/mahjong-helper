@@ -1,3 +1,7 @@
 package main
 
-const logFile = "gamedata.log"
+const (
+	logFile = "gamedata.log"
+
+	fixedMajsoulAccountID = -1
+)
