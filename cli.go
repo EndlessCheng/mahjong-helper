@@ -272,10 +272,6 @@ func printWaitsWithImproves13_twoRows(result13 *util.WaitsWithImproves13, discar
 		fmt.Printf("%5.2f%% 参考和率", result13.AvgAgariRate)
 	}
 
-	//if dangerous {
-	//	// TODO: 提示危险度！
-	//}
-
 	fmt.Println()
 }
 
@@ -364,10 +360,6 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 		fmt.Printf("%5.2f%% 参考和率", result13.AvgAgariRate)
 	}
 
-	//if dangerous {
-	//	// TODO: 提示危险度！
-	//}
-
 	// 改良数
 	fmt.Print(" ")
 	if len(result13.Improves) > 0 {
@@ -415,6 +407,8 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 	if result13.RonPoint > 0 {
 		fmt.Print(" ")
 		fmt.Printf("[默听%d]", int(math.Round(result13.RonPoint)))
+
+		// TODO: 根据场况提醒是否默听
 	}
 
 	fmt.Println()
