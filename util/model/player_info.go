@@ -13,6 +13,7 @@ type PlayerInfo struct {
 	IsRiichi      bool   // 是否立直
 	DiscardTiles  []int  // 注意初始化的时候把负数调整成正的！
 	LeftTiles34   []int  // 剩余牌
+	_isNaki       *bool
 }
 
 func NewSimplePlayerInfo(tiles34 []int, melds []Meld) *PlayerInfo {
@@ -27,4 +28,21 @@ func NewSimplePlayerInfo(tiles34 []int, melds []Meld) *PlayerInfo {
 
 func (pi *PlayerInfo) FillLeftTiles34() {
 	pi.LeftTiles34 = InitLeftTiles34WithTiles34(pi.HandTiles34)
+}
+
+// 是否鸣牌（暗杠不算）
+// 可以用来判断该玩家能否立直
+func (pi *PlayerInfo) IsNaki() bool {
+	if pi._isNaki != nil {
+		return *pi._isNaki
+	}
+	naki := false
+	for _, meld := range pi.Melds {
+		if meld.MeldType != MeldTypeAnkan {
+			naki = true
+			break
+		}
+	}
+	pi._isNaki = &naki
+	return naki
 }

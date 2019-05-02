@@ -66,7 +66,7 @@ func (hi *_handInfo) calcFu() int {
 	}
 
 	// 是否鸣牌
-	isNaki := hi.isNaki()
+	isNaki := hi.IsNaki()
 
 	// 特殊：门清 + 自摸 + 平和型，计 20 符
 	if !isNaki && hi.IsTsumo && fu == baseFu {

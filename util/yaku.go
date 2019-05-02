@@ -5,22 +5,6 @@ import (
 	"sort"
 )
 
-// 是否鸣牌
-func (hi *_handInfo) isNaki() bool {
-	if hi._isNaki != nil {
-		return *hi._isNaki
-	}
-	naki := false
-	for _, meld := range hi.Melds {
-		if meld.MeldType != model.MeldTypeAnkan {
-			naki = true
-			break
-		}
-	}
-	hi._isNaki = &naki
-	return naki
-}
-
 // 是否包含字牌
 func (hi *_handInfo) containHonor() bool {
 	if hi._containHonor != nil {
@@ -106,7 +90,7 @@ func (hi *_handInfo) riichi() bool {
 
 // 门清限定
 func (hi *_handInfo) tsumo() bool {
-	return !hi.isNaki() && hi.IsTsumo
+	return !hi.IsNaki() && hi.IsTsumo
 }
 
 // 门清限定
@@ -179,7 +163,7 @@ func (hi *_handInfo) sanshokuDoujun() bool {
 }
 
 func (hi *_handInfo) ittsuu() bool {
-	if !hi.isNaki() {
+	if !hi.IsNaki() {
 		return hi.divideResult.IsIttsuu
 	}
 	shuntsuFirstTiles := append([]int{}, hi.divideResult.ShuntsuFirstTiles...)
@@ -522,7 +506,7 @@ func findYakuTypes(hi *_handInfo) (yakuTypes []int) {
 	// TODO: 先检测是否有役满
 
 	var yakuHanMap _yakuHanMap
-	if !hi.isNaki() {
+	if !hi.IsNaki() {
 		yakuHanMap = YakuHanMap
 	} else {
 		yakuHanMap = NakiYakuHanMap

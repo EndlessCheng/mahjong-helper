@@ -82,7 +82,7 @@ func CalcRonPointWithHands(playerInfo *model.PlayerInfo) (ronPoint int) {
 		if len(yakuTypes) == 0 {
 			continue
 		}
-		han := CalcYakuHan(yakuTypes, _hi.isNaki())
+		han := CalcYakuHan(yakuTypes, _hi.IsNaki())
 		han += _hi.DoraCount
 		fu := _hi.calcFu()
 		yakumanTimes := CalcYakumanTimes()
