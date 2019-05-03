@@ -347,6 +347,14 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 			yakuTypes = append(yakuTypes, yakuType)
 		}
 	}
+	if len(yakuTypes) == 0 {
+		// 无役，若能立直则立直
+		if shanten13 == 0 && !playerInfo.IsNaki() {
+			playerInfo.IsRiichi = true
+			defer func() { playerInfo.IsRiichi = false }()
+			yakuTypes = append(yakuTypes, YakuRiichi)
+		}
+	}
 
 	_tiles34 := make([]int, 34)
 	copy(_tiles34, tiles34)
