@@ -300,7 +300,7 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 					}
 					// 听牌一般切和率最高的，TODO: 除非打点更高，比如说听到 dora 上，或者有三色等
 					if newShanten13 == 0 {
-						maxAgariRate = math.Max(maxAgariRate, CalculateAgariRate(newWaits, playerInfo.DiscardTiles))
+						maxAgariRate = math.Max(maxAgariRate, CalculateAvgAgariRate(newWaits, playerInfo.DiscardTiles))
 					}
 					// 计算可能的役种
 					fillYakuTypes(newShanten13, newWaits)
@@ -338,7 +338,7 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 	}
 	avgAgariRate /= float64(waitsCount)
 	if shanten13 == 0 {
-		avgAgariRate = CalculateAgariRate(waits, playerInfo.DiscardTiles)
+		avgAgariRate = CalculateAvgAgariRate(waits, playerInfo.DiscardTiles)
 	}
 
 	yakuTypes := []int{}
@@ -384,25 +384,7 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 	// 非振听且待牌有役时计算荣和点数
 	// TODO: 立直时考虑中里的分数
 	if r.FuritenRate == 0 && shanten13 == 0 {
-		sum := 0
-		w := 0
-		for tile, left := range waits {
-			if left == 0 {
-				continue
-			}
-			tiles34[tile]++
-			playerInfo.WinTile = tile
-			ronPoint := CalcRonPointWithHands(playerInfo)
-			// 不考虑无役（如后附，片听）
-			if ronPoint > 0 {
-				sum += ronPoint * left
-				w += left
-			}
-			tiles34[tile]--
-		}
-		if w > 0 {
-			r.RonPoint = float64(sum) / float64(w)
-		}
+		r.RonPoint = CalcAvgRonPoint(playerInfo, waits)
 	}
 
 	// TODO: 自摸点数
@@ -565,6 +547,8 @@ func CalculateShantenWithImproves14(playerInfo *model.PlayerInfo) (shanten int, 
 			continue
 		}
 		tiles34[i]-- // 切牌
+		// TODO: 这张牌是 dora 吗？
+		// 重构至 playerInfo.DescTiles34(i)
 		playerInfo.DiscardTiles = append(playerInfo.DiscardTiles, i)
 		result13 := CalculateShantenWithImproves13(playerInfo)
 		playerInfo.DiscardTiles = playerInfo.DiscardTiles[:len(playerInfo.DiscardTiles)-1]
@@ -580,6 +564,7 @@ func CalculateShantenWithImproves14(playerInfo *model.PlayerInfo) (shanten int, 
 			incShantenResults = append(incShantenResults, r)
 		}
 		tiles34[i]++
+		// TODO: 重构至 playerInfo.IncTiles34(i)
 	}
 
 	needImprove := func(l []*WaitsWithImproves14) bool {

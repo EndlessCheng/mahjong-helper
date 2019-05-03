@@ -1,6 +1,8 @@
 package util
 
-import "github.com/EndlessCheng/mahjong-helper/util/model"
+import (
+	"github.com/EndlessCheng/mahjong-helper/util/model"
+)
 
 // TODO: 考虑大三元和大四喜的包牌？
 
@@ -73,7 +75,7 @@ func CalcPointTsumoSum(han int, fu int, yakumanTimes int, isParent bool) int {
 // 调用前请设置 WinTile
 // 无役时返回 0
 // TODO 注意：剩余不到 4 张无法立直
-func CalcRonPointWithHands(playerInfo *model.PlayerInfo) (ronPoint int) {
+func CalcRonPoint(playerInfo *model.PlayerInfo) (ronPoint int) {
 	for _, result := range DivideTiles34(playerInfo.HandTiles34) {
 		_hi := &_handInfo{
 			PlayerInfo:   playerInfo,
@@ -97,3 +99,28 @@ func CalcRonPointWithHands(playerInfo *model.PlayerInfo) (ronPoint int) {
 // TODO: 计算自摸点数
 
 // TODO: 考虑里宝时的荣和、自摸点数
+
+// 含有高低目的场合，通过和率计算平均打点
+func CalcAvgRonPoint(playerInfo *model.PlayerInfo, waits Waits) (avgRonPoint float64) {
+	tileAgariRate := CalculateAgariRateOfEachTile(waits, playerInfo.DiscardTiles)
+	sum := 0.0
+	w := 0.0
+	for tile, left := range waits {
+		if left == 0 {
+			continue
+		}
+		playerInfo.HandTiles34[tile]++
+		playerInfo.WinTile = tile
+		ronPoint := CalcRonPoint(playerInfo)
+		playerInfo.HandTiles34[tile]--
+		if ronPoint > 0 { // 不考虑无役（如后附，片听）
+			rate := tileAgariRate[tile]
+			sum += float64(ronPoint) * rate
+			w += rate
+		}
+	}
+	if w > 0 {
+		avgRonPoint = sum / w
+	}
+	return
+}

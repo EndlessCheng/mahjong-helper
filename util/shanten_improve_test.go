@@ -117,8 +117,10 @@ func TestCalculateShantenWithImproves14Closed(t *testing.T) {
 	tiles = "56778p 1122345s 77z"
 	tiles = "66778p 1122345s 77z"
 	tiles = "67778p 1122345s 77z"
+	tiles = "3336888m 678p 5678s"
 	playerInfo := model.NewSimplePlayerInfo(MustStrToTiles34(tiles), nil)
-	playerInfo.IsTsumo = true
+	playerInfo.DoraCount = 2
+	//playerInfo.IsTsumo = true
 	//playerInfo.LeftTiles34 = InitLeftTiles34WithTiles34(MustStrToTiles34("388m 113668p 566s 45556z")) // 注意手牌也算上
 	//playerInfo.DiscardTiles = []int{MustStrToTile34("9p")}
 	shanten, results, incShantenResults := CalculateShantenWithImproves14(playerInfo)

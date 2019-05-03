@@ -11,7 +11,7 @@ type PlayerInfo struct {
 	IsParent      bool   // 是否为亲家
 	IsDaburii     bool   // 是否双立直
 	IsRiichi      bool   // 是否立直
-	DiscardTiles  []int  // 注意初始化的时候把负数调整成正的！
+	DiscardTiles  []int  // 自家舍牌，用于判断和率，是否振听等  *注意初始化的时候把负数调整成正的！
 	LeftTiles34   []int  // 剩余牌
 	//_isNaki       *bool
 }

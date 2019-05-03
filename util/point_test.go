@@ -35,7 +35,7 @@ func TestCalcRonPointWithHands(t *testing.T) {
 	} {
 		fmt.Print(tiles + " = ")
 		tiles34 := MustStrToTiles34(tiles)
-		ronPoint := CalcRonPointWithHands(&model.PlayerInfo{
+		ronPoint := CalcRonPoint(&model.PlayerInfo{
 			HandTiles34:   tiles34,
 			WinTile:       MustStrToTile34("3m"),
 			RoundWindTile: 28,
@@ -54,7 +54,7 @@ func TestCalcRonPointWithHands(t *testing.T) {
 	} {
 		fmt.Print(tiles + " = ")
 		tiles34 := MustStrToTiles34(tiles)
-		ronPoint := CalcRonPointWithHands(&model.PlayerInfo{
+		ronPoint := CalcRonPoint(&model.PlayerInfo{
 			HandTiles34:   tiles34,
 			WinTile:       MustStrToTile34("3m"),
 			RoundWindTile: 28,
@@ -73,7 +73,7 @@ func TestCalcRonPointWithHands(t *testing.T) {
 		fmt.Print(tiles + " = ")
 		tiles34 := MustStrToTiles34(tiles)
 		for doraCount := 0; doraCount < 13; doraCount++ {
-			ronPoint := CalcRonPointWithHands(&model.PlayerInfo{
+			ronPoint := CalcRonPoint(&model.PlayerInfo{
 				HandTiles34:   tiles34,
 				WinTile:       MustStrToTile34("3m"),
 				RoundWindTile: 28,
@@ -95,7 +95,7 @@ func TestCalcRonPointWithHands(t *testing.T) {
 		fmt.Print(tiles + " = ")
 		tiles34 := MustStrToTiles34(tiles)
 		for doraCount := 0; doraCount < 13; doraCount++ {
-			ronPoint := CalcRonPointWithHands(&model.PlayerInfo{
+			ronPoint := CalcRonPoint(&model.PlayerInfo{
 				HandTiles34:   tiles34,
 				WinTile:       MustStrToTile34("3m"),
 				RoundWindTile: 28,
