@@ -152,10 +152,10 @@ func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, dora
 }
 
 // 对 5 巡前的外侧牌的危险度进行调整
-// 粗略调整为 *0.5
+// 粗略调整为 *0.4 （科学する麻雀）
 func (l RiskTiles34) FixWithEarlyOutside(discardTiles []int) RiskTiles34 {
 	for _, dTile := range discardTiles {
-		l[dTile] *= 0.5
+		l[dTile] *= 0.4
 	}
 	return l
 }
