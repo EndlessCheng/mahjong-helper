@@ -695,15 +695,17 @@ func CalculateMeld(playerInfo *model.PlayerInfo, calledTile int, numDoraOfCalled
 		_incShantenResults.filterOutDiscard(calledTile)
 
 		// 去掉筋食替的情况
-		cantDiscardTile := -1
-		if c.SelfTiles[0] < calledTile && c.SelfTiles[1] < calledTile && calledTile >= 3 {
-			cantDiscardTile = calledTile - 3
-		} else if c.SelfTiles[0] > calledTile && c.SelfTiles[1] > calledTile && calledTile <= 5 {
-			cantDiscardTile = calledTile + 3
-		}
-		if cantDiscardTile != -1 {
-			_waitsWithImproves.filterOutDiscard(cantDiscardTile)
-			_incShantenResults.filterOutDiscard(cantDiscardTile)
+		if c.MeldType == model.MeldTypeChi {
+			cannotDiscardTile := -1
+			if c.SelfTiles[0] < calledTile && c.SelfTiles[1] < calledTile && calledTile%9 >= 3 {
+				cannotDiscardTile = calledTile - 3
+			} else if c.SelfTiles[0] > calledTile && c.SelfTiles[1] > calledTile && calledTile%9 <= 5 {
+				cannotDiscardTile = calledTile + 3
+			}
+			if cannotDiscardTile != -1 {
+				_waitsWithImproves.filterOutDiscard(cannotDiscardTile)
+				_incShantenResults.filterOutDiscard(cannotDiscardTile)
+			}
 		}
 
 		_waitsWithImproves.addOpenTile(c.SelfTiles)

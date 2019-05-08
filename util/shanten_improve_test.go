@@ -190,3 +190,23 @@ func TestCalculateMeld(t *testing.T) {
 		t.Log(result)
 	}
 }
+
+func TestCalculateMeldWithReplace(t *testing.T) {
+	tiles := "245689s 1z"
+	tiles34 := MustStrToTiles34(tiles)
+	result := CalculateShantenWithImproves13(model.NewSimplePlayerInfo(tiles34, exampleMelds))
+	t.Log("原手牌" + NumberToChineseShanten(result.Shanten))
+	t.Log(result)
+
+	tile := "3s"
+	shanten, results, incShantenResults := CalculateMeld(model.NewSimplePlayerInfo(tiles34, exampleMelds), MustStrToTile34(tile), 0, true)
+	t.Log("鸣牌后" + NumberToChineseShanten(shanten))
+	for _, result := range results {
+		t.Log(result)
+	}
+	t.Log("鸣牌后" + NumberToChineseShanten(shanten+1))
+	for _, result := range incShantenResults {
+		t.Log(result)
+	}
+}
+
