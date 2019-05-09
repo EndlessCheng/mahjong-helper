@@ -57,6 +57,11 @@
 建议下载增强版终端 Cmder（[官网下载](https://cmder.net/) | [百度云备份](https://pan.baidu.com/s/1Hv1nEs4Wu2EHAnKOWOnRaQ) iug7）来获得更好的界面显示
 
 
+## 参与讨论
+
+为方便讨论相关内容，欢迎加入(刚创建的) QQ 群 [375865038](https://jq.qq.com/?_wv=1027&k=5FyZOgH)
+
+
 ## 示例
 
 ### 牌效率
