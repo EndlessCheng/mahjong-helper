@@ -359,12 +359,12 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 	_tiles34 := make([]int, 34)
 	copy(_tiles34, tiles34)
 	r = &WaitsWithImproves13{
-		RoundWindTile34: playerInfo.RoundWindTile,
-		SelfWindTile34:  playerInfo.SelfWindTile,
-		Tiles34:         _tiles34,
-		LeftTiles34:     leftTiles34,
-		Shanten:         shanten13,
-		Waits:           waits,
+		RoundWindTile34:          playerInfo.RoundWindTile,
+		SelfWindTile34:           playerInfo.SelfWindTile,
+		Tiles34:                  _tiles34,
+		LeftTiles34:              leftTiles34,
+		Shanten:                  shanten13,
+		Waits:                    waits,
 		NextShantenWaitsCountMap: nextShantenWaitsCountMap,
 		Improves:                 improves,
 		ImproveWayCount:          improveWayCount,
@@ -678,6 +678,7 @@ func CalculateMeld(playerInfo *model.PlayerInfo, calledTile int, numDoraOfCalled
 	shanten, combinations := calculateMeldShanten(tiles34, calledTile, allowChi)
 
 	for _, c := range combinations {
+		// TODO: 重构至 addMeld
 		tiles34[c.SelfTiles[0]]--
 		tiles34[c.SelfTiles[1]]--
 		playerInfo.Melds = append(playerInfo.Melds, c)
