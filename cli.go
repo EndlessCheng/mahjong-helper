@@ -197,6 +197,7 @@ func (l riskInfoList) printWithHands(hands []int, leftCounts []int) {
 
 // 需要提醒的役种
 var yakuTypesToAlert = []int{
+	util.YakuChiitoi,
 	util.YakuPinfu,
 	util.YakuRyanpeikou,
 	util.YakuIipeikou,
@@ -204,10 +205,15 @@ var yakuTypesToAlert = []int{
 	util.YakuIttsuu,
 	util.YakuToitoi,
 	util.YakuSanAnkou,
+	util.YakuSanshokuDoukou,
+	util.YakuSanKantsu,
+	util.YakuTanyao,
+	util.YakuChanta,
+	util.YakuJunchan,
+	util.YakuHonroutou,
+	util.YakuShousangen,
 	util.YakuHonitsu,
 	util.YakuChinitsu,
-	util.YakuChiitoi,
-	util.YakuSanshokuDoukou,
 }
 
 /*
