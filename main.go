@@ -28,7 +28,11 @@ func welcome() int {
 		1: "雀魂",
 	}
 
-	fmt.Println("使用前，请确认已按安装步骤完成安装，详见 https://github.com/EndlessCheng/mahjong-helper")
+	fmt.Println("使用说明：https://github.com/EndlessCheng/mahjong-helper")
+	fmt.Println("问题反馈：https://github.com/EndlessCheng/mahjong-helper/issues")
+
+	fmt.Println()
+
 	fmt.Println("请输入数字，以选择对应的平台：")
 	for k, v := range platforms {
 		fmt.Printf("%d - %s\n", k, v)
