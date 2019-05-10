@@ -30,6 +30,7 @@ func welcome() int {
 
 	fmt.Println("使用说明：https://github.com/EndlessCheng/mahjong-helper")
 	fmt.Println("问题反馈：https://github.com/EndlessCheng/mahjong-helper/issues")
+	fmt.Println("吐槽群：375865038")
 
 	fmt.Println()
 
