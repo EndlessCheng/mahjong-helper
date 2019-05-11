@@ -395,6 +395,24 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 	fmt.Print(" ")
 	fmt.Print(util.TilesToStrWithBracket(waitTiles))
 
+	// TODO: 根据场况提醒是否默听
+
+	// (默听)荣和点数
+	if result13.RonPoint > 0 {
+		fmt.Print(" ")
+		ronType := "荣和"
+		if !result13.IsNaki {
+			ronType = "默听"
+		}
+		color.New(color.FgHiGreen).Printf("[%s%d]", ronType, int(math.Round(result13.RonPoint)))
+	}
+
+	// 立直荣和点数
+	if result13.RiichiRonPoint > 0 {
+		fmt.Print(" ")
+		color.New(color.FgHiGreen).Printf("[立直%d]", int(math.Round(result13.RiichiRonPoint)))
+	}
+
 	if len(result13.YakuTypes) > 0 {
 		if !showAllYakuTypes && !debugMode {
 			// 容易忽略的役种
@@ -428,24 +446,6 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 		} else {
 			color.New(color.FgHiRed).Printf("[振听]")
 		}
-	}
-
-	// TODO: 根据场况提醒是否默听
-
-	// (默听)荣和点数
-	if result13.RonPoint > 0 {
-		fmt.Print(" ")
-		ronType := "荣和"
-		if !result13.IsNaki {
-			ronType = "默听"
-		}
-		fmt.Printf("[%s%d]", ronType, int(math.Round(result13.RonPoint)))
-	}
-
-	// 立直荣和点数
-	if result13.RiichiRonPoint > 0 {
-		fmt.Print(" ")
-		fmt.Printf("[立直%d]", int(math.Round(result13.RiichiRonPoint)))
 	}
 
 	fmt.Println()
