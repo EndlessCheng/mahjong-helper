@@ -47,6 +47,12 @@ func StrToTiles34(humanTiles string) (tiles34 []int, err error) {
 		}
 	}()
 
+	// 在 mpsz 后面加上空格方便解析不含空格的 humanTiles
+	humanTiles = strings.Replace(humanTiles, "m", "m ", -1)
+	humanTiles = strings.Replace(humanTiles, "p", "p ", -1)
+	humanTiles = strings.Replace(humanTiles, "s", "s ", -1)
+	humanTiles = strings.Replace(humanTiles, "z", "z ", -1)
+
 	humanTiles = strings.TrimSpace(humanTiles)
 	if humanTiles == "" {
 		return nil, errors.New("[StrToTiles34] 参数错误: 处理的手牌不能为空")
@@ -55,6 +61,9 @@ func StrToTiles34(humanTiles string) (tiles34 []int, err error) {
 	tiles34 = make([]int, 34)
 	for _, split := range strings.Split(humanTiles, " ") {
 		split = strings.TrimSpace(split)
+		if split == "" {
+			continue
+		}
 		if len(split) < 2 {
 			return nil, errors.New("[StrToTiles34] 参数错误: " + humanTiles)
 		}
