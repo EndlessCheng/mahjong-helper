@@ -21,7 +21,7 @@ func getWaitsCountColor(shanten int, waitsCount float64) color.Attribute {
 	_getWaitsCountColor := func(fixedWaitsCount float64) color.Attribute {
 		switch {
 		case fixedWaitsCount < 13: // 4.3*3
-			return color.FgHiBlue
+			return color.FgHiCyan
 		case fixedWaitsCount <= 18: // 6*3
 			return color.FgHiYellow
 		default: // >6*3
@@ -61,8 +61,8 @@ func getOtherDiscardAlertColor(index int) color.Attribute {
 // 铳率高低
 func getNumRiskColor(risk float64) color.Attribute {
 	switch {
-	case risk < 3:
-		return color.FgHiBlue
+	//case risk < 3:
+	//	return color.FgHiBlue
 	case risk < 5:
 		return color.FgHiCyan
 	//case risk < 7.5:
