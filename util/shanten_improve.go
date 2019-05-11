@@ -12,24 +12,21 @@ type Improves map[int]Waits
 
 // 1/4/7/10/13 张手牌的分析结果
 type WaitsWithImproves13 struct {
-	// 场风
-	RoundWindTile34 int
-
-	// 自风
-	SelfWindTile34 int
-
 	// 原手牌
 	Tiles34 []int
 
 	// 剩余牌
 	LeftTiles34 []int
 
+	// 是否已鸣牌
+	IsNaki bool
+
 	// 向听数
 	Shanten int
 
-	// 进张：摸到这张牌能让向听数前进
+	// 进张
 	// 考虑了剩余枚数
-	// 若某个进张 4 枚都可见，则该进张的 value 值为 0
+	// 若某个进张牌 4 枚都可见，则该进张的 value 值为 0
 	Waits Waits
 
 	// TODO: 鸣牌进张：他家打出这张牌，可以鸣牌，且能让向听数前进
@@ -69,17 +66,17 @@ type WaitsWithImproves13 struct {
 	// 宝牌个数（手牌+副露）
 	DoraCount int
 
-	// 荣和打点期望
+	// 无立直时的荣和打点期望
 	RonPoint float64
+
+	// 立直时的荣和打点期望
+	RiichiRonPoint float64
 
 	// 自摸打点期望
 	TsumoPoint float64
 
 	// TODO: 赤牌改良提醒
 }
-
-// waitsCount := float64(r.Waits.AllCount())
-// return (waitsCount + (1-waitsCount/leftCount)*r.AvgImproveWaitsCount) * 100 / leftCount
 
 // 进张和向听前进后进张的评分
 // 这里粗略地近似为向听前进两次的概率
@@ -135,10 +132,13 @@ func (r *WaitsWithImproves13) String() string {
 		s += YakuTypesWithDoraToStr(r.YakuTypes, r.DoraCount)
 	}
 	if r.RonPoint > 0 {
-		s += fmt.Sprintf("[%d荣和点数]", int(math.Round(r.RonPoint)))
+		s += fmt.Sprintf("[(默听)荣和%d]", int(math.Round(r.RonPoint)))
+	}
+	if r.RiichiRonPoint > 0 {
+		s += fmt.Sprintf("[立直荣和%d]", int(math.Round(r.RiichiRonPoint)))
 	}
 	if r.TsumoPoint > 0 {
-		s += fmt.Sprintf("[%d自摸点数]", int(math.Round(r.TsumoPoint)))
+		s += fmt.Sprintf("[自摸%d]", int(math.Round(r.TsumoPoint)))
 	}
 	return s
 }
@@ -233,12 +233,14 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 	improves := Improves{}
 	improveWayCount := 0
 	// 对于每张牌，摸到之后的手牌进张数（如果摸到的是 waits 中的牌，则进张数视作 waitsCount）
-	improveWaitsCount34 := make([]int, 34)
-	// 初始化成基本进张
+	maxImproveWaitsCount34 := make([]int, 34)
 	for i := 0; i < 34; i++ {
-		improveWaitsCount34[i] = waitsCount
+		maxImproveWaitsCount34[i] = waitsCount // 初始化成基本进张
 	}
 	avgAgariRate := 0.0
+	avgRonPoint := 0.0
+	ronPointWeight := 0
+	avgRiichiRonPoint := 0.0
 
 	canYaku := make([]bool, maxYakuType)
 	if len(playerInfo.Melds) == 0 && CountPairsOfTiles34(tiles34)+shanten13 == 6 {
@@ -276,69 +278,98 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 	fillYakuTypes(shanten13, waits)
 
 	for i := 0; i < 34; i++ {
+		// 从剩余牌中摸牌
 		if leftTiles34[i] == 0 {
-			// 无法摸到这张牌
 			continue
 		}
-		// 从剩余牌中摸牌
 		leftTiles34[i]--
 		tiles34[i]++
-		if _, ok := waits[i]; ok {
-			// 摸到的是进张
-			maxAgariRate := 0.0
+
+		if _, ok := waits[i]; ok { // 摸到的是进张
+			maxAgariRate := 0.0   // 摸到此进张后的和率
+			maxAvgRonPoint := 0.0 // 平均打点
+			maxAvgRiichiRonPoint := 0.0
 			for j := 0; j < 34; j++ {
 				if tiles34[j] == 0 || j == i {
 					continue
 				}
-				// 切牌
-				tiles34[j]--
+				// 切牌，然后分析 3k+1 张牌下的手牌情况
+				// 若这张是5，在只有赤5的情况下才会切赤5（TODO: 考虑赤5骗37）
+				_isRedFive := playerInfo.IsOnlyRedFive(i)
+				playerInfo.DiscardTile(j, _isRedFive)
 				// 向听前进才是正确的切牌
 				if newShanten13, newWaits := CalculateShantenAndWaits13(tiles34, leftTiles34); newShanten13 < shanten13 {
 					// 切牌一般切进张最多的
 					if waitsCount := newWaits.AllCount(); waitsCount > nextShantenWaitsCountMap[i] {
 						nextShantenWaitsCountMap[i] = waitsCount
 					}
-					// 听牌一般切和率最高的，TODO: 除非打点更高，比如说听到 dora 上，或者有三色等
+					// 听牌了
 					if newShanten13 == 0 {
-						maxAgariRate = math.Max(maxAgariRate, CalculateAvgAgariRate(newWaits, playerInfo.DiscardTiles))
+						// 听牌一般切和率最高的，TODO: 除非打点更高，比如说听到 dora 上，或者有三色等
+						_agariRate := CalculateAvgAgariRate(newWaits, playerInfo.DiscardTiles)
+						if _agariRate >= maxAgariRate {
+							maxAgariRate = _agariRate
+							// 计算荣和点数
+							// TODO: 这里简化了，和率优先，需要更加精细的考量
+							// TODO: maxAvgRonPoint = CalcAvgRonPoint(playerInfo, newWaits)
+							// TODO: maxAvgRiichiRonPoint = CalcAvgRiichiRonPoint(playerInfo, newWaits)
+						}
+						// 计算可能的役种
+						fillYakuTypes(newShanten13, newWaits)
 					}
-					// 计算可能的役种
-					fillYakuTypes(newShanten13, newWaits)
 				}
-				tiles34[j]++
+				playerInfo.UndoDiscardTile(j, _isRedFive)
 			}
 			// 加权：进张牌的剩余枚数*和率
-			avgAgariRate += float64(leftTiles34[i]+1) * maxAgariRate
-		} else {
-			// 摸到的不是进张，但可能有改良
+			w := leftTiles34[i] + 1
+			avgAgariRate += maxAgariRate * float64(w)
+			if maxAvgRonPoint > 0 {
+				avgRonPoint += maxAvgRonPoint * float64(w)
+				ronPointWeight += w
+			}
+			//fmt.Println(i, maxAvgRiichiRonPoint)
+			avgRiichiRonPoint += maxAvgRiichiRonPoint * float64(w)
+		} else { // 摸到的不是进张，但可能有改良
 			for j := 0; j < 34; j++ {
 				if tiles34[j] == 0 || j == i {
 					continue
 				}
-				// 切牌
-				tiles34[j]--
+				// 切牌，然后分析 3k+1 张牌下的手牌情况
+				// 若这张是5，在只有赤5的情况下才会切赤5（TODO: 考虑赤5骗37）
+				_isRedFive := playerInfo.IsOnlyRedFive(i)
+				playerInfo.DiscardTile(j, _isRedFive)
 				// 正确的切牌
 				if newShanten13, improveWaits := CalculateShantenAndWaits13(tiles34, leftTiles34); newShanten13 == shanten13 {
 					// 若进张数变多，则为改良
 					if improveWaitsCount := improveWaits.AllCount(); improveWaitsCount > waitsCount {
 						improveWayCount++
-						if improveWaitsCount > improveWaitsCount34[i] {
-							improveWaitsCount34[i] = improveWaitsCount
+						if improveWaitsCount > maxImproveWaitsCount34[i] {
+							maxImproveWaitsCount34[i] = improveWaitsCount
 							// improves 选的是进张数最大的改良
 							improves[i] = improveWaits
 						}
 						//fmt.Println(fmt.Sprintf("    摸 %s 切 %s 改良:", MahjongZH[i], MahjongZH[j]), improveWaitsCount, TilesToStrWithBracket(improveWaits.indexes()))
 					}
 				}
-				tiles34[j]++
+				playerInfo.UndoDiscardTile(j, _isRedFive)
 			}
 		}
+
 		tiles34[i]--
 		leftTiles34[i]++
 	}
-	avgAgariRate /= float64(waitsCount)
-	if shanten13 == 0 {
-		avgAgariRate = CalculateAvgAgariRate(waits, playerInfo.DiscardTiles)
+
+	if waitsCount > 0 {
+		avgAgariRate /= float64(waitsCount)
+		if ronPointWeight > 0 {
+			avgRonPoint /= float64(ronPointWeight)
+		}
+		avgRiichiRonPoint /= float64(waitsCount)
+		if shanten13 == 0 {
+			avgAgariRate = CalculateAvgAgariRate(waits, playerInfo.DiscardTiles)
+			avgRonPoint = CalcAvgRonPoint(playerInfo, waits)
+			avgRiichiRonPoint = CalcAvgRiichiRonPoint(playerInfo, waits)
+		}
 	}
 
 	yakuTypes := []int{}
@@ -350,8 +381,9 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 	if len(yakuTypes) == 0 {
 		// 无役，若能立直则立直
 		if shanten13 == 0 && !playerInfo.IsNaki() {
+			savedIsRiichi := playerInfo.IsRiichi
 			playerInfo.IsRiichi = true
-			defer func() { playerInfo.IsRiichi = false }()
+			defer func() { playerInfo.IsRiichi = savedIsRiichi }()
 			yakuTypes = append(yakuTypes, YakuRiichi)
 		}
 	}
@@ -359,19 +391,18 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 	_tiles34 := make([]int, 34)
 	copy(_tiles34, tiles34)
 	r = &WaitsWithImproves13{
-		RoundWindTile34:          playerInfo.RoundWindTile,
-		SelfWindTile34:           playerInfo.SelfWindTile,
-		Tiles34:                  _tiles34,
-		LeftTiles34:              leftTiles34,
-		Shanten:                  shanten13,
-		Waits:                    waits,
+		Tiles34:     _tiles34,
+		LeftTiles34: leftTiles34,
+		IsNaki:      playerInfo.IsNaki(),
+		Shanten:     shanten13,
+		Waits:       waits,
 		NextShantenWaitsCountMap: nextShantenWaitsCountMap,
 		Improves:                 improves,
 		ImproveWayCount:          improveWayCount,
 		AvgImproveWaitsCount:     float64(waitsCount),
 		AvgAgariRate:             avgAgariRate,
 		YakuTypes:                yakuTypes,
-		DoraCount:                playerInfo.DoraCount,
+		DoraCount:                playerInfo.CountDora(),
 	}
 
 	// 对于听牌及一向听，判断是否有振听可能
@@ -389,14 +420,15 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 		}
 	}
 
-	// 非振听且待牌有役时计算荣和点数
-	// TODO: 立直时考虑中里的分数
-	if r.FuritenRate == 0 && shanten13 == 0 {
-		r.RonPoint = CalcAvgRonPoint(playerInfo, waits)
+	// 非振听时计算荣和点数
+	if r.FuritenRate < 1 && shanten13 <= 1 {
+		r.RonPoint = avgRonPoint
+		if !playerInfo.IsNaki() {
+			r.RiichiRonPoint = avgRiichiRonPoint
+		}
 	}
 
 	// TODO: 自摸点数
-	// TODO: 立直时考虑中里的分数
 
 	// 分析
 	if len(nextShantenWaitsCountMap) > 0 {
@@ -414,7 +446,7 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 		weight := 0
 		for i := 0; i < 34; i++ {
 			w := leftTiles34[i]
-			improveWaitsSum += w * improveWaitsCount34[i]
+			improveWaitsSum += w * maxImproveWaitsCount34[i]
 			weight += w
 		}
 		r.AvgImproveWaitsCount = float64(improveWaitsSum) / float64(weight)
@@ -425,12 +457,12 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 }
 
 type WaitsWithImproves14 struct {
-	// 切牌后的手牌分析结果
-	Result13 *WaitsWithImproves13
 	// 需要切的牌
 	DiscardTile int
-	// 切掉这张牌后的向听数
-	Shanten int
+
+	// 切牌后的手牌分析结果
+	Result13 *WaitsWithImproves13
+
 	// 副露信息（没有副露就是 nil）
 	// 比如用 23m 吃了牌，OpenTiles 就是 [1,2]
 	OpenTiles []int
@@ -457,7 +489,7 @@ func (l WaitsWithImproves14List) Sort(needImprove bool) {
 
 		// 听牌的话和率优先
 		// TODO: 考虑打点
-		if l[0].Shanten == 0 {
+		if l[0].Result13.Shanten == 0 {
 			if !Equal(ri.AvgAgariRate, rj.AvgAgariRate) {
 				return ri.AvgAgariRate > rj.AvgAgariRate
 			}
@@ -554,16 +586,18 @@ func CalculateShantenWithImproves14(playerInfo *model.PlayerInfo) (shanten int, 
 		if tiles34[i] == 0 {
 			continue
 		}
-		tiles34[i]-- // 切牌
-		// TODO: 这张牌是 dora 吗？
-		// 重构至 playerInfo.DescTiles34(i)
-		playerInfo.DiscardTiles = append(playerInfo.DiscardTiles, i)
+
+		isRedFive := playerInfo.IsOnlyRedFive(i)
+
+		// 切牌，然后分析 3k+1 张牌下的手牌情况
+		// 若这张是5，在只有赤5的情况下才会切赤5（TODO: 考虑赤5骗37）
+		playerInfo.DiscardTile(i, isRedFive)
 		result13 := CalculateShantenWithImproves13(playerInfo)
-		playerInfo.DiscardTiles = playerInfo.DiscardTiles[:len(playerInfo.DiscardTiles)-1]
+
+		// 记录切牌后的分析结果
 		r := &WaitsWithImproves14{
-			Result13:    result13,
 			DiscardTile: i,
-			Shanten:     result13.Shanten,
+			Result13:    result13,
 		}
 		if result13.Shanten == shanten {
 			waitsWithImproves = append(waitsWithImproves, r)
@@ -571,8 +605,8 @@ func CalculateShantenWithImproves14(playerInfo *model.PlayerInfo) (shanten int, 
 			// 向听倒退
 			incShantenResults = append(incShantenResults, r)
 		}
-		tiles34[i]++
-		// TODO: 重构至 playerInfo.IncTiles34(i)
+
+		playerInfo.UndoDiscardTile(i, isRedFive)
 	}
 
 	needImprove := func(l []*WaitsWithImproves14) bool {
@@ -580,7 +614,7 @@ func CalculateShantenWithImproves14(playerInfo *model.PlayerInfo) (shanten int, 
 			return false
 		}
 
-		shanten := l[0].Shanten
+		shanten := l[0].Result13.Shanten
 		// 一向听及以下进张优先，改良其次
 		if shanten <= 1 {
 			return false
@@ -599,18 +633,20 @@ func CalculateShantenWithImproves14(playerInfo *model.PlayerInfo) (shanten int, 
 	waitsWithImproves.Sort(ni)
 	ni = needImprove(incShantenResults)
 	incShantenResults.Sort(ni)
+
 	return
 }
 
 // 计算最小向听数，鸣牌方式
-func calculateMeldShanten(tiles34 []int, calledTile int, allowChi bool) (minShanten int, combinations []model.Meld) {
+func calculateMeldShanten(tiles34 []int, calledTile int, isRedFive bool, allowChi bool) (minShanten int, meldCombinations []model.Meld) {
 	// 是否能碰
 	if tiles34[calledTile] >= 2 {
-		combinations = append(combinations, model.Meld{
-			MeldType:   model.MeldTypePon,
-			Tiles:      []int{calledTile, calledTile, calledTile},
-			SelfTiles:  []int{calledTile, calledTile},
-			CalledTile: calledTile,
+		meldCombinations = append(meldCombinations, model.Meld{
+			MeldType:          model.MeldTypePon,
+			Tiles:             []int{calledTile, calledTile, calledTile},
+			SelfTiles:         []int{calledTile, calledTile},
+			CalledTile:        calledTile,
+			RedFiveFromOthers: isRedFive,
 		})
 	}
 	// 是否能吃
@@ -619,11 +655,12 @@ func calculateMeldShanten(tiles34 []int, calledTile int, allowChi bool) (minShan
 			if tiles34[tileA] > 0 && tiles34[tileB] > 0 {
 				_tiles := []int{tileA, tileB, calledTile}
 				sort.Ints(_tiles)
-				combinations = append(combinations, model.Meld{
-					MeldType:   model.MeldTypeChi,
-					Tiles:      _tiles,
-					SelfTiles:  []int{tileA, tileB},
-					CalledTile: calledTile,
+				meldCombinations = append(meldCombinations, model.Meld{
+					MeldType:          model.MeldTypeChi,
+					Tiles:             _tiles,
+					SelfTiles:         []int{tileA, tileB},
+					CalledTile:        calledTile,
+					RedFiveFromOthers: isRedFive,
 				})
 			}
 		}
@@ -641,11 +678,10 @@ func calculateMeldShanten(tiles34 []int, calledTile int, allowChi bool) (minShan
 
 	// 计算所有鸣牌下的最小向听数
 	minShanten = 99
-	for _, c := range combinations {
+	for _, c := range meldCombinations {
 		tiles34[c.SelfTiles[0]]--
 		tiles34[c.SelfTiles[1]]--
-		shanten := CalculateShanten(tiles34)
-		minShanten = MinInt(minShanten, shanten)
+		minShanten = MinInt(minShanten, CalculateShanten(tiles34))
 		tiles34[c.SelfTiles[0]]++
 		tiles34[c.SelfTiles[1]]++
 	}
@@ -669,27 +705,22 @@ func calculateMeldShanten(tiles34 []int, calledTile int, allowChi bool) (minShan
 //}
 //}
 
-func CalculateMeld(playerInfo *model.PlayerInfo, calledTile int, numDoraOfCalledTile int, allowChi bool) (shanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
+// 计算鸣牌下的何切分析
+// calledTile 他家出的牌，尝试鸣这张牌
+// isRedFive 这张牌是否为赤5
+// allowChi 是否允许吃这张牌
+func CalculateMeld(playerInfo *model.PlayerInfo, calledTile int, isRedFive bool, allowChi bool) (minShanten int, waitsWithImproves WaitsWithImproves14List, incShantenResults WaitsWithImproves14List) {
 	if len(playerInfo.LeftTiles34) == 0 {
 		playerInfo.FillLeftTiles34()
 	}
 
-	tiles34 := playerInfo.HandTiles34
-	shanten, combinations := calculateMeldShanten(tiles34, calledTile, allowChi)
+	minShanten, meldCombinations := calculateMeldShanten(playerInfo.HandTiles34, calledTile, isRedFive, allowChi)
 
-	for _, c := range combinations {
-		// TODO: 重构至 addMeld
-		tiles34[c.SelfTiles[0]]--
-		tiles34[c.SelfTiles[1]]--
-		playerInfo.Melds = append(playerInfo.Melds, c)
-		playerInfo.DoraCount += numDoraOfCalledTile
+	for _, c := range meldCombinations {
+		// 尝试鸣这张牌
+		playerInfo.AddMeld(c)
 		_shanten, _waitsWithImproves, _incShantenResults := CalculateShantenWithImproves14(playerInfo)
-		playerInfo.DoraCount -= numDoraOfCalledTile
-		playerInfo.Melds = playerInfo.Melds[:len(playerInfo.Melds)-1]
-		// reset naki
-		//playerInfo.ClearNakiCache()
-		tiles34[c.SelfTiles[0]]++
-		tiles34[c.SelfTiles[1]]++
+		playerInfo.UndoAddMeld()
 
 		// 去掉现物食替的情况
 		_waitsWithImproves.filterOutDiscard(calledTile)
@@ -709,13 +740,15 @@ func CalculateMeld(playerInfo *model.PlayerInfo, calledTile int, numDoraOfCalled
 			}
 		}
 
+		// 添加副露信息，用于输出
 		_waitsWithImproves.addOpenTile(c.SelfTiles)
 		_incShantenResults.addOpenTile(c.SelfTiles)
 
-		if _shanten == shanten {
+		// 整理副露结果
+		if _shanten == minShanten {
 			waitsWithImproves = append(waitsWithImproves, _waitsWithImproves...)
 			incShantenResults = append(incShantenResults, _incShantenResults...)
-		} else if _shanten == shanten+1 {
+		} else if _shanten == minShanten+1 {
 			incShantenResults = append(incShantenResults, _waitsWithImproves...)
 		}
 	}

@@ -17,6 +17,14 @@ type WallSafeTile struct {
 
 type WallSafeTileList []WallSafeTile
 
+func (l WallSafeTileList) String() string {
+	tiles := []int{}
+	for _, t := range l {
+		tiles = append(tiles, t.Tile34)
+	}
+	return TilesToStr(tiles)
+}
+
 func (l WallSafeTileList) sort() {
 	normalIndex := func(tile34 int) int {
 		idx := tile34 % 9

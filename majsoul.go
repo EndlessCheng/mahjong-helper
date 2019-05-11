@@ -207,7 +207,7 @@ func (d *majsoulRoundData) IsInit() bool {
 	return len(msg.SeatList) == playerNumber || msg.MD5 != ""
 }
 
-func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicator int, handTiles []int, numRedFive int) {
+func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicator int, handTiles []int, numRedFives []int) {
 	msg := d.msg
 	const playerNumber = 4
 
@@ -227,8 +227,15 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicat
 
 	roundNumber = playerNumber*(*msg.Chang) + *msg.Ju
 	doraIndicator, _ = d.mustParseMajsoulTile(msg.Dora)
+	numRedFives = make([]int, 3)
 	majsoulTiles := d.normalTiles(msg.Tiles)
-	handTiles, numRedFive = d.mustParseMajsoulTiles(majsoulTiles)
+	for _, majsoulTile := range majsoulTiles {
+		tile, isRedFive := d.mustParseMajsoulTile(majsoulTile)
+		handTiles = append(handTiles, tile)
+		if isRedFive {
+			numRedFives[tile/9]++
+		}
+	}
 	return
 }
 

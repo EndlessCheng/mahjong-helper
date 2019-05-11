@@ -6,39 +6,31 @@ import (
 )
 
 // 是否包含字牌
+// cache 这货的话，其他地方都要 copy 了，目前项目采用引用的方式，不适合 cache
 func (hi *_handInfo) containHonor() bool {
-	// cache 这货的话，其他地方都要 copy 了，目前项目采用引用的方式，不适合 cache
-	//if hi._containHonor != nil {
-	//	return *hi._containHonor
-	//}
-	f := func() bool {
-		// 门清时简化
-		if len(hi.Melds) == 0 {
-			for i := 27; i < 34; i++ {
-				if hi.HandTiles34[i] > 0 {
-					return true
-				}
-			}
-			return false
-		}
-		if hi.divideResult.PairTile >= 27 {
-			return true
-		}
-		for _, tile := range hi.divideResult.KotsuTiles {
-			if tile >= 27 {
-				return true
-			}
-		}
-		for _, meld := range hi.Melds {
-			if meld.MeldType != model.MeldTypeChi && meld.Tiles[0] >= 27 {
+	// 门清时简化
+	if len(hi.Melds) == 0 {
+		for i := 27; i < 34; i++ {
+			if hi.HandTiles34[i] > 0 {
 				return true
 			}
 		}
 		return false
 	}
-	ct := f()
-	//hi._containHonor = &ct
-	return ct
+	if hi.divideResult.PairTile >= 27 {
+		return true
+	}
+	for _, tile := range hi.divideResult.KotsuTiles {
+		if tile >= 27 {
+			return true
+		}
+	}
+	for _, meld := range hi.Melds {
+		if meld.MeldType != model.MeldTypeChi && meld.Tiles[0] >= 27 {
+			return true
+		}
+	}
+	return false
 }
 
 // 是否为役牌，用于算役种（役牌、平和）、雀头加符
@@ -70,7 +62,7 @@ func (hi *_handInfo) numAnkou() int {
 func (hi *_handInfo) numKantsu() int {
 	cnt := 0
 	for _, meld := range hi.Melds {
-		if meld.MeldType == model.MeldTypeAnkan || meld.MeldType == model.MeldTypeMinkan || meld.MeldType == model.MeldTypeKakan {
+		if meld.IsKan() {
 			cnt++
 		}
 	}

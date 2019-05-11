@@ -35,15 +35,6 @@ func NumberToChineseShanten(num int) string {
 	return chineseShanten[num+1]
 }
 
-func CountPairs(tiles34 []int) (pairs int) {
-	for _, c := range tiles34 {
-		if c >= 2 {
-			pairs++
-		}
-	}
-	return
-}
-
 func rateAboveOne(x, y int) float64 {
 	return rateAboveOneFloat64(float64(x), float64(y))
 }
@@ -76,5 +67,6 @@ func MaxInt(a, b int) int {
 }
 
 func Equal(a, b float64) bool {
-	return math.Abs(a-b) < 1e-5
+	const eps = 1e-5
+	return math.Abs(a-b) < eps
 }

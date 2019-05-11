@@ -7,6 +7,7 @@ import (
 const agariState = -1
 
 // 根据手牌计算向听数
+// 3k+1 和 3k+2 张牌都行
 func CalculateShanten(tiles34 []int) int {
 	countOfTiles := CountOfTiles34(tiles34)
 	if countOfTiles > 14 {

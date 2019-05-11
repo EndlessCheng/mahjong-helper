@@ -414,8 +414,8 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 			fmt.Print(" ")
 			color.New(color.FgHiGreen).Printf(util.YakuTypesWithDoraToStr(result13.YakuTypes, result13.DoraCount))
 		}
-	} else if shanten >= 0 && shanten <= 1 {
-		// 无役提示
+	} else if shanten >= 0 && shanten <= 1 && result13.IsNaki {
+		// 鸣牌时的无役提示
 		fmt.Print(" ")
 		color.New(color.FgHiRed).Printf("[无役]")
 	}
@@ -430,12 +430,22 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 		}
 	}
 
+	// TODO: 根据场况提醒是否默听
+
 	// (默听)荣和点数
 	if result13.RonPoint > 0 {
 		fmt.Print(" ")
-		fmt.Printf("[荣和%d]", int(math.Round(result13.RonPoint)))
+		ronType := "荣和"
+		if !result13.IsNaki {
+			ronType = "默听"
+		}
+		fmt.Printf("[%s%d]", ronType, int(math.Round(result13.RonPoint)))
+	}
 
-		// TODO: 根据场况提醒是否默听
+	// 立直荣和点数
+	if result13.RiichiRonPoint > 0 {
+		fmt.Print(" ")
+		fmt.Printf("[立直%d]", int(math.Round(result13.RiichiRonPoint)))
 	}
 
 	fmt.Println()

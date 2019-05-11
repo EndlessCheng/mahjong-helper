@@ -28,6 +28,7 @@ var MahjongZH = [...]string{
 
 var YaochuTiles = [...]int{0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33}
 
+// 进张
 // map[进张牌]剩余数
 type Waits map[int]int
 
@@ -93,33 +94,6 @@ func (w Waits) String() string {
 	return fmt.Sprintf("%d 进张 %s", w.AllCount(), TilesToStrWithBracket(w.indexes()))
 }
 
-func (w Waits) containAllIndexes(anotherNeeds Waits) bool {
-	for k := range anotherNeeds {
-		if _, ok := w[k]; !ok {
-			return false
-		}
-	}
-	return true
-}
-
-// 是否包含字牌
-func (w Waits) containHonors() bool {
-	indexes := w.indexes()
-	if len(indexes) == 0 {
-		return false
-	}
-	return indexes[len(indexes)-1] >= 27
-}
-
-//func (w Waits) FixCountsWithLeftCounts(leftCounts []int) {
-//	if len(leftCounts) != 34 {
-//		return
-//	}
-//	for k := range w {
-//		w[k] = leftCounts[k]
-//	}
-//}
-
 func isMan(tile int) bool {
 	return tile < 9
 }
@@ -132,7 +106,6 @@ func isSou(tile int) bool {
 	return tile >= 18 && tile < 27
 }
 
-// 是否为幺九牌
 func isYaochupai(tile int) bool {
 	if tile >= 27 {
 		return true
@@ -141,8 +114,7 @@ func isYaochupai(tile int) bool {
 	return t == 0 || t == 8
 }
 
-//
-
+// 计算手牌枚数
 func CountOfTiles34(tiles34 []int) (count int) {
 	for _, c := range tiles34 {
 		count += c
@@ -150,6 +122,7 @@ func CountOfTiles34(tiles34 []int) (count int) {
 	return
 }
 
+// 计算手牌对子数
 func CountPairsOfTiles34(tiles34 []int) (count int) {
 	for _, c := range tiles34 {
 		if c >= 2 {
@@ -167,6 +140,7 @@ func InitLeftTiles34() []int {
 	return leftTiles34
 }
 
+// 根据传入的牌，返回移除这些牌后剩余的牌
 func InitLeftTiles34WithTiles34(tiles34 []int) []int {
 	leftTiles34 := make([]int, 34)
 	for i, count := range tiles34 {
@@ -175,6 +149,7 @@ func InitLeftTiles34WithTiles34(tiles34 []int) []int {
 	return leftTiles34
 }
 
+// 计算外侧牌
 func OutsideTiles(tile int) (outsideTiles []int) {
 	if tile >= 27 {
 		return
@@ -191,6 +166,34 @@ func OutsideTiles(tile int) (outsideTiles []int) {
 		for i := tile - tile%9 + 8; i > tile; i-- {
 			outsideTiles = append(outsideTiles, i)
 		}
+	}
+	return
+}
+
+// 根据宝牌指示牌计算出宝牌
+func DoraList(doraIndicators []int) (doraList []int) {
+	for _, doraIndicator := range doraIndicators {
+		var dora int
+		if doraIndicator < 27 { // mps
+			if doraIndicator%9 < 8 {
+				dora = doraIndicator + 1
+			} else {
+				dora = doraIndicator - 8
+			}
+		} else if doraIndicator < 31 { // 东南西北
+			if doraIndicator < 30 {
+				dora = doraIndicator + 1
+			} else {
+				dora = 27
+			}
+		} else {
+			if doraIndicator < 33 { // 白发中
+				dora = doraIndicator + 1
+			} else {
+				dora = 31
+			}
+		}
+		doraList = append(doraList, dora)
 	}
 	return
 }

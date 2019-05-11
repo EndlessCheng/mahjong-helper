@@ -15,7 +15,7 @@ func roundUpPoint(point int) int {
 
 func calcBasicPoint(han int, fu int, yakumanTimes int) (basicPoint int) {
 	switch {
-	case yakumanTimes > 0:
+	case yakumanTimes > 0: // (x倍)役满
 		basicPoint = 8000 * yakumanTimes
 	case han >= 13: // 累计役满
 		basicPoint = 8000
@@ -69,9 +69,9 @@ func CalcPointTsumoSum(han int, fu int, yakumanTimes int, isParent bool) int {
 	return 2*childPoint + parentPoint
 }
 
-// TODO: 振听只能自摸
+//
 
-// 计算荣和点数（未考虑里宝）
+// 已和牌，计算荣和点数（未考虑里宝）
 // 调用前请设置 WinTile
 // 无役时返回 0
 // TODO 注意：剩余不到 4 张无法立直
@@ -83,12 +83,13 @@ func CalcRonPoint(playerInfo *model.PlayerInfo) (ronPoint int) {
 		}
 		yakuTypes := findYakuTypes(_hi)
 		if len(yakuTypes) == 0 {
+			// 此手牌拆解下无役
 			continue
 		}
 		han := CalcYakuHan(yakuTypes, _hi.IsNaki())
-		han += _hi.DoraCount
+		han += _hi.CountDora()
 		fu := _hi.calcFu()
-		yakumanTimes := CalcYakumanTimes()
+		yakumanTimes := CalcYakumanTimes(yakuTypes)
 		point := CalcPointRon(han, fu, yakumanTimes, _hi.IsParent)
 		// 高点法
 		ronPoint = MaxInt(ronPoint, point)
@@ -96,15 +97,13 @@ func CalcRonPoint(playerInfo *model.PlayerInfo) (ronPoint int) {
 	return
 }
 
-// TODO: 计算自摸点数
-
-// TODO: 考虑里宝时的荣和、自摸点数
-
-// 含有高低目的场合，通过和率计算平均打点
+// 已听牌，计算加权和率后的平均荣和点数（未考虑里宝）
+// 无役时返回 0
+// TODO 注意：剩余不到 4 张无法立直
 func CalcAvgRonPoint(playerInfo *model.PlayerInfo, waits Waits) (avgRonPoint float64) {
 	tileAgariRate := CalculateAgariRateOfEachTile(waits, playerInfo.DiscardTiles)
 	sum := 0.0
-	w := 0.0
+	weight := 0.0
 	for tile, left := range waits {
 		if left == 0 {
 			continue
@@ -113,14 +112,30 @@ func CalcAvgRonPoint(playerInfo *model.PlayerInfo, waits Waits) (avgRonPoint flo
 		playerInfo.WinTile = tile
 		ronPoint := CalcRonPoint(playerInfo)
 		playerInfo.HandTiles34[tile]--
-		if ronPoint > 0 { // 不考虑无役（如后附，片听）
+		if ronPoint > 0 { // 不考虑部分无役（如后附、片听）
 			rate := tileAgariRate[tile]
 			sum += float64(ronPoint) * rate
-			w += rate
+			weight += rate
 		}
 	}
-	if w > 0 {
-		avgRonPoint = sum / w
+	if weight > 0 {
+		avgRonPoint = sum / weight
 	}
 	return
 }
+
+// TODO: 考虑里宝
+func CalcAvgRiichiRonPoint(playerInfo *model.PlayerInfo, waits Waits) (avgRiichiRonPoint float64) {
+	if playerInfo.IsNaki() {
+		return 0
+	}
+	savedIsRiichi := playerInfo.IsRiichi
+	playerInfo.IsRiichi = true
+	//playerInfo.AvgUraDora
+	avgRiichiRonPoint = CalcAvgRonPoint(playerInfo, waits)
+	playerInfo.IsRiichi = savedIsRiichi
+	return
+}
+
+// TODO: 计算自摸点数
+// TODO: 振听只能自摸

@@ -1,6 +1,9 @@
 package util
 
-import "testing"
+import (
+	"testing"
+	"github.com/stretchr/testify/assert"
+)
 
 func TestCalculateRiskTiles34(t *testing.T) {
 
@@ -12,10 +15,9 @@ func TestCalculateLeftNoSujiTiles(t *testing.T) {
 
 	safeTiles34 := make([]bool, 34)
 	for i, c := range discardTiles34 {
-		if c >=1 {
+		if c >= 1 {
 			safeTiles34[i] = true
 		}
 	}
-	leftNoSujiTiles := CalculateLeftNoSujiTiles(safeTiles34, leftTiles34)
-	t.Log(len(leftNoSujiTiles), "无筋:", TilesToStr(leftNoSujiTiles))
+	assert.Equal(t, "28p 9s", TilesToStr(CalculateLeftNoSujiTiles(safeTiles34, leftTiles34)))
 }

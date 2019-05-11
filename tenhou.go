@@ -226,7 +226,7 @@ func (d *tenhouRoundData) IsInit() bool {
 	return d.msg.Tag == "INIT" || d.msg.Tag == "REINIT"
 }
 
-func (d *tenhouRoundData) ParseInit() (roundNumber int, dealer int, doraIndicator int, handTiles []int, numRedFive int) {
+func (d *tenhouRoundData) ParseInit() (roundNumber int, dealer int, doraIndicator int, handTiles []int, numRedFives []int) {
 	splits := strings.Split(d.msg.Seed, ",")
 	if len(splits) != 6 {
 		panic(fmt.Sprintln("seed 解析失败", d.msg.Seed))
@@ -234,11 +234,13 @@ func (d *tenhouRoundData) ParseInit() (roundNumber int, dealer int, doraIndicato
 	roundNumber, _ = strconv.Atoi(splits[0])
 	dealer, _ = strconv.Atoi(d.msg.Dealer)
 	doraIndicator, _ = d._parseTenhouTile(splits[5])
-	for _, tenhouTile := range strings.Split(d.msg.Hai, ",") {
+	numRedFives = make([]int, 3)
+	tenhouTiles := strings.Split(d.msg.Hai, ",")
+	for _, tenhouTile := range tenhouTiles {
 		tile, isRedFive := d._parseTenhouTile(tenhouTile)
 		handTiles = append(handTiles, tile)
 		if isRedFive {
-			numRedFive++
+			numRedFives[tile/9]++
 		}
 	}
 	return

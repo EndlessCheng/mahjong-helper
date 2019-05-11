@@ -15,26 +15,28 @@ const (
 )
 
 type DataParser interface {
+	// 数据来源是天凤还是雀魂
 	GetDataSourceType() int
 
+	// 原始 JSON
 	GetMessage() string
 
 	// 解析前，根据消息内容来决定是否要进行后续解析
 	CheckMessage() bool
 
 	// 登录成功
-	// 目前是在 server 逻辑上解析的
+	// TODO: 重构，目前是在 server 逻辑上解析的
 	//IsLogin() bool
 	//HandleLogin()
 
 	// round 开始/重连
-	// roundNumber: 场数（如东1为0，东2为1，...，南1为4，...）
+	// roundNumber: 场数（如东1为0，东2为1，...，南1为4，...，南4为7，...）
 	// dealer: 庄家 0-3
 	// doraIndicator: 宝牌指示牌
 	// handTiles: 手牌
-	// numRedFive: 赤5个数
+	// numRedFives: 按照 mps 的顺序，赤5个数
 	IsInit() bool
-	ParseInit() (roundNumber int, dealer int, doraIndicator int, handTiles []int, numRedFive int)
+	ParseInit() (roundNumber int, dealer int, doraIndicator int, handTiles []int, numRedFives []int)
 
 	// 自家摸牌
 	// tile: 0-33
@@ -200,8 +202,9 @@ type roundData struct {
 	// 自家手牌
 	counts []int
 
-	// 自家赤5数量，包含副露的赤5
-	numRedFive int
+	// 按照 mps 的顺序记录自家赤5数量，包含副露的赤5
+	// 比如有 0p 和 0s 就是 [1, 0, 1]
+	numRedFives []int
 
 	// 牌山剩余牌量
 	leftCounts []int
@@ -262,32 +265,9 @@ func (d *roundData) newDora(kanDoraIndicator int) {
 	d.descLeftCounts(kanDoraIndicator)
 }
 
-// 根据 dora 指示牌计算出 dora
+// 根据宝牌指示牌计算出宝牌
 func (d *roundData) doraList() (dl []int) {
-	for _, doraIndicator := range d.doraIndicators {
-		var dora int
-		if doraIndicator < 27 {
-			if doraIndicator%9 < 8 {
-				dora = doraIndicator + 1
-			} else {
-				dora = doraIndicator - 8
-			}
-		} else if doraIndicator < 31 {
-			if doraIndicator < 30 {
-				dora = doraIndicator + 1
-			} else {
-				dora = 27
-			}
-		} else {
-			if doraIndicator < 33 {
-				dora = doraIndicator + 1
-			} else {
-				dora = 31
-			}
-		}
-		dl = append(dl, dora)
-	}
-	return
+	return util.DoraList(d.doraIndicators)
 }
 
 // 这张牌算几个宝牌
@@ -441,21 +421,6 @@ func (d *roundData) newModelPlayerInfo() *model.PlayerInfo {
 		melds = append(melds, *m)
 	}
 
-	doraCount := 0
-	doraList := d.doraList()
-	for _, dora := range doraList {
-		doraCount += d.counts[dora]
-		for _, m := range melds {
-			for _, tile := range m.Tiles {
-				if tile == dora {
-					doraCount++
-				}
-			}
-		}
-	}
-	// 手牌和副露中的赤5
-	doraCount += d.numRedFive
-
 	const self = 0
 	selfPlayer := d.players[self]
 
@@ -464,7 +429,6 @@ func (d *roundData) newModelPlayerInfo() *model.PlayerInfo {
 		Melds:         melds,
 		RoundWindTile: d.roundWindTile,
 		SelfWindTile:  selfPlayer.selfWindTile,
-		DoraCount:     doraCount,
 		IsParent:      d.dealer == self,
 		IsDaburii:     d.isPlayerDaburii(self),
 		IsRiichi:      selfPlayer.isReached,
@@ -503,7 +467,7 @@ func (d *roundData) analysis() error {
 			clearConsole()
 		}
 
-		roundNumber, dealer, doraIndicator, hands, numRedFive := d.parser.ParseInit()
+		roundNumber, dealer, doraIndicator, hands, numRedFives := d.parser.ParseInit()
 		switch d.parser.GetDataSourceType() {
 		case dataSourceTypeTenhou:
 			d.reset(roundNumber, dealer)
@@ -539,7 +503,7 @@ func (d *roundData) analysis() error {
 			d.descLeftCounts(tile)
 		}
 
-		d.numRedFive = numRedFive
+		d.numRedFives = numRedFives
 
 		if len(hands) == 14 {
 			return analysisTiles34(d.newModelPlayerInfo(), nil)
@@ -613,7 +577,8 @@ func (d *roundData) analysis() error {
 					d.counts[tile]--
 				}
 				if meld.RedFiveFromOthers {
-					d.numRedFive++
+					tileType := meldTiles[0] / 9
+					d.numRedFives[tileType]++
 				}
 			}
 		}
@@ -647,7 +612,7 @@ func (d *roundData) analysis() error {
 		d.descLeftCounts(tile)
 		d.counts[tile]++
 		if isRedFive {
-			d.numRedFive++
+			d.numRedFives[tile/9]++
 		}
 		if kanDoraIndicator != -1 {
 			d.newDora(kanDoraIndicator)
@@ -688,7 +653,7 @@ func (d *roundData) analysis() error {
 			player.latestDiscardAtGlobal = len(d.globalDiscardTiles) - 1
 
 			if isRedFive {
-				d.numRedFive--
+				d.numRedFives[discardTile/9]--
 			}
 
 			return nil
@@ -753,14 +718,10 @@ func (d *roundData) analysis() error {
 
 		// 若能副露，计算何切
 		if canBeMeld {
-			// TODO: 消除海底/避免河底/型听提醒
-			numDoraOfDiscardTile := d.numDoraOfTile(discardTile)
-			if isRedFive {
-				numDoraOfDiscardTile++
-			}
-			allowChi := who == 3
+			// TODO: 提醒: 消除海底/避免河底/型听
+			allowChi := who == 3 // 上家舍牌允许吃
 			mixedRiskTable := riskTables.mixedRiskTable()
-			analysisMeld(d.newModelPlayerInfo(), discardTile, numDoraOfDiscardTile, allowChi, mixedRiskTable)
+			analysisMeld(d.newModelPlayerInfo(), discardTile, isRedFive, allowChi, mixedRiskTable)
 		}
 	case d.parser.IsRoundWin():
 		if !debugMode {

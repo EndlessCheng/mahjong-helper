@@ -43,9 +43,11 @@ const (
 	YakuChinitsu  // *
 
 	// TODO: 役满
+
+	_endYakuType  // 标记 enum 结束，方便计算有多少个 YakuType
 )
 
-const maxYakuType = 64
+const maxYakuType = _endYakuType
 
 var YakuNameMap = map[int]string{
 	// Special criteria
@@ -87,7 +89,6 @@ var YakuNameMap = map[int]string{
 	YakuChinitsu: "清一色",
 }
 
-// 调试用
 func YakuTypesToStr(yakuTypes []int) string {
 	names := []string{}
 	for _, t := range yakuTypes {
@@ -99,7 +100,6 @@ func YakuTypesToStr(yakuTypes []int) string {
 	return fmt.Sprint(names)
 }
 
-// 调试用
 func YakuTypesWithDoraToStr(yakuTypes []int, numDora int) string {
 	names := []string{}
 	for _, t := range yakuTypes {
@@ -177,10 +177,6 @@ var NakiYakuHanMap = _yakuHanMap{
 	YakuChinitsu: 5,
 }
 
-var YakumanTimesMap = map[int]int{
-	// TODO
-}
-
 // 计算 yakuTypes 累积的番数
 func CalcYakuHan(yakuTypes []int, isNaki bool) (cntHan int) {
 	var yakuHanMap _yakuHanMap
@@ -198,7 +194,14 @@ func CalcYakuHan(yakuTypes []int, isNaki bool) (cntHan int) {
 	return
 }
 
-func CalcYakumanTimes() int {
+//
+
+var YakumanTimesMap = map[int]int{
+	// TODO
+}
+
+// 计算役满倍数
+func CalcYakumanTimes(yakuTypes []int) int {
 	// TODO
 	return 0
 }

@@ -3,67 +3,57 @@ package util
 import (
 	"testing"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
+	"github.com/stretchr/testify/assert"
 )
 
 var exampleMelds = []model.Meld{{MeldType: model.MeldTypePon, Tiles: MustStrToTiles("666z")}}
 
-func TestCalculateShantenWithImproveClosed(t *testing.T) {
-	for _, tiles := range []string{
-		"11357m 13579p 135s",
-		"123456789m 1135s",
-		"123456789m 1134s",
-		"123456789m 1234z",
-	} {
-		tiles34 := MustStrToTiles34(tiles)
-		if CountOfTiles34(tiles34) != 13 {
-			t.Error(tiles, "不是13张牌")
-			continue
-		}
-		shanten, waits := CalculateShantenAndWaits13(tiles34, nil)
-		t.Log(tiles, "=", NumberToChineseShanten(shanten), waits)
+func TestCalculateShantenAndWaits13(t *testing.T) {
+	toString := func(shanten int, waits Waits) string {
+		return NumberToChineseShanten(shanten) + " " + waits.String()
 	}
-}
 
-func TestCalculateShantenWithImproveOpen(t *testing.T) {
-	for _, tiles := range []string{
-		"1234p",
-		"1234z",
-		"5p",
-		"66m 12334p 334s 777z",
-		"66m 123334p 34s 777z",
-	} {
-		tiles34 := MustStrToTiles34(tiles)
-		shanten, waits := CalculateShantenAndWaits13(tiles34, nil)
-		t.Log(tiles, "=", NumberToChineseShanten(shanten), waits)
-	}
+	// closed
+	assert.Equal(t, "三向听 32 进张 [46m 2468p 24s]", toString(CalculateShantenAndWaits13(MustStrToTiles34("11357m 13579p 135s"), nil)))
+	assert.Equal(t, "听牌 4 进张 [4s]", toString(CalculateShantenAndWaits13(MustStrToTiles34("123456789m 1135s"), nil)))
+	assert.Equal(t, "听牌 8 进张 [25s]", toString(CalculateShantenAndWaits13(MustStrToTiles34("123456789m 1134s"), nil)))
+	assert.Equal(t, "两向听 12 进张 [1234z]", toString(CalculateShantenAndWaits13(MustStrToTiles34("123456789m 1234z"), nil)))
+	assert.Equal(t, "一向听 61 进张 [12345678m 47p 12345678s]", toString(CalculateShantenAndWaits13(MustStrToTiles34("3456m 3456s 44456p"), nil)))
+
+	// open
+	assert.Equal(t, "听牌 6 进张 [14p]", toString(CalculateShantenAndWaits13(MustStrToTiles34("1234p"), nil)))
+	assert.Equal(t, "两向听 12 进张 [1234z]", toString(CalculateShantenAndWaits13(MustStrToTiles34("1234z"), nil)))
+	assert.Equal(t, "听牌 3 进张 [5p]", toString(CalculateShantenAndWaits13(MustStrToTiles34("5p"), nil)))
 }
 
 func TestCalculateShantenWithImproves13Closed(t *testing.T) {
 	for _, tiles := range []string{
-		"11357m 13579p 135s",
-		"123456789m 1135s",
-		"123456789m 1134s",
-		"123456789m 1234z",
-		"3m 12668p 5678s 222z",
-		"6m 12668p 5678s 222z",
-		"557m 34789p 26s 111z",
-		"111333555m 23p 23s",
-		"23m 234p 234888s 44z",
-		"23467m 234p 23488s",
-		"34567m 22334455p",
-		"1199m 112235566z",
-		"123456789m 23p 88s",
-		"12399m 123p 12999s",
-		"3577m 345p 345678s",
-		"23467m 234p 23488s",
-		"13789m 11p 345s 555z",
-		"12346789m 123p 88s",
-		"3456m 111s 999p 777z",
-		"123m 44p 34888s 777z",
-		"13789m 111789p 77z",
-		"23467m 222p 23488s",
-		"13789m 111789p 11s",
-		"12346789m 123p 88s",
+		//"11357m 13579p 135s",
+		//"123456789m 1135s",
+		//"123456789m 1134s",
+		//"123456789m 1234z",
+		//"3m 12668p 5678s 222z",
+		//"6m 12668p 5678s 222z",
+		//"557m 34789p 26s 111z",
+		//"111333555m 23p 23s",
+		//"23m 234p 234888s 44z",
+		//"23467m 234p 23488s",
+		//"34567m 22334455p",
+		//"1199m 112235566z",
+		//"123456789m 23p 88s",
+		//"12399m 123p 12999s",
+		//"3577m 345p 345678s",
+		//"23467m 234p 23488s",
+		//"13789m 11p 345s 555z",
+		//"12346789m 123p 88s",
+		//"3456m 111s 999p 777z",
+		//"123m 44p 34888s 777z",
+		//"13789m 111789p 77z",
+		//"23467m 222p 23488s",
+		//"13789m 111789p 11s",
+		//"12346789m 123p 88s",
+		"56778p 112345s 77z",
+		"56778p 122345s 77z",
 	} {
 		tiles34 := MustStrToTiles34(tiles)
 		if CountOfTiles34(tiles34) != 13 {
@@ -71,7 +61,7 @@ func TestCalculateShantenWithImproves13Closed(t *testing.T) {
 			continue
 		}
 		playerInfo := model.NewSimplePlayerInfo(tiles34, nil)
-		playerInfo.DiscardTiles = []int{MustStrToTile34("4s")}
+		//playerInfo.DiscardTiles = []int{MustStrToTile34("4s")}
 		//playerInfo.IsRiichi = true
 		//playerInfo.DoraCount = 2
 		result := CalculateShantenWithImproves13(playerInfo)
@@ -119,7 +109,7 @@ func TestCalculateShantenWithImproves14Closed(t *testing.T) {
 	tiles = "67778p 1122345s 77z"
 	tiles = "3336888m 678p 5678s"
 	playerInfo := model.NewSimplePlayerInfo(MustStrToTiles34(tiles), nil)
-	playerInfo.DoraCount = 2
+	playerInfo.NumRedFives[2] = 1
 	//playerInfo.IsTsumo = true
 	//playerInfo.LeftTiles34 = InitLeftTiles34WithTiles34(MustStrToTiles34("388m 113668p 566s 45556z")) // 注意手牌也算上
 	//playerInfo.DiscardTiles = []int{MustStrToTile34("9p")}
@@ -151,10 +141,11 @@ func BenchmarkCalculateShantenWithImproves14Closed(b *testing.B) {
 func TestCalculateShantenWithImproves14Open(t *testing.T) {
 	tiles := "35m"
 	tiles = "13m 456s 778p"
-	leftTiles34 := InitLeftTiles34WithTiles34(MustStrToTiles34(tiles))
-	leftTiles34[1] = 0
+	tiles = "6888m 678p 5678s"
+	//leftTiles34 := InitLeftTiles34WithTiles34(MustStrToTiles34(tiles))
+	//leftTiles34[1] = 0
 	playerInfo := model.NewSimplePlayerInfo(MustStrToTiles34(tiles), exampleMelds)
-	playerInfo.LeftTiles34 = leftTiles34
+	//playerInfo.LeftTiles34 = leftTiles34
 	shanten, results, incShantenResults := CalculateShantenWithImproves14(playerInfo)
 	t.Log(NumberToChineseShanten(shanten))
 	for _, result := range results {
@@ -171,6 +162,7 @@ func TestCalculateMeld(t *testing.T) {
 	tiles = "23445667m 11z"
 	tiles = "112356799m 1233z"
 	tiles = "78m 12355p 789s" // ***
+	tiles = "245689s 1z"
 	tiles34 := MustStrToTiles34(tiles)
 	result := CalculateShantenWithImproves13(model.NewSimplePlayerInfo(tiles34, exampleMelds))
 	t.Log("原手牌" + NumberToChineseShanten(result.Shanten))
@@ -180,7 +172,8 @@ func TestCalculateMeld(t *testing.T) {
 	tile = "3m" // "1z"
 	tile = "4m"
 	tile = "4p"
-	shanten, results, incShantenResults := CalculateMeld(model.NewSimplePlayerInfo(tiles34, exampleMelds), MustStrToTile34(tile), 0, true)
+	tile = "3s"
+	shanten, results, incShantenResults := CalculateMeld(model.NewSimplePlayerInfo(tiles34, exampleMelds), MustStrToTile34(tile), false, true)
 	t.Log("鸣牌后" + NumberToChineseShanten(shanten))
 	for _, result := range results {
 		t.Log(result)
@@ -191,22 +184,25 @@ func TestCalculateMeld(t *testing.T) {
 	}
 }
 
-func TestCalculateMeldWithReplace(t *testing.T) {
-	tiles := "245689s 1z"
-	tiles34 := MustStrToTiles34(tiles)
-	result := CalculateShantenWithImproves13(model.NewSimplePlayerInfo(tiles34, exampleMelds))
-	t.Log("原手牌" + NumberToChineseShanten(result.Shanten))
-	t.Log(result)
+//
 
-	tile := "3s"
-	shanten, results, incShantenResults := CalculateMeld(model.NewSimplePlayerInfo(tiles34, exampleMelds), MustStrToTile34(tile), 0, true)
-	t.Log("鸣牌后" + NumberToChineseShanten(shanten))
+// 何切 300
+func TestQ300(t *testing.T) {
+	tiles := "56778p 1122345s 77z" // Q001
+	playerInfo := model.NewSimplePlayerInfo(MustStrToTiles34(tiles), nil)
+	//playerInfo.IsTsumo = true
+	//playerInfo.LeftTiles34 = InitLeftTiles34WithTiles34(MustStrToTiles34("388m 113668p 566s 45556z")) // 注意手牌也算上
+	shanten, results, incShantenResults := CalculateShantenWithImproves14(playerInfo)
+	t.Log(NumberToChineseShanten(shanten))
 	for _, result := range results {
 		t.Log(result)
 	}
-	t.Log("鸣牌后" + NumberToChineseShanten(shanten+1))
-	for _, result := range incShantenResults {
-		t.Log(result)
+	if len(incShantenResults) > 0 {
+		t.Log(NumberToChineseShanten(shanten + 1))
+		for _, result := range incShantenResults {
+			t.Log(result)
+		}
+	} else {
+		t.Log("无向听倒退的切牌")
 	}
 }
-

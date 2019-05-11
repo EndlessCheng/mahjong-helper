@@ -1,37 +1,22 @@
 package util
 
-import "testing"
+import (
+	"testing"
+	"github.com/stretchr/testify/assert"
+)
 
-func TestCalcWallTiles34(t *testing.T) {
-	for _, tiles := range []string{
-		"2222777888m",
-		"33337777m",
-		"333777m",
-		"333444777m",
-		"8888m",
-	} {
-		t.Log(CalcWallTiles(InitLeftTiles34WithTiles34(MustStrToTiles34(tiles))))
-	}
-}
-
-func TestCalcNCSafeTiles34(t *testing.T) {
-	for _, tiles := range []string{
-		"8888m",
-	} {
-		leftTiles34 := InitLeftTiles34WithTiles34(MustStrToTiles34(tiles))
-		t.Log(CalcNCSafeTiles(leftTiles34).FilterWithHands(MustStrToTiles34("9m")))
-	}
+func TestCalcWallTiles(t *testing.T) {
+	assert.Equal(t, "189s", CalcWallTiles(InitLeftTiles34WithTiles34(MustStrToTiles34("2222777888s"))).String())
+	assert.Equal(t, "12589s", CalcWallTiles(InitLeftTiles34WithTiles34(MustStrToTiles34("33337777s"))).String())
+	assert.Equal(t, "12589s", CalcWallTiles(InitLeftTiles34WithTiles34(MustStrToTiles34("333777s"))).String())
+	assert.Equal(t, "1235689s", CalcWallTiles(InitLeftTiles34WithTiles34(MustStrToTiles34("333444777s"))).String())
+	assert.Equal(t, "9s", CalcWallTiles(InitLeftTiles34WithTiles34(MustStrToTiles34("8888s"))).String())
 }
 
 func TestCalcDNCSafeTiles(t *testing.T) {
-	for _, tiles := range []string{
-		"8888m",
-		"33336666m",
-		"33335555m",
-		"33337777m",
-		"333355557777m",
-	} {
-		leftTiles34 := InitLeftTiles34WithTiles34(MustStrToTiles34(tiles))
-		t.Log(CalcDNCSafeTiles(leftTiles34))
-	}
+	assert.Equal(t, "9s", CalcDNCSafeTiles(InitLeftTiles34WithTiles34(MustStrToTiles34("8888s"))).String())
+	assert.Equal(t, "1245s", CalcDNCSafeTiles(InitLeftTiles34WithTiles34(MustStrToTiles34("33336666s"))).String())
+	assert.Equal(t, "124s", CalcDNCSafeTiles(InitLeftTiles34WithTiles34(MustStrToTiles34("33335555s"))).String())
+	assert.Equal(t, "1289s", CalcDNCSafeTiles(InitLeftTiles34WithTiles34(MustStrToTiles34("33337777s"))).String())
+	assert.Equal(t, "124689s", CalcDNCSafeTiles(InitLeftTiles34WithTiles34(MustStrToTiles34("333355557777s"))).String())
 }
