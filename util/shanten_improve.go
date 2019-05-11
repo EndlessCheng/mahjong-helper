@@ -295,7 +295,7 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 				}
 				// 切牌，然后分析 3k+1 张牌下的手牌情况
 				// 若这张是5，在只有赤5的情况下才会切赤5（TODO: 考虑赤5骗37）
-				_isRedFive := playerInfo.IsOnlyRedFive(i)
+				_isRedFive := playerInfo.IsOnlyRedFive(j)
 				playerInfo.DiscardTile(j, _isRedFive)
 				// 向听前进才是正确的切牌
 				if newShanten13, newWaits := CalculateShantenAndWaits13(tiles34, leftTiles34); newShanten13 < shanten13 {
@@ -336,7 +336,7 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 				}
 				// 切牌，然后分析 3k+1 张牌下的手牌情况
 				// 若这张是5，在只有赤5的情况下才会切赤5（TODO: 考虑赤5骗37）
-				_isRedFive := playerInfo.IsOnlyRedFive(i)
+				_isRedFive := playerInfo.IsOnlyRedFive(j)
 				playerInfo.DiscardTile(j, _isRedFive)
 				// 正确的切牌
 				if newShanten13, improveWaits := CalculateShantenAndWaits13(tiles34, leftTiles34); newShanten13 == shanten13 {
