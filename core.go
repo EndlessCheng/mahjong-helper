@@ -425,15 +425,19 @@ func (d *roundData) newModelPlayerInfo() *model.PlayerInfo {
 	selfPlayer := d.players[self]
 
 	return &model.PlayerInfo{
-		HandTiles34:   d.counts,
-		Melds:         melds,
+		HandTiles34: d.counts,
+		Melds:       melds,
+		DoraTiles:   d.doraList(),
+		NumRedFives: d.numRedFives,
+
 		RoundWindTile: d.roundWindTile,
 		SelfWindTile:  selfPlayer.selfWindTile,
 		IsParent:      d.dealer == self,
 		IsDaburii:     d.isPlayerDaburii(self),
 		IsRiichi:      selfPlayer.isReached,
-		DiscardTiles:  normalDiscardTiles(selfPlayer.discardTiles),
-		LeftTiles34:   d.leftCounts,
+
+		DiscardTiles: normalDiscardTiles(selfPlayer.discardTiles),
+		LeftTiles34:  d.leftCounts,
 	}
 }
 
