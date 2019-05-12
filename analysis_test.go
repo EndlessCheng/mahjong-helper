@@ -2,6 +2,7 @@ package main
 
 import (
 	"testing"
+	"github.com/EndlessCheng/mahjong-helper/util/model"
 )
 
 func TestAnalysis(t *testing.T) {
@@ -49,5 +50,5 @@ func TestAnalysis(t *testing.T) {
 
 	raw = "3456667m 345566p"
 	raw = "3456667m 34566p 5s"
-	analysisHumanTiles(raw)
+	analysisHumanTiles(model.NewSimpleHumanTilesInfo(raw))
 }

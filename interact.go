@@ -4,10 +4,11 @@ import (
 	"github.com/EndlessCheng/mahjong-helper/util"
 	"fmt"
 	"os"
+	"github.com/EndlessCheng/mahjong-helper/util/model"
 )
 
 func interact(raw string) {
-	tiles34, err := analysisHumanTiles(raw)
+	tiles34, err := analysisHumanTiles(model.NewSimpleHumanTilesInfo(raw))
 	if err != nil {
 		errorExit(err)
 	}
@@ -39,7 +40,7 @@ func interact(raw string) {
 
 		if !printed {
 			raw = util.Tiles34ToStr(tiles34)
-			if _, err := analysisHumanTiles(raw); err != nil {
+			if _, err := analysisHumanTiles(model.NewSimpleHumanTilesInfo(raw)); err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
 			}
 
@@ -66,7 +67,7 @@ func interact(raw string) {
 
 		if !printed {
 			raw = util.Tiles34ToStr(tiles34)
-			if _, err := analysisHumanTiles(raw); err != nil {
+			if _, err := analysisHumanTiles(model.NewSimpleHumanTilesInfo(raw)); err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
 			}
 

@@ -110,7 +110,13 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool
 	_printIncShantenResults14(shanten, shownIncResults14, mixedRiskTable)
 }
 
-func analysisHumanTiles(humanTiles string) (tiles34 []int, err error) {
+func analysisHumanTiles(humanTilesInfo *model.HumanTilesInfo) (tiles34 []int, err error) {
+	humanTiles := humanTilesInfo.HumanTiles
+	doraTiles := []int{}
+	if humanTilesInfo.HumanDoraTiles != "" {
+		doraTiles = util.MustStrToTiles(humanTilesInfo.HumanDoraTiles)
+	}
+
 	splits := strings.Split(humanTiles, "+")
 	if len(splits) == 2 {
 		tiles34, err = util.StrToTiles34(splits[0])
@@ -131,8 +137,9 @@ func analysisHumanTiles(humanTiles string) (tiles34 []int, err error) {
 		var melds []model.Meld
 		//melds = append(melds, model.Meld{MeldType: model.MeldTypePon, Tiles: util.MustStrToTiles("777z")})
 		playerInfo := model.NewSimplePlayerInfo(tiles34, melds)
-		//playerInfo.DoraCount = 1
-		analysisMeld(playerInfo, targetTile34, true, true, nil)
+		playerInfo.DoraTiles = doraTiles
+		isRedFive := false
+		analysisMeld(playerInfo, targetTile34, isRedFive, true, nil)
 		return
 	}
 
@@ -142,6 +149,7 @@ func analysisHumanTiles(humanTiles string) (tiles34 []int, err error) {
 	}
 
 	playerInfo := model.NewSimplePlayerInfo(tiles34, nil)
+	playerInfo.DoraTiles = doraTiles
 	//playerInfo.IsTsumo = true
 	err = analysisTiles34(playerInfo, nil)
 	return

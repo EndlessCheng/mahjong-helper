@@ -21,7 +21,7 @@ func getWaitsCountColor(shanten int, waitsCount float64) color.Attribute {
 	_getWaitsCountColor := func(fixedWaitsCount float64) color.Attribute {
 		switch {
 		case fixedWaitsCount < 13: // 4.3*3
-			return color.FgHiCyan
+			return color.FgHiCyan // FgHiBlue FgHiCyan
 		case fixedWaitsCount <= 18: // 6*3
 			return color.FgHiYellow
 		default: // >6*3

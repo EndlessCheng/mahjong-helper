@@ -32,3 +32,12 @@ func (f flagKV) Bool(flagNames ...string) bool {
 	}
 	return false
 }
+
+func (f flagKV) String(flagNames ...string) string {
+	for _, name := range flagNames {
+		if val, ok := f[name]; ok {
+			return val
+		}
+	}
+	return ""
+}

@@ -7,6 +7,7 @@ import (
 	"time"
 	"github.com/fatih/color"
 	"math/rand"
+	"github.com/EndlessCheng/mahjong-helper/util/model"
 )
 
 func init() {
@@ -66,6 +67,7 @@ func main() {
 	}
 
 	flags, restArgs := parseArgs(os.Args[1:])
+
 	isMajsoul := flags.Bool("majsoul")
 	isTenhou := flags.Bool("tenhou")
 	isAnalysis := flags.Bool("analysis")
@@ -74,6 +76,8 @@ func main() {
 	showAgariAboveShanten1 = flags.Bool("a", "agari")
 	showScore = flags.Bool("s", "score")
 	showAllYakuTypes = flags.Bool("y", "yaku")
+
+	humanDoraTiles := flags.String("d", "dora")
 	humanTiles := strings.Join(restArgs, " ")
 
 	switch {
@@ -86,7 +90,11 @@ func main() {
 		interact(humanTiles)
 	case len(restArgs) > 0:
 		//t0 := time.Now()
-		if _, err := analysisHumanTiles(humanTiles); err != nil {
+		humanTilesInfo := &model.HumanTilesInfo{
+			HumanTiles:     humanTiles,
+			HumanDoraTiles: humanDoraTiles,
+		}
+		if _, err := analysisHumanTiles(humanTilesInfo); err != nil {
 			fmt.Println(err)
 		}
 		//fmt.Printf("耗时 %.2f 秒\n", float64(time.Now().UnixNano()-t0.UnixNano())/float64(time.Second))
