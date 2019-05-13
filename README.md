@@ -19,13 +19,13 @@
 
 1. 前往 [release](https://github.com/EndlessCheng/mahjong-helper/releases/latest) 页面下载程序
 
-2. 安装浏览器扩展 Header Editor（不清楚如何安装可以参考[这篇](https://tieba.baidu.com/p/5956122477?pid=122936988723#122936988723)）
-
-    安装好扩展后点进该扩展的`管理`界面，点击`导入和导出`，在下载规则中填入 `https://jianyan.me/js/mahjong-helper.json`，点击右侧的下载按钮，然后点击下方的`保存`
-
-3. 雀魂需要浏览器允许本地证书。目前仅支持 Chrome 和 QQ 浏览器等使用了 Chrome 内核的浏览器：
+2. 雀魂需要浏览器允许本地证书。目前仅支持 Chrome 和 QQ 浏览器等使用了 Chrome 内核的浏览器：
    
-   在浏览器中输入 `chrome://flags/#allow-insecure-localhost`，然后把高亮那一项的 Disabled 改成 Enabled（不同浏览器/版本的描述可能不一样，如果是中文的话点击「启用」按钮），之后重启浏览器
+   在浏览器中输入 `chrome://flags/#allow-insecure-localhost`，然后点击高亮那一项的「启用」按钮（不同浏览器/版本的描述可能不一样，如果是英文的话把 Disabled 改成 Enabled），之后重启浏览器
+
+3. 安装浏览器扩展 Header Editor（[谷歌商城(需要翻墙)](https://chrome.google.com/webstore/detail/header-editor/eningockdidmgiojffjmkdblpjocbhgh?hl=zh) | [国内](https://www.chromefor.com/header-editor_v4-0-7/)）
+
+   安装好扩展后点进该扩展的`管理`界面，点击`导入和导出`，在下载规则中填入 `https://jianyan.me/js/mahjong-helper.json`，点击右侧的下载按钮，然后点击下方的`保存`
 
 在使用本程序前，建议先看一下本页面下方的[示例](#示例)
 
