@@ -38,6 +38,11 @@ func (hi *_handInfo) isYakuTile(tile int) bool {
 	return tile >= 31 || tile == hi.RoundWindTile || tile == hi.SelfWindTile
 }
 
+// 是否为连风役牌
+func (hi *_handInfo) isDoubleYakuTile(tile int) bool {
+	return hi.RoundWindTile == hi.SelfWindTile && tile == hi.RoundWindTile
+}
+
 // 暗刻个数，用于算三暗刻、四暗刻、符数（如 456666 荣和 6，这里算一个暗刻）
 func (hi *_handInfo) numAnkou() int {
 	num := len(hi.divideResult.KotsuTiles)
@@ -286,17 +291,24 @@ func (hi *_handInfo) tanyao() bool {
 	return true
 }
 
-// 返回役牌个数
+// 返回役牌个数，连风算两个
 func (hi *_handInfo) numYakuhai() int {
 	cnt := 0
 	for _, tile := range hi.divideResult.KotsuTiles {
 		if hi.isYakuTile(tile) {
 			cnt++
+			if hi.isDoubleYakuTile(tile) {
+				cnt++
+			}
 		}
 	}
 	for _, meld := range hi.Melds {
-		if meld.MeldType != model.MeldTypeChi && hi.isYakuTile(meld.Tiles[0]) {
+		tile := meld.Tiles[0]
+		if meld.MeldType != model.MeldTypeChi && hi.isYakuTile(tile) {
 			cnt++
+			if hi.isDoubleYakuTile(tile) {
+				cnt++
+			}
 		}
 	}
 	return cnt
@@ -513,7 +525,7 @@ func findYakuTypes(hi *_handInfo) (yakuTypes []int) {
 		}
 	}
 
-	// 役牌单独算
+	// 役牌单独算（连风算两个）
 	numYakuhai := hi.numYakuhai()
 	for i := 0; i < numYakuhai; i++ {
 		yakuTypes = append(yakuTypes, YakuYakuhai)

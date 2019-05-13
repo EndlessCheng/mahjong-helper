@@ -31,7 +31,7 @@ func TestCalcRonPointWithHands(t *testing.T) {
 			HandTiles34:   MustStrToTiles34(humanTiles),
 			WinTile:       MustStrToTile34(winHumanTile),
 			RoundWindTile: MustStrToTile34("2z"),
-			SelfWindTile:  MustStrToTile34("3z"),
+			SelfWindTile:  MustStrToTile34("2z"),
 		}
 	}
 	assert.Equal(t, 12000, CalcRonPoint(newPI("11m 112233445566z", "1m")))    // [七对 混老头 混一色]
@@ -44,6 +44,7 @@ func TestCalcRonPointWithHands(t *testing.T) {
 	assert.Equal(t, 5200, CalcRonPoint(newPI("334455m 667788s 77z", "3m")))   // [两杯口]
 	assert.Equal(t, 7700, CalcRonPoint(newPI("334455m 667788s 44z", "3m")))   // [平和 两杯口]
 	assert.Equal(t, 5200, CalcRonPoint(newPI("123m 123999s 11789p", "3m")))   // [纯全]
+	assert.Equal(t, 2600, CalcRonPoint(newPI("345m 12355789s 222z", "3m")))   // [役牌 役牌]
 
 	fmt.Println()
 
