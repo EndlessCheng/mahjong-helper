@@ -38,8 +38,8 @@ func (hi *_handInfo) isYakuTile(tile int) bool {
 	return tile >= 31 || tile == hi.RoundWindTile || tile == hi.SelfWindTile
 }
 
-// 是否为连风役牌
-func (hi *_handInfo) isDoubleYakuTile(tile int) bool {
+// 是否为连风牌
+func (hi *_handInfo) isDoubleWindTile(tile int) bool {
 	return hi.RoundWindTile == hi.SelfWindTile && tile == hi.RoundWindTile
 }
 
@@ -297,7 +297,7 @@ func (hi *_handInfo) numYakuhai() int {
 	for _, tile := range hi.divideResult.KotsuTiles {
 		if hi.isYakuTile(tile) {
 			cnt++
-			if hi.isDoubleYakuTile(tile) {
+			if hi.isDoubleWindTile(tile) {
 				cnt++
 			}
 		}
@@ -306,7 +306,7 @@ func (hi *_handInfo) numYakuhai() int {
 		tile := meld.Tiles[0]
 		if meld.MeldType != model.MeldTypeChi && hi.isYakuTile(tile) {
 			cnt++
-			if hi.isDoubleYakuTile(tile) {
+			if hi.isDoubleWindTile(tile) {
 				cnt++
 			}
 		}

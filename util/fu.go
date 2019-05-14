@@ -60,7 +60,7 @@ func (hi *_handInfo) calcFu() int {
 	// 雀头加符（连风雀头计 4 符）
 	if hi.isYakuTile(divideResult.PairTile) {
 		fu += 2
-		if hi.isDoubleYakuTile(divideResult.PairTile) {
+		if hi.isDoubleWindTile(divideResult.PairTile) {
 			fu += 2
 		}
 	}

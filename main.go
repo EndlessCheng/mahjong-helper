@@ -18,6 +18,7 @@ func init() {
 var version = "dev"
 
 var (
+	showImproveDetail      bool
 	showAgariAboveShanten1 bool
 	showScore              bool
 	showAllYakuTypes       bool
@@ -72,7 +73,7 @@ func main() {
 	isTenhou := flags.Bool("tenhou")
 	isAnalysis := flags.Bool("analysis")
 	isInteractive := flags.Bool("i", "interactive")
-	//isDetail := flags.Bool("d", "detail")
+	showImproveDetail = flags.Bool("id", "detail")
 	showAgariAboveShanten1 = flags.Bool("a", "agari")
 	showScore = flags.Bool("s", "score")
 	showAllYakuTypes = flags.Bool("y", "yaku")
