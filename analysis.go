@@ -16,7 +16,7 @@ func _printIncShantenResults14(shanten int, incShantenResults14 util.WaitsWithIm
 	if len(incShantenResults14[0].OpenTiles) > 0 {
 		fmt.Print("鸣牌后")
 	}
-	fmt.Println(util.NumberToChineseShanten(shanten+1) + "：")
+	fmt.Println("倒退回" + util.NumberToChineseShanten(shanten+1) + "：")
 	for _, result := range incShantenResults14 {
 		printWaitsWithImproves13_oneRow(result.Result13, result.DiscardTile, result.OpenTiles, mixedRiskTable)
 	}
