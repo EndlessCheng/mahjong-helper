@@ -449,4 +449,10 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 	}
 
 	fmt.Println()
+
+	if showImproveDetail {
+		for tile, waits := range result13.Improves {
+			fmt.Printf("摸 %s 改良成 %s\n", util.Mahjong[tile], waits.String())
+		}
+	}
 }
