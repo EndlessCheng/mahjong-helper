@@ -66,7 +66,11 @@ func MaxInt(a, b int) int {
 	return b
 }
 
+func InDelta(a, b, delta float64) bool {
+	return math.Abs(a-b) < delta
+}
+
 func Equal(a, b float64) bool {
 	const eps = 1e-5
-	return math.Abs(a-b) < eps
+	return InDelta(a, b, eps)
 }

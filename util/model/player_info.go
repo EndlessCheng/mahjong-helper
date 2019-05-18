@@ -17,7 +17,7 @@ type PlayerInfo struct {
 	DiscardTiles []int // 自家舍牌，用于判断和率，是否振听等  *注意创建 PlayerInfo 的时候把负数调整成正的！
 	LeftTiles34  []int // 剩余牌
 
-	AvgUraDora float64 // 平均里宝牌个数，用于计算立直时的打点
+	//AvgUraDora float64 // 平均里宝牌个数，用于计算立直时的打点
 }
 
 func NewSimplePlayerInfo(tiles34 []int, melds []Meld) *PlayerInfo {
@@ -50,11 +50,51 @@ func (pi *PlayerInfo) CountDora() (count int) {
 	return
 }
 
+// 立直时，根据牌山计算和了时的里宝牌个数
+// TODO: 考虑 WinTile
+//func (pi *PlayerInfo) CountUraDora() (count float64) {
+//	if !pi.IsRiichi || pi.IsNaki() {
+//		return 0
+//	}
+//	uraDoraTileLeft := make([]int, len(pi.LeftTiles34))
+//	for tile, left := range pi.LeftTiles34 {
+//		uraDoraTileLeft[DoraTile(tile)] = left
+//	}
+//	sum := 0
+//	weight := 0
+//	for tile, c := range pi.HandTiles34 {
+//		w := uraDoraTileLeft[tile]
+//		sum += w * c
+//		weight += w
+//	}
+//	for _, meld := range pi.Melds {
+//		for tile, c := range meld.Tiles {
+//			w := uraDoraTileLeft[tile]
+//			sum += w * c
+//			weight += w
+//		}
+//	}
+//	// 简化计算，直接乘上宝牌指示牌的个数
+//	return float64(len(pi.DoraTiles)*sum) / float64(weight)
+//}
+
 // 是否已鸣牌（暗杠不算）
 // 可以用来判断该玩家能否立直，计算门清加符等
 func (pi *PlayerInfo) IsNaki() bool {
 	for _, meld := range pi.Melds {
 		if meld.MeldType != MeldTypeAnkan {
+			return true
+		}
+	}
+	return false
+}
+
+// 是否振听
+// 仅限听牌时调用
+// TODO: Waits 移进来
+func (pi *PlayerInfo) IsFuriten(waits map[int]int) bool {
+	for _, discardTile := range pi.DiscardTiles {
+		if _, ok := waits[discardTile]; ok {
 			return true
 		}
 	}

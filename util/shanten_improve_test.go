@@ -52,8 +52,10 @@ func TestCalculateShantenWithImproves13Closed(t *testing.T) {
 		//"23467m 222p 23488s",
 		//"13789m 111789p 11s",
 		//"12346789m 123p 88s",
-		"56778p 112345s 77z",
-		"56778p 122345s 77z",
+		//"56778p 112345s 77z",
+		//"56778p 122345s 77z",
+		"223446m 345p 1178s",
+		"122344m 345p 1178s",
 	} {
 		tiles34 := MustStrToTiles34(tiles)
 		if CountOfTiles34(tiles34) != 13 {
@@ -61,11 +63,24 @@ func TestCalculateShantenWithImproves13Closed(t *testing.T) {
 			continue
 		}
 		playerInfo := model.NewSimplePlayerInfo(tiles34, nil)
+		playerInfo.DoraTiles = MustStrToTiles("8s")
 		//playerInfo.DiscardTiles = []int{MustStrToTile34("4s")}
 		//playerInfo.IsRiichi = true
 		//playerInfo.DoraCount = 2
 		result := CalculateShantenWithImproves13(playerInfo)
 		t.Log(tiles, "=\n"+result.String())
+		for tile, left := range result.Waits {
+			if left > 0 {
+				playerInfo.HandTiles34[tile]++
+				t.Log(Tiles34ToStr(playerInfo.HandTiles34))
+				_, results, _ := CalculateShantenWithImproves14(playerInfo)
+				for _, result := range results {
+					t.Log(result)
+				}
+				t.Log()
+				playerInfo.HandTiles34[tile]--
+			}
+		}
 	}
 }
 
@@ -108,11 +123,11 @@ func TestCalculateShantenWithImproves14Closed(t *testing.T) {
 	tiles = "66778p 1122345s 77z"
 	tiles = "67778p 1122345s 77z"
 	tiles = "3336888m 678p 5678s"
+	tiles = "11456678m 567p 235s" // 振听两面还是坎张
 	playerInfo := model.NewSimplePlayerInfo(MustStrToTiles34(tiles), nil)
-	playerInfo.NumRedFives[2] = 1
-	//playerInfo.IsTsumo = true
-	//playerInfo.LeftTiles34 = InitLeftTiles34WithTiles34(MustStrToTiles34("388m 113668p 566s 45556z")) // 注意手牌也算上
-	//playerInfo.DiscardTiles = []int{MustStrToTile34("9p")}
+	playerInfo.LeftTiles34 = InitLeftTiles34WithTiles34(MustStrToTiles34("111456678m 567p 235s")) // 注意手牌也算上
+	playerInfo.DiscardTiles = []int{MustStrToTile34("1s")}
+	playerInfo.DoraTiles = MustStrToTiles("8m")
 	shanten, results, incShantenResults := CalculateShantenWithImproves14(playerInfo)
 	t.Log(NumberToChineseShanten(shanten))
 	for _, result := range results {
@@ -186,23 +201,44 @@ func TestCalculateMeld(t *testing.T) {
 
 //
 
-// 何切 300
-func TestQ300(t *testing.T) {
-	tiles := "56778p 1122345s 77z" // Q001
-	playerInfo := model.NewSimplePlayerInfo(MustStrToTiles34(tiles), nil)
-	//playerInfo.IsTsumo = true
-	//playerInfo.LeftTiles34 = InitLeftTiles34WithTiles34(MustStrToTiles34("388m 113668p 566s 45556z")) // 注意手牌也算上
-	shanten, results, incShantenResults := CalculateShantenWithImproves14(playerInfo)
-	t.Log(NumberToChineseShanten(shanten))
-	for _, result := range results {
-		t.Log(result)
+func bestHumanDiscardTile(t *testing.T, humanTiles string, doraHumanTiles string) string {
+	playerInfo := model.NewSimplePlayerInfo(MustStrToTiles34(humanTiles), nil)
+	if doraHumanTiles != "" {
+		playerInfo.DoraTiles = MustStrToTiles(doraHumanTiles)
 	}
-	if len(incShantenResults) > 0 {
-		t.Log(NumberToChineseShanten(shanten + 1))
-		for _, result := range incShantenResults {
+	_, results, _ := CalculateShantenWithImproves14(playerInfo)
+	if true {
+		t.Log(humanTiles, doraHumanTiles)
+		for _, result := range results {
 			t.Log(result)
 		}
-	} else {
-		t.Log("无向听倒退的切牌")
+		t.Log()
 	}
+	tile := results[0].DiscardTile
+	return Tile34ToStr(tile)
+}
+
+func TestBestDiscard(t *testing.T) {
+	// 听牌
+	assert.Equal(t, "7m", bestHumanDiscardTile(t, "123667m 234p 345s 55z", "")) // 数牌字牌双碰优于两面
+	assert.Equal(t, "6m", bestHumanDiscardTile(t, "123667m 234p 345s 44z", "")) // 平和
+	assert.Equal(t, "4m", bestHumanDiscardTile(t, "134m 123567p 12355s", ""))   // 三色
+	assert.Equal(t, "4m", bestHumanDiscardTile(t, "134m 123567p 12355s", "5p")) // 三色
+	// TODO: 异常改良数？
+	assert.Equal(t, "1m", bestHumanDiscardTile(t, "1234m 345789p 567s 3z", "3z")) // 宝牌单骑比两面好
+	assert.Equal(t, "5s", bestHumanDiscardTile(t, "345m 345789p 3455s 4z", ""))   // 三色比平和好
+	assert.Equal(t, "7m", bestHumanDiscardTile(t, "234788m 234567s 33z", "8m"))
+	assert.Equal(t, "8m", bestHumanDiscardTile(t, "234788m 234567s 33z", "3z"))
+	assert.Equal(t, "7m", bestHumanDiscardTile(t, "334557m 222p 789s 33z", "9s"))
+
+	// 一向听
+	assert.Equal(t, "6m", bestHumanDiscardTile(t, "1223446m 345p 1178s", "8s")) // 1m 也可以
+	assert.Equal(t, "6m", bestHumanDiscardTile(t, "1223446m 345p 78s 77z", "8s"))
+	assert.Equal(t, "2m", bestHumanDiscardTile(t, "1223446789m 1178s", "8s")) // 4m 也可以
+	assert.Equal(t, "2m", bestHumanDiscardTile(t, "1223446789m 78s 77z", "8s"))
+}
+
+// 何切 300
+func TestQ300(t *testing.T) {
+	assert.Equal(t, "2s", bestHumanDiscardTile(t, "56778p 1122345s 77z", "")) // Q001
 }

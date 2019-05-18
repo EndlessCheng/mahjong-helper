@@ -267,7 +267,7 @@ func (d *roundData) newDora(kanDoraIndicator int) {
 
 // 根据宝牌指示牌计算出宝牌
 func (d *roundData) doraList() (dl []int) {
-	return util.DoraList(d.doraIndicators)
+	return model.DoraList(d.doraIndicators)
 }
 
 // 这张牌算几个宝牌

@@ -16,7 +16,8 @@ func _printIncShantenResults14(shanten int, incShantenResults14 util.WaitsWithIm
 	if len(incShantenResults14[0].OpenTiles) > 0 {
 		fmt.Print("鸣牌后")
 	}
-	fmt.Println("倒退回" + util.NumberToChineseShanten(shanten+1) + "：")
+	// "倒退回" +
+	fmt.Println(util.NumberToChineseShanten(shanten+1) + "：")
 	for _, result := range incShantenResults14 {
 		printWaitsWithImproves13_oneRow(result.Result13, result.DiscardTile, result.OpenTiles, mixedRiskTable)
 	}
@@ -42,7 +43,13 @@ func analysisTiles34(playerInfo *model.PlayerInfo, mixedRiskTable riskTable) err
 		}
 
 		if shanten == 0 {
-			color.HiRed("【已听牌】")
+			if len(results14) > 0 {
+				r13 := results14[0].Result13
+				if r13.FuritenRate == 0 && r13.Point >= 5200 {
+					color.HiGreen("默听打点充足：追求和率默听，追求打点立直")
+				}
+				// 局收支相近时，提示：局收支相近，追求和率打xx，追求打点打xx
+			}
 		}
 
 		fmt.Println(util.NumberToChineseShanten(shanten) + "：")
@@ -86,6 +93,10 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool
 	if shanten == -1 {
 		color.HiRed("【已胡牌】")
 		return
+	}
+
+	if shanten == 0 {
+		// 局收支相近时，提示：局收支相近，追求和率打xx，追求打点打xx
 	}
 
 	// 打印结果

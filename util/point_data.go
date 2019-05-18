@@ -1,5 +1,57 @@
 package util
 
+// 考虑里宝和一发的实际打点
+// 参考:「統計学」のマージャン戦術
+func (pr *PointResult) fixedRiichiPoint(isFuriten bool) float64 {
+	ronPoint := float64(pr.Point)
+	if pr.isParent {
+		ronPoint /= 1.5
+	}
+
+	pt := ronPoint - 100 // 保证亲子落入同一区间
+	switch {
+	case pt <= 1300:
+		ronPoint *= 2730.0 / 1300.0
+	case pt <= 2000:
+		ronPoint *= 3700.0 / 2000.0
+	case pt <= 2600:
+		ronPoint *= 4900.0 / 2600.0
+	case pt <= 3900:
+		ronPoint *= 6300.0 / 3900.0
+	case pt <= 5200:
+		ronPoint *= 7500.0 / 5200.0
+	case pt <= 7700:
+		ronPoint *= 9100.0 / 7700.0
+	case pt <= 8000:
+		if pr.han == 4 {
+			ronPoint *= 9130.0 / 8000.0
+		} else if pr.han == 5 {
+			ronPoint *= 11200.0 / 8000.0
+		}
+	case pt <= 12000:
+		if pr.han == 6 {
+			ronPoint *= 13030.0 / 12000.0
+		} else if pr.han == 7 {
+			ronPoint *= 15000.0 / 12000.0
+		}
+	default:
+		// TODO
+	}
+
+	if isFuriten {
+		// 振听时由于只能自摸，打点要略高些
+		const furitenRiichiPointMulti = 1.1
+		ronPoint *= furitenRiichiPointMulti
+	}
+
+	if pr.isParent {
+		ronPoint *= 1.5
+	}
+	return ronPoint
+}
+
+//
+
 // 子家荣和点数均值
 // 参考：「統計学」のマージャン戦術
 // 亲家按 x1.5 算

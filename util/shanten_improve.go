@@ -66,14 +66,14 @@ type WaitsWithImproves13 struct {
 	// 宝牌个数（手牌+副露）
 	DoraCount int
 
-	// 无立直时的荣和打点期望
-	RonPoint float64
+	// 无立直时的打点期望
+	Point float64
 
-	// 立直时的荣和打点期望
-	RiichiRonPoint float64
+	// 立直时的打点期望
+	RiichiPoint float64
 
-	// 自摸打点期望
-	TsumoPoint float64
+	// 局收支
+	MixedRoundPoint float64
 
 	// TODO: 赤牌改良提醒
 }
@@ -88,7 +88,7 @@ func (r *WaitsWithImproves13) mixedWaitsScore() float64 {
 	p2 := float64(r.Waits.AllCount()) / leftCount
 	//p2 := r.AvgImproveWaitsCount / leftCount
 	p1 := r.AvgNextShantenWaitsCount / leftCount
-	//if r.AvgAgariRate > 0 {
+	//if r.AvgAgariRate > 0 { // TODO: 用和率需要考虑巡目
 	//	p1 = r.AvgAgariRate / 100
 	//}
 	p2_, p1_ := 1-p2, 1-p1
@@ -97,6 +97,13 @@ func (r *WaitsWithImproves13) mixedWaitsScore() float64 {
 	sumP1 := p1_ * (1 - math.Pow(p1_, leftTurns)) / p1
 	result := p2 * p1 * (sumP2 - sumP1) / (p2_ - p1_)
 	return result * 100
+}
+
+func (r *WaitsWithImproves13) mixedRoundPoint() float64 {
+	if r.RiichiPoint > 0 {
+		return r.AvgAgariRate/100*(r.RiichiPoint+1500) - 1500
+	}
+	return r.AvgAgariRate/100*(r.Point+1500) - 1500
 }
 
 // 调试用
@@ -120,8 +127,19 @@ func (r *WaitsWithImproves13) String() string {
 			mixedScore,
 		)
 	}
+	if r.MixedRoundPoint > 0 {
+		s += fmt.Sprintf(" [局收支%d]", int(math.Round(r.MixedRoundPoint)))
+	}
+	if r.Point > 0 {
+		s += fmt.Sprintf("[默听%d]", int(math.Round(r.Point)))
+	}
+	if r.RiichiPoint > 0 {
+		s += fmt.Sprintf("[立直%d]", int(math.Round(r.RiichiPoint)))
+	}
+	if r.AvgAgariRate > 0 {
+		s += fmt.Sprintf("[%.2f%% 和率] ", r.AvgAgariRate)
+	}
 	if r.Shanten >= 0 && r.Shanten <= 1 {
-		s += fmt.Sprintf("（%.2f%% 参考和率）", r.AvgAgariRate)
 		if r.FuritenRate > 0 {
 			if r.FuritenRate < 1 {
 				s += "[可能振听]"
@@ -130,15 +148,6 @@ func (r *WaitsWithImproves13) String() string {
 			}
 		}
 		s += YakuTypesWithDoraToStr(r.YakuTypes, r.DoraCount)
-	}
-	if r.RonPoint > 0 {
-		s += fmt.Sprintf("[(默听)荣和%d]", int(math.Round(r.RonPoint)))
-	}
-	if r.RiichiRonPoint > 0 {
-		s += fmt.Sprintf("[立直荣和%d]", int(math.Round(r.RiichiRonPoint)))
-	}
-	if r.TsumoPoint > 0 {
-		s += fmt.Sprintf("[自摸%d]", int(math.Round(r.TsumoPoint)))
 	}
 	return s
 }
@@ -228,6 +237,7 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 	leftTiles34 := playerInfo.LeftTiles34
 	shanten13, waits := CalculateShantenAndWaits13(tiles34, leftTiles34)
 	waitsCount := waits.AllCount()
+	isNaki := playerInfo.IsNaki()
 
 	nextShantenWaitsCountMap := map[int]int{} // map[进张牌]听多少张牌
 	improves := Improves{}
@@ -239,8 +249,9 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 	}
 	avgAgariRate := 0.0
 	avgRonPoint := 0.0
-	ronPointWeight := 0
-	avgRiichiRonPoint := 0.0
+	avgRiichiPoint := 0.0
+	avgRoundPoint := 0.0
+	roundPointWeight := 0
 
 	canYaku := make([]bool, maxYakuType)
 	if len(playerInfo.Melds) == 0 && CountPairsOfTiles34(tiles34)+shanten13 == 6 {
@@ -286,9 +297,8 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 		tiles34[i]++
 
 		if _, ok := waits[i]; ok { // 摸到的是进张
-			maxAgariRate := 0.0   // 摸到此进张后的和率
-			maxAvgRonPoint := 0.0 // 平均打点
-			maxAvgRiichiRonPoint := 0.0
+			const minRoundPoint = -1e10
+			maxRoundPoint := minRoundPoint
 			for j := 0; j < 34; j++ {
 				if tiles34[j] == 0 || j == i {
 					continue
@@ -305,30 +315,35 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 					}
 					// 听牌了
 					if newShanten13 == 0 {
-						// 听牌一般切和率最高的，TODO: 除非打点更高，比如说听到 dora 上，或者有三色等
-						_agariRate := CalculateAvgAgariRate(newWaits, playerInfo.DiscardTiles)
-						if _agariRate >= maxAgariRate {
-							maxAgariRate = _agariRate
-							// 计算荣和点数
-							// TODO: 这里简化了，和率优先，需要更加精细的考量
-							// TODO: maxAvgRonPoint = CalcAvgRonPoint(playerInfo, newWaits)
-							// TODO: maxAvgRiichiRonPoint = CalcAvgRiichiRonPoint(playerInfo, newWaits)
+						// 听牌一般切局收支最高的，这里若为副露状态用副露局收支，否则用立直局收支
+						_avgAgariRate := CalculateAvgAgariRate(newWaits, playerInfo) / 100
+						var _roundPoint float64
+						if isNaki {
+							_avgPoint := CalcAvgPoint(*playerInfo, newWaits)
+							if _avgPoint == 0 { // 无役
+								_avgAgariRate = 0
+							}
+							_roundPoint = _avgAgariRate*(_avgPoint+1500) - 1500
+						} else {
+							_avgRiichiPoint := CalcAvgRiichiPoint(*playerInfo, newWaits)
+							_roundPoint = _avgAgariRate*(_avgRiichiPoint+1500) - 1500
 						}
+						maxRoundPoint = math.Max(maxRoundPoint, _roundPoint)
 						// 计算可能的役种
 						fillYakuTypes(newShanten13, newWaits)
 					}
 				}
 				playerInfo.UndoDiscardTile(j, _isRedFive)
 			}
-			// 加权：进张牌的剩余枚数*和率
+			// 加权：进张牌的剩余枚数*局收支
 			w := leftTiles34[i] + 1
-			avgAgariRate += maxAgariRate * float64(w)
-			if maxAvgRonPoint > 0 {
-				avgRonPoint += maxAvgRonPoint * float64(w)
-				ronPointWeight += w
+			//avgAgariRate += maxAgariRate * float64(w)
+			if maxRoundPoint > minRoundPoint {
+				avgRoundPoint += float64(w) * maxRoundPoint
+				roundPointWeight += w
 			}
 			//fmt.Println(i, maxAvgRiichiRonPoint)
-			avgRiichiRonPoint += maxAvgRiichiRonPoint * float64(w)
+			//avgRiichiPoint += maxAvgRiichiRonPoint * float64(w)
 		} else { // 摸到的不是进张，但可能有改良
 			for j := 0; j < 34; j++ {
 				if tiles34[j] == 0 || j == i {
@@ -341,6 +356,7 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 				// 正确的切牌
 				if newShanten13, improveWaits := CalculateShantenAndWaits13(tiles34, leftTiles34); newShanten13 == shanten13 {
 					// 若进张数变多，则为改良
+					// TODO: 若打点上升，也算改良
 					if improveWaitsCount := improveWaits.AllCount(); improveWaitsCount > waitsCount {
 						improveWayCount++
 						if improveWaitsCount > maxImproveWaitsCount34[i] {
@@ -360,15 +376,15 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 	}
 
 	if waitsCount > 0 {
-		avgAgariRate /= float64(waitsCount)
-		if ronPointWeight > 0 {
-			avgRonPoint /= float64(ronPointWeight)
+		//avgAgariRate /= float64(waitsCount)
+		if roundPointWeight > 0 {
+			avgRoundPoint /= float64(roundPointWeight)
 		}
-		avgRiichiRonPoint /= float64(waitsCount)
+		//avgRiichiPoint /= float64(waitsCount)
 		if shanten13 == 0 {
-			avgAgariRate = CalculateAvgAgariRate(waits, playerInfo.DiscardTiles)
-			avgRonPoint = CalcAvgRonPoint(playerInfo, waits)
-			avgRiichiRonPoint = CalcAvgRiichiRonPoint(playerInfo, waits)
+			avgAgariRate = CalculateAvgAgariRate(waits, playerInfo)
+			avgRonPoint = CalcAvgPoint(*playerInfo, waits)
+			avgRiichiPoint = CalcAvgRiichiPoint(*playerInfo, waits)
 		}
 	}
 
@@ -414,21 +430,24 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 					// 听牌时，若听的牌在舍牌中，则构成振听
 					r.FuritenRate = 1
 					// 修正振听时的和率
-					r.AvgAgariRate *= FuritenAgariMulti
+					r.AvgAgariRate *= furitenAgariMulti
 				}
 			}
 		}
 	}
 
-	// 非振听时计算荣和点数
-	if r.FuritenRate < 1 && shanten13 <= 1 {
-		r.RonPoint = avgRonPoint
-		if !playerInfo.IsNaki() {
-			r.RiichiRonPoint = avgRiichiRonPoint
+	// 计算和牌时的期望点数和期望局收支
+	if shanten13 <= 1 {
+		r.Point = avgRonPoint
+		if !isNaki {
+			r.RiichiPoint = avgRiichiPoint
+		}
+		if shanten13 == 0 {
+			r.MixedRoundPoint = r.mixedRoundPoint()
+		} else {
+			r.MixedRoundPoint = avgRoundPoint
 		}
 	}
-
-	// TODO: 自摸点数
 
 	// 分析
 	if len(nextShantenWaitsCountMap) > 0 {
@@ -486,12 +505,26 @@ type WaitsWithImproves14List []*WaitsWithImproves14
 func (l WaitsWithImproves14List) Sort(needImprove bool) {
 	sort.Slice(l, func(i, j int) bool {
 		ri, rj := l[i].Result13, l[j].Result13
+		riWaitsCount, rjWaitsCount := ri.Waits.AllCount(), rj.Waits.AllCount()
 
-		// 听牌的话和率优先
-		// TODO: 考虑打点
 		if l[0].Result13.Shanten == 0 {
+			// 听牌的话：局收支 - 和率
+			if ri.MixedRoundPoint > 0 && rj.MixedRoundPoint > 0 {
+				// 误差范围
+				if !InDelta(ri.MixedRoundPoint, rj.MixedRoundPoint, 100) {
+					return ri.MixedRoundPoint > rj.MixedRoundPoint
+				}
+			}
+			// 和率优先
 			if !Equal(ri.AvgAgariRate, rj.AvgAgariRate) {
 				return ri.AvgAgariRate > rj.AvgAgariRate
+			}
+		} else if l[0].Result13.Shanten == 1 {
+			// 一向听：进张*局收支
+			riScore := float64(riWaitsCount) * ri.MixedRoundPoint
+			rjScore := float64(rjWaitsCount) * rj.MixedRoundPoint
+			if !Equal(riScore, rjScore) {
+				return riScore > rjScore
 			}
 		}
 
@@ -510,7 +543,6 @@ func (l WaitsWithImproves14List) Sort(needImprove bool) {
 			return ri.MixedWaitsScore > rj.MixedWaitsScore
 		}
 
-		riWaitsCount, rjWaitsCount := ri.Waits.AllCount(), rj.Waits.AllCount()
 		if riWaitsCount != rjWaitsCount {
 			return riWaitsCount > rjWaitsCount
 		}
@@ -530,7 +562,8 @@ func (l WaitsWithImproves14List) Sort(needImprove bool) {
 
 		idxI, idxJ := l[i].DiscardTile, l[j].DiscardTile
 		if idxI >= 27 && idxJ >= 27 {
-			// TODO 场风不为自风时：下家风 > 对家风 > 上家风 > 场风
+			// TODO 场风不为自风时：下家风 > 对家风 > 上家风 > 场风 > 白发中 > 自风
+			// TODO 场风为自风时：下家风 > 对家风 > 上家风 > 白发中 > 场风(自风)
 		}
 
 		// 好牌先走

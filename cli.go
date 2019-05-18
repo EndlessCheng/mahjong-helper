@@ -298,11 +298,11 @@ func printWaitsWithImproves13_twoRows(result13 *util.WaitsWithImproves13, discar
 }
 
 /*
-4[ 4.56] 切 8饼 => 44.50% 参考和率[ 4 改良] [7p 7s] [三色] [振听] [默听荣和2000]
+4[ 4.56] 切 8饼 => 44.50% 参考和率[ 4 改良] [7p 7s] [默听2000] [三色] [振听]
 
 4[ 4.56] 切 8饼 => 0.00% 参考和率[ 4 改良] [7p 7s] [无役]
 
-31[33.58] 切7索 =>  5.23听牌数 [16改良] [6789p 56789s] [可能振听]
+31[33.58] 切7索 =>  5.23听牌数 [19.21速度] [16改良] [6789p 56789s] [局收支3120] [可能振听]
 
 48[50.64] 切5饼 => 24.25一向听 [12改良] [123456789p 56789s]
 
@@ -360,26 +360,31 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 
 	if shanten >= 1 {
 		// 前进后的进张数均值
-		c := getWaitsCountColor(shanten-1, result13.AvgNextShantenWaitsCount)
+		incShanten := shanten - 1
+		c := getWaitsCountColor(incShanten, result13.AvgNextShantenWaitsCount)
 		color.New(c).Printf("%5.2f", result13.AvgNextShantenWaitsCount)
-		fmt.Printf("%s", util.NumberToChineseShanten(shanten-1))
-		if shanten >= 2 {
+		fmt.Printf("%s", util.NumberToChineseShanten(incShanten))
+		if incShanten >= 1 {
 			//fmt.Printf("进张")
-		} else { // shanten == 1
+		} else { // incShanten == 0
 			fmt.Printf("数")
-			if showAgariAboveShanten1 {
-				fmt.Printf("（%.2f%% 参考和率）", result13.AvgAgariRate)
-			}
-		}
-		if showScore {
-			mixedScore := result13.MixedWaitsScore
-			//for i := 2; i <= shanten; i++ {
-			//	mixedScore /= 4
+			//if showAgariAboveShanten1 {
+			//	fmt.Printf("（%.2f%% 参考和率）", result13.AvgAgariRate)
 			//}
-			fmt.Printf("（%.2f 综合分）", mixedScore)
 		}
 	} else { // shanten == 0
+		// 前进后的和率
 		fmt.Printf("%5.2f%% 参考和率", result13.AvgAgariRate)
+	}
+
+	// 一向听是攻守判断的关键点，需要显示更多信息
+	if shanten == 1 || showScore {
+		fmt.Print(" ")
+		mixedScore := result13.MixedWaitsScore
+		//for i := 2; i <= shanten; i++ {
+		//	mixedScore /= 4
+		//}
+		fmt.Printf("[%5.2f速度]", mixedScore)
 	}
 
 	// 改良数
@@ -395,22 +400,26 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 	fmt.Print(" ")
 	fmt.Print(util.TilesToStrWithBracket(waitTiles))
 
-	// TODO: 根据场况提醒是否默听
+	// 局收支
+	if result13.MixedRoundPoint != 0.0 {
+		fmt.Print(" ")
+		color.New(color.FgHiGreen).Printf("[局收支%d]", int(math.Round(result13.MixedRoundPoint)))
+	}
 
 	// (默听)荣和点数
-	if result13.RonPoint > 0 {
+	if result13.Point > 0 {
 		fmt.Print(" ")
 		ronType := "荣和"
 		if !result13.IsNaki {
 			ronType = "默听"
 		}
-		color.New(color.FgHiGreen).Printf("[%s%d]", ronType, int(math.Round(result13.RonPoint)))
+		color.New(color.FgHiGreen).Printf("[%s%d]", ronType, int(math.Round(result13.Point)))
 	}
 
-	// 立直荣和点数
-	if result13.RiichiRonPoint > 0 {
+	// 立直点数，考虑了自摸、一发、里宝
+	if result13.RiichiPoint > 0 {
 		fmt.Print(" ")
-		color.New(color.FgHiGreen).Printf("[立直%d]", int(math.Round(result13.RiichiRonPoint)))
+		color.New(color.FgHiGreen).Printf("[立直%d]", int(math.Round(result13.RiichiPoint)))
 	}
 
 	if len(result13.YakuTypes) > 0 {

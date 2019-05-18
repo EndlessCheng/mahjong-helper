@@ -169,31 +169,3 @@ func OutsideTiles(tile int) (outsideTiles []int) {
 	}
 	return
 }
-
-// 根据宝牌指示牌计算出宝牌
-func DoraList(doraIndicators []int) (doraList []int) {
-	for _, doraIndicator := range doraIndicators {
-		var dora int
-		if doraIndicator < 27 { // mps
-			if doraIndicator%9 < 8 {
-				dora = doraIndicator + 1
-			} else {
-				dora = doraIndicator - 8
-			}
-		} else if doraIndicator < 31 { // 东南西北
-			if doraIndicator < 30 {
-				dora = doraIndicator + 1
-			} else {
-				dora = 27
-			}
-		} else {
-			if doraIndicator < 33 { // 白发中
-				dora = doraIndicator + 1
-			} else {
-				dora = 31
-			}
-		}
-		doraList = append(doraList, dora)
-	}
-	return
-}
