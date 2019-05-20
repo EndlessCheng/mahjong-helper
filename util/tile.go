@@ -114,6 +114,22 @@ func isYaochupai(tile int) bool {
 	return t == 0 || t == 8
 }
 
+// tiles34 为 13 张牌
+func isIsolatedTile(tile int, tiles34 []int) bool {
+	if tile >= 27 {
+		return tiles34[tile] == 0
+	}
+	t := tile % 9
+	l := tile - t + MaxInt(0, t-2)
+	r := tile - t + MinInt(8, t+2)
+	for i := l; i <= r; i++ {
+		if tiles34[i] > 0 {
+			return false
+		}
+	}
+	return true
+}
+
 // 计算手牌枚数
 func CountOfTiles34(tiles34 []int) (count int) {
 	for _, c := range tiles34 {

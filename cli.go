@@ -378,7 +378,7 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 	}
 
 	// 一向听是攻守判断的关键点，需要显示更多信息
-	if shanten == 1 || showScore {
+	if result13.MixedWaitsScore > 0 && (shanten == 1 || showScore) {
 		fmt.Print(" ")
 		mixedScore := result13.MixedWaitsScore
 		//for i := 2; i <= shanten; i++ {
@@ -387,23 +387,10 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 		fmt.Printf("[%5.2f速度]", mixedScore)
 	}
 
-	// 改良数
-	fmt.Print(" ")
-	if len(result13.Improves) > 0 {
-		fmt.Printf("[%2d改良]", len(result13.Improves))
-	} else {
-		fmt.Print(strings.Repeat(" ", 4))
-		fmt.Print(strings.Repeat("　", 2)) // 全角空格
-	}
-
-	// 进张类型
-	fmt.Print(" ")
-	fmt.Print(util.TilesToStrWithBracket(waitTiles))
-
 	// 局收支
 	if result13.MixedRoundPoint != 0.0 {
 		fmt.Print(" ")
-		color.New(color.FgHiGreen).Printf("[局收支%d]", int(math.Round(result13.MixedRoundPoint)))
+		color.New(color.FgHiGreen).Printf("[局收支%4d]", int(math.Round(result13.MixedRoundPoint)))
 	}
 
 	// (默听)荣和点数
@@ -456,6 +443,23 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 			color.New(color.FgHiRed).Printf("[振听]")
 		}
 	}
+
+	// 改良数（仅在听牌时显示）
+	if shanten == 0 {
+		fmt.Print(" ")
+		if len(result13.Improves) > 0 {
+			fmt.Printf("[%2d改良]", len(result13.Improves))
+		} else {
+			fmt.Print(strings.Repeat(" ", 4))
+			fmt.Print(strings.Repeat("　", 2)) // 全角空格
+		}
+	}
+
+	// 进张类型
+	fmt.Print(" ")
+	fmt.Print(util.TilesToStrWithBracket(waitTiles))
+
+	//
 
 	fmt.Println()
 

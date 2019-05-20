@@ -80,7 +80,7 @@ type WaitsWithImproves13 struct {
 
 // 进张和向听前进后进张的评分
 // 这里粗略地近似为向听前进两次的概率
-func (r *WaitsWithImproves13) mixedWaitsScore() float64 {
+func (r *WaitsWithImproves13) speedScore() float64 {
 	if r.Waits.AllCount() == 0 || r.AvgNextShantenWaitsCount == 0 {
 		return 0
 	}
@@ -429,8 +429,6 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 				if shanten13 == 0 {
 					// 听牌时，若听的牌在舍牌中，则构成振听
 					r.FuritenRate = 1
-					// 修正振听时的和率
-					r.AvgAgariRate *= furitenAgariMulti
 				}
 			}
 		}
@@ -470,14 +468,93 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *WaitsWithI
 		}
 		r.AvgImproveWaitsCount = float64(improveWaitsSum) / float64(weight)
 	}
-	r.MixedWaitsScore = r.mixedWaitsScore()
+	r.MixedWaitsScore = r.speedScore()
 
 	return
+}
+
+//
+
+type tileValue float64
+
+const (
+	doraValue                tileValue = 10000
+	doraFirstNeighbourValue  tileValue = 1000
+	doraSecondNeighbourValue tileValue = 100
+	honoredValue             tileValue = 15
+)
+
+func calculateIsolatedTileValue(tile int, playerInfo *model.PlayerInfo) tileValue {
+	value := tileValue(100)
+
+	// 是否为宝牌、宝牌周边
+	for _, doraTile := range playerInfo.DoraTiles {
+		if tile == doraTile {
+			value += doraValue
+		} else if doraTile < 27 {
+			t9 := tile % 9
+			dt9 := doraTile % 9
+			if t9+1 == dt9 || t9-1 == dt9 {
+				value += doraFirstNeighbourValue
+			} else if t9+2 == dt9 || t9-2 == dt9 {
+				value += doraSecondNeighbourValue
+			}
+		}
+	}
+
+	if tile >= 27 {
+		if tile == playerInfo.SelfWindTile || tile == playerInfo.RoundWindTile || tile >= 31 {
+			// 役牌
+			value += honoredValue
+			if playerInfo.SelfWindTile == playerInfo.RoundWindTile && tile == playerInfo.SelfWindTile {
+				value += honoredValue // 连风
+			} else if tile == playerInfo.SelfWindTile {
+				value++ // 自风 +1
+			} else if tile == playerInfo.RoundWindTile {
+				value-- // 场风 -1
+			}
+			if tile == 31 {
+				value -= 0.1
+			}
+			if tile == 32 {
+				value -= 0.2
+			}
+		} else {
+			// 客风
+			for i := 1; i <= 3; i++ {
+				otakazeTile := playerInfo.SelfWindTile + i
+				if otakazeTile > 30 {
+					otakazeTile -= 4
+				}
+				if tile == otakazeTile {
+					// 下家 -3  对家 -2  上家 -1
+					value -= tileValue(4 - i)
+					break
+				}
+			}
+		}
+		left := playerInfo.LeftTiles34[tile]
+		if left == 2 {
+			value *= 0.9
+		} else if left == 1 {
+			value *= 0.2
+		} else if left == 0 {
+			value = 0
+		}
+	}
+
+	return value
 }
 
 type WaitsWithImproves14 struct {
 	// 需要切的牌
 	DiscardTile int
+
+	// 切的牌是否为幺九浮牌
+	isIsolatedYaochuDiscardTile bool
+
+	// 切的牌是幺九浮牌时，该浮牌的价值
+	isolatedDiscardTileValue tileValue
 
 	// 切牌后的手牌分析结果
 	Result13 *WaitsWithImproves13
@@ -534,6 +611,16 @@ func (l WaitsWithImproves14List) Sort(needImprove bool) {
 			}
 		}
 
+		if ri.Shanten >= 2 {
+			// 两向听及以上时单独比较浮牌
+			if l[i].isIsolatedYaochuDiscardTile && l[j].isIsolatedYaochuDiscardTile {
+				// 优先切掉价值最低的浮牌，这里直接比较浮点
+				if l[i].isolatedDiscardTileValue != l[j].isolatedDiscardTileValue {
+					return l[i].isolatedDiscardTileValue < l[j].isolatedDiscardTileValue
+				}
+			}
+		}
+
 		// 排序规则：综合评分 - 进张 - 前进后的进张 - 和率 - 改良 - 好牌先走
 		// 必须注意到的一点是，随着游戏的进行，进张会被他家打出，所以进张是有减少的趋势的
 		// 对于一向听，考虑到未听牌之前要听的牌会被他家打出而造成听牌时的枚数降低，所以听牌枚数比和率更重要
@@ -561,10 +648,6 @@ func (l WaitsWithImproves14List) Sort(needImprove bool) {
 		}
 
 		idxI, idxJ := l[i].DiscardTile, l[j].DiscardTile
-		if idxI >= 27 && idxJ >= 27 {
-			// TODO 场风不为自风时：下家风 > 对家风 > 上家风 > 场风 > 白发中 > 自风
-			// TODO 场风为自风时：下家风 > 对家风 > 上家风 > 白发中 > 场风(自风)
-		}
 
 		// 好牌先走
 		if idxI < 27 && idxJ < 27 {
@@ -627,10 +710,17 @@ func CalculateShantenWithImproves14(playerInfo *model.PlayerInfo) (shanten int, 
 		playerInfo.DiscardTile(i, isRedFive)
 		result13 := CalculateShantenWithImproves13(playerInfo)
 
+		isIsolatedYaochuDiscardTile := isYaochupai(i) && isIsolatedTile(i, playerInfo.HandTiles34)
+		isolatedDiscardTileValue := tileValue(0)
+		if isIsolatedYaochuDiscardTile {
+			isolatedDiscardTileValue = calculateIsolatedTileValue(i, playerInfo)
+		}
 		// 记录切牌后的分析结果
 		r := &WaitsWithImproves14{
-			DiscardTile: i,
-			Result13:    result13,
+			DiscardTile:                 i,
+			isIsolatedYaochuDiscardTile: isIsolatedYaochuDiscardTile,
+			isolatedDiscardTileValue:    isolatedDiscardTileValue,
+			Result13:                    result13,
 		}
 		if result13.Shanten == shanten {
 			waitsWithImproves = append(waitsWithImproves, r)

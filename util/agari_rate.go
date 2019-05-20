@@ -14,8 +14,17 @@ func CalculateAgariRateOfEachTile(waits Waits, playerInfo *model.PlayerInfo) map
 
 	tileAgariRate := map[int]float64{}
 
-	// TODO 首先根据自家舍牌计算出是否振听
 	// 振听的话和率简化成和枚数相关
+	if playerInfo.IsFuriten(waits) {
+		for tile, left := range waits {
+			rate := 0.0
+			for i := 0; i < left; i++ {
+				rate = rate + furitenBaseAgariRate - rate*furitenBaseAgariRate/100
+			}
+			tileAgariRate[tile] = rate
+		}
+		return tileAgariRate
+	}
 
 	// 特殊处理字牌单骑的情况
 	if len(waits) == 1 {
@@ -33,17 +42,12 @@ func CalculateAgariRateOfEachTile(waits Waits, playerInfo *model.PlayerInfo) map
 		}
 	}
 
+	// 根据自家舍牌，确定各个牌的类型（无筋、半筋、筋、两筋），从而得出不同的和率
+	tileType27 := calcTileType27(playerInfo.DiscardTiles)
 	for tile, left := range waits {
 		var rate float64
 		if tile < 27 { // 数牌
-			t := tile % 9
-			if t > 4 {
-				t = 8 - t
-			}
-
-			// TODO: 骗筋时的和率
-
-			rate = nonSujiAgariTable[t][left]
+			rate = agariMap[tileType27[tile]][left]
 		} else { // 字牌，非单骑
 			rate = honorTileNonDankiAgariTable[left]
 		}
@@ -66,6 +70,15 @@ func CalculateAgariRateOfEachTile(waits Waits, playerInfo *model.PlayerInfo) map
 func CalculateAvgAgariRate(waits Waits, playerInfo *model.PlayerInfo) float64 {
 	if playerInfo == nil {
 		playerInfo = &model.PlayerInfo{}
+	}
+
+	// 振听的话和率简化成和枚数相关
+	if playerInfo.IsFuriten(waits) {
+		rate := 0.0
+		for i := 0; i < waits.AllCount(); i++ {
+			rate = rate + furitenBaseAgariRate - rate*furitenBaseAgariRate/100
+		}
+		return rate
 	}
 
 	tileAgariRate := CalculateAgariRateOfEachTile(waits, playerInfo)

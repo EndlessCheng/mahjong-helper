@@ -10,7 +10,7 @@ func TestCalculateAvgAgariRate(t *testing.T) {
 	const eps = 1e-3
 	assert.InDelta(t, 62.1166, CalculateAvgAgariRate(Waits{0: 4, 3: 4}, nil), eps)
 	assert.InDelta(t, 57.715203, CalculateAvgAgariRate(Waits{0: 3, 3: 3}, nil), eps)
-	assert.InDelta(t, 59.6677, CalculateAvgAgariRate(Waits{0: 3, 3: 4}, &model.PlayerInfo{DiscardTiles: []int{0}}), eps) // 振听
+	assert.InDelta(t, 34.6678, CalculateAvgAgariRate(Waits{0: 3, 3: 4}, &model.PlayerInfo{DiscardTiles: []int{0}}), eps) // 振听
 	assert.InDelta(t, 65.8944, CalculateAvgAgariRate(Waits{0: 2, 9: 2}, nil), eps)
 	assert.InDelta(t, 71.058, CalculateAvgAgariRate(Waits{0: 3, 1: 4}, nil), eps)
 	assert.InDelta(t, 71.058, CalculateAvgAgariRate(Waits{8: 3, 7: 4}, nil), eps)

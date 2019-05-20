@@ -4,6 +4,7 @@ import (
 	"testing"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 	"github.com/stretchr/testify/assert"
+	"strings"
 )
 
 var exampleMelds = []model.Meld{{MeldType: model.MeldTypePon, Tiles: MustStrToTiles("666z")}}
@@ -124,10 +125,16 @@ func TestCalculateShantenWithImproves14Closed(t *testing.T) {
 	tiles = "67778p 1122345s 77z"
 	tiles = "3336888m 678p 5678s"
 	tiles = "11456678m 567p 235s" // 振听两面还是坎张
+	tiles = "123m 1234789p 3388s"
+	tiles = "789m 123467789p 11z"
+	tiles = "11122m 199p 2455s 56z"
+	tiles = "347m 579p 246s 12345z"
+	tiles = "13m 344579p 5699s 15z"
 	playerInfo := model.NewSimplePlayerInfo(MustStrToTiles34(tiles), nil)
-	playerInfo.LeftTiles34 = InitLeftTiles34WithTiles34(MustStrToTiles34("111456678m 567p 235s")) // 注意手牌也算上
-	playerInfo.DiscardTiles = []int{MustStrToTile34("1s")}
-	playerInfo.DoraTiles = MustStrToTiles("8m")
+	playerInfo.SelfWindTile = 29
+	//playerInfo.LeftTiles34 = InitLeftTiles34WithTiles34(MustStrToTiles34("789m 11223344455666677788999p 11z")) // 注意手牌也算上
+	//playerInfo.DiscardTiles = []int{MustStrToTile34("1p")}
+	//playerInfo.DoraTiles = MustStrToTiles("4s")
 	shanten, results, incShantenResults := CalculateShantenWithImproves14(playerInfo)
 	t.Log(NumberToChineseShanten(shanten))
 	for _, result := range results {
@@ -218,13 +225,45 @@ func bestHumanDiscardTile(t *testing.T, humanTiles string, doraHumanTiles string
 	return Tile34ToStr(tile)
 }
 
+func bestHumanDiscardTile2(t *testing.T, humanTiles string, doraIndicatorHumanTiles string) string {
+	// 根据 0 来记录赤宝牌
+	numRedFives := make([]int, 3)
+	for _, split := range strings.Split(humanTiles, " ") {
+		for _, c := range split {
+			if c == '0' {
+				numRedFives[byteAtStr(split[len(split)-1], "mps")]++
+				break
+			}
+		}
+	}
+	humanTiles = strings.Replace(humanTiles, "0", "5", -1)
+	playerInfo := model.NewSimplePlayerInfo(MustStrToTiles34(humanTiles), nil)
+	if doraIndicatorHumanTiles != "" {
+		doraIndicators := MustStrToTiles(doraIndicatorHumanTiles)
+		for _, tile := range doraIndicators {
+			playerInfo.LeftTiles34[tile]--
+		}
+		playerInfo.DoraTiles = model.DoraList(doraIndicators)
+	}
+	playerInfo.NumRedFives = numRedFives
+	_, results, _ := CalculateShantenWithImproves14(playerInfo)
+	if true {
+		t.Log(humanTiles, doraIndicatorHumanTiles)
+		for _, result := range results {
+			t.Log(result)
+		}
+		t.Log()
+	}
+	tile := results[0].DiscardTile
+	return Tile34ToStr(tile)
+}
+
 func TestBestDiscard(t *testing.T) {
 	// 听牌
-	assert.Equal(t, "7m", bestHumanDiscardTile(t, "123667m 234p 345s 55z", "")) // 数牌字牌双碰优于两面
-	assert.Equal(t, "6m", bestHumanDiscardTile(t, "123667m 234p 345s 44z", "")) // 平和
-	assert.Equal(t, "4m", bestHumanDiscardTile(t, "134m 123567p 12355s", ""))   // 三色
-	assert.Equal(t, "4m", bestHumanDiscardTile(t, "134m 123567p 12355s", "5p")) // 三色
-	// TODO: 异常改良数？
+	assert.Equal(t, "7m", bestHumanDiscardTile(t, "123667m 234p 345s 55z", ""))   // 数牌字牌双碰优于两面
+	assert.Equal(t, "6m", bestHumanDiscardTile(t, "123667m 234p 345s 44z", ""))   // 平和
+	assert.Equal(t, "4m", bestHumanDiscardTile(t, "134m 123567p 12355s", ""))     // 三色
+	assert.Equal(t, "4m", bestHumanDiscardTile(t, "134m 123567p 12355s", "5p"))   // 三色
 	assert.Equal(t, "1m", bestHumanDiscardTile(t, "1234m 345789p 567s 3z", "3z")) // 宝牌单骑比两面好
 	assert.Equal(t, "5s", bestHumanDiscardTile(t, "345m 345789p 3455s 4z", ""))   // 三色比平和好
 	assert.Equal(t, "7m", bestHumanDiscardTile(t, "234788m 234567s 33z", "8m"))
@@ -232,7 +271,7 @@ func TestBestDiscard(t *testing.T) {
 	assert.Equal(t, "7m", bestHumanDiscardTile(t, "334557m 222p 789s 33z", "9s"))
 
 	// 一向听
-	assert.Equal(t, "6m", bestHumanDiscardTile(t, "1223446m 345p 1178s", "8s")) // 1m 也可以
+	assert.Equal(t, "1m", bestHumanDiscardTile(t, "1223446m 345p 1178s", "8s"))
 	assert.Equal(t, "6m", bestHumanDiscardTile(t, "1223446m 345p 78s 77z", "8s"))
 	assert.Equal(t, "2m", bestHumanDiscardTile(t, "1223446789m 1178s", "8s")) // 4m 也可以
 	assert.Equal(t, "2m", bestHumanDiscardTile(t, "1223446789m 78s 77z", "8s"))
@@ -240,5 +279,44 @@ func TestBestDiscard(t *testing.T) {
 
 // 何切 300
 func TestQ300(t *testing.T) {
-	assert.Equal(t, "2s", bestHumanDiscardTile(t, "56778p 1122345s 77z", "")) // Q001
+	// 传入手牌和宝牌指示牌，赤牌用 0 表示
+	assert.Equal(t, "2s", bestHumanDiscardTile2(t, "06778p 1122345s 77z", "2z"))                // Q001
+	assert.Equal(t, "5s", bestHumanDiscardTile2(t, "66778p 1122345s 77z", "2z"))                // Q002
+	assert.Equal(t, "8p", bestHumanDiscardTile2(t, "67778p 1122345s 77z", "2z"), "尚未考虑自摸时的三暗刻") // Q003
+	assert.Equal(t, "5s", bestHumanDiscardTile2(t, "12388m 455679p 556s", "2z"))                // Q004
+	assert.Equal(t, "9p", bestHumanDiscardTile2(t, "23488m 455679p 556s", "2z"))                // Q005
+	assert.Equal(t, "8p", bestHumanDiscardTile2(t, "33455m 668p 345667s", "2p"))                // Q006
+	assert.Equal(t, "1p", bestHumanDiscardTile2(t, "4406m 134556p 3478s", "2z"), "TODO 两向听")    // Q007
+	assert.Equal(t, "2p", bestHumanDiscardTile2(t, "135m 11240667p 789s", "9s", ), "麻雀是自摸的游戏")  // Q008
+	assert.Equal(t, "5m", bestHumanDiscardTile2(t, "135m 12399p 123667s", "2z"))                // Q009
+}
+
+func Test_calculateIsolatedTileValue(t *testing.T) {
+	newPI := func(selfWindTile int, roundWindTile int, discardedHumanTiles string) *model.PlayerInfo {
+		return &model.PlayerInfo{
+			SelfWindTile:  selfWindTile,
+			RoundWindTile: roundWindTile,
+			LeftTiles34:   InitLeftTiles34WithTiles34(MustStrToTiles34(discardedHumanTiles)),
+		}
+	}
+
+	const eps = 1e-3
+
+	assert.InDelta(t, 100, float64(calculateIsolatedTileValue(MustStrToTile34("9m"), newPI(27, 27, "2s"))), eps)
+	assert.InDelta(t, 130, float64(calculateIsolatedTileValue(MustStrToTile34("1z"), newPI(27, 27, "2s"))), eps)
+	assert.InDelta(t, 117, float64(calculateIsolatedTileValue(MustStrToTile34("1z"), newPI(27, 27, "2s11z"))), eps)
+	assert.InDelta(t, 97, float64(calculateIsolatedTileValue(MustStrToTile34("2z"), newPI(27, 27, "2s"))), eps)
+	assert.InDelta(t, 98, float64(calculateIsolatedTileValue(MustStrToTile34("3z"), newPI(27, 27, "2s"))), eps)
+	assert.InDelta(t, 99, float64(calculateIsolatedTileValue(MustStrToTile34("4z"), newPI(27, 27, "2s"))), eps)
+	assert.InDelta(t, 114.9, float64(calculateIsolatedTileValue(MustStrToTile34("5z"), newPI(27, 27, "2s"))), eps)
+	assert.InDelta(t, 114.8, float64(calculateIsolatedTileValue(MustStrToTile34("6z"), newPI(27, 27, "2s"))), eps)
+	assert.InDelta(t, 115, float64(calculateIsolatedTileValue(MustStrToTile34("7z"), newPI(27, 27, "2s"))), eps)
+	assert.InDelta(t, 103.5, float64(calculateIsolatedTileValue(MustStrToTile34("7z"), newPI(27, 27, "2s77z"))), eps)
+	assert.InDelta(t, 23, float64(calculateIsolatedTileValue(MustStrToTile34("7z"), newPI(27, 27, "2s777z"))), eps)
+
+	assert.InDelta(t, 114, float64(calculateIsolatedTileValue(MustStrToTile34("1z"), newPI(29, 27, "2s"))), eps)
+	assert.InDelta(t, 102.6, float64(calculateIsolatedTileValue(MustStrToTile34("1z"), newPI(29, 27, "2s11z"))), eps)
+	assert.InDelta(t, 99, float64(calculateIsolatedTileValue(MustStrToTile34("2z"), newPI(29, 27, "2s"))), eps)
+	assert.InDelta(t, 116, float64(calculateIsolatedTileValue(MustStrToTile34("3z"), newPI(29, 27, "2s"))), eps)
+	assert.InDelta(t, 97, float64(calculateIsolatedTileValue(MustStrToTile34("4z"), newPI(29, 27, "2s"))), eps)
 }
