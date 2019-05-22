@@ -102,7 +102,25 @@ func TestCalcRonPointWithHands(t *testing.T) {
 		}, waits
 	}
 	const eps = 1
-	assert.InDelta(t, 3700, CalcAvgRiichiPoint(newPIWithWaits("34m 123567p 12355s")), eps) // 立直平和
-	assert.InDelta(t, 7500, CalcAvgRiichiPoint(newPIWithWaits("13m 123567p 12355s")), eps) // 立直三色
+	assert.InDelta(t, 3700, CalcAvgRiichiPoint(newPIWithWaits("34m 123567p 12355s")), eps)   // 立直平和
+	assert.InDelta(t, 7500, CalcAvgRiichiPoint(newPIWithWaits("13m 123567p 12355s")), eps)   // 立直三色
 	assert.InDelta(t, 4291, CalcAvgRiichiPoint(newPIWithWaits("12366m 234p 345s 55z")), eps) // 立直白
+}
+
+func BenchmarkCalcAvgRiichiPoint(b *testing.B) {
+	humanTiles := "11123678m 11122z" // 三面
+	tiles34 := MustStrToTiles34(humanTiles)
+	playerInfo := model.PlayerInfo{
+		HandTiles34:   tiles34,
+		Melds:         nil,
+		IsTsumo:       true,
+		RoundWindTile: MustStrToTile34("2z"),
+		SelfWindTile:  MustStrToTile34("2z"),
+		LeftTiles34:   InitLeftTiles34WithTiles34(tiles34),
+	}
+	_, waits := CalculateShantenAndWaits13(playerInfo.HandTiles34, playerInfo.LeftTiles34)
+	for i := 0; i < b.N; i++ {
+		// 7012 ns/op
+		CalcAvgRiichiPoint(playerInfo, waits)
+	}
 }
