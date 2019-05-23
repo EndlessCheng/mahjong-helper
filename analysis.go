@@ -25,6 +25,12 @@ func _printIncShantenResults14(shanten int, incShantenResults14 util.WaitsWithIm
 
 func analysisTiles34(playerInfo *model.PlayerInfo, mixedRiskTable riskTable) error {
 	humanTiles := util.Tiles34ToStr(playerInfo.HandTiles34)
+	if len(playerInfo.Melds) > 0 {
+		humanTiles += " &"
+		for i := len(playerInfo.Melds) - 1; i >= 0; i-- {
+			humanTiles += " " + util.TilesToStr(playerInfo.Melds[i].Tiles)
+		}
+	}
 	fmt.Println(humanTiles)
 	fmt.Println(strings.Repeat("=", len(humanTiles)))
 
@@ -45,7 +51,7 @@ func analysisTiles34(playerInfo *model.PlayerInfo, mixedRiskTable riskTable) err
 		if shanten == 0 {
 			if len(results14) > 0 {
 				r13 := results14[0].Result13
-				if r13.FuritenRate == 0 && r13.Point >= 5200 {
+				if r13.RiichiPoint > 0 && r13.FuritenRate == 0 && r13.Point >= 5200 {
 					color.HiGreen("默听打点充足：追求和率默听，追求打点立直")
 				}
 				// 局收支相近时，提示：局收支相近，追求和率打xx，追求打点打xx
