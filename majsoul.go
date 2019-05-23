@@ -6,6 +6,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/EndlessCheng/mahjong-helper/util"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
+	"sort"
 )
 
 type majsoulMessage struct {
@@ -357,6 +358,7 @@ func (d *majsoulRoundData) ParseOpen() (who int, meld *model.Meld, kanDoraIndica
 			//calledTile = meldTiles[0]
 		} else {
 			meldType = meldTypeChi // 吃
+			sort.Ints(meldTiles)   // 排序
 			//calledTile = d.globalDiscardTiles[len(d.globalDiscardTiles)-1]
 			//if calledTile < 0 {
 			//	calledTile = ^calledTile

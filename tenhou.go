@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"regexp"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
+	"sort"
 )
 
 const (
@@ -293,6 +294,7 @@ func (d *tenhouRoundData) ParseOpen() (who int, meld *model.Meld, kanDoraIndicat
 	for i, tenhouTile := range tenhouMeldTiles {
 		meldTiles[i] = d._tenhouTileToTile34(tenhouTile)
 	}
+	sort.Ints(meldTiles)
 	calledTile := d._tenhouTileToTile34(tenhouCalledTile)
 	isCalledTileRedFive := d.isRedFive(tenhouCalledTile)
 	meld = &model.Meld{
