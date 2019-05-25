@@ -438,5 +438,5 @@ func (st *shanten) increaseIsolatedTile(k int) {
 
 func (st *shanten) decreaseIsolatedTile(k int) {
 	st.tiles[k]++
-	st.numberIsolatedTiles |= 1 << uint(k)
+	st.numberIsolatedTiles &= ^(1 << uint(k))
 }
