@@ -426,14 +426,14 @@ func calculateIsolatedTileValue(tile int, playerInfo *model.PlayerInfo) tileValu
 	for _, doraTile := range playerInfo.DoraTiles {
 		if tile == doraTile {
 			value += doraValue
-		//} else if doraTile < 27 {
-		//	t9 := tile % 9
-		//	dt9 := doraTile % 9
-		//	if t9+1 == dt9 || t9-1 == dt9 {
-		//		value += doraFirstNeighbourValue
-		//	} else if t9+2 == dt9 || t9-2 == dt9 {
-		//		value += doraSecondNeighbourValue
-		//	}
+			//} else if doraTile < 27 {
+			//	t9 := tile % 9
+			//	dt9 := doraTile % 9
+			//	if t9+1 == dt9 || t9-1 == dt9 {
+			//		value += doraFirstNeighbourValue
+			//	} else if t9+2 == dt9 || t9-2 == dt9 {
+			//		value += doraSecondNeighbourValue
+			//	}
 		}
 	}
 
@@ -520,11 +520,14 @@ func (l Hand14AnalysisResultList) Sort(improveFirst bool) {
 		return
 	}
 
+	shanten := l[0].Result13.Shanten
+
 	sort.Slice(l, func(i, j int) bool {
 		ri, rj := l[i].Result13, l[j].Result13
 		riWaitsCount, rjWaitsCount := ri.Waits.AllCount(), rj.Waits.AllCount()
 
-		if l[0].Result13.Shanten == 0 {
+		switch shanten {
+		case 0:
 			// 听牌的话：局收支 - 和率
 			if ri.MixedRoundPoint > 0 && rj.MixedRoundPoint > 0 {
 				// 误差范围
@@ -536,16 +539,24 @@ func (l Hand14AnalysisResultList) Sort(improveFirst bool) {
 			if !Equal(ri.AvgAgariRate, rj.AvgAgariRate) {
 				return ri.AvgAgariRate > rj.AvgAgariRate
 			}
-		} else if l[0].Result13.Shanten <= 2 {
+		case 1, 2:
 			// 一向听和两向听：进张*局收支
-			riScore := float64(riWaitsCount) * ri.MixedRoundPoint
-			rjScore := float64(rjWaitsCount) * rj.MixedRoundPoint
+			var riScore, rjScore float64
+			if shanten >= 2 && improveFirst {
+				// 对于两向听，若需要改良的话以改良为主
+				//riScore = float64(ri.AvgImproveWaitsCount) * ri.MixedRoundPoint
+				//rjScore = float64(rj.AvgImproveWaitsCount) * rj.MixedRoundPoint
+				break
+			} else {
+				riScore = float64(riWaitsCount) * ri.MixedRoundPoint
+				rjScore = float64(rjWaitsCount) * rj.MixedRoundPoint
+			}
 			if !Equal(riScore, rjScore) {
 				return riScore > rjScore
 			}
 		}
 
-		if ri.Shanten >= 2 {
+		if shanten >= 2 {
 			// 两向听及以上时单独比较浮牌
 			if l[i].isIsolatedYaochuDiscardTile && l[j].isIsolatedYaochuDiscardTile {
 				// 优先切掉价值最低的浮牌，这里直接比较浮点数
@@ -676,8 +687,8 @@ func (n *shantenSearchNode14) analysis(playerInfo *model.PlayerInfo, considerImp
 			maxWaitsCount = MaxInt(maxWaitsCount, r14.Result13.Waits.AllCount())
 		}
 
-		// 两向听及以上的七对子考虑改良
-		return maxWaitsCount <= 6*shanten+3
+		// 两向听及以上的垃圾进张考虑改良
+		return maxWaitsCount <= 9*shanten+3
 	}
 
 	improveFst := improveFirst(results)
