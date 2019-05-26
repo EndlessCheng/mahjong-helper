@@ -377,8 +377,8 @@ func printWaitsWithImproves13_oneRow(result13 *util.Hand13AnalysisResult, discar
 		fmt.Printf("%5.2f%% 参考和率", result13.AvgAgariRate)
 	}
 
-	// 一向听是攻守判断的关键点，需要显示更多信息
-	if result13.MixedWaitsScore > 0 && (shanten == 1 || showScore) {
+	// 手牌速度，用于快速过庄
+	if result13.MixedWaitsScore > 0 {
 		fmt.Print(" ")
 		mixedScore := result13.MixedWaitsScore
 		//for i := 2; i <= shanten; i++ {
@@ -421,6 +421,7 @@ func printWaitsWithImproves13_oneRow(result13 *util.Hand13AnalysisResult, discar
 				}
 			}
 			if len(shownYakuTypes) > 0 {
+				sort.Ints(shownYakuTypes)
 				fmt.Print(" ")
 				color.New(color.FgHiGreen).Printf(util.YakuTypesToStr(shownYakuTypes))
 			}

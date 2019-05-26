@@ -334,15 +334,10 @@ func (n *shantenSearchNode13) analysis(playerInfo *model.PlayerInfo, considerImp
 		}
 	}
 
-	// 七对子特殊提醒
-	if len(playerInfo.Melds) == 0 && CountPairsOfTiles34(tiles34)+shanten13 == 6 {
+	// 三向听七对子特殊提醒
+	if len(playerInfo.Melds) == 0 && shanten13 == 3 && CountPairsOfTiles34(tiles34)+shanten13 == 6 {
 		// 对于三向听，除非进张很差才会考虑七对子
-		if shanten13 == 3 {
-			if waitsCount <= 21 {
-				result13.YakuTypes[YakuChiitoi] = struct{}{}
-			}
-		} else if shanten13 == 1 || shanten13 == 2 {
-			// 一向听和两向听考虑七对子
+		if waitsCount <= 21 {
 			result13.YakuTypes[YakuChiitoi] = struct{}{}
 		}
 	}
@@ -564,6 +559,10 @@ func (l Hand14AnalysisResultList) Sort(improveFirst bool) {
 				if l[i].isolatedDiscardTileValue != l[j].isolatedDiscardTileValue {
 					return l[i].isolatedDiscardTileValue < l[j].isolatedDiscardTileValue
 				}
+			} else if l[i].isIsolatedYaochuDiscardTile && l[i].isolatedDiscardTileValue < 500 {
+				return true
+			} else if l[j].isIsolatedYaochuDiscardTile && l[j].isolatedDiscardTileValue < 500 {
+				return false
 			}
 		}
 
@@ -651,7 +650,7 @@ func (n *shantenSearchNode14) analysis(playerInfo *model.PlayerInfo, considerImp
 		}
 		results = append(results, r14)
 
-		if n.shanten > 1 {
+		if n.shanten >= 2 {
 			if isYaochupai(discardTile) && isIsolatedTile(discardTile, playerInfo.HandTiles34) {
 				r14.isIsolatedYaochuDiscardTile = true
 				r14.isolatedDiscardTileValue = calculateIsolatedTileValue(discardTile, playerInfo)
@@ -694,9 +693,13 @@ func CalculateShantenWithImproves14(playerInfo *model.PlayerInfo) (shanten int, 
 	}
 
 	shanten = CalculateShanten(playerInfo.HandTiles34)
-	shantenSearchRoot := searchShanten14(shanten, playerInfo, shanten-2)
+	stopAtShanten := shanten - 2
+	if shanten >= 3 {
+		stopAtShanten = shanten - 1
+	}
+	shantenSearchRoot := searchShanten14(shanten, playerInfo, stopAtShanten)
 	results = shantenSearchRoot.analysis(playerInfo, true)
-	incShantenSearchRoot := searchShanten14(shanten+1, playerInfo, shanten-1)
+	incShantenSearchRoot := searchShanten14(shanten+1, playerInfo, stopAtShanten+1)
 	incShantenResults = incShantenSearchRoot.analysis(playerInfo, true)
 	return
 }
