@@ -30,6 +30,7 @@ var (
 		tileTypeDoubleSuji5:  {0, 16.5, 35.5, 45.4, 50.0},
 		tileTypeHalfSuji46A:  {0, 12.9, 24.7, 30.9, 35.4},
 		tileTypeHalfSuji46B:  {0, 12.9, 24.7, 30.9, 35.4},
+		tileTypeHalfSuji5:    {0, 12.9, 24.7, 30.9, 35.4},
 	}
 
 	// 字牌非单骑和率
