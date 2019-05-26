@@ -41,7 +41,7 @@ func alertNewVersion(currentVersionTag string) {
 		return
 	}
 
-	if latestVersionTag != currentVersionTag {
+	if latestVersionTag > currentVersionTag {
 		color.HiGreen("检测到新版本: %s！请前往 %s 下载", latestVersionTag, latestReleasePage)
 	}
 }
