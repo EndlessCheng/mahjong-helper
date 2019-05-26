@@ -121,3 +121,16 @@ func Test_findYakuTypes(t *testing.T) {
 		fmt.Println()
 	}
 }
+
+func BenchmarkFindAllYakuTypes(b *testing.B) {
+	pi := &model.PlayerInfo{
+		HandTiles34:   MustStrToTiles34("345m 345789p 34555s"),
+		IsTsumo:       false,
+		WinTile:       MustStrToTile34("5s"),
+		RoundWindTile: 27,
+		SelfWindTile:  27,
+	}
+	for i := 0; i < b.N; i++ {
+		FindAllYakuTypes(pi)
+	}
+}

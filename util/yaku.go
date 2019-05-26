@@ -98,21 +98,24 @@ func (hi *_handInfo) chiitoi() bool {
 
 // 门清限定
 func (hi *_handInfo) pinfu() bool {
-	// 不能是单骑和牌，雀头不能是役牌
-	if hi.WinTile == hi.divideResult.PairTile || hi.isYakuTile(hi.divideResult.PairTile) {
-		return false
-	}
 	drs := hi.divideResult.ShuntsuFirstTiles
-	// 不能有刻子
-	if len(drs) < 4 {
+	// 顺子数必须为 4
+	if len(drs) != 4 {
 		return false
 	}
+
+	// 雀头不能是役牌
+	if hi.isYakuTile(hi.divideResult.PairTile) {
+		return false
+	}
+
 	for _, tile := range drs {
-		// 可以两面和牌
+		// 是两面和牌
 		if tile%9 < 6 && tile == hi.WinTile || tile%9 > 0 && tile+2 == hi.WinTile {
 			return true
 		}
 	}
+
 	// 没有两面和牌
 	return false
 }
@@ -173,6 +176,7 @@ func (hi *_handInfo) ittsuu() bool {
 	if len(shuntsuFirstTiles) < 3 {
 		return false
 	}
+	// （这里没用排序，因为下面用的是更为快速的比较）
 	// 若有 123，找是否有同色的 456 和 789
 	for _, tile := range shuntsuFirstTiles {
 		if tile%9 == 0 {
