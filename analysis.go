@@ -8,6 +8,18 @@ import (
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 )
 
+func alertBackwardToShanten2(results util.Hand14AnalysisResultList, incShantenResults util.Hand14AnalysisResultList) {
+	if len(results) == 0 || len(incShantenResults) == 0 {
+		return
+	}
+
+	if results[0].Result13.Waits.AllCount() < 10 {
+		if results[0].Result13.MixedWaitsScore < incShantenResults[0].Result13.MixedWaitsScore {
+			color.HiGreen("建议向听倒退")
+		}
+	}
+}
+
 func _printIncShantenResults14(shanten int, incShantenResults14 util.Hand14AnalysisResultList, mixedRiskTable riskTable) {
 	if len(incShantenResults14) == 0 {
 		return
@@ -55,6 +67,10 @@ func analysisTiles34(playerInfo *model.PlayerInfo, mixedRiskTable riskTable) err
 					color.HiGreen("默听打点充足：追求和率默听，追求打点立直")
 				}
 				// 局收支相近时，提示：局收支相近，追求和率打xx，追求打点打xx
+			}
+		} else if shanten == 1 {
+			if len(playerInfo.DiscardTiles) < 9 {
+				alertBackwardToShanten2(results14, incShantenResults14)
 			}
 		}
 
@@ -105,11 +121,15 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool
 		return
 	}
 
+	fmt.Print("鸣牌后")
+
 	if shanten == 0 {
 		// 局收支相近时，提示：局收支相近，追求和率打xx，追求打点打xx
+	} else if shanten == 1 {
+		//if len(playerInfo.DiscardTiles) < 9 {
+		//	alertBackwardToShanten2(results14, incShantenResults14)
+		//}
 	}
-
-	fmt.Print("鸣牌后")
 
 	// 打印结果
 	// FIXME: 选择很多时如何精简何切选项？

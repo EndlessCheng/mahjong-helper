@@ -394,6 +394,11 @@ func (n *shantenSearchNode13) analysis(playerInfo *model.PlayerInfo, considerImp
 	}
 	result13.MixedWaitsScore = result13.speedScore()
 
+	// 特殊处理，方便提示向听倒退！
+	if shanten13 == 2 {
+		result13.MixedWaitsScore /= 4 // TODO: 待调整
+	}
+
 	return
 }
 

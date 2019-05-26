@@ -378,12 +378,9 @@ func printWaitsWithImproves13_oneRow(result13 *util.Hand13AnalysisResult, discar
 	}
 
 	// 手牌速度，用于快速过庄
-	if result13.MixedWaitsScore > 0 {
+	if result13.MixedWaitsScore > 0 && shanten >= 1 && shanten <= 2 {
 		fmt.Print(" ")
 		mixedScore := result13.MixedWaitsScore
-		//for i := 2; i <= shanten; i++ {
-		//	mixedScore /= 4
-		//}
 		fmt.Printf("[%5.2f速度]", mixedScore)
 	}
 
