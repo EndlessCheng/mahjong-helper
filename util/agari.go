@@ -2,6 +2,75 @@ package util
 
 import "fmt"
 
+func _calcKey(tiles34 []int) (key int) {
+	bitPos := -1
+
+	// 数牌
+	idx := -1
+	for i := 0; i < 3; i++ {
+		prevInHand := false // 上一张牌是否在手牌中
+		for j := 0; j < 9; j++ {
+			idx++
+			if c := tiles34[idx]; c > 0 {
+				prevInHand = true
+				bitPos++
+				switch c {
+				case 2:
+					key |= 0x3 << uint(bitPos)
+					bitPos += 2
+				case 3:
+					key |= 0xF << uint(bitPos)
+					bitPos += 4
+				case 4:
+					key |= 0x3F << uint(bitPos)
+					bitPos += 6
+				}
+			} else {
+				if prevInHand {
+					prevInHand = false
+					key |= 0x1 << uint(bitPos)
+					bitPos++
+				}
+			}
+		}
+		if prevInHand {
+			key |= 0x1 << uint(bitPos)
+			bitPos++
+		}
+	}
+
+	// 字牌
+	for i := 27; i < 34; i++ {
+		if c := tiles34[i]; c > 0 {
+			bitPos++
+			switch c {
+			case 2:
+				key |= 0x3 << uint(bitPos)
+				bitPos += 2
+			case 3:
+				key |= 0xF << uint(bitPos)
+				bitPos += 4
+			case 4:
+				key |= 0x3F << uint(bitPos)
+				bitPos += 6
+			}
+			key |= 0x1 << uint(bitPos)
+			bitPos++
+		}
+	}
+
+	return
+}
+
+// 3k+2 张牌，是否和牌（不检测国士无双）
+func IsAgari(tiles34 []int) bool {
+	key := _calcKey(tiles34)
+	_, isAgari := winTable[key]
+	return isAgari
+}
+
+//
+
 // 3k+2 张牌的某种拆解结果
 type DivideResult struct {
 	PairTile          int   // 雀头牌
@@ -51,26 +120,28 @@ func (d *DivideResult) String() string {
 	return output
 }
 
-// 3k+2 张牌，返回所有可能的拆解，没有拆解表示未和牌
+// 3k+2 张牌，返回所有可能的拆解，没有拆解表示未和牌（不检测国士无双）
 // http://hp.vector.co.jp/authors/VA046927/mjscore/mjalgorism.html
 // http://hp.vector.co.jp/authors/VA046927/mjscore/AgariIndex.java
 func DivideTiles34(tiles34 []int) (divideResults []*DivideResult) {
+	tiles14 := make([]int, 14)
+	tiles14TailIndex := 0
+
 	key := 0
 	bitPos := -1
 
-	pos34InHand14 := make([]int, 14)
-	handPos := 0
-
 	// 数牌
+	idx := -1
 	for i := 0; i < 3; i++ {
 		prevInHand := false // 上一张牌是否在手牌中
 		for j := 0; j < 9; j++ {
-			idx := i*9 + j
+			idx++
 			if c := tiles34[idx]; c > 0 {
+				tiles14[tiles14TailIndex] = idx
+				tiles14TailIndex++
+
 				prevInHand = true
 				bitPos++
-				pos34InHand14[handPos] = idx
-				handPos++
 				switch c {
 				case 2:
 					key |= 0x3 << uint(bitPos)
@@ -99,9 +170,10 @@ func DivideTiles34(tiles34 []int) (divideResults []*DivideResult) {
 	// 字牌
 	for i := 27; i < 34; i++ {
 		if c := tiles34[i]; c > 0 {
+			tiles14[tiles14TailIndex] = i
+			tiles14TailIndex++
+
 			bitPos++
-			pos34InHand14[handPos] = i
-			handPos++
 			switch c {
 			case 2:
 				key |= 0x3 << uint(bitPos)
@@ -137,20 +209,20 @@ func DivideTiles34(tiles34 []int) (divideResults []*DivideResult) {
 	// 1bit 30: 一杯口
 	for _, r := range results {
 		// 雀头
-		pairTile := pos34InHand14[(r>>6)&0xF]
+		pairTile := tiles14[(r>>6)&0xF]
 
 		// 刻子
 		numKotsu := r & 0x7
 		kotsuTiles := make([]int, numKotsu)
 		for i := range kotsuTiles {
-			kotsuTiles[i] = pos34InHand14[(r>>uint(10+i*4))&0xF]
+			kotsuTiles[i] = tiles14[(r>>uint(10+i*4))&0xF]
 		}
 
 		// 顺子的第一张牌
 		numShuntsu := (r >> 3) & 0x7
 		shuntsuFirstTiles := make([]int, numShuntsu)
 		for i := range shuntsuFirstTiles {
-			shuntsuFirstTiles[i] = pos34InHand14[(r>>uint(10+(numKotsu+i)*4))&0xF]
+			shuntsuFirstTiles[i] = tiles14[(r>>uint(10+(numKotsu+i)*4))&0xF]
 		}
 
 		divideResults = append(divideResults, &DivideResult{

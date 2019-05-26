@@ -39,7 +39,7 @@ func TestCalculateShanten(t *testing.T) {
 func BenchmarkCalculateShantenClosed(b *testing.B) {
 	tiles34 := MustStrToTiles34("13579m 12357s 135p")
 	for i := 0; i < b.N; i++ {
-		// 1806 ns/op
+		// 1758 ns/op
 		CalculateShanten(tiles34)
 	}
 }
@@ -47,7 +47,7 @@ func BenchmarkCalculateShantenClosed(b *testing.B) {
 func BenchmarkCalculateShantenOpen(b *testing.B) {
 	tiles34 := MustStrToTiles34("2247m")
 	for i := 0; i < b.N; i++ {
-		// 146 ns/op
+		// 100 ns/op
 		CalculateShanten(tiles34)
 	}
 }

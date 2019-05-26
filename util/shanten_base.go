@@ -93,6 +93,76 @@ func (st *shanten) calcNormalShanten() int {
 	return _shanten
 }
 
+// 拆分出一个暗刻
+func (st *shanten) increaseSet(k int) {
+	st.tiles[k] -= 3
+	st.numberMelds++
+}
+
+func (st *shanten) decreaseSet(k int) {
+	st.tiles[k] += 3
+	st.numberMelds--
+}
+
+// 拆分出一个雀头
+func (st *shanten) increasePair(k int) {
+	st.tiles[k] -= 2
+	st.numberPairs++
+}
+
+func (st *shanten) decreasePair(k int) {
+	st.tiles[k] += 2
+	st.numberPairs--
+}
+
+// 拆分出一个顺子
+func (st *shanten) increaseSyuntsu(k int) {
+	st.tiles[k]--
+	st.tiles[k+1]--
+	st.tiles[k+2]--
+	st.numberMelds++
+}
+func (st *shanten) decreaseSyuntsu(k int) {
+	st.tiles[k]++
+	st.tiles[k+1]++
+	st.tiles[k+2]++
+	st.numberMelds--
+}
+
+// 拆分出一个两面/边张搭子
+func (st *shanten) increaseTatsuFirst(k int) {
+	st.tiles[k]--
+	st.tiles[k+1]--
+	st.numberTatsu++
+}
+func (st *shanten) decreaseTatsuFirst(k int) {
+	st.tiles[k]++
+	st.tiles[k+1]++
+	st.numberTatsu--
+}
+
+// 拆分出一个坎张搭子
+func (st *shanten) increaseTatsuSecond(k int) {
+	st.tiles[k]--
+	st.tiles[k+2]--
+	st.numberTatsu++
+}
+func (st *shanten) decreaseTatsuSecond(k int) {
+	st.tiles[k]++
+	st.tiles[k+2]++
+	st.numberTatsu--
+}
+
+// 拆分出一个孤张（浮牌）
+func (st *shanten) increaseIsolatedTile(k int) {
+	st.tiles[k]--
+	st.isolatedTiles |= 1 << uint(k)
+}
+func (st *shanten) decreaseIsolatedTile(k int) {
+	st.tiles[k]++
+	st.isolatedTiles &= ^(1 << uint(k))
+}
+
 func (st *shanten) run(depth int) {
 	if st.minShanten == shantenStateAgari {
 		return
@@ -249,76 +319,6 @@ func (st *shanten) run(depth int) {
 		}
 		st.decreasePair(depth)
 	}
-}
-
-// 拆分出一个暗刻
-func (st *shanten) increaseSet(k int) {
-	st.tiles[k] -= 3
-	st.numberMelds++
-}
-
-func (st *shanten) decreaseSet(k int) {
-	st.tiles[k] += 3
-	st.numberMelds--
-}
-
-// 拆分出一个雀头
-func (st *shanten) increasePair(k int) {
-	st.tiles[k] -= 2
-	st.numberPairs++
-}
-
-func (st *shanten) decreasePair(k int) {
-	st.tiles[k] += 2
-	st.numberPairs--
-}
-
-// 拆分出一个顺子
-func (st *shanten) increaseSyuntsu(k int) {
-	st.tiles[k]--
-	st.tiles[k+1]--
-	st.tiles[k+2]--
-	st.numberMelds++
-}
-func (st *shanten) decreaseSyuntsu(k int) {
-	st.tiles[k]++
-	st.tiles[k+1]++
-	st.tiles[k+2]++
-	st.numberMelds--
-}
-
-// 拆分出一个两面/边张搭子
-func (st *shanten) increaseTatsuFirst(k int) {
-	st.tiles[k]--
-	st.tiles[k+1]--
-	st.numberTatsu++
-}
-func (st *shanten) decreaseTatsuFirst(k int) {
-	st.tiles[k]++
-	st.tiles[k+1]++
-	st.numberTatsu--
-}
-
-// 拆分出一个坎张搭子
-func (st *shanten) increaseTatsuSecond(k int) {
-	st.tiles[k]--
-	st.tiles[k+2]--
-	st.numberTatsu++
-}
-func (st *shanten) decreaseTatsuSecond(k int) {
-	st.tiles[k]++
-	st.tiles[k+2]++
-	st.numberTatsu--
-}
-
-// 拆分出一个孤张（浮牌）
-func (st *shanten) increaseIsolatedTile(k int) {
-	st.tiles[k]--
-	st.isolatedTiles |= 1 << uint(k)
-}
-func (st *shanten) decreaseIsolatedTile(k int) {
-	st.tiles[k]++
-	st.isolatedTiles &= ^(1 << uint(k))
 }
 
 // 根据手牌计算向听数（不考虑国士无双）
