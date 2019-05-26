@@ -422,18 +422,18 @@ const (
 func calculateIsolatedTileValue(tile int, playerInfo *model.PlayerInfo) tileValue {
 	value := tileValue(100)
 
-	// 是否为宝牌、宝牌周边
+	// 是否为宝牌
 	for _, doraTile := range playerInfo.DoraTiles {
 		if tile == doraTile {
 			value += doraValue
-		} else if doraTile < 27 {
-			t9 := tile % 9
-			dt9 := doraTile % 9
-			if t9+1 == dt9 || t9-1 == dt9 {
-				value += doraFirstNeighbourValue
-			} else if t9+2 == dt9 || t9-2 == dt9 {
-				value += doraSecondNeighbourValue
-			}
+		//} else if doraTile < 27 {
+		//	t9 := tile % 9
+		//	dt9 := doraTile % 9
+		//	if t9+1 == dt9 || t9-1 == dt9 {
+		//		value += doraFirstNeighbourValue
+		//	} else if t9+2 == dt9 || t9-2 == dt9 {
+		//		value += doraSecondNeighbourValue
+		//	}
 		}
 	}
 
@@ -545,13 +545,6 @@ func (l Hand14AnalysisResultList) Sort(improveFirst bool) {
 			}
 		}
 
-		if improveFirst {
-			// 优先按照 AvgImproveWaitsCount 排序
-			if !Equal(ri.AvgImproveWaitsCount, rj.AvgImproveWaitsCount) {
-				return ri.AvgImproveWaitsCount > rj.AvgImproveWaitsCount
-			}
-		}
-
 		if ri.Shanten >= 2 {
 			// 两向听及以上时单独比较浮牌
 			if l[i].isIsolatedYaochuDiscardTile && l[j].isIsolatedYaochuDiscardTile {
@@ -563,6 +556,13 @@ func (l Hand14AnalysisResultList) Sort(improveFirst bool) {
 				return true
 			} else if l[j].isIsolatedYaochuDiscardTile && l[j].isolatedDiscardTileValue < 500 {
 				return false
+			}
+		}
+
+		if improveFirst {
+			// 优先按照 AvgImproveWaitsCount 排序
+			if !Equal(ri.AvgImproveWaitsCount, rj.AvgImproveWaitsCount) {
+				return ri.AvgImproveWaitsCount > rj.AvgImproveWaitsCount
 			}
 		}
 

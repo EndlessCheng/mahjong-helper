@@ -409,7 +409,7 @@ func printWaitsWithImproves13_oneRow(result13 *util.Hand13AnalysisResult, discar
 		color.New(color.FgHiGreen).Printf("[立直%d]", int(math.Round(result13.RiichiPoint)))
 	}
 
-	if len(result13.YakuTypes) > 0 {
+	if len(result13.YakuTypes) > 0 && result13.Shanten <= 3 {
 		if !showAllYakuTypes && !debugMode {
 			// 容易忽略的役种
 			shownYakuTypes := []int{}
