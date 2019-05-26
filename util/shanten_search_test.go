@@ -9,15 +9,21 @@ import (
 func Test_search13(t *testing.T) {
 	humanTiles := "5555m"
 	tiles34 := MustStrToTiles34(humanTiles)
+	pi := model.NewSimplePlayerInfo(tiles34, nil)
 	shanten := CalculateShanten(tiles34)
-	fmt.Print(_search13(shanten, model.NewSimplePlayerInfo(tiles34, nil)))
+	fmt.Println(NumberToChineseShanten(shanten))
+	fmt.Print(_search13(shanten, pi, -1))
 }
 
-func TestSearchShanten(t *testing.T) {
-	humanTiles := "1122334455667z 1m"
+func Test_searchShanten14(t *testing.T) {
+	humanTiles := "12688m 33579p 24s 56z"
 	tiles34 := MustStrToTiles34(humanTiles)
+	pi := model.NewSimplePlayerInfo(tiles34, nil)
 	shanten := CalculateShanten(tiles34)
-	fmt.Print(searchShanten14(shanten, model.NewSimplePlayerInfo(tiles34, nil)))
+	fmt.Println(NumberToChineseShanten(shanten))
+	fmt.Print(searchShanten14(shanten, pi, shanten-1))
+	fmt.Println("倒退回" + NumberToChineseShanten(shanten+1))
+	fmt.Print(searchShanten14(shanten+1, pi, shanten))
 }
 
 func BenchmarkSearchShanten0(b *testing.B) {
@@ -26,7 +32,7 @@ func BenchmarkSearchShanten0(b *testing.B) {
 	pi := model.NewSimplePlayerInfo(tiles34, nil)
 	for i := 0; i < b.N; i++ {
 		// 11,536 ns/op
-		searchShanten14(shanten, pi)
+		searchShanten14(shanten, pi, -1)
 	}
 }
 
@@ -36,7 +42,7 @@ func BenchmarkSearchShanten1(b *testing.B) {
 	pi := model.NewSimplePlayerInfo(tiles34, nil)
 	for i := 0; i < b.N; i++ {
 		// 361,680 ns/op
-		searchShanten14(shanten, pi)
+		searchShanten14(shanten, pi, -1)
 	}
 }
 
@@ -46,7 +52,7 @@ func BenchmarkSearchShanten2(b *testing.B) {
 	pi := model.NewSimplePlayerInfo(tiles34, nil)
 	for i := 0; i < b.N; i++ {
 		// 19,343,607 ns/op
-		searchShanten14(shanten, pi)
+		searchShanten14(shanten, pi, -1)
 	}
 }
 
@@ -56,6 +62,6 @@ func BenchmarkSearchShanten3(b *testing.B) {
 	pi := model.NewSimplePlayerInfo(tiles34, nil)
 	for i := 0; i < b.N; i++ {
 		// 92,369,360 ns/op
-		searchShanten14(shanten, pi)
+		searchShanten14(shanten, pi, -1)
 	}
 }
