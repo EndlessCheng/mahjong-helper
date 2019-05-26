@@ -444,8 +444,8 @@ func printWaitsWithImproves13_oneRow(result13 *util.Hand13AnalysisResult, discar
 		}
 	}
 
-	// 改良数（仅在听牌时显示）
-	if shanten == 0 {
+	// 改良数
+	if showScore {
 		fmt.Print(" ")
 		if len(result13.Improves) > 0 {
 			fmt.Printf("[%2d改良]", len(result13.Improves))
