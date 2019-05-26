@@ -229,7 +229,7 @@ var yakuTypesToAlert = []int{
 
 */
 // 打印何切分析结果（双行）
-func printWaitsWithImproves13_twoRows(result13 *util.WaitsWithImproves13, discardTile34 int, openTiles34 []int) {
+func printWaitsWithImproves13_twoRows(result13 *util.Hand13AnalysisResult, discardTile34 int, openTiles34 []int) {
 	shanten := result13.Shanten
 	waits := result13.Waits
 
@@ -310,7 +310,7 @@ func printWaitsWithImproves13_twoRows(result13 *util.WaitsWithImproves13, discar
 
 */
 // 打印何切分析结果（单行）
-func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discardTile34 int, openTiles34 []int, mixedRiskTable riskTable) {
+func printWaitsWithImproves13_oneRow(result13 *util.Hand13AnalysisResult, discardTile34 int, openTiles34 []int, mixedRiskTable riskTable) {
 	shanten := result13.Shanten
 
 	// 进张数
@@ -388,19 +388,19 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 	}
 
 	// 局收支
-	if result13.MixedRoundPoint != 0.0 {
+	if showScore && result13.MixedRoundPoint != 0.0 {
 		fmt.Print(" ")
 		color.New(color.FgHiGreen).Printf("[局收支%4d]", int(math.Round(result13.MixedRoundPoint)))
 	}
 
 	// (默听)荣和点数
-	if result13.Point > 0 {
+	if result13.DamaPoint > 0 {
 		fmt.Print(" ")
 		ronType := "荣和"
 		if !result13.IsNaki {
 			ronType = "默听"
 		}
-		color.New(color.FgHiGreen).Printf("[%s%d]", ronType, int(math.Round(result13.Point)))
+		color.New(color.FgHiGreen).Printf("[%s%d]", ronType, int(math.Round(result13.DamaPoint)))
 	}
 
 	// 立直点数，考虑了自摸、一发、里宝
@@ -413,7 +413,7 @@ func printWaitsWithImproves13_oneRow(result13 *util.WaitsWithImproves13, discard
 		if !showAllYakuTypes && !debugMode {
 			// 容易忽略的役种
 			shownYakuTypes := []int{}
-			for _, yakuType := range result13.YakuTypes {
+			for yakuType := range result13.YakuTypes {
 				for _, yt := range yakuTypesToAlert {
 					if yakuType == yt {
 						shownYakuTypes = append(shownYakuTypes, yakuType)

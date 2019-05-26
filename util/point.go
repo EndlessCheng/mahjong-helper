@@ -72,15 +72,21 @@ func CalcPointTsumoSum(han int, fu int, yakumanTimes int, isParent bool) int {
 //
 
 type PointResult struct {
+	Point      int
+	FixedPoint float64 // 和牌时的期望点数
+
 	han          int
 	fu           int
 	yakumanTimes int
 	isParent     bool
-	Point        int
+
+	winTile   int
+	yakuTypes []int
+	agariRate float64 // 无役时的和率为 0
 }
 
 // 已和牌，计算自摸或荣和时的点数（不考虑里宝、一发等情况）
-// 无役时返回的 Point == 0
+// 无役时返回的点数为 0（和率也为 0）
 // 调用前请设置 IsTsumo WinTile
 func CalcPoint(playerInfo *model.PlayerInfo) (result *PointResult) {
 	result = &PointResult{}
@@ -105,11 +111,15 @@ func CalcPoint(playerInfo *model.PlayerInfo) (result *PointResult) {
 			pt = CalcPointRon(han, fu, yakumanTimes, _hi.IsParent)
 		}
 		_result := &PointResult{
+			pt,
+			float64(pt),
 			han,
 			fu,
 			yakumanTimes,
 			_hi.IsParent,
-			pt,
+			_hi.WinTile,
+			yakuTypes,
+			0.0, // 后面会补上
 		}
 		// 高点法
 		if pt > result.Point {
@@ -125,11 +135,14 @@ func CalcPoint(playerInfo *model.PlayerInfo) (result *PointResult) {
 
 // 已听牌，根据 playerInfo 提供的信息计算加权和率后的平均点数
 // 无役时返回 0
-func CalcAvgPoint(playerInfo model.PlayerInfo, waits Waits) (avgPoint float64) {
+// 有役时返回平均点数（立直时考虑自摸、一发和里宝）和各种侍牌下的对应点数
+func CalcAvgPoint(playerInfo model.PlayerInfo, waits Waits) (avgPoint float64, pointResults []*PointResult) {
 	isFuriten := playerInfo.IsFuriten(waits)
 	if isFuriten {
-		// 振听只能自摸
-		playerInfo.IsTsumo = true
+		// 振听只能自摸，但是振听立直时考虑了这一点，所以只在默听或鸣牌时考虑
+		if !playerInfo.IsRiichi {
+			playerInfo.IsTsumo = true
+		}
 	}
 
 	tileAgariRate := CalculateAgariRateOfEachTile(waits, &playerInfo)
@@ -141,25 +154,23 @@ func CalcAvgPoint(playerInfo model.PlayerInfo, waits Waits) (avgPoint float64) {
 		}
 		playerInfo.HandTiles34[tile]++
 		playerInfo.WinTile = tile
-		result := CalcPoint(&playerInfo)
+		result := CalcPoint(&playerInfo) // 非振听时，这里算出的是荣和的点数
 		playerInfo.HandTiles34[tile]--
 		if result.Point == 0 {
 			// 不考虑部分无役（如后附、片听）
 			continue
 		}
-		var w float64
-		if playerInfo.IsTsumo {
-			w = float64(left) // 如果是自摸的话，只看枚数
-		} else {
-			w = tileAgariRate[tile] // 荣和考虑各个牌的和率
-		}
 		pt := float64(result.Point)
 		if playerInfo.IsRiichi {
-			// 如果立直了，需要考虑一发和里宝
+			// 如果立直了，需要考虑自摸、一发和里宝
 			pt = result.fixedRiichiPoint(isFuriten)
+			result.FixedPoint = pt
 		}
+		w := tileAgariRate[tile]
 		sum += pt * w
 		weight += w
+		result.agariRate = w
+		pointResults = append(pointResults, result)
 	}
 	if weight > 0 {
 		avgPoint = sum / weight
@@ -167,13 +178,13 @@ func CalcAvgPoint(playerInfo model.PlayerInfo, waits Waits) (avgPoint float64) {
 	return
 }
 
-// 计算立直时的平均点数（考虑一发和里宝）
+// 计算立直时的平均点数（考虑自摸、一发和里宝）和各种侍牌下的对应点数
 // 已鸣牌时返回 0
 // TODO: 剩余不到 4 张无法立直
-// TODO: 分数不足 1000 无法立直
-func CalcAvgRiichiPoint(playerInfo model.PlayerInfo, waits Waits) (avgRiichiPoint float64) {
+// TODO: 不足 1000 点无法立直
+func CalcAvgRiichiPoint(playerInfo model.PlayerInfo, waits Waits) (avgRiichiPoint float64, pointResults []*PointResult) {
 	if playerInfo.IsNaki() {
-		return 0
+		return 0, nil
 	}
 	playerInfo.IsRiichi = true
 	return CalcAvgPoint(playerInfo, waits)

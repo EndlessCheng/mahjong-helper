@@ -8,7 +8,7 @@ import (
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 )
 
-func _printIncShantenResults14(shanten int, incShantenResults14 util.WaitsWithImproves14List, mixedRiskTable riskTable) {
+func _printIncShantenResults14(shanten int, incShantenResults14 util.Hand14AnalysisResultList, mixedRiskTable riskTable) {
 	if len(incShantenResults14) == 0 {
 		return
 	}
@@ -51,18 +51,22 @@ func analysisTiles34(playerInfo *model.PlayerInfo, mixedRiskTable riskTable) err
 		if shanten == 0 {
 			if len(results14) > 0 {
 				r13 := results14[0].Result13
-				if r13.RiichiPoint > 0 && r13.FuritenRate == 0 && r13.Point >= 5200 {
+				if r13.RiichiPoint > 0 && r13.FuritenRate == 0 && r13.DamaPoint >= 5200 {
 					color.HiGreen("默听打点充足：追求和率默听，追求打点立直")
 				}
 				// 局收支相近时，提示：局收支相近，追求和率打xx，追求打点打xx
 			}
 		}
 
-		fmt.Println(util.NumberToChineseShanten(shanten) + "：")
-		for _, result := range results14 {
-			printWaitsWithImproves13_oneRow(result.Result13, result.DiscardTile, result.OpenTiles, mixedRiskTable)
+		if len(results14) > 0 {
+			fmt.Println(util.NumberToChineseShanten(shanten) + "：")
+			for _, result := range results14 {
+				printWaitsWithImproves13_oneRow(result.Result13, result.DiscardTile, result.OpenTiles, mixedRiskTable)
+			}
 		}
-		_printIncShantenResults14(shanten, incShantenResults14, mixedRiskTable)
+		if len(incShantenResults14) > 0 {
+			_printIncShantenResults14(shanten, incShantenResults14, mixedRiskTable)
+		}
 	default:
 		return fmt.Errorf("参数错误: %d 张牌", countOfTiles)
 	}
@@ -105,12 +109,14 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool
 		// 局收支相近时，提示：局收支相近，追求和率打xx，追求打点打xx
 	}
 
+	fmt.Print("鸣牌后")
+
 	// 打印结果
 	// FIXME: 选择很多时如何精简何切选项？
 	const maxShown = 10
 
 	if len(results14) > 0 {
-		fmt.Println("鸣牌后" + util.NumberToChineseShanten(shanten) + "：")
+		fmt.Println(util.NumberToChineseShanten(shanten) + "：")
 		shownResults14 := results14
 		if len(shownResults14) > maxShown {
 			shownResults14 = shownResults14[:maxShown]
@@ -120,11 +126,13 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool
 		}
 	}
 
-	shownIncResults14 := incShantenResults14
-	if len(shownIncResults14) > maxShown {
-		shownIncResults14 = shownIncResults14[:maxShown]
+	if len(incShantenResults14) > 0 {
+		shownIncResults14 := incShantenResults14
+		if len(shownIncResults14) > maxShown {
+			shownIncResults14 = shownIncResults14[:maxShown]
+		}
+		_printIncShantenResults14(shanten, shownIncResults14, mixedRiskTable)
 	}
-	_printIncShantenResults14(shanten, shownIncResults14, mixedRiskTable)
 }
 
 func analysisHumanTiles(humanTilesInfo *model.HumanTilesInfo) (tiles34 []int, err error) {

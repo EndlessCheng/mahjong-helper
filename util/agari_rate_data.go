@@ -12,11 +12,11 @@ var (
 	// TODO: 基于巡目的和了率数据
 	// TODO: 考虑读山的和了率？
 	// TODO: 早外、NC、其他场况（其他家不要的牌）
+	// https://github.com/EndlessCheng/mahjong-helper/issues/46
 
 	// 数牌和率
 	// 6~10巡目 [牌0-4][剩余数]
 	// 参考: 勝つための現代麻雀技術論
-	// https://github.com/EndlessCheng/mahjong-helper/issues/46
 	agariMap = map[tileType][5]float64{
 		tileTypeNoSuji19:     {0, 26.3, 41.6, 50.1, 54.0},
 		tileTypeNoSuji28:     {0, 19.2, 31.7, 38.2, 42.0},

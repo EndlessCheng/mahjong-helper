@@ -1,6 +1,9 @@
 package util
 
-import "fmt"
+import (
+	"fmt"
+	"sort"
+)
 
 const (
 	// https://en.wikipedia.org/wiki/Japanese_Mahjong_yaku
@@ -42,7 +45,7 @@ const (
 	YakuHonitsu   // *
 	YakuChinitsu  // *
 
-	// TODO: 役满
+	// TODO 役满
 
 	_endYakuType  // 标记 enum 结束，方便计算有多少个 YakuType
 )
@@ -90,23 +93,28 @@ var YakuNameMap = map[int]string{
 }
 
 func YakuTypesToStr(yakuTypes []int) string {
+	if len(yakuTypes) == 0 {
+		return "[无役]"
+	}
 	names := []string{}
 	for _, t := range yakuTypes {
 		names = append(names, YakuNameMap[t])
-	}
-	if len(names) == 0 {
-		return "[无役]"
 	}
 	return fmt.Sprint(names)
 }
 
-func YakuTypesWithDoraToStr(yakuTypes []int, numDora int) string {
-	names := []string{}
-	for _, t := range yakuTypes {
-		names = append(names, YakuNameMap[t])
-	}
-	if len(names) == 0 {
+func YakuTypesWithDoraToStr(yakuTypes map[int]struct{}, numDora int) string {
+	if len(yakuTypes) == 0 {
 		return "[无役]"
+	}
+	yt := []int{}
+	for t := range yakuTypes {
+		yt = append(yt, t)
+	}
+	sort.Ints(yt)
+	names := []string{}
+	for _, t := range yt {
+		names = append(names, YakuNameMap[t])
 	}
 	if numDora > 0 {
 		names = append(names, fmt.Sprintf("宝牌%d", numDora))
@@ -197,11 +205,11 @@ func CalcYakuHan(yakuTypes []int, isNaki bool) (cntHan int) {
 //
 
 var YakumanTimesMap = map[int]int{
-	// TODO
+	// TODO 役满
 }
 
 // 计算役满倍数
 func CalcYakumanTimes(yakuTypes []int) int {
-	// TODO
+	// TODO 役满
 	return 0
 }

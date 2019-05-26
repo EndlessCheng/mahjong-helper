@@ -50,7 +50,55 @@ func _search13(currentShanten int, playerInfo *model.PlayerInfo, stopAtShanten i
 	leftTiles34 := playerInfo.LeftTiles34
 
 	isTenpai := currentShanten == shantenStateTenpai
+
+	// 剪枝：检测浮牌，在不考虑国士无双的情况下，这种牌是不可能让向听数前进的（但有改良的可能，不过本函数不考虑这个）
+	//if !isTenpai {
+	//	needCheck34 := make([]bool, 34)
+	//	idx := -1
+	//	for i := 0; i < 3; i++ {
+	//		for j := 0; j < 9; j++ {
+	//			idx++
+	//			if tiles34[idx] == 0 {
+	//				continue
+	//			}
+	//			if j == 0 {
+	//				needCheck34[idx] = true
+	//				needCheck34[idx+1] = true
+	//				needCheck34[idx+2] = true
+	//			} else if j == 1 {
+	//				needCheck34[idx-1] = true
+	//				needCheck34[idx] = true
+	//				needCheck34[idx+1] = true
+	//				needCheck34[idx+2] = true
+	//			} else if j < 7 {
+	//				needCheck34[idx-2] = true
+	//				needCheck34[idx-1] = true
+	//				needCheck34[idx] = true
+	//				needCheck34[idx+1] = true
+	//				needCheck34[idx+2] = true
+	//			} else if j == 7 {
+	//				needCheck34[idx-2] = true
+	//				needCheck34[idx-1] = true
+	//				needCheck34[idx] = true
+	//				needCheck34[idx+1] = true
+	//			} else {
+	//				needCheck34[idx-2] = true
+	//				needCheck34[idx-1] = true
+	//				needCheck34[idx] = true
+	//			}
+	//		}
+	//	}
+	//	for i := 27; i < 34; i++ {
+	//		if tiles34[i] > 0 {
+	//			needCheck34[i] = true
+	//		}
+	//	}
+	//}
+
 	for i := 0; i < 34; i++ {
+		//if !needCheck34[i] {
+		//	continue
+		//}
 		if tiles34[i] == 4 {
 			continue
 		}
@@ -96,6 +144,7 @@ func _search14(targetShanten int, playerInfo *model.PlayerInfo, stopAtShanten in
 		}
 		tiles34[i]--
 		if CalculateShanten(tiles34) == targetShanten {
+			// 向听不变，舍牌正确
 			children[i] = _search13(targetShanten, playerInfo, stopAtShanten)
 		}
 		tiles34[i]++
@@ -105,6 +154,19 @@ func _search14(targetShanten int, playerInfo *model.PlayerInfo, stopAtShanten in
 		shanten:  targetShanten,
 		children: children,
 	}
+}
+
+// 3k+1 张牌，计算向听数、进张（考虑了剩余枚数）
+func CalculateShantenAndWaits13(tiles34 []int, leftTiles34 []int) (shanten int, waits Waits) {
+	if len(leftTiles34) == 0 {
+		leftTiles34 = InitLeftTiles34WithTiles34(tiles34)
+	}
+
+	shanten = CalculateShanten(tiles34)
+	pi := &model.PlayerInfo{HandTiles34: tiles34, LeftTiles34: leftTiles34}
+	node13 := _search13(shanten, pi, shanten) // 只搜索一层
+	waits = node13.waits
+	return
 }
 
 // 技巧：传入的 shanten 若为当前手牌的向听+1，则为向听倒退

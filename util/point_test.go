@@ -2,7 +2,6 @@ package util
 
 import (
 	"testing"
-	"fmt"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 	"github.com/stretchr/testify/assert"
 )
@@ -45,8 +44,6 @@ func TestCalcRonPointWithHands(t *testing.T) {
 	assert.Equal(t, 7700, CalcPoint(newPIWithWinTile("334455m 667788s 44z", "3m")).Point)   // [平和 两杯口]
 	assert.Equal(t, 5200, CalcPoint(newPIWithWinTile("123m 123999s 11789p", "3m")).Point)   // [纯全]
 	assert.Equal(t, 2600, CalcPoint(newPIWithWinTile("345m 12355789s 222z", "3m")).Point)   // [役牌 役牌]
-
-	fmt.Println()
 
 	// 子家立直荣和
 	newPIWithRiichi := func(humanTiles string, winHumanTile string) *model.PlayerInfo {
@@ -91,6 +88,10 @@ func TestCalcRonPointWithHands(t *testing.T) {
 	}
 	assert.Equal(t, ronPoints, []int{2000, 3900, 7700, 12000, 12000, 18000, 18000, 24000, 24000, 24000, 36000, 36000, 48000})
 
+	const eps = 1
+
+	first := func(a float64, _ ... interface{}) float64 { return a }
+
 	// 立直时的平均打点
 	newPIWithWaits := func(humanTiles string) (model.PlayerInfo, Waits) {
 		tiles34 := MustStrToTiles34(humanTiles)
@@ -101,10 +102,22 @@ func TestCalcRonPointWithHands(t *testing.T) {
 			SelfWindTile:  MustStrToTile34("2z"),
 		}, waits
 	}
-	const eps = 1
-	assert.InDelta(t, 3700, CalcAvgRiichiPoint(newPIWithWaits("34m 123567p 12355s")), eps)   // 立直平和
-	assert.InDelta(t, 7500, CalcAvgRiichiPoint(newPIWithWaits("13m 123567p 12355s")), eps)   // 立直三色
-	assert.InDelta(t, 4291, CalcAvgRiichiPoint(newPIWithWaits("12366m 234p 345s 55z")), eps) // 立直白
+	assert.InDelta(t, 3700, first(CalcAvgRiichiPoint(newPIWithWaits("34m 123567p 12355s"))), eps)   // 立直平和
+	assert.InDelta(t, 7500, first(CalcAvgRiichiPoint(newPIWithWaits("13m 123567p 12355s"))), eps)   // 立直三色
+	assert.InDelta(t, 4291, first(CalcAvgRiichiPoint(newPIWithWaits("12366m 234p 345s 55z"))), eps) // 立直白
+
+	// 振听立直时的平均打点
+	newFuritenPIWithWaits := func(humanTiles string, humanDiscardTiles string) (model.PlayerInfo, Waits) {
+		tiles34 := MustStrToTiles34(humanTiles)
+		_, waits := CalculateShantenAndWaits13(tiles34, nil)
+		return model.PlayerInfo{
+			HandTiles34:   tiles34,
+			RoundWindTile: MustStrToTile34("2z"),
+			SelfWindTile:  MustStrToTile34("2z"),
+			DiscardTiles:  MustStrToTiles(humanDiscardTiles),
+		}, waits
+	}
+	assert.InDelta(t, 4070, first(CalcAvgRiichiPoint(newFuritenPIWithWaits("45678m 123p 56799s", "9m"))), eps) // 立直平和(自摸)
 }
 
 func BenchmarkCalcAvgRiichiPoint(b *testing.B) {
@@ -120,7 +133,7 @@ func BenchmarkCalcAvgRiichiPoint(b *testing.B) {
 	}
 	_, waits := CalculateShantenAndWaits13(playerInfo.HandTiles34, playerInfo.LeftTiles34)
 	for i := 0; i < b.N; i++ {
-		// 7012 ns/op
+		// 6252 ns/op
 		CalcAvgRiichiPoint(playerInfo, waits)
 	}
 }

@@ -131,6 +131,7 @@ func BenchmarkFindAllYakuTypes(b *testing.B) {
 		SelfWindTile:  27,
 	}
 	for i := 0; i < b.N; i++ {
+		// 1746 ns/op
 		FindAllYakuTypes(pi)
 	}
 }

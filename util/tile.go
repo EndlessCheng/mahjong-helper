@@ -114,7 +114,7 @@ func isYaochupai(tile int) bool {
 	return t == 0 || t == 8
 }
 
-// tiles34 为 13 张牌
+// tiles34 为 13 张牌，判断 tile 若置于 tiles34 中是否是孤张
 func isIsolatedTile(tile int, tiles34 []int) bool {
 	if tile >= 27 {
 		return tiles34[tile] == 0

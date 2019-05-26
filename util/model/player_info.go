@@ -17,6 +17,7 @@ type PlayerInfo struct {
 	DiscardTiles []int // 自家舍牌，用于判断和率，是否振听等  *注意创建 PlayerInfo 的时候把负数调整成正的！
 	LeftTiles34  []int // 剩余牌
 
+	//LeftRedFives []int // 剩余赤5个数，用于估算打点
 	//AvgUraDora float64 // 平均里宝牌个数，用于计算立直时的打点
 }
 
@@ -79,7 +80,7 @@ func (pi *PlayerInfo) CountDora() (count int) {
 //}
 
 // 是否已鸣牌（暗杠不算）
-// 可以用来判断该玩家能否立直，计算门清加符等
+// 可以用来判断该玩家能否立直，计算门清加符、役种番数等
 func (pi *PlayerInfo) IsNaki() bool {
 	for _, meld := range pi.Melds {
 		if meld.MeldType != MeldTypeAnkan {
@@ -109,7 +110,7 @@ func (pi *PlayerInfo) FillLeftTiles34() {
 
 // 手上的这种牌只有赤5
 func (pi *PlayerInfo) IsOnlyRedFive(tile int) bool {
-	return tile < 27 && tile%9 == 4 && pi.HandTiles34[tile] == pi.NumRedFives[tile/9]
+	return tile < 27 && tile%9 == 4 && pi.HandTiles34[tile] > 0 && pi.HandTiles34[tile] == pi.NumRedFives[tile/9]
 }
 
 func (pi *PlayerInfo) DiscardTile(tile int, isRedFive bool) {

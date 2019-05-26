@@ -6,14 +6,17 @@ import (
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 )
 
+// TODO: assert slice
 func Test_handInfo_calcFu(t *testing.T) {
 	// 自摸
 	for _, tiles := range []string{
 		"33m 112233445566z",     // 七对自摸25符
 		"345m 345s 334455p 44z", // 平和自摸20符
+		"33345m 345s 345789p",   // 平和自摸20符
 		"345m 222s 334455p 11z", // 20 + 中张暗刻4 + 连风4 + 自摸2 = 30符
 		"234m 222s 334455p 11z", // 20 + 坎张2 + 中张暗刻4 + 连风4 + 自摸2 = 32符 = 进40符
 		"22334455m 234s 234p",   // 20 符 / 30 符
+		"678s 11m 123345p 666z",
 	} {
 		fmt.Print(tiles + " = ")
 		tiles34 := MustStrToTiles34(tiles)

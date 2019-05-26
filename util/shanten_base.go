@@ -4,7 +4,10 @@ import (
 	"fmt"
 )
 
-const shantenStateAgari = -1
+const (
+	shantenStateAgari  = -1
+	shantenStateTenpai = 0
+)
 
 // 参考 http://ara.moo.jp/mjhmr/shanten.htm
 // 七对子向听数 = 6-对子数+max(0,7-种类数)
@@ -179,7 +182,7 @@ func (st *shanten) run(depth int) {
 	}
 
 	// i := depth % 9
-	// 高速取模
+	// 快速取模
 	i := depth
 	if i > 8 {
 		i -= 9

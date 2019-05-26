@@ -1,6 +1,6 @@
 package util
 
-// 考虑里宝和一发的实际打点
+// 修正立直打点，即考虑自摸、里宝和一发的实际打点
 // 参考:「統計学」のマージャン戦術
 func (pr *PointResult) fixedRiichiPoint(isFuriten bool) float64 {
 	ronPoint := float64(pr.Point)
@@ -35,7 +35,7 @@ func (pr *PointResult) fixedRiichiPoint(isFuriten bool) float64 {
 			ronPoint *= 15000.0 / 12000.0
 		}
 	default:
-		// TODO
+		// TODO: 跳满以上的立直打点调整
 	}
 
 	if isFuriten {

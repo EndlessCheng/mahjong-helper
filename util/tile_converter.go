@@ -134,10 +134,12 @@ func MustStrToTiles(humanTiles string) []int {
 
 // e.g. [9, 11, 27] => "13p 1z"
 func TilesToStr(tiles []int) (humanTiles string) {
-	sort.Ints(tiles)
+	_tiles := make([]int, len(tiles))
+	copy(_tiles, tiles)
+	sort.Ints(_tiles)
 	convert := func(lowerIndex, upperIndex int, endsWith string) {
 		found := false
-		for _, idx := range tiles {
+		for _, idx := range _tiles {
 			if idx >= lowerIndex && idx < upperIndex {
 				found = true
 				humanTiles += string('1' + idx - lowerIndex)
