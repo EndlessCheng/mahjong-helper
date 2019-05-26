@@ -108,17 +108,100 @@ func (st *shanten) run(depth int) {
 		return
 	}
 
-	i := depth % 9 // TODO: 速度变化？
-	//if i > 8 {
-	//	i -= 9
-	//}
-	//if i > 8 {
-	//	i -= 9
-	//}
+	// i := depth % 9
+	// 高速取模
+	i := depth
+	if i > 8 {
+		i -= 9
+	}
+	if i > 8 {
+		i -= 9
+	}
 
 	// 手牌拆解
-	// TODO: 改成从 1 到 4
 	switch st.tiles[depth] {
+	case 1:
+		// 孤立牌は２つ以上取る必要は無い -> 雀头のほうが向聴数は下がる -> ３枚 -> 雀头＋孤立は雀头から取る
+		// 孤立牌は合計８枚以上取る必要は無い
+		if i < 6 && st.tiles[depth+1] == 1 && st.tiles[depth+2] > 0 && st.tiles[depth+3] < 4 {
+			// 延べ単
+			// 顺子
+			st.increaseSyuntsu(depth)
+			st.run(depth + 2)
+			st.decreaseSyuntsu(depth)
+		} else {
+			// 浮牌
+			st.increaseIsolatedTile(depth)
+			st.run(depth + 1)
+			st.decreaseIsolatedTile(depth)
+
+			if i < 7 && st.tiles[depth+2] > 0 {
+				if st.tiles[depth+1] != 0 {
+					// 顺子
+					st.increaseSyuntsu(depth)
+					st.run(depth + 1)
+					st.decreaseSyuntsu(depth)
+				}
+				// 坎张搭子
+				st.increaseTatsuSecond(depth)
+				st.run(depth + 1)
+				st.decreaseTatsuSecond(depth)
+			}
+			if i < 8 && st.tiles[depth+1] > 0 {
+				// 两面/边张搭子
+				st.increaseTatsuFirst(depth)
+				st.run(depth + 1)
+				st.decreaseTatsuFirst(depth)
+			}
+		}
+	case 2:
+		// 雀头
+		st.increasePair(depth)
+		st.run(depth + 1)
+		st.decreasePair(depth)
+
+		if i < 7 && st.tiles[depth+1] > 0 && st.tiles[depth+2] > 0 {
+			// 顺子
+			st.increaseSyuntsu(depth)
+			st.run(depth)
+			st.decreaseSyuntsu(depth)
+		}
+	case 3:
+		// 暗刻
+		st.increaseSet(depth)
+		st.run(depth + 1)
+		st.decreaseSet(depth)
+
+		st.increasePair(depth)
+		if i < 7 && st.tiles[depth+1] > 0 && st.tiles[depth+2] > 0 {
+			// 雀头+顺子
+			st.increaseSyuntsu(depth)
+			st.run(depth + 1)
+			st.decreaseSyuntsu(depth)
+		} else {
+			if i < 7 && st.tiles[depth+2] > 0 {
+				// 雀头+坎张搭子
+				st.increaseTatsuSecond(depth)
+				st.run(depth + 1)
+				st.decreaseTatsuSecond(depth)
+			}
+			if i < 8 && st.tiles[depth+1] > 0 {
+				// 雀头+两面/边张搭子
+				st.increaseTatsuFirst(depth)
+				st.run(depth + 1)
+				st.decreaseTatsuFirst(depth)
+			}
+		}
+		st.decreasePair(depth)
+
+		if i < 7 && st.tiles[depth+1] >= 2 && st.tiles[depth+2] >= 2 {
+			// 一杯口
+			st.increaseSyuntsu(depth)
+			st.increaseSyuntsu(depth)
+			st.run(depth)
+			st.decreaseSyuntsu(depth)
+			st.decreaseSyuntsu(depth)
+		}
 	case 4:
 		st.increaseSet(depth)
 		if i < 7 && st.tiles[depth+2] > 0 {
@@ -165,88 +248,6 @@ func (st *shanten) run(depth int) {
 			st.decreaseTatsuFirst(depth)
 		}
 		st.decreasePair(depth)
-	case 3:
-		// 暗刻
-		st.increaseSet(depth)
-		st.run(depth + 1)
-		st.decreaseSet(depth)
-
-		st.increasePair(depth)
-		if i < 7 && st.tiles[depth+1] > 0 && st.tiles[depth+2] > 0 {
-			// 雀头+顺子
-			st.increaseSyuntsu(depth)
-			st.run(depth + 1)
-			st.decreaseSyuntsu(depth)
-		} else {
-			if i < 7 && st.tiles[depth+2] > 0 {
-				// 雀头+坎张搭子
-				st.increaseTatsuSecond(depth)
-				st.run(depth + 1)
-				st.decreaseTatsuSecond(depth)
-			}
-			if i < 8 && st.tiles[depth+1] > 0 {
-				// 雀头+两面/边张搭子
-				st.increaseTatsuFirst(depth)
-				st.run(depth + 1)
-				st.decreaseTatsuFirst(depth)
-			}
-		}
-		st.decreasePair(depth)
-
-		if i < 7 && st.tiles[depth+1] >= 2 && st.tiles[depth+2] >= 2 {
-			// 一杯口
-			st.increaseSyuntsu(depth)
-			st.increaseSyuntsu(depth)
-			st.run(depth)
-			st.decreaseSyuntsu(depth)
-			st.decreaseSyuntsu(depth)
-		}
-	case 2:
-		// 雀头
-		st.increasePair(depth)
-		st.run(depth + 1)
-		st.decreasePair(depth)
-
-		if i < 7 && st.tiles[depth+1] > 0 && st.tiles[depth+2] > 0 {
-			// 顺子
-			st.increaseSyuntsu(depth)
-			st.run(depth)
-			st.decreaseSyuntsu(depth)
-		}
-	case 1:
-		// 孤立牌は２つ以上取る必要は無い -> 雀头のほうが向聴数は下がる -> ３枚 -> 雀头＋孤立は雀头から取る
-		// 孤立牌は合計８枚以上取る必要は無い
-		if i < 6 && st.tiles[depth+1] == 1 && st.tiles[depth+2] > 0 && st.tiles[depth+3] < 4 {
-			// 延べ単
-			// 顺子
-			st.increaseSyuntsu(depth)
-			st.run(depth + 2)
-			st.decreaseSyuntsu(depth)
-		} else {
-			// 浮牌
-			st.increaseIsolatedTile(depth)
-			st.run(depth + 1)
-			st.decreaseIsolatedTile(depth)
-
-			if i < 7 && st.tiles[depth+2] > 0 {
-				if st.tiles[depth+1] != 0 {
-					// 顺子
-					st.increaseSyuntsu(depth)
-					st.run(depth + 1)
-					st.decreaseSyuntsu(depth)
-				}
-				// 坎张搭子
-				st.increaseTatsuSecond(depth)
-				st.run(depth + 1)
-				st.decreaseTatsuSecond(depth)
-			}
-			if i < 8 && st.tiles[depth+1] > 0 {
-				// 两面/边张搭子
-				st.increaseTatsuFirst(depth)
-				st.run(depth + 1)
-				st.decreaseTatsuFirst(depth)
-			}
-		}
 	}
 }
 
@@ -328,22 +329,20 @@ func CalculateShanten(tiles34 []int) int {
 		panic(fmt.Sprintln("[CalculateShanten] 参数错误 >14", tiles34, countOfTiles))
 	}
 
-	_tiles34 := make([]int, 34)
-	copy(_tiles34, tiles34)
 	minShanten := 8 // 不考虑国士无双和七对子的最大向听
 	if countOfTiles >= 13 {
-		minShanten = CalculateShantenOfChiitoi(_tiles34) // 考虑七对子
+		minShanten = CalculateShantenOfChiitoi(tiles34) // 考虑七对子
 	}
 	st := shanten{
 		numberMelds: (14 - countOfTiles) / 3,
 		minShanten:  minShanten,
-		tiles:       _tiles34,
+		tiles:       tiles34,
 	}
 
 	st.scanCharacterTiles(countOfTiles)
 
-	for i := 0; i < 27; i++ {
-		if st.tiles[i] == 4 {
+	for i, c := range st.tiles[:27] {
+		if c == 4 {
 			st.ankanTiles |= 1 << uint(i)
 		}
 	}
