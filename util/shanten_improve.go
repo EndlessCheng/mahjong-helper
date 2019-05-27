@@ -30,6 +30,9 @@ type Hand13AnalysisResult struct {
 	// 若某个进张牌 4 枚都可见，则该进张的 value 值为 0
 	Waits Waits
 
+	// 默听时的进张
+	DamaWaits Waits
+
 	// TODO: 鸣牌进张：他家打出这张牌，可以鸣牌，且能让向听数前进
 	//MeldWaits Waits
 
@@ -117,6 +120,9 @@ func (r *Hand13AnalysisResult) String() string {
 		len(r.Improves),
 		r.ImproveWayCount,
 	)
+	if len(r.DamaWaits) > 0 {
+		s += fmt.Sprintf("（默听进张 %s）", TilesToStrWithBracket(r.DamaWaits.indexes()))
+	}
 	if r.Shanten >= 1 {
 		mixedScore := r.MixedWaitsScore
 		//for i := 2; i <= r.Shanten; i++ {
@@ -281,11 +287,12 @@ func (n *shantenSearchNode13) analysis(playerInfo *model.PlayerInfo, considerImp
 	_tiles34 := make([]int, 34)
 	copy(_tiles34, tiles34)
 	result13 = &Hand13AnalysisResult{
-		Tiles34:     _tiles34,
-		LeftTiles34: leftTiles34,
-		IsNaki:      playerInfo.IsNaki(),
-		Shanten:     shanten13,
-		Waits:       waits,
+		Tiles34:                  _tiles34,
+		LeftTiles34:              leftTiles34,
+		IsNaki:                   playerInfo.IsNaki(),
+		Shanten:                  shanten13,
+		Waits:                    waits,
+		DamaWaits:                Waits{},
 		NextShantenWaitsCountMap: nextShantenWaitsCountMap,
 		Improves:                 improves,
 		ImproveWayCount:          improveWayCount,
@@ -310,6 +317,10 @@ func (n *shantenSearchNode13) analysis(playerInfo *model.PlayerInfo, considerImp
 			// TODO: 考虑默听时的自摸
 			avgRonPoint, pointResults := CalcAvgPoint(*playerInfo, waits)
 			result13.DamaPoint = avgRonPoint
+			// 计算默听进张
+			for _, pr := range pointResults {
+				result13.DamaWaits[pr.winTile] = leftTiles34[pr.winTile]
+			}
 
 			if !result13.IsNaki {
 				avgRiichiPoint, riichiPointResults := CalcAvgRiichiPoint(*playerInfo, waits)

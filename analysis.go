@@ -63,7 +63,7 @@ func analysisTiles34(playerInfo *model.PlayerInfo, mixedRiskTable riskTable) err
 		if shanten == 0 {
 			if len(results14) > 0 {
 				r13 := results14[0].Result13
-				if r13.RiichiPoint > 0 && r13.FuritenRate == 0 && r13.DamaPoint >= 5200 {
+				if r13.RiichiPoint > 0 && r13.FuritenRate == 0 && r13.DamaPoint >= 5200 && r13.DamaWaits.AllCount() == r13.Waits.AllCount() {
 					color.HiGreen("默听打点充足：追求和率默听，追求打点立直")
 				}
 				// 局收支相近时，提示：局收支相近，追求和率打xx，追求打点打xx
