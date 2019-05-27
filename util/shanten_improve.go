@@ -534,11 +534,9 @@ func (l Hand14AnalysisResultList) Sort(improveFirst bool) {
 		switch shanten {
 		case 0:
 			// 听牌的话：局收支 - 和率
-			if ri.MixedRoundPoint > 0 && rj.MixedRoundPoint > 0 {
-				// 误差范围
-				if !InDelta(ri.MixedRoundPoint, rj.MixedRoundPoint, 100) {
-					return ri.MixedRoundPoint > rj.MixedRoundPoint
-				}
+			// 局收支，有明显差异
+			if !InDelta(ri.MixedRoundPoint, rj.MixedRoundPoint, 100) {
+				return ri.MixedRoundPoint > rj.MixedRoundPoint
 			}
 			// 和率优先
 			if !Equal(ri.AvgAgariRate, rj.AvgAgariRate) {
@@ -553,8 +551,17 @@ func (l Hand14AnalysisResultList) Sort(improveFirst bool) {
 				//rjScore = float64(rj.AvgImproveWaitsCount) * rj.MixedRoundPoint
 				break
 			} else {
-				riScore = float64(riWaitsCount) * ri.MixedRoundPoint
-				rjScore = float64(rjWaitsCount) * rj.MixedRoundPoint
+				// 负数要调整
+				wi := float64(riWaitsCount)
+				if ri.MixedRoundPoint < 0 {
+					wi = 1 / wi
+				}
+				wj := float64(rjWaitsCount)
+				if rj.MixedRoundPoint < 0 {
+					wj = 1 / wj
+				}
+				riScore = wi * ri.MixedRoundPoint
+				rjScore = wj * rj.MixedRoundPoint
 			}
 			if !Equal(riScore, rjScore) {
 				return riScore > rjScore

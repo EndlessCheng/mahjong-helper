@@ -36,14 +36,14 @@ func TestCalculateShantenAndWaits13(t *testing.T) {
 }
 
 func Test_searchShanten14(t *testing.T) {
-	humanTiles := "12688m 33579p 24s 56z"
+	humanTiles := "466m 234467p 77s"
 	tiles34 := MustStrToTiles34(humanTiles)
 	pi := model.NewSimplePlayerInfo(tiles34, nil)
 	shanten := CalculateShanten(tiles34)
 	fmt.Println(NumberToChineseShanten(shanten))
-	fmt.Print(searchShanten14(shanten, pi, shanten-1))
+	fmt.Print(searchShanten14(shanten, pi, -1))
 	fmt.Println("倒退回" + NumberToChineseShanten(shanten+1))
-	fmt.Print(searchShanten14(shanten+1, pi, shanten))
+	fmt.Print(searchShanten14(shanten+1, pi, -1))
 }
 
 func BenchmarkSearchShanten0(b *testing.B) {

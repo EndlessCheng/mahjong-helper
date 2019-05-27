@@ -113,11 +113,13 @@ func TestCalculateShantenWithImproves14Closed(t *testing.T) {
 	tiles = "11122m 199p 2455s 56z"
 	tiles = "347m 579p 246s 12345z"
 	tiles = "13m 344579p 5699s 15z"
+	tiles = "145599m 18p 124s 157z"
+	tiles = "2389m 4566p 2289s 44z" // 垃圾进张考虑改良
 	playerInfo := model.NewSimplePlayerInfo(MustStrToTiles34(tiles), nil)
-	//playerInfo.SelfWindTile = 29
+	//playerInfo.SelfWindTile = MustStrToTile34("4z")
 	//playerInfo.LeftTiles34 = InitLeftTiles34WithTiles34(MustStrToTiles34("789m 11223344455666677788999p 11z")) // 注意手牌也算上
 	//playerInfo.DiscardTiles = []int{MustStrToTile34("1p")}
-	//playerInfo.DoraTiles = MustStrToTiles("4s")
+	//playerInfo.DoraTiles = MustStrToTiles("3m")
 	shanten, results, incShantenResults := CalculateShantenWithImproves14(playerInfo)
 	t.Log(NumberToChineseShanten(shanten))
 	for _, result := range results {
@@ -168,8 +170,13 @@ func TestCalculateMeld(t *testing.T) {
 	tiles = "112356799m 1233z"
 	tiles = "78m 12355p 789s" // ***
 	tiles = "245689s 1z"
+	tiles = "466m 234467p 77s 77z"
 	tiles34 := MustStrToTiles34(tiles)
-	result := CalculateShantenWithImproves13(model.NewSimplePlayerInfo(tiles34, exampleMelds))
+	pi := model.NewSimplePlayerInfo(tiles34, nil)
+	if len(pi.HandTiles34) < 13 {
+		pi.Melds = exampleMelds
+	}
+	result := CalculateShantenWithImproves13(pi)
 	t.Log("原手牌" + NumberToChineseShanten(result.Shanten))
 	t.Log(result)
 
@@ -178,7 +185,8 @@ func TestCalculateMeld(t *testing.T) {
 	tile = "4m"
 	tile = "4p"
 	tile = "3s"
-	shanten, results, incShantenResults := CalculateMeld(model.NewSimplePlayerInfo(tiles34, exampleMelds), MustStrToTile34(tile), false, true)
+	tile = "7z"
+	shanten, results, incShantenResults := CalculateMeld(pi, MustStrToTile34(tile), false, true)
 	t.Log("鸣牌后" + NumberToChineseShanten(shanten))
 	for _, result := range results {
 		t.Log(result)
