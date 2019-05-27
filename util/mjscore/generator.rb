@@ -227,12 +227,12 @@ def find_hai_pos(a)
   end
   if ret_array.size > 0 then
     ret_array.uniq!
-    return ret_array.inject("0x" + ret_array.shift.to_s(16)) {|t, a| t += "," + "0x" + a.to_s(16)}
+    return ret_array
   end
   t = a.flatten
   # 七対子判定
   if t.total == 14 && t.all? {|x| x == 2} then
-    return "0x" + (1 << 26).to_s(16)
+    return [1 << 26]
   end
 end
 
@@ -248,27 +248,37 @@ chitoi.delete_if {|x|
     ptn([[1, 1, 1], [3], [3], [3], [2]]) +
     ptn([[3], [3], [3], [3], [2]]) +
     chitoi).uniq.each do |x|
-  printf("winTable[0x%X] = []int{%s}\n", calc_key(x), find_hai_pos(x))
+  printf("%d", calc_key(x))
+  find_hai_pos(x).map { |i| printf(" %d", i) }
+  printf("\n")
 end
 
 (ptn([[1, 1, 1], [1, 1, 1], [1, 1, 1], [2]]) +
     ptn([[1, 1, 1], [1, 1, 1], [3], [2]]) +
     ptn([[1, 1, 1], [3], [3], [2]]) +
     ptn([[3], [3], [3], [2]])).uniq.each do |x|
-  printf("winTable[0x%X] = []int{%s}\n", calc_key(x), find_hai_pos(x))
+  printf("%d", calc_key(x))
+  find_hai_pos(x).map { |i| printf(" %d", i) }
+  printf("\n")
 end
 
 (ptn([[1, 1, 1], [1, 1, 1], [2]]) +
     ptn([[1, 1, 1], [3], [2]]) +
     ptn([[3], [3], [2]])).uniq.each do |x|
-  printf("winTable[0x%X] = []int{%s}\n", calc_key(x), find_hai_pos(x))
+  printf("%d", calc_key(x))
+  find_hai_pos(x).map { |i| printf(" %d", i) }
+  printf("\n")
 end
 
 (ptn([[1, 1, 1], [2]]) +
     ptn([[3], [2]])).uniq.each do |x|
-  printf("winTable[0x%X] = []int{%s}\n", calc_key(x), find_hai_pos(x))
+  printf("%d", calc_key(x))
+  find_hai_pos(x).map { |i| printf(" %d", i) }
+  printf("\n")
 end
 
 (ptn([[2]])).uniq.each do |x|
-  printf("winTable[0x%X] = []int{%s}\n", calc_key(x), find_hai_pos(x))
+  printf("%d", calc_key(x))
+  find_hai_pos(x).map { |i| printf(" %d", i) }
+  printf("\n")
 end
