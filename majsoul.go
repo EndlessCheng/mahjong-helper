@@ -326,10 +326,6 @@ func (d *majsoulRoundData) ParseOpen() (who int, meld *model.Meld, kanDoraIndica
 			meldType = meldTypeKakan // 加杠
 		} else if msg.Type == majsoulMeldTypeAnkan {
 			meldType = meldTypeAnkan // 暗杠
-			if d.leftCounts[calledTile] != 4 {
-				// TODO: 改成 panic?
-				fmt.Println("暗杠数据解析错误！")
-			}
 		}
 		meld = &model.Meld{
 			MeldType:       meldType,
