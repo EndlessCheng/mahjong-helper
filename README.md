@@ -99,6 +99,7 @@
 - 役种只对较为特殊的进行提示，如三色、一通、七对等
 - 若鸣牌且无役会提示 `[无役]`
 - 听牌或一向听时根据自家舍牌情况提示振听
+- m-万子 p-饼子 s-索子 z-字牌，顺序为东南西北白发中
 
 进张数颜色说明：
 
@@ -176,17 +177,23 @@
 
 ## 其他功能说明
 
-在查看牌谱，或者分析何切题时对一副手牌进行分析，可以输入如下命令：
+在查看牌谱，或者分析何切题时对一副手牌进行分析，可以输入如下命令（mahjong-helper 指的是程序名称，可以修改成自定义的名称）：
 
 - 分析何切
-
+    
     `mahjong-helper 34568m 5678p 23567s`
     
 - 分析鸣牌
-
+    
     `mahjong-helper 33567789m 46s + 6m`
 
-[配套小工具](https://github.com/EndlessCheng/mahjong-helper-gui)
+- 用交互模式分析手牌
+    
+    `mahjong-helper -i 34568m 5678p 23567s`
+    
+    输入的切牌、摸牌用简写形式，如 `6m`
+    
+    [配套小工具](https://github.com/EndlessCheng/mahjong-helper-gui)
 
 
 ## 如何获取WebSocket收发的消息
