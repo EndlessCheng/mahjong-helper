@@ -195,6 +195,10 @@
     
     [配套小工具](https://github.com/EndlessCheng/mahjong-helper-gui)
 
+- 指出宝牌是哪张（-d 参数）
+    
+    `mahjong-helper -d=8p 34568m 5678p 23567s`
+
 
 ## 如何获取WebSocket收发的消息
 
