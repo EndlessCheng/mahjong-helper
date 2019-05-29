@@ -21,6 +21,9 @@ func interact(humanTilesInfo *model.HumanTilesInfo) {
 		case 1:
 			fmt.Print("> 摸 ")
 			fmt.Scanf("%s\n", &tile)
+
+			// TODO: 0p
+
 			tile34, err := util.StrToTile34(tile)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())

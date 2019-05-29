@@ -20,7 +20,7 @@ func StrToTile34(humanTile string) (tile34 int, err error) {
 		return -1, errors.New("[StrToTile34] 参数错误: " + humanTile)
 	}
 
-	idx := byteAtStr(humanTile[1], "mpsz")
+	idx := ByteAtStr(humanTile[1], "mpsz")
 	if idx == -1 {
 		return -1, errors.New("[StrToTile34] 参数错误: " + humanTile)
 	}

@@ -162,12 +162,31 @@ func analysisHumanTiles(humanTilesInfo *model.HumanTilesInfo) (tiles34 []int, er
 		doraTiles = util.MustStrToTiles(humanTilesInfo.HumanDoraTiles)
 	}
 
+	// 在 mpsz 后面加上空格方便解析不含空格的 humanTiles
+	humanTiles = strings.Replace(humanTiles, "m", "m ", -1)
+	humanTiles = strings.Replace(humanTiles, "p", "p ", -1)
+	humanTiles = strings.Replace(humanTiles, "s", "s ", -1)
+	humanTiles = strings.Replace(humanTiles, "z", "z ", -1)
+
+	numRedFives := make([]int, 3)
+	for _, split := range strings.Split(humanTiles, " ") {
+		for _, c := range split {
+			if c == '0' {
+				numRedFives[util.ByteAtStr(split[len(split)-1], "mps")]++
+				break
+			}
+		}
+	}
+	humanTiles = strings.Replace(humanTiles, "0", "5", -1)
+
 	splits := strings.Split(humanTiles, "+")
 	if len(splits) == 2 {
 		tiles34, err = util.StrToTiles34(splits[0])
 		if err != nil {
 			return
 		}
+
+		// TODO: 0p
 
 		rawTargetTile := strings.TrimSpace(splits[1])
 		if len(rawTargetTile) > 2 {
@@ -181,8 +200,10 @@ func analysisHumanTiles(humanTilesInfo *model.HumanTilesInfo) (tiles34 []int, er
 
 		var melds []model.Meld
 		//melds = append(melds, model.Meld{MeldType: model.MeldTypePon, Tiles: util.MustStrToTiles("777z")})
-		playerInfo := model.NewSimplePlayerInfo(tiles34, melds)
+		playerInfo := model.NewSimplePlayerInfo(tiles34, nil)
 		playerInfo.DoraTiles = doraTiles
+		playerInfo.NumRedFives = numRedFives
+		playerInfo.Melds = melds
 		isRedFive := false
 		analysisMeld(playerInfo, targetTile34, isRedFive, true, nil)
 		return
@@ -195,6 +216,7 @@ func analysisHumanTiles(humanTilesInfo *model.HumanTilesInfo) (tiles34 []int, er
 
 	playerInfo := model.NewSimplePlayerInfo(tiles34, nil)
 	playerInfo.DoraTiles = doraTiles
+	playerInfo.NumRedFives = numRedFives
 	//playerInfo.IsTsumo = true
 	err = analysisTiles34(playerInfo, nil)
 	return

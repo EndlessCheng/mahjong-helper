@@ -223,7 +223,7 @@ func bestHumanDiscardTile2(t *testing.T, humanTiles string, doraIndicatorHumanTi
 	for _, split := range strings.Split(humanTiles, " ") {
 		for _, c := range split {
 			if c == '0' {
-				numRedFives[byteAtStr(split[len(split)-1], "mps")]++
+				numRedFives[ByteAtStr(split[len(split)-1], "mps")]++
 				break
 			}
 		}
@@ -305,23 +305,24 @@ func TestFuritenBestDiscard(t *testing.T) {
 
 // 何切 300
 func TestQ300(t *testing.T) {
+	assert := assert.New(t)
 	// 传入手牌和宝牌指示牌，赤牌用 0 表示
-	assert.Equal(t, "2s", bestHumanDiscardTile2(t, "06778p 1122345s 77z", "2z"))                // Q001
-	assert.Equal(t, "5s", bestHumanDiscardTile2(t, "66778p 1122345s 77z", "2z"))                // Q002
-	assert.Equal(t, "8p", bestHumanDiscardTile2(t, "67778p 1122345s 77z", "2z"), "尚未考虑自摸时的三暗刻") // Q003
-	assert.Equal(t, "5s", bestHumanDiscardTile2(t, "12388m 455679p 556s", "2z"))                // Q004
-	assert.Equal(t, "9p", bestHumanDiscardTile2(t, "23488m 455679p 556s", "2z"))                // Q005
-	assert.Equal(t, "8p", bestHumanDiscardTile2(t, "33455m 668p 345667s", "2p"))                // Q006
-	assert.Equal(t, "1p", bestHumanDiscardTile2(t, "4406m 134556p 3478s", "2z"))                // Q007
-	assert.Equal(t, "2p", bestHumanDiscardTile2(t, "135m 11240667p 789s", "9s"), "麻雀是自摸的游戏")    // Q008
-	assert.Equal(t, "5m", bestHumanDiscardTile2(t, "135m 12399p 123667s", "2z"))                // Q009
-	assert.Equal(t, "3p", bestHumanDiscardTile2(t, "40699m 1133p 34567s", "1m"))                // Q010
-	assert.Equal(t, "1m", bestHumanDiscardTile2(t, "1234m 5678p 122233s", "8s"))                // Q011
-	assert.Equal(t, "2s", bestHumanDiscardTile2(t, "55678m 3467p 24668s", "6p"), "6s 也可以")      // Q012
-	assert.Equal(t, "2p", bestHumanDiscardTile2(t, "678m 123306p 12378s", "2z"))                // Q013
-	assert.Equal(t, "8p", bestHumanDiscardTile2(t, "23468p 130777s 444z", "1p"))                // Q030
-	assert.Equal(t, "3m", bestHumanDiscardTile2(t, "3356m 23478p 56777s", "7p"), "6m 也可以")      // Q033
-	assert.Equal(t, "1p", bestHumanDiscardTile2(t, "3456m 137899p 4578s", "1m"), "3m 也可以")      // Q037
+	assert.Equal("2s", bestHumanDiscardTile2(t, "06778p 1122345s 77z", "2z"))                // Q001
+	assert.Equal("5s", bestHumanDiscardTile2(t, "66778p 1122345s 77z", "2z"))                // Q002
+	assert.Equal("8p", bestHumanDiscardTile2(t, "67778p 1122345s 77z", "2z"), "尚未考虑自摸时的三暗刻") // Q003
+	assert.Equal("5s", bestHumanDiscardTile2(t, "12388m 455679p 556s", "2z"))                // Q004
+	assert.Equal("9p", bestHumanDiscardTile2(t, "23488m 455679p 556s", "2z"))                // Q005
+	assert.Equal("8p", bestHumanDiscardTile2(t, "33455m 668p 345667s", "2p"))                // Q006
+	assert.Equal("1p", bestHumanDiscardTile2(t, "4406m 134556p 3478s", "2z"))                // Q007
+	assert.Equal("2p", bestHumanDiscardTile2(t, "135m 11240667p 789s", "9s"), "麻雀是自摸的游戏")    // Q008
+	assert.Equal("5m", bestHumanDiscardTile2(t, "135m 12399p 123667s", "2z"))                // Q009
+	assert.Equal("3p", bestHumanDiscardTile2(t, "40699m 1133p 34567s", "1m"))                // Q010
+	assert.Equal("1m", bestHumanDiscardTile2(t, "1234m 5678p 122233s", "8s"))                // Q011
+	assert.Equal("2s", bestHumanDiscardTile2(t, "55678m 3467p 24668s", "6p"), "6s 也可以")      // Q012
+	assert.Equal("2p", bestHumanDiscardTile2(t, "678m 123306p 12378s", "2z"))                // Q013
+	assert.Equal("8p", bestHumanDiscardTile2(t, "23468p 130777s 444z", "1p"))                // Q030
+	assert.Equal("3m", bestHumanDiscardTile2(t, "3356m 23478p 56777s", "7p"), "6m 也可以")      // Q033
+	assert.Equal("1p", bestHumanDiscardTile2(t, "3456m 137899p 4578s", "1m"), "3m 也可以")      // Q037
 }
 
 func Test_calculateIsolatedTileValue(t *testing.T) {

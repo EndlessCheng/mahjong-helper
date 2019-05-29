@@ -9,7 +9,7 @@ func boolToInt(b bool) int {
 	return 0
 }
 
-func byteAtStr(b byte, s string) int {
+func ByteAtStr(b byte, s string) int {
 	for i, _b := range []byte(s) {
 		if _b == b {
 			return i
