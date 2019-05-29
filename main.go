@@ -80,6 +80,10 @@ func main() {
 
 	humanDoraTiles := flags.String("d", "dora")
 	humanTiles := strings.Join(restArgs, " ")
+	humanTilesInfo := &model.HumanTilesInfo{
+		HumanTiles:     humanTiles,
+		HumanDoraTiles: humanDoraTiles,
+	}
 
 	switch {
 	case isMajsoul:
@@ -88,13 +92,9 @@ func main() {
 		runServer(false)
 	case isInteractive:
 		// 交互模式
-		interact(humanTiles)
+		interact(humanTilesInfo)
 	case len(restArgs) > 0:
 		//t0 := time.Now()
-		humanTilesInfo := &model.HumanTilesInfo{
-			HumanTiles:     humanTiles,
-			HumanDoraTiles: humanDoraTiles,
-		}
 		if _, err := analysisHumanTiles(humanTilesInfo); err != nil {
 			fmt.Println(err)
 		}
