@@ -18,6 +18,7 @@
 
 - [安装](#安装)
 - [使用说明](#使用说明)
+- [常见问题](#常见问题)
 - [示例](#示例)
   * [牌效率](#牌效率)
   * [鸣牌判断](#鸣牌判断)
@@ -29,19 +30,21 @@
 
 分下面几步：
 
-1. 前往 [release](https://github.com/EndlessCheng/mahjong-helper/releases/latest) 页面下载程序
+1. 前往 [release](https://github.com/EndlessCheng/mahjong-helper/releases/latest) 页面下载程序。
 
 2. 雀魂需要浏览器允许本地证书。目前仅支持 Chrome 和 360 浏览器等使用了 Chrome 内核的浏览器：
    
-   在浏览器中输入 `chrome://flags/#allow-insecure-localhost`，然后点击高亮那一项的「启用」按钮（不同浏览器/版本的描述可能不一样，如果是英文的话把 Disabled 改成 Enabled），之后重启浏览器
+   在浏览器中输入 `chrome://flags/#allow-insecure-localhost`，然后点击高亮那一项的「启用」按钮（不同浏览器/版本的描述可能不一样，如果是英文的话把 Disabled 改成 Enabled），之后重启浏览器。
 
-3. 安装浏览器扩展 Header Editor（[谷歌商城(需要翻墙)](https://chrome.google.com/webstore/detail/header-editor/eningockdidmgiojffjmkdblpjocbhgh?hl=zh) | [国内](https://www.chromefor.com/header-editor_v4-0-7/)）
+3. 安装浏览器扩展 Header Editor（[谷歌商城(需要翻墙)](https://chrome.google.com/webstore/detail/header-editor/eningockdidmgiojffjmkdblpjocbhgh?hl=zh) | [国内](https://www.chromefor.com/header-editor_v4-0-7/)）。
    
-   （测试发现 Chrome 和 QQ 浏览器无法直接安装 .crx 文件，可以使用 360 浏览器）
+   （测试发现 Chrome 和 QQ 浏览器无法直接安装 .crx 文件，360 浏览器可以直接安装。）
    
-   安装好扩展后点进该扩展的`管理`界面，点击`导入和导出`，在下载规则中填入 `https://jianyan.me/js/mahjong-helper.json`，点击右侧的下载按钮，然后点击下方的`保存`
+   安装好扩展后点进该扩展的`管理`界面，点击`导入和导出`，在下载规则中填入 `https://jianyan.me/js/mahjong-helper.json`，点击右侧的下载按钮，然后点击下方的`保存`。
+    
+    完成后需要重新载入游戏网页。
 
-安装完成。在使用本程序前，建议先看一下本页面下方的[示例](#示例)
+安装完成。在使用本程序前，建议先看一下本页面下方的[示例](#示例)。
 
 ### 从源码安装此助手
 
@@ -54,18 +57,28 @@
 
 ## 使用说明
 
-按照上述流程安装完成后，启动程序，选择平台即可
+按照上述流程安装完成后，启动程序，选择平台即可。
 
-雀魂需要先启动本程序，再登录网页
+需要先启动本程序，再登录网页。
 
-### 有关界面说明
+## 常见问题
 
-目前程序是在终端窗口下显示信息的
+**为什么助手没有任何反应？**
 
-对于 Windows 用户，受 cmd 终端颜色所限，可能会有颜色过暗或过亮的问题
+请确认按照按照流程按照完毕
 
-建议下载增强版终端 Cmder（[官网下载](https://cmder.net/) | [百度云备份](https://pan.baidu.com/s/1Hv1nEs4Wu2EHAnKOWOnRaQ) iug7）来获得更好的界面显示
+若仍有问题请发 [issue] 或加入 [QQ 群]反馈
 
+
+**终端界面看着有点难受**
+
+目前程序是在终端窗口下显示信息的。
+
+对于 Windows 用户，受 cmd 终端颜色所限，可能会有颜色过暗或过亮的问题。
+
+建议下载增强版终端 Cmder（[官网下载](https://cmder.net/) | [百度云备份](https://pan.baidu.com/s/1Hv1nEs4Wu2EHAnKOWOnRaQ) iug7）来获得更好的界面显示。
+
+后面会开发网页版
 
 ## 参与讨论
 
