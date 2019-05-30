@@ -5,10 +5,14 @@ import "github.com/EndlessCheng/mahjong-helper/util/model"
 type _handInfo struct {
 	*model.PlayerInfo
 	divideResult *DivideResult // 手牌解析结果
+
+	// *在计算役种前，缓存自己的顺子牌和刻子牌，这样能减少大量重复计算
+	allShuntsuFirstTiles []int
+	allKotsuTiles        []int
 }
 
 // 未排序。用于算一通、三色
-func (hi *_handInfo) allShuntsuFirstTiles() []int {
+func (hi *_handInfo) getAllShuntsuFirstTiles() []int {
 	shuntsuFirstTiles := append([]int{}, hi.divideResult.ShuntsuFirstTiles...)
 	for _, meld := range hi.Melds {
 		if meld.MeldType == model.MeldTypeChi {
@@ -19,7 +23,7 @@ func (hi *_handInfo) allShuntsuFirstTiles() []int {
 }
 
 // 未排序。用于算对对、三色同刻
-func (hi *_handInfo) allKotsuTiles() []int {
+func (hi *_handInfo) getAllKotsuTiles() []int {
 	kotsuTiles := append([]int{}, hi.divideResult.KotsuTiles...)
 	for _, meld := range hi.Melds {
 		if meld.MeldType != model.MeldTypeChi {
@@ -29,7 +33,7 @@ func (hi *_handInfo) allKotsuTiles() []int {
 	return kotsuTiles
 }
 
-// 是否包含字牌
+// 是否包含字牌（调用前需要设置刻子牌）
 func (hi *_handInfo) containHonor() bool {
 	// 七对子特殊处理
 	if hi.divideResult.IsChiitoi {
@@ -44,7 +48,7 @@ func (hi *_handInfo) containHonor() bool {
 	if hi.divideResult.PairTile >= 27 {
 		return true
 	}
-	for _, tile := range hi.allKotsuTiles() {
+	for _, tile := range hi.allKotsuTiles {
 		if tile >= 27 {
 			return true
 		}
@@ -106,16 +110,9 @@ func (hi *_handInfo) numAnkou() (cnt int, isMinkou bool) {
 
 // 计算在指定牌中的刻子个数
 func (hi *_handInfo) _countSpecialKotsu(specialTilesL, specialTilesLR int) (cnt int) {
-	for _, tile := range hi.divideResult.KotsuTiles {
+	for _, tile := range hi.allKotsuTiles {
 		if tile >= specialTilesL && tile <= specialTilesLR {
 			cnt++
-		}
-	}
-	for _, meld := range hi.Melds {
-		if meld.MeldType != model.MeldTypeChi {
-			if tile := meld.Tiles[0]; tile >= specialTilesL && tile <= specialTilesLR {
-				cnt++
-			}
 		}
 	}
 	return

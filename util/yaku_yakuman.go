@@ -40,10 +40,10 @@ func (hi *_handInfo) tsuuiisou() bool {
 	if hi.divideResult.PairTile < 27 {
 		return false
 	}
-	if len(hi.allShuntsuFirstTiles()) > 0 {
+	if len(hi.allShuntsuFirstTiles) > 0 {
 		return false
 	}
-	for _, tile := range hi.allKotsuTiles() {
+	for _, tile := range hi.allKotsuTiles {
 		if tile < 27 {
 			return false
 		}
@@ -67,10 +67,10 @@ func (hi *_handInfo) chinroutou() bool {
 	if !isValid(hi.divideResult.PairTile) {
 		return false
 	}
-	if len(hi.allShuntsuFirstTiles()) > 0 {
+	if len(hi.allShuntsuFirstTiles) > 0 {
 		return false
 	}
-	for _, tile := range hi.allKotsuTiles() {
+	for _, tile := range hi.allKotsuTiles {
 		if !isValid(tile) {
 			return false
 		}
@@ -88,12 +88,12 @@ func (hi *_handInfo) ryuuiisou() bool {
 	if !InInts(hi.divideResult.PairTile, ryuuTiles) {
 		return false
 	}
-	for _, tile := range hi.allShuntsuFirstTiles() {
+	for _, tile := range hi.allShuntsuFirstTiles {
 		if tile != 19 { // 只能是 234s
 			return false
 		}
 	}
-	for _, tile := range hi.allKotsuTiles() {
+	for _, tile := range hi.allKotsuTiles {
 		if !InInts(tile, ryuuTiles) {
 			return false
 		}
@@ -153,6 +153,7 @@ var yakumanCheckerMap = map[int]yakuChecker{
 
 // 检测役满
 // 结果未排序
+// *计算前必须设置顺子牌和刻子牌
 func findYakumanTypes(hi *_handInfo, isNaki bool) (yakumanTypes []int) {
 	var yakumanTimesMap _yakumanTimesMap
 	if !isNaki {

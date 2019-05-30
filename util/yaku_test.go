@@ -109,7 +109,7 @@ func Benchmark_findYakuTypes(b *testing.B) {
 		SelfWindTile:  27,
 	}
 	for i := 0; i < b.N; i++ {
-		// 1868 ns/op
+		// 1750 ns/op
 		for _, result := range DivideTiles34(pi.HandTiles34) {
 			findYakuTypes(&_handInfo{
 				PlayerInfo:   pi,
