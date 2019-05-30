@@ -109,7 +109,15 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool
 		return
 	}
 
-	raw := util.Tiles34ToStr(playerInfo.HandTiles34) + " + " + util.Tile34ToStr(targetTile34) + "?"
+	// TODO: 重构 重复代码
+	humanTiles := util.Tiles34ToStr(playerInfo.HandTiles34)
+	if len(playerInfo.Melds) > 0 {
+		humanTiles += " &"
+		for i := len(playerInfo.Melds) - 1; i >= 0; i-- {
+			humanTiles += " " + util.TilesToStr(playerInfo.Melds[i].Tiles)
+		}
+	}
+	raw := humanTiles + " + " + util.Tile34ToStr(targetTile34) + "?"
 	fmt.Println(raw)
 	fmt.Println(strings.Repeat("=", len(raw)))
 
