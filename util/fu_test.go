@@ -36,7 +36,7 @@ func Test_handInfo_calcFu(t *testing.T) {
 				},
 				divideResult: result,
 			}
-			fmt.Printf("%s %d 符, ", result.String(), _hi.calcFu())
+			fmt.Printf("%s %d 符, ", result.String(), _hi.calcFu(false))
 		}
 		fmt.Println()
 	}
@@ -66,7 +66,7 @@ func Test_handInfo_calcFu(t *testing.T) {
 				},
 				divideResult: result,
 			}
-			fmt.Printf("%s %d 符, ", result.String(), _hi.calcFu())
+			fmt.Printf("%s %d 符, ", result.String(), _hi.calcFu(false))
 		}
 		fmt.Println()
 	}
@@ -96,7 +96,7 @@ func Test_handInfo_calcFu(t *testing.T) {
 				},
 				divideResult: result,
 			}
-			fmt.Printf("%s %d 符, ", result.String(), _hi.calcFu())
+			fmt.Printf("%s %d 符, ", result.String(), _hi.calcFu(true))
 		}
 		fmt.Println()
 	}
@@ -117,7 +117,7 @@ func Benchmark_handInfo_calcFu(b *testing.B) {
 		divideResult: results[0],
 	}
 	for i := 0; i < b.N; i++ {
-		// 21.0 ns/op
-		_hi.calcFu()
+		// 19.5 ns/op
+		_hi.calcFu(false)
 	}
 }

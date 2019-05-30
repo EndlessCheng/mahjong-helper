@@ -218,7 +218,7 @@ var NakiYakuHanMap = _yakuHanMap{
 	YakuChinitsu: 5,
 }
 
-// 计算 yakuTypes 累积的番数
+// 计算 yakuTypes(非役满) 累积的番数
 func CalcYakuHan(yakuTypes []int, isNaki bool) (cntHan int) {
 	var yakuHanMap _yakuHanMap
 	if !isNaki {

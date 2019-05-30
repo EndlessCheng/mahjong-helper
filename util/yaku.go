@@ -2,7 +2,6 @@ package util
 
 import (
 	"github.com/EndlessCheng/mahjong-helper/util/model"
-	"sort"
 )
 
 // 门清限定
@@ -365,19 +364,11 @@ var yakuCheckerMap = map[int]yakuChecker{
 	YakuChinitsu:       (*_handInfo).chinitsu,
 }
 
-func findYakuTypes(hi *_handInfo) (yakuTypes []int) {
-	// 先检测是否有役满
-	yakuTypes = findYakumanTypes(hi)
-
-	// 存在役满直接 return
-	if len(yakuTypes) > 0 {
-		sort.Ints(yakuTypes)
-		return
-	}
-
-	// 检测非役满
+// 检测不是役满的役种
+// 结果未排序
+func findNormalYaku(hi *_handInfo, isNaki bool) (yakuTypes []int) {
 	var yakuHanMap _yakuHanMap
-	if !hi.IsNaki() {
+	if !isNaki {
 		yakuHanMap = YakuHanMap
 	} else {
 		yakuHanMap = NakiYakuHanMap
@@ -397,6 +388,16 @@ func findYakuTypes(hi *_handInfo) (yakuTypes []int) {
 		yakuTypes = append(yakuTypes, YakuYakuhai)
 	}
 
-	sort.Ints(yakuTypes)
 	return
+}
+
+// 寻找役种
+// 结果未排序
+func findYakuTypes(hi *_handInfo, isNaki bool) (yakuTypes []int) {
+	// 先检测是否有役满，存在役满直接 return
+	if yakuTypes = findYakumanTypes(hi, isNaki); len(yakuTypes) > 0 {
+		return
+	}
+
+	return findNormalYaku(hi, isNaki)
 }

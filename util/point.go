@@ -90,22 +90,23 @@ type PointResult struct {
 // 调用前请设置 IsTsumo WinTile
 func CalcPoint(playerInfo *model.PlayerInfo) (result *PointResult) {
 	result = &PointResult{}
+	isNaki := playerInfo.IsNaki()
 	var han, fu int
 	for _, divideResult := range DivideTiles34(playerInfo.HandTiles34) {
 		_hi := &_handInfo{
 			PlayerInfo:   playerInfo,
 			divideResult: divideResult,
 		}
-		yakuTypes := findYakuTypes(_hi)
+		yakuTypes := findYakuTypes(_hi, isNaki)
 		if len(yakuTypes) == 0 {
 			// 此手牌拆解下无役
 			continue
 		}
-		yakumanTimes := CalcYakumanTimes(yakuTypes, _hi.IsNaki())
+		yakumanTimes := CalcYakumanTimes(yakuTypes, isNaki)
 		if yakumanTimes == 0 {
-			han = CalcYakuHan(yakuTypes, _hi.IsNaki())
+			han = CalcYakuHan(yakuTypes, isNaki)
 			han += _hi.CountDora()
-			fu = _hi.calcFu()
+			fu = _hi.calcFu(isNaki)
 		}
 		var pt int
 		if _hi.IsTsumo {

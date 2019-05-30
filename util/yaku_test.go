@@ -5,6 +5,7 @@ import (
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 	"strings"
 	"github.com/stretchr/testify/assert"
+	"sort"
 )
 
 func Test_findYakuTypes(t *testing.T) {
@@ -20,11 +21,13 @@ func Test_findYakuTypes(t *testing.T) {
 			RoundWindTile: 27,
 			SelfWindTile:  27,
 		}
+		isNaki := pi.IsNaki()
 		for _, result := range DivideTiles34(pi.HandTiles34) {
 			yakuTypes := findYakuTypes(&_handInfo{
 				PlayerInfo:   pi,
 				divideResult: result,
-			})
+			}, isNaki)
+			sort.Ints(yakuTypes)
 			output += YakuTypesToStr(yakuTypes) + " "
 		}
 		return strings.TrimSpace(output)
@@ -106,12 +109,12 @@ func Benchmark_findYakuTypes(b *testing.B) {
 		SelfWindTile:  27,
 	}
 	for i := 0; i < b.N; i++ {
-		// 1926 ns/op
+		// 1868 ns/op
 		for _, result := range DivideTiles34(pi.HandTiles34) {
 			findYakuTypes(&_handInfo{
 				PlayerInfo:   pi,
 				divideResult: result,
-			})
+			}, false)
 		}
 	}
 }

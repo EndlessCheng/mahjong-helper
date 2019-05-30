@@ -7,7 +7,7 @@ func roundUpFu(fu int) int {
 }
 
 // 根据手牌拆解结果，结合场况计算符数
-func (hi *_handInfo) calcFu() int {
+func (hi *_handInfo) calcFu(isNaki bool) int {
 	divideResult := hi.divideResult
 
 	// 特殊：七对子计 25 符
@@ -63,9 +63,6 @@ func (hi *_handInfo) calcFu() int {
 			fu += 2
 		}
 	}
-
-	// 是否鸣牌
-	isNaki := hi.IsNaki()
 
 	// 特殊：门清 + 自摸 + 平和型，计 20 符
 	if !isNaki && hi.IsTsumo && fu == baseFu {

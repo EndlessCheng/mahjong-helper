@@ -163,7 +163,7 @@ func BenchmarkCalcAvgRiichiPoint(b *testing.B) {
 	}
 	_, waits := CalculateShantenAndWaits13(playerInfo.HandTiles34, playerInfo.LeftTiles34)
 	for i := 0; i < b.N; i++ {
-		// 6252 ns/op
+		// 8082 ns/op
 		CalcAvgRiichiPoint(playerInfo, waits)
 	}
 }

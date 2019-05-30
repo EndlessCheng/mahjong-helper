@@ -151,9 +151,18 @@ var yakumanCheckerMap = map[int]yakuChecker{
 	YakuSuuKantsu:     (*_handInfo).suuKantsu,
 }
 
-func findYakumanTypes(hi *_handInfo) (yakumanTypes []int) {
-	for yakuman, checker := range yakumanCheckerMap {
-		if checker(hi) {
+// 检测役满
+// 结果未排序
+func findYakumanTypes(hi *_handInfo, isNaki bool) (yakumanTypes []int) {
+	var yakumanTimesMap _yakumanTimesMap
+	if !isNaki {
+		yakumanTimesMap = YakumanTimesMap
+	} else {
+		yakumanTimesMap = NakiYakumanTimesMap
+	}
+
+	for yakuman := range yakumanTimesMap {
+		if yakumanCheckerMap[yakuman](hi) {
 			yakumanTypes = append(yakumanTypes, yakuman)
 		}
 	}
