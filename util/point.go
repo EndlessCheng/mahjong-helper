@@ -90,6 +90,7 @@ type PointResult struct {
 // 调用前请设置 IsTsumo WinTile
 func CalcPoint(playerInfo *model.PlayerInfo) (result *PointResult) {
 	result = &PointResult{}
+	var han, fu int
 	for _, divideResult := range DivideTiles34(playerInfo.HandTiles34) {
 		_hi := &_handInfo{
 			PlayerInfo:   playerInfo,
@@ -100,10 +101,12 @@ func CalcPoint(playerInfo *model.PlayerInfo) (result *PointResult) {
 			// 此手牌拆解下无役
 			continue
 		}
-		han := CalcYakuHan(yakuTypes, _hi.IsNaki())
-		han += _hi.CountDora()
-		fu := _hi.calcFu()
-		yakumanTimes := CalcYakumanTimes(yakuTypes)
+		yakumanTimes := CalcYakumanTimes(yakuTypes, _hi.IsNaki())
+		if yakumanTimes == 0 {
+			han = CalcYakuHan(yakuTypes, _hi.IsNaki())
+			han += _hi.CountDora()
+			fu = _hi.calcFu()
+		}
 		var pt int
 		if _hi.IsTsumo {
 			pt = CalcPointTsumoSum(han, fu, yakumanTimes, _hi.IsParent)

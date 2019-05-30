@@ -325,6 +325,40 @@ func TestQ300(t *testing.T) {
 	assert.Equal("1p", bestHumanDiscardTile2(t, "3456m 137899p 4578s", "1m"), "3m 也可以")      // Q037
 }
 
+func BenchmarkCalculateShantenWithImproves14_Shanten0(b *testing.B) {
+	pi := model.NewSimplePlayerInfo(MustStrToTiles34("134m 123567p 12355s"), nil)
+	for i := 0; i < b.N; i++ {
+		// 157,447,560 ns/op
+		// 由于考虑了向听倒退，所以速度和一向听差不多
+		CalculateShantenWithImproves14(pi)
+	}
+}
+
+func BenchmarkCalculateShantenWithImproves14_Shanten1(b *testing.B) {
+	pi := model.NewSimplePlayerInfo(MustStrToTiles34("12388m 455679p 556s"), nil)
+	for i := 0; i < b.N; i++ {
+		// 145,454,040 ns/op
+		// FIXME: 向听倒退？
+		CalculateShantenWithImproves14(pi)
+	}
+}
+
+func BenchmarkCalculateShantenWithImproves14_Shanten2(b *testing.B) {
+	pi := model.NewSimplePlayerInfo(MustStrToTiles34("3456m 137899p 4578s"), nil)
+	for i := 0; i < b.N; i++ {
+		// 751,249,800 ns/op
+		CalculateShantenWithImproves14(pi)
+	}
+}
+
+func BenchmarkCalculateShantenWithImproves14_Shanten3(b *testing.B) {
+	pi := model.NewSimplePlayerInfo(MustStrToTiles34("12688m 33579p 24s 56z"), nil)
+	for i := 0; i < b.N; i++ {
+		// 136,756,870 ns/op
+		CalculateShantenWithImproves14(pi)
+	}
+}
+
 func Test_calculateIsolatedTileValue(t *testing.T) {
 	newPI := func(selfWindTile int, roundWindTile int, discardedHumanTiles string) *model.PlayerInfo {
 		return &model.PlayerInfo{

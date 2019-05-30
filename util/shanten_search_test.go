@@ -67,21 +67,31 @@ func BenchmarkSearchShanten1(b *testing.B) {
 }
 
 func BenchmarkSearchShanten2(b *testing.B) {
-	tiles34 := MustStrToTiles34("55678m 3467p 24668s")
+	tiles34 := MustStrToTiles34("4888m 499p 134557s 4z")
 	shanten := CalculateShanten(tiles34)
 	pi := model.NewSimplePlayerInfo(tiles34, nil)
 	for i := 0; i < b.N; i++ {
-		// 19,343,607 ns/op
+		// 4,781,838 ns/op
 		searchShanten14(shanten, pi, -1)
 	}
 }
 
 func BenchmarkSearchShanten3(b *testing.B) {
-	tiles34 := MustStrToTiles34("12688m 33579p 24s 56z")
+	tiles34 := MustStrToTiles34("488m 499p 134557s 56z")
 	shanten := CalculateShanten(tiles34)
 	pi := model.NewSimplePlayerInfo(tiles34, nil)
 	for i := 0; i < b.N; i++ {
-		// 92,369,360 ns/op
+		// 437,529,400 ns/op
+		searchShanten14(shanten, pi, -1)
+	}
+}
+
+func BenchmarkSearchShanten4(b *testing.B) {
+	tiles34 := MustStrToTiles34("488m 49p 134557s 456z")
+	shanten := CalculateShanten(tiles34)
+	pi := model.NewSimplePlayerInfo(tiles34, nil)
+	for i := 0; i < b.N; i++ {
+		// 48,888,144,400 ns/op
 		searchShanten14(shanten, pi, -1)
 	}
 }

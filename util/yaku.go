@@ -6,17 +6,7 @@ import (
 )
 
 // 是否包含字牌
-// cache 这货的话，其他地方都要 copy 了，目前项目采用引用的方式，不适合 cache
-func (hi *_handInfo) containHonor() bool {
-	// 门清时简化
-	if len(hi.Melds) == 0 {
-		for i := 27; i < 34; i++ {
-			if hi.HandTiles34[i] > 0 {
-				return true
-			}
-		}
-		return false
-	}
+func (hi *_handInfo) _containHonor() bool {
 	if hi.divideResult.PairTile >= 27 {
 		return true
 	}
@@ -45,7 +35,7 @@ func (hi *_handInfo) isDoubleWindTile(tile int) bool {
 
 // 暗刻个数，用于算三暗刻、四暗刻、符数（如 456666 荣和 6，这里算一个暗刻）
 func (hi *_handInfo) numAnkou() int {
-	num := len(hi.divideResult.KotsuTiles)
+	num := len(hi.divideResult.KotsuTiles) + hi.numKantsu()
 	if hi.IsTsumo {
 		return num
 	}
@@ -64,14 +54,13 @@ func (hi *_handInfo) numAnkou() int {
 }
 
 // 杠子个数，用于算三杠子、四杠子
-func (hi *_handInfo) numKantsu() int {
-	cnt := 0
+func (hi *_handInfo) numKantsu() (cnt int) {
 	for _, meld := range hi.Melds {
 		if meld.IsKan() {
 			cnt++
 		}
 	}
-	return cnt
+	return
 }
 
 //
@@ -210,9 +199,6 @@ func (hi *_handInfo) toitoi() bool {
 // 荣和的刻子是明刻
 // 注意 456666 这样的荣和 6，算暗刻
 func (hi *_handInfo) sanAnkou() bool {
-	if len(hi.divideResult.KotsuTiles) < 3 {
-		return false
-	}
 	return hi.numAnkou() == 3
 }
 
@@ -363,14 +349,17 @@ func (hi *_handInfo) _chantai() bool {
 }
 
 func (hi *_handInfo) chanta() bool {
-	return hi.containHonor() && hi._chantai()
+	return hi._containHonor() && hi._chantai()
 }
 
 func (hi *_handInfo) junchan() bool {
-	return !hi.containHonor() && hi._chantai()
+	return !hi._containHonor() && hi._chantai()
 }
 
 func (hi *_handInfo) honroutou() bool {
+	if !hi._containHonor() {
+		return false
+	}
 	if len(hi.Melds) == 0 {
 		// 门清时简单判断
 		cnt := 0
@@ -378,9 +367,6 @@ func (hi *_handInfo) honroutou() bool {
 			cnt += hi.HandTiles34[tile]
 		}
 		return cnt == 14
-	}
-	if !hi.containHonor() {
-		return false
 	}
 	dr := hi.divideResult
 	// 不能有顺子
@@ -479,11 +465,11 @@ func (hi *_handInfo) _numSuit() int {
 }
 
 func (hi *_handInfo) honitsu() bool {
-	return hi.containHonor() && hi._numSuit() == 1
+	return hi._containHonor() && hi._numSuit() == 1
 }
 
 func (hi *_handInfo) chinitsu() bool {
-	return !hi.containHonor() && hi._numSuit() == 1
+	return !hi._containHonor() && hi._numSuit() == 1
 }
 
 type yakuChecker func(*_handInfo) bool
@@ -512,8 +498,16 @@ var yakuCheckerMap = map[int]yakuChecker{
 }
 
 func findYakuTypes(hi *_handInfo) (yakuTypes []int) {
-	// TODO: 先检测是否有役满
+	// 先检测是否有役满
+	yakuTypes = findYakumanTypes(hi)
 
+	// 存在役满直接 return
+	if len(yakuTypes) > 0 {
+		sort.Ints(yakuTypes)
+		return
+	}
+
+	// 检测非役满
 	var yakuHanMap _yakuHanMap
 	if !hi.IsNaki() {
 		yakuHanMap = YakuHanMap
