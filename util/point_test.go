@@ -7,23 +7,49 @@ import (
 )
 
 func TestCalcPointRon(t *testing.T) {
-	assert.Equal(t, 5200, CalcPointRon(3, 40, 0, false))
-	assert.Equal(t, 7700, CalcPointRon(3, 40, 0, true))
-	assert.Equal(t, 8000, CalcPointRon(3, 70, 0, false))
-	assert.Equal(t, 12000, CalcPointRon(4, 40, 0, true))
-	assert.Equal(t, 32000, CalcPointRon(0, 0, 1, false))
-	assert.Equal(t, 64000, CalcPointRon(0, 0, 2, false))
-	assert.Equal(t, 96000, CalcPointRon(0, 0, 3, false))
-	assert.Equal(t, 128000, CalcPointRon(0, 0, 4, false))
+	assert := assert.New(t)
+
+	assert.Equal(3600, CalcPointRon(1, 110, 0, false)) // saki
+	assert.Equal(5200, CalcPointRon(3, 40, 0, false))
+	assert.Equal(6400, CalcPointRon(3, 50, 0, false))
+	assert.Equal(7700, CalcPointRon(3, 60, 0, false))
+	assert.Equal(8000, CalcPointRon(3, 70, 0, false))
+
+	assert.Equal(7700, CalcPointRon(3, 40, 0, true))
+	assert.Equal(11600, CalcPointRon(4, 30, 0, true))
+	assert.Equal(12000, CalcPointRon(4, 40, 0, true))
+
+	assert.Equal(32000, CalcPointRon(0, 0, 1, false))
+	assert.Equal(64000, CalcPointRon(0, 0, 2, false))
+	assert.Equal(96000, CalcPointRon(0, 0, 3, false))
+	assert.Equal(128000, CalcPointRon(0, 0, 4, false))
+	assert.Equal(160000, CalcPointRon(0, 0, 5, false))
+	assert.Equal(192000, CalcPointRon(0, 0, 6, false))
+
+	assert.Equal(48000, CalcPointRon(0, 0, 1, true))
+	assert.Equal(96000, CalcPointRon(0, 0, 2, true))
+	assert.Equal(144000, CalcPointRon(0, 0, 3, true))
+	assert.Equal(192000, CalcPointRon(0, 0, 4, true))
+	assert.Equal(240000, CalcPointRon(0, 0, 5, true))
+	assert.Equal(288000, CalcPointRon(0, 0, 6, true))
 }
 
 func TestCalcPointTsumoSum(t *testing.T) {
-	assert.Equal(t, 5200, CalcPointTsumoSum(3, 40, 0, false))
-	assert.Equal(t, 7800, CalcPointTsumoSum(3, 40, 0, true))
-	assert.Equal(t, 12000, CalcPointTsumoSum(4, 40, 0, true))
+	assert := assert.New(t)
+
+	assert.Equal(3600, CalcPointTsumoSum(1, 110, 0, false)) // saki
+	assert.Equal(5200, CalcPointTsumoSum(3, 40, 0, false))
+	assert.Equal(6400, CalcPointTsumoSum(3, 50, 0, false))
+	assert.Equal(7900, CalcPointTsumoSum(3, 60, 0, false))
+	assert.Equal(8000, CalcPointTsumoSum(3, 70, 0, false))
+
+	assert.Equal(7800, CalcPointTsumoSum(3, 40, 0, true))
+	assert.Equal(12000, CalcPointTsumoSum(4, 40, 0, true))
 }
 
 func TestCalcRonPointWithHands(t *testing.T) {
+	assert := assert.New(t)
+
 	// 子家默听荣和
 	newPIWithWinTile := func(humanTiles string, winHumanTile string) *model.PlayerInfo {
 		return &model.PlayerInfo{
@@ -33,17 +59,21 @@ func TestCalcRonPointWithHands(t *testing.T) {
 			SelfWindTile:  MustStrToTile34("2z"),
 		}
 	}
-	assert.Equal(t, 12000, CalcPoint(newPIWithWinTile("11m 112233445566z", "1m")).Point)    // [七对 混老头 混一色]
-	assert.Equal(t, 7700, CalcPoint(newPIWithWinTile("345m 345s 334455p 44z", "3m")).Point) // [平和 一杯口 三色]
-	assert.Equal(t, 2600, CalcPoint(newPIWithWinTile("333m 333s 333345p 11z", "3m")).Point) // [三色同刻]
-	assert.Equal(t, 8000, CalcPoint(newPIWithWinTile("22334455m 234s 234p", "3m")).Point)   // 高点法取[一杯口 三色 断幺]
-	assert.Equal(t, 12000, CalcPoint(newPIWithWinTile("234m 333p 55666777z", "3m")).Point)  // [三暗刻 役牌 役牌 小三元]
-	assert.Equal(t, 12000, CalcPoint(newPIWithWinTile("123445566789m 11z", "3m")).Point)    // [一杯口 一气 混一色]
-	assert.Equal(t, 3200, CalcPoint(newPIWithWinTile("123m 123999s 11155z", "3m")).Point)   // [混全]
-	assert.Equal(t, 5200, CalcPoint(newPIWithWinTile("334455m 667788s 77z", "3m")).Point)   // [两杯口]
-	assert.Equal(t, 7700, CalcPoint(newPIWithWinTile("334455m 667788s 44z", "3m")).Point)   // [平和 两杯口]
-	assert.Equal(t, 5200, CalcPoint(newPIWithWinTile("123m 123999s 11789p", "3m")).Point)   // [纯全]
-	assert.Equal(t, 2600, CalcPoint(newPIWithWinTile("345m 12355789s 222z", "3m")).Point)   // [役牌 役牌]
+	assert.Equal(12000, CalcPoint(newPIWithWinTile("11m 112233445566z", "1m")).Point)    // [七对 混老头 混一色]
+	assert.Equal(7700, CalcPoint(newPIWithWinTile("345m 345s 334455p 44z", "3m")).Point) // [平和 一杯口 三色]
+	assert.Equal(2600, CalcPoint(newPIWithWinTile("333m 333s 333345p 11z", "3m")).Point) // [三色同刻]
+	assert.Equal(8000, CalcPoint(newPIWithWinTile("22334455m 234s 234p", "3m")).Point)   // 高点法取[一杯口 三色 断幺]
+	assert.Equal(12000, CalcPoint(newPIWithWinTile("234m 333p 55666777z", "3m")).Point)  // [三暗刻 役牌 役牌 小三元]
+	assert.Equal(12000, CalcPoint(newPIWithWinTile("123445566789m 11z", "3m")).Point)    // [一杯口 一气 混一色]
+	assert.Equal(3200, CalcPoint(newPIWithWinTile("123m 123999s 11155z", "3m")).Point)   // [混全]
+	assert.Equal(5200, CalcPoint(newPIWithWinTile("334455m 667788s 77z", "3m")).Point)   // [两杯口]
+	assert.Equal(7700, CalcPoint(newPIWithWinTile("334455m 667788s 44z", "3m")).Point)   // [平和 两杯口]
+	assert.Equal(5200, CalcPoint(newPIWithWinTile("123m 123999s 11789p", "3m")).Point)   // [纯全]
+	assert.Equal(2600, CalcPoint(newPIWithWinTile("345m 12355789s 222z", "3m")).Point)   // [役牌 役牌]
+	// 役满
+	assert.Equal(32000, CalcPoint(newPIWithWinTile("11122345678999m", "3m")).Point)
+	assert.Equal(64000, CalcPoint(newPIWithWinTile("11122345678999m", "2m")).Point)
+	assert.Equal(160000, CalcPoint(newPIWithWinTile("11122233344455z", "5z")).Point)
 
 	// 子家立直荣和
 	newPIWithRiichi := func(humanTiles string, winHumanTile string) *model.PlayerInfo {
@@ -55,7 +85,7 @@ func TestCalcRonPointWithHands(t *testing.T) {
 			IsRiichi:      true,
 		}
 	}
-	assert.Equal(t, 1300, CalcPoint(newPIWithRiichi("345m 222789p 333s 66z", "3m")).Point) // [立直]
+	assert.Equal(1300, CalcPoint(newPIWithRiichi("345m 222789p 333s 66z", "3m")).Point) // [立直]
 
 	// 子家立直荣和，带宝牌
 	ronPoints := []int{}
@@ -70,7 +100,7 @@ func TestCalcRonPointWithHands(t *testing.T) {
 		}).Point
 		ronPoints = append(ronPoints, ronPoint)
 	}
-	assert.Equal(t, ronPoints, []int{1300, 2600, 5200, 8000, 8000, 12000, 12000, 16000, 16000, 16000, 24000, 24000, 32000})
+	assert.Equal(ronPoints, []int{1300, 2600, 5200, 8000, 8000, 12000, 12000, 16000, 16000, 16000, 24000, 24000, 32000})
 
 	// 亲家立直荣和，带宝牌
 	ronPoints = []int{}
@@ -86,7 +116,7 @@ func TestCalcRonPointWithHands(t *testing.T) {
 		}).Point
 		ronPoints = append(ronPoints, ronPoint)
 	}
-	assert.Equal(t, ronPoints, []int{2000, 3900, 7700, 12000, 12000, 18000, 18000, 24000, 24000, 24000, 36000, 36000, 48000})
+	assert.Equal(ronPoints, []int{2000, 3900, 7700, 12000, 12000, 18000, 18000, 24000, 24000, 24000, 36000, 36000, 48000})
 
 	const eps = 1
 
@@ -102,9 +132,9 @@ func TestCalcRonPointWithHands(t *testing.T) {
 			SelfWindTile:  MustStrToTile34("2z"),
 		}, waits
 	}
-	assert.InDelta(t, 3700, first(CalcAvgRiichiPoint(newPIWithWaits("34m 123567p 12355s"))), eps)   // 立直平和
-	assert.InDelta(t, 7500, first(CalcAvgRiichiPoint(newPIWithWaits("13m 123567p 12355s"))), eps)   // 立直三色
-	assert.InDelta(t, 4291, first(CalcAvgRiichiPoint(newPIWithWaits("12366m 234p 345s 55z"))), eps) // 立直白
+	assert.InDelta(3700, first(CalcAvgRiichiPoint(newPIWithWaits("34m 123567p 12355s"))), eps)   // 立直平和
+	assert.InDelta(7500, first(CalcAvgRiichiPoint(newPIWithWaits("13m 123567p 12355s"))), eps)   // 立直三色
+	assert.InDelta(4291, first(CalcAvgRiichiPoint(newPIWithWaits("12366m 234p 345s 55z"))), eps) // 立直白
 
 	// 振听立直时的平均打点
 	newFuritenPIWithWaits := func(humanTiles string, humanDiscardTiles string) (model.PlayerInfo, Waits) {
@@ -117,7 +147,7 @@ func TestCalcRonPointWithHands(t *testing.T) {
 			DiscardTiles:  MustStrToTiles(humanDiscardTiles),
 		}, waits
 	}
-	assert.InDelta(t, 4070, first(CalcAvgRiichiPoint(newFuritenPIWithWaits("45678m 123p 56799s", "9m"))), eps) // 立直平和(自摸)
+	assert.InDelta(4070, first(CalcAvgRiichiPoint(newFuritenPIWithWaits("45678m 123p 56799s", "9m"))), eps) // 立直平和(自摸)
 }
 
 func BenchmarkCalcAvgRiichiPoint(b *testing.B) {

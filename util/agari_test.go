@@ -2,11 +2,10 @@ package util
 
 import (
 	"testing"
-	"fmt"
 	"github.com/stretchr/testify/assert"
+	"strings"
 )
 
-// TODO: assert
 func TestIsAgari(t *testing.T) {
 	for _, humanTiles := range []string{
 		"123456789m 12344s",
@@ -26,6 +25,7 @@ func TestIsAgari(t *testing.T) {
 	} {
 		assert.True(t, IsAgari(MustStrToTiles34(humanTiles)), humanTiles)
 	}
+
 	for _, humanTiles := range []string{
 		"119m 19p 19s 1234567z", // 国士无双自行判断
 		"1133555599m 1122s",
@@ -39,38 +39,47 @@ func TestIsAgari(t *testing.T) {
 }
 
 func TestDivideTiles34(t *testing.T) {
-	for _, tiles := range []string{
-		"123456789m 12344s",     // [44s 123m 456m 789m 123s][一气通贯]
-		"11122345678999s",       // [22s 111s 999s 345s 678s][九莲宝灯]
-		"111234678m 11122z",     // [22z 111m 111z 234m 678m]
-		"22334455m 234s 234p",   // [22m 345m 345m 234p 234s][一杯口], [55m 234m 234m 234p 234s][一杯口]
-		"111222333m 234s 11z",   // [11z 111m 222m 333m 234s], [11z 123m 123m 123m 234s][一杯口]
-		"112233m 112233p 11z",   // [11z 123m 123m 123p 123p][两杯口]   不是七对子，且不算一杯口
-		"11223344556677z",       // [七对子]
-		"119m 19p 19s 1234567z", // 国士无双自行判断
-		"11m 345p",
-		"1122m",
-		"11m 112233p",
-		"11m 123456789p", // [11m 123p 456p 789p][一气通贯]
-		"11m 111p 111s",
-		"111m 11p 111s",
-		"111m 111p 11s",
-	} {
-		fmt.Print(tiles + " = ")
-		tiles34 := MustStrToTiles34(tiles)
-		results := DivideTiles34(tiles34)
-		if len(results) == 0 {
-			fmt.Println("[国士/未和牌]")
-			continue
+	assert := assert.New(t)
+
+	divideTiles := func(humanTiles string) string {
+		drs := DivideTiles34(MustStrToTiles34(humanTiles))
+		if len(drs) == 0 {
+			return "国士 or 未和牌"
 		}
-		for i, result := range results {
-			if i > 0 {
-				fmt.Print(", ")
-			}
-			fmt.Print(result)
+		results := []string{}
+		for _, dr := range drs {
+			results = append(results, dr.String())
 		}
-		fmt.Println()
+		return strings.Join(results, ", ")
 	}
+
+	assert.Equal("[七对子]", divideTiles("11223344556677z"))
+	assert.Equal("[七对子]", divideTiles("223344m 11335577s"))
+	assert.Equal("[99s 111s 123s 456s 789s][九莲宝灯][一气通贯]", divideTiles("11112345678999s"))
+	assert.Equal("[22s 111s 999s 345s 678s][九莲宝灯]", divideTiles("11122345678999s"))
+	assert.Equal("[11s 999s 123s 345s 678s][九莲宝灯]", divideTiles("11123345678999s"))
+	assert.Equal("[99s 111s 234s 456s 789s][九莲宝灯]", divideTiles("11123445678999s"))
+	assert.Equal("[55s 111s 999s 234s 678s][九莲宝灯]", divideTiles("11123455678999s"))
+	assert.Equal("[11s 999s 123s 456s 789s][九莲宝灯][一气通贯]", divideTiles("11123456789999s"))
+	assert.Equal("[44s 123m 456m 789m 123s][一气通贯]", divideTiles("123456789m 12344s"))
+	assert.Equal("[11m 123p 456p 789p][一气通贯]", divideTiles("11m 123456789p"))
+	assert.Equal("[11p 123p 456p 789p][一气通贯]", divideTiles("11123456789p"))
+	assert.Equal("[11z 123m 123m 123p 123p][两杯口]", divideTiles("112233m 112233p 11z"))
+	assert.Equal("[22m 345m 345m 234p 234s][一杯口], [55m 234m 234m 234p 234s][一杯口]", divideTiles("22334455m 234s 234p"))
+	assert.Equal("[11z 111m 222m 333m 234s], [11z 123m 123m 123m 234s][一杯口]", divideTiles("111222333m 234s 11z"))
+	assert.Equal("[11m 234m 234m], [44m 123m 123m]", divideTiles("11223344m"))
+	assert.Equal("[22z 111m 111z 234m 678m]", divideTiles("111234678m 11122z"))
+	assert.Equal("[11m 345p]", divideTiles("11m 345p"))
+	assert.Equal("[55p]", divideTiles("55p"))
+	assert.Equal("[11m 111p 111s]", divideTiles("11m 111p 111s"))
+	assert.Equal("[11p 111m 111s]", divideTiles("111m 11p 111s"))
+	assert.Equal("[11s 111m 111p]", divideTiles("111m 111p 11s"))
+
+	assert.Equal("国士 or 未和牌", divideTiles("119m 19p 19s 1234567z"))
+
+	assert.Equal("国士 or 未和牌", divideTiles("4888m 499p 134557s 4z"))
+	assert.Equal("国士 or 未和牌", divideTiles("1122m"))
+	assert.Equal("国士 or 未和牌", divideTiles("5m"))
 }
 
 func BenchmarkIsAgari(b *testing.B) {

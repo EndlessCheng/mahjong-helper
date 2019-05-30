@@ -97,29 +97,7 @@ func Test_findYakuTypes(t *testing.T) {
 	))
 }
 
-// 寻找所有可能的役种
-// 调用前请设置 WinTile
-func _findAllYakuTypes(playerInfo *model.PlayerInfo) (yakuTypes []int) {
-	canYaku := make([]bool, maxYakuType)
-	for _, result := range DivideTiles34(playerInfo.HandTiles34) {
-		_hi := &_handInfo{
-			PlayerInfo:   playerInfo,
-			divideResult: result,
-		}
-		yakuTypes := findYakuTypes(_hi)
-		for _, t := range yakuTypes {
-			canYaku[t] = true
-		}
-	}
-	for yakuType, isYaku := range canYaku {
-		if isYaku {
-			yakuTypes = append(yakuTypes, yakuType)
-		}
-	}
-	return
-}
-
-func BenchmarkFindAllYakuTypes(b *testing.B) {
+func Benchmark_findYakuTypes(b *testing.B) {
 	pi := &model.PlayerInfo{
 		HandTiles34:   MustStrToTiles34("345m 345789p 34555s"),
 		IsTsumo:       false,
@@ -128,7 +106,12 @@ func BenchmarkFindAllYakuTypes(b *testing.B) {
 		SelfWindTile:  27,
 	}
 	for i := 0; i < b.N; i++ {
-		// 1746 ns/op
-		_findAllYakuTypes(pi)
+		// 1926 ns/op
+		for _, result := range DivideTiles34(pi.HandTiles34) {
+			findYakuTypes(&_handInfo{
+				PlayerInfo:   pi,
+				divideResult: result,
+			})
+		}
 	}
 }
