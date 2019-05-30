@@ -426,8 +426,8 @@ func printWaitsWithImproves13_oneRow(result13 *util.Hand13AnalysisResult, discar
 			fmt.Print(" ")
 			color.New(color.FgHiGreen).Printf(util.YakuTypesWithDoraToStr(result13.YakuTypes, result13.DoraCount))
 		}
-	} else if shanten >= 0 && shanten <= 1 && result13.IsNaki {
-		// 鸣牌时的无役提示
+	} else if shanten >= 0 && shanten <= 2 && result13.IsNaki {
+		// 鸣牌时的无役提示（从听牌到两向听）
 		fmt.Print(" ")
 		color.New(color.FgHiRed).Printf("[无役]")
 	}
