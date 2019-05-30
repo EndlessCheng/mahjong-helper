@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TODO: assert
 func TestIsAgari(t *testing.T) {
 	for _, humanTiles := range []string{
 		"123456789m 12344s",

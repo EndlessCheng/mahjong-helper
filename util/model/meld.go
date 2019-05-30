@@ -16,7 +16,7 @@ type Meld struct {
 	SelfTiles  []int // 手牌中组成副露的牌（用于鸣牌分析）
 	CalledTile int   // 被鸣的牌
 
-	// TODO: 重构
+	// TODO: 重构 ContainRedFive RedFiveFromOthers
 	ContainRedFive    bool // 是否包含赤5
 	RedFiveFromOthers bool // 赤5是否来自他家（用于获取宝牌数）
 }
