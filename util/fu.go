@@ -21,11 +21,10 @@ func (hi *_handInfo) calcFu() int {
 	fu := baseFu
 
 	// 暗刻加符
-	// 若刻子数不等于暗刻数，则荣和的牌被算到了刻子中
-	ronKotsu := len(divideResult.KotsuTiles) != hi.numAnkou()
+	_, ronKotsu := hi.numAnkou()
 	for _, tile := range divideResult.KotsuTiles {
 		var _fu int
-		// 荣和算明刻
+		// 荣和刻子算明刻
 		if ronKotsu && tile == hi.WinTile {
 			_fu = 2
 		} else {

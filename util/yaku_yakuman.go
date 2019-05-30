@@ -1,34 +1,17 @@
 package util
 
-import "github.com/EndlessCheng/mahjong-helper/util/model"
-
 // 门清限定
 func (hi *_handInfo) suuAnkou() bool {
 	// 非单骑和牌
-	return hi.WinTile != hi.divideResult.PairTile && hi.numAnkou() == 4
+	n, _ := hi.numAnkou()
+	return hi.WinTile != hi.divideResult.PairTile && n == 4
 }
 
 // 门清限定
 func (hi *_handInfo) suuAnkouTanki() bool {
 	// 单骑和牌
-	return hi.WinTile == hi.divideResult.PairTile && hi.numAnkou() == 4
-}
-
-// 计算在指定牌中的刻子个数
-func (hi *_handInfo) _countSpecialKotsu(specialTilesL, specialTilesLR int) (cnt int) {
-	for _, tile := range hi.divideResult.KotsuTiles {
-		if tile >= specialTilesL && tile <= specialTilesLR {
-			cnt++
-		}
-	}
-	for _, meld := range hi.Melds {
-		if meld.MeldType != model.MeldTypeChi {
-			if tile := meld.Tiles[0]; tile >= specialTilesL && tile <= specialTilesLR {
-				cnt++
-			}
-		}
-	}
-	return
+	n, _ := hi.numAnkou()
+	return hi.WinTile == hi.divideResult.PairTile && n == 4
 }
 
 func (hi *_handInfo) daisangen() bool {
@@ -44,22 +27,24 @@ func (hi *_handInfo) daisuushii() bool {
 }
 
 func (hi *_handInfo) tsuuiisou() bool {
+	if hi.divideResult.IsChiitoi {
+		// 大七星
+		for _, c := range hi.HandTiles34[27:] {
+			if c == 0 {
+				return false
+			}
+		}
+		return true
+	}
+
 	if hi.divideResult.PairTile < 27 {
 		return false
 	}
-	if len(hi.divideResult.ShuntsuFirstTiles) > 0 {
+	if len(hi.allShuntsuFirstTiles()) > 0 {
 		return false
 	}
-	for _, tile := range hi.divideResult.KotsuTiles {
+	for _, tile := range hi.allKotsuTiles() {
 		if tile < 27 {
-			return false
-		}
-	}
-	for _, meld := range hi.Melds {
-		if meld.MeldType == model.MeldTypeChi {
-			return false
-		}
-		if meld.Tiles[0] < 27 {
 			return false
 		}
 	}
@@ -67,6 +52,10 @@ func (hi *_handInfo) tsuuiisou() bool {
 }
 
 func (hi *_handInfo) chinroutou() bool {
+	if hi.divideResult.IsChiitoi {
+		return false
+	}
+
 	isValid := func(tile int) bool {
 		if tile >= 27 {
 			return false
@@ -78,19 +67,11 @@ func (hi *_handInfo) chinroutou() bool {
 	if !isValid(hi.divideResult.PairTile) {
 		return false
 	}
-	if len(hi.divideResult.ShuntsuFirstTiles) > 0 {
+	if len(hi.allShuntsuFirstTiles()) > 0 {
 		return false
 	}
-	for _, tile := range hi.divideResult.KotsuTiles {
+	for _, tile := range hi.allKotsuTiles() {
 		if !isValid(tile) {
-			return false
-		}
-	}
-	for _, meld := range hi.Melds {
-		if meld.MeldType == model.MeldTypeChi {
-			return false
-		}
-		if !isValid(meld.Tiles[0]) {
 			return false
 		}
 	}
@@ -98,38 +79,29 @@ func (hi *_handInfo) chinroutou() bool {
 }
 
 func (hi *_handInfo) ryuuiisou() bool {
-	isValid := func(tile int) bool {
-		return InInts(tile, []int{19, 20, 21, 23, 25, 32})
-	}
-
-	if !isValid(hi.divideResult.PairTile) {
+	if hi.divideResult.IsChiitoi {
 		return false
 	}
-	for _, tile := range hi.divideResult.ShuntsuFirstTiles {
+
+	ryuuTiles := []int{19, 20, 21, 23, 25, 32}
+
+	if !InInts(hi.divideResult.PairTile, ryuuTiles) {
+		return false
+	}
+	for _, tile := range hi.allShuntsuFirstTiles() {
 		if tile != 19 { // 只能是 234s
 			return false
 		}
 	}
-	for _, tile := range hi.divideResult.KotsuTiles {
-		if !isValid(tile) {
+	for _, tile := range hi.allKotsuTiles() {
+		if !InInts(tile, ryuuTiles) {
 			return false
-		}
-	}
-	for _, meld := range hi.Melds {
-		tile := meld.Tiles[0]
-		if meld.MeldType == model.MeldTypeChi {
-			if tile != 19 { // 只能是 234s
-				return false
-			}
-		} else {
-			if !isValid(tile) {
-				return false
-			}
 		}
 	}
 	return true
 }
 
+// 调用前已经不是七对了
 func (hi *_handInfo) _isChuuren9() bool {
 	// 去掉 WinTile 后，剩余的牌必须是 1112345678999
 	// 也就是说，hi.HandTiles34[hi.WinTile] 多出的那一枚必须正好是 WinTile
@@ -140,7 +112,7 @@ func (hi *_handInfo) _isChuuren9() bool {
 		return hi.WinTile == idx
 	}
 	end := 9*tileType + 8
-	for ; idx < end; idx++ {
+	for ; idx < end; idx++ { // 2~8
 		if tiles34[idx] == 2 {
 			return hi.WinTile == idx
 		}
