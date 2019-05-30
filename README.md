@@ -29,7 +29,7 @@
 
 分下面几步：
 
-1. 前往 [release](https://github.com/EndlessCheng/mahjong-helper/releases/latest) 页面下载助手
+1. 前往 [releases](https://github.com/EndlessCheng/mahjong-helper/releases/latest) 页面下载助手
 
 2. 雀魂需要浏览器允许本地证书。目前仅支持 Chrome 和 360 浏览器等使用了 Chrome 内核的浏览器：
    
