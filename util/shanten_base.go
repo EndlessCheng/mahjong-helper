@@ -33,14 +33,14 @@ type shanten struct {
 	numberTatsu   int
 	numberPairs   int
 	numberJidahai int // 13枚にしてから少なくとも打牌しなければならない字牌の数 -> これより向聴数は下がらない
-	ankanTiles    int // 暗杠，28bit数位压缩：27bit数牌|1bit字牌
-	isolatedTiles int // 孤张，28bit数位压缩：27bit数牌|1bit字牌
+	ankanTiles    int // 暗杠，28bit 位压缩：27bit数牌|1bit字牌
+	isolatedTiles int // 孤张，28bit 位压缩：27bit数牌|1bit字牌
 	minShanten    int
 }
 
 func (st *shanten) scanCharacterTiles(countOfTiles int) {
-	ankanTiles := 0    // 暗杠，7bit数位压缩
-	isolatedTiles := 0 // 孤张，7bit数位压缩
+	ankanTiles := 0    // 暗杠，7bit 位压缩
+	isolatedTiles := 0 // 孤张，7bit 位压缩
 
 	for i, c := range st.tiles[27:] {
 		if c == 0 {
@@ -163,7 +163,7 @@ func (st *shanten) increaseIsolatedTile(k int) {
 }
 func (st *shanten) decreaseIsolatedTile(k int) {
 	st.tiles[k]++
-	st.isolatedTiles &= ^(1 << uint(k))
+	st.isolatedTiles &^= 1 << uint(k)
 }
 
 func (st *shanten) run(depth int) {
