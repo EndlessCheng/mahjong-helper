@@ -87,7 +87,7 @@ func (st *shanten) calcNormalShanten() int {
 			_shanten++
 		}
 	}
-	if numMentsuKouho > 4 { // 面子过多
+	if numMentsuKouho > 4 { // 面子候补过多
 		_shanten += numMentsuKouho - 4
 	}
 	if _shanten != shantenStateAgari && _shanten < st.numberJidahai {
