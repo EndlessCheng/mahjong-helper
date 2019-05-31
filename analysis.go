@@ -45,7 +45,6 @@ func analysisPlayerWithRisk(playerInfo *model.PlayerInfo, mixedRiskTable riskTab
 
 		// 提示信息
 		if shanten == -1 {
-			// TODO: 拒和
 			color.HiRed("【已和牌】")
 		} else if shanten == 0 {
 			if len(results14) > 0 {
@@ -100,7 +99,7 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool
 
 	// 提示信息
 	if shanten == -1 {
-		color.HiRed("【已胡牌】")
+		color.HiRed("【已和牌】")
 	} else if shanten == 0 {
 		// 局收支相近时，提示：局收支相近，追求和率打xx，追求打点打xx
 	} else if shanten == 1 {
