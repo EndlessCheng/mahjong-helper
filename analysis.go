@@ -110,7 +110,6 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool
 	}
 
 	// 鸣牌何切分析结果
-	fmt.Print("鸣牌后")
 	printResults14WithRisk(results14, mixedRiskTable)
 	printResults14WithRisk(incShantenResults14, mixedRiskTable)
 }
