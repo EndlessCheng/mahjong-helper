@@ -92,6 +92,7 @@ func CalcPoint(playerInfo *model.PlayerInfo) (result *PointResult) {
 	result = &PointResult{}
 	isNaki := playerInfo.IsNaki()
 	var han, fu int
+	numDora := playerInfo.CountDora()
 	for _, divideResult := range DivideTiles34(playerInfo.HandTiles34) {
 		_hi := &_handInfo{
 			PlayerInfo:   playerInfo,
@@ -105,7 +106,7 @@ func CalcPoint(playerInfo *model.PlayerInfo) (result *PointResult) {
 		yakumanTimes := CalcYakumanTimes(yakuTypes, isNaki)
 		if yakumanTimes == 0 {
 			han = CalcYakuHan(yakuTypes, isNaki)
-			han += _hi.CountDora()
+			han += numDora
 			fu = _hi.calcFu(isNaki)
 		}
 		var pt int
