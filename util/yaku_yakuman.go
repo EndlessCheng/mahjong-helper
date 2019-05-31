@@ -2,16 +2,22 @@ package util
 
 // 门清限定
 func (hi *_handInfo) suuAnkou() bool {
+	if hi.WinTile == hi.divideResult.PairTile {
+		return false
+	}
 	// 非单骑和牌
 	n, _ := hi.numAnkou()
-	return hi.WinTile != hi.divideResult.PairTile && n == 4
+	return n == 4
 }
 
 // 门清限定
 func (hi *_handInfo) suuAnkouTanki() bool {
+	if hi.WinTile != hi.divideResult.PairTile {
+		return false
+	}
 	// 单骑和牌
 	n, _ := hi.numAnkou()
-	return hi.WinTile == hi.divideResult.PairTile && n == 4
+	return n == 4
 }
 
 func (hi *_handInfo) daisangen() bool {
