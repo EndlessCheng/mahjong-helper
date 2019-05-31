@@ -9,6 +9,20 @@ func boolToInt(b bool) int {
 	return 0
 }
 
+func Lower(c byte) byte {
+	if c >= 'A' && c <= 'Z' {
+		c += 32
+	}
+	return c
+}
+
+func Upper(c byte) byte {
+	if c >= 'a' && c <= 'z' {
+		c -= 32
+	}
+	return c
+}
+
 func ByteAtStr(b byte, s string) int {
 	for i, _b := range []byte(s) {
 		if _b == b {

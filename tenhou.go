@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 	"sort"
+	"github.com/EndlessCheng/mahjong-helper/util"
 )
 
 const (
@@ -272,7 +273,7 @@ func (d *tenhouRoundData) IsDiscard() bool {
 
 func (d *tenhouRoundData) ParseDiscard() (who int, discardTile int, isRedFive bool, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int) {
 	// D=自家, e/E=下家, f/F=对家, g/G=上家
-	who = int(lower(d.msg.Tag[0]) - 'd')
+	who = int(util.Lower(d.msg.Tag[0]) - 'd')
 	rawTile := d.msg.Tag[1:]
 	discardTile, isRedFive = d._parseTenhouTile(rawTile)
 	if d.msg.Tag[0] != 'D' {
