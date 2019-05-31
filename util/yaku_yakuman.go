@@ -84,23 +84,23 @@ func (hi *_handInfo) chinroutou() bool {
 	return true
 }
 
+var _ryuuTiles = []int{19, 20, 21, 23, 25, 32}
+
 func (hi *_handInfo) ryuuiisou() bool {
 	if hi.divideResult.IsChiitoi {
 		return false
 	}
 
-	ryuuTiles := []int{19, 20, 21, 23, 25, 32}
-
-	if !InInts(hi.divideResult.PairTile, ryuuTiles) {
-		return false
-	}
 	for _, tile := range hi.allShuntsuFirstTiles {
 		if tile != 19 { // 只能是 234s
 			return false
 		}
 	}
+	if !InInts(hi.divideResult.PairTile, _ryuuTiles) {
+		return false
+	}
 	for _, tile := range hi.allKotsuTiles {
-		if !InInts(tile, ryuuTiles) {
+		if !InInts(tile, _ryuuTiles) {
 			return false
 		}
 	}
