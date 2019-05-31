@@ -68,7 +68,7 @@ func analysisPlayerWithRisk(playerInfo *model.PlayerInfo, mixedRiskTable riskTab
 		return fmt.Errorf("参数错误: %d 张牌", countOfTiles)
 	}
 
-	fmt.Println() // TODO: remove?
+	fmt.Println()
 	return nil
 }
 
@@ -78,13 +78,13 @@ func analysisPlayerWithRisk(playerInfo *model.PlayerInfo, mixedRiskTable riskTab
 // isRedFive: 此舍牌是否为赤5
 // allowChi: 是否能吃
 // mixedRiskTable: 危险度表
-func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool, allowChi bool, mixedRiskTable riskTable) {
+func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool, allowChi bool, mixedRiskTable riskTable) error {
 	// 原始手牌分析
 	result := util.CalculateShantenWithImproves13(playerInfo)
 	// 副露分析
 	shanten, results14, incShantenResults14 := util.CalculateMeld(playerInfo, targetTile34, isRedFive, allowChi)
 	if len(results14) == 0 && len(incShantenResults14) == 0 {
-		return
+		return fmt.Errorf("输入错误：无法鸣这张牌")
 	}
 
 	// 鸣牌
@@ -111,6 +111,7 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool
 	// 鸣牌何切分析结果
 	printResults14WithRisk(results14, mixedRiskTable)
 	printResults14WithRisk(incShantenResults14, mixedRiskTable)
+	return nil
 }
 
 func analysisHumanTiles(humanTilesInfo *model.HumanTilesInfo) (playerInfo *model.PlayerInfo, err error) {
@@ -125,6 +126,14 @@ func analysisHumanTiles(humanTilesInfo *model.HumanTilesInfo) (playerInfo *model
 	}
 
 	tiles34, numRedFives, err := util.StrToTiles34(humanTilesInfo.HumanTiles)
+	if err != nil {
+		return
+	}
+	tileCount := util.CountOfTiles34(tiles34)
+	if tileCount%3 == 0 {
+		return nil, fmt.Errorf("输入错误: %s 是 %d 张牌", humanTilesInfo.HumanTiles, tileCount)
+	}
+
 	melds := []model.Meld{}
 	for _, humanMeld := range humanTilesInfo.HumanMelds {
 		tiles, _numRedFives, er := util.StrToTiles(humanMeld)
@@ -143,7 +152,7 @@ func analysisHumanTiles(humanTilesInfo *model.HumanTilesInfo) (playerInfo *model
 		case len(tiles) == 4 && !isUpper:
 			meldType = model.MeldTypeMinkan
 		default:
-			return nil, fmt.Errorf("解析错误: %s", humanMeld)
+			return nil, fmt.Errorf("输入错误: %s", humanMeld)
 		}
 		containRedFive := false
 		for i, c := range _numRedFives {
@@ -158,6 +167,7 @@ func analysisHumanTiles(humanTilesInfo *model.HumanTilesInfo) (playerInfo *model
 			ContainRedFive: containRedFive,
 		})
 	}
+
 	playerInfo = model.NewSimplePlayerInfo(tiles34, melds)
 	playerInfo.NumRedFives = numRedFives
 
@@ -169,11 +179,16 @@ func analysisHumanTiles(humanTilesInfo *model.HumanTilesInfo) (playerInfo *model
 	}
 
 	if humanTilesInfo.HumanTargetTile != "" {
+		if tileCount%3 == 2 {
+			return nil, fmt.Errorf("输入错误: %s 是 %d 张牌", humanTilesInfo.HumanTiles, tileCount)
+		}
 		targetTile34, isRedFive, er := util.StrToTile34(humanTilesInfo.HumanTargetTile)
 		if er != nil {
 			return nil, er
 		}
-		analysisMeld(playerInfo, targetTile34, isRedFive, true, nil)
+		if er := analysisMeld(playerInfo, targetTile34, isRedFive, true, nil); er != nil {
+			return nil, er
+		}
 		return
 	}
 

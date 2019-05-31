@@ -345,7 +345,7 @@ func (d *roundData) newModelPlayerInfo() *model.PlayerInfo {
 		SelfWindTile:  selfPlayer.selfWindTile,
 		IsParent:      d.dealer == self,
 		//IsDaburii:     d.isPlayerDaburii(self), // FIXME PLS，应该在立直时就判断
-		IsRiichi:      selfPlayer.isReached,
+		IsRiichi: selfPlayer.isReached,
 
 		DiscardTiles: normalDiscardTiles(selfPlayer.discardTiles),
 		LeftTiles34:  d.leftCounts,
@@ -636,7 +636,7 @@ func (d *roundData) analysis() error {
 			// TODO: 提醒: 消除海底/避免河底/型听
 			allowChi := who == 3 // 上家舍牌允许吃
 			mixedRiskTable := riskTables.mixedRiskTable()
-			analysisMeld(d.newModelPlayerInfo(), discardTile, isRedFive, allowChi, mixedRiskTable)
+			return analysisMeld(d.newModelPlayerInfo(), discardTile, isRedFive, allowChi, mixedRiskTable)
 		}
 	case d.parser.IsRoundWin():
 		if !debugMode {
