@@ -198,8 +198,8 @@ func runServer(isHTTPS bool) {
 		majsoulMessageQueue: make(chan []byte, 100),
 		majsoulRoundData:    &majsoulRoundData{accountID: gameConf.MajsoulAccountID},
 	}
-	h.tenhouRoundData.roundData = newRoundData(h.tenhouRoundData, 0, 0)
-	h.majsoulRoundData.roundData = newRoundData(h.majsoulRoundData, 0, 0)
+	h.tenhouRoundData.roundData = newGame(h.tenhouRoundData)
+	h.majsoulRoundData.roundData = newGame(h.majsoulRoundData)
 
 	go h.runAnalysisTenhouMessageTask()
 	go h.runAnalysisMajsoulMessageTask()

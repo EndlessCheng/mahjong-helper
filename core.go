@@ -163,6 +163,11 @@ func newRoundData(parser DataParser, roundNumber int, dealer int) *roundData {
 	}
 }
 
+func newGame(parser DataParser) *roundData {
+	return newRoundData(parser, 0, 0)
+}
+
+// 新的一局
 func (d *roundData) reset(roundNumber int, dealer int) {
 	newData := newRoundData(d.parser, roundNumber, dealer)
 	*d = *newData

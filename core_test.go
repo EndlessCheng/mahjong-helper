@@ -27,7 +27,7 @@ func Test_majsoul_analysis(t *testing.T) {
 	endLo := -1
 
 	majsoulRoundData := &majsoulRoundData{accountID: accountID}
-	majsoulRoundData.roundData = newRoundData(majsoulRoundData, 0, 0)
+	majsoulRoundData.roundData = newGame(majsoulRoundData)
 
 	lines := strings.Split(string(logData), "\n")
 	if startLo == -1 {
@@ -93,7 +93,7 @@ func Test_tenhou_analysis(t *testing.T) {
 	endLo := -1
 
 	tenhouRoundData := &tenhouRoundData{isRoundEnd: true}
-	tenhouRoundData.roundData = newRoundData(tenhouRoundData, 0, 0)
+	tenhouRoundData.roundData = newGame(tenhouRoundData)
 
 	lines := strings.Split(string(logData), "\n")
 	if startLo == -1 {

@@ -19,7 +19,7 @@ func Test_parseTenhouMeld(t *testing.T) {
 func TestAnalysisTilesRisk(t *testing.T) {
 	debugMode = true
 
-	d := newRoundData(&tenhouRoundData{}, 0, 0)
+	d := newGame(&tenhouRoundData{})
 	handsTiles34, _, err := util.StrToTiles34("123456789m 123456789p 123456789s 1234567z")
 	if err != nil {
 		t.Fatal(err)
