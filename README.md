@@ -60,11 +60,11 @@
 
 ### 有关界面说明
 
-目前助手是在终端窗口下显示信息的
+目前助手是在终端窗口下显示信息的。
 
-对于 Windows 用户，受 cmd 终端颜色所限，可能会有颜色过暗或过亮的问题
+对于 Windows 用户，受 cmd 终端颜色所限，可能会有颜色过暗或过亮的问题。
 
-建议下载增强版终端 Cmder（[官网下载](https://cmder.net/) | [百度云备份](https://pan.baidu.com/s/1Hv1nEs4Wu2EHAnKOWOnRaQ) iug7）来获得更好的界面显示
+建议下载增强版终端 Cmder（[官网下载](https://cmder.net/) | [百度云备份](https://pan.baidu.com/s/1Hv1nEs4Wu2EHAnKOWOnRaQ) iug7）来获得更好的界面显示。除了改进显示外还可以透明窗口置顶，推荐分辨率小的用户使用。
 
 
 ## 参与讨论
