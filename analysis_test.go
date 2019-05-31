@@ -52,5 +52,6 @@ func TestAnalysis(t *testing.T) {
 	raw = "3456667m 34566p 5s"
 	raw = "24688m 34s & 6666P 234p + 3m"
 	raw = "24688m 34s & 111p 234p + 3m"
+	raw = "1112234567999m"
 	analysisHumanTiles(model.NewSimpleHumanTilesInfo(raw))
 }
