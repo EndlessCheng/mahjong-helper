@@ -13,6 +13,7 @@ func interact(humanTilesInfo *model.HumanTilesInfo) error {
 		return err
 	}
 	tiles34 := playerInfo.HandTiles34
+	leftTiles34 := playerInfo.LeftTiles34
 	var tile string
 	for {
 		count := util.CountOfTiles34(tiles34)
@@ -36,6 +37,7 @@ func interact(humanTilesInfo *model.HumanTilesInfo) error {
 			if isRedFive {
 				playerInfo.NumRedFives[tile/9]++
 			}
+			leftTiles34[tile]--
 			tiles34[tile]++
 		case 2:
 			fmt.Print("> 切 ")
@@ -55,6 +57,7 @@ func interact(humanTilesInfo *model.HumanTilesInfo) error {
 				playerInfo.NumRedFives[tile/9]--
 			}
 			tiles34[tile]--
+			playerInfo.DiscardTiles = append(playerInfo.DiscardTiles, tile)
 		}
 		if err := analysisPlayerWithRisk(playerInfo, nil); err != nil {
 			fmt.Fprintln(os.Stderr, err)

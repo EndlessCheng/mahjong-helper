@@ -1,5 +1,7 @@
 package model
 
+import "fmt"
+
 type PlayerInfo struct {
 	HandTiles34 []int  // 手牌，不含副露
 	Melds       []Meld // 副露
@@ -22,13 +24,22 @@ type PlayerInfo struct {
 }
 
 func NewSimplePlayerInfo(tiles34 []int, melds []Meld) *PlayerInfo {
+	leftTiles34 := InitLeftTiles34WithTiles34(tiles34)
+	for _, meld := range melds {
+		for _, tile := range meld.Tiles {
+			leftTiles34[tile]--
+			if leftTiles34[tile] < 0 {
+				panic(fmt.Sprint("副露数据不合法", melds))
+			}
+		}
+	}
 	return &PlayerInfo{
 		HandTiles34:   tiles34,
 		Melds:         melds,
-		NumRedFives:   []int{0, 0, 0},
+		NumRedFives:   make([]int, 3),
 		RoundWindTile: 27,
 		SelfWindTile:  27,
-		LeftTiles34:   InitLeftTiles34WithTiles34(tiles34),
+		LeftTiles34:   leftTiles34,
 	}
 }
 
