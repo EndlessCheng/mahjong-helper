@@ -49,7 +49,7 @@
 
 `go get -u -v github.com/EndlessCheng/mahjong-helper/...`
 
-完成后程序生成于 `$GOPATH/bin/` 目录下
+完成后程序生成于 `$GOPATH/bin/` 目录下。
 
 
 ## 使用说明
