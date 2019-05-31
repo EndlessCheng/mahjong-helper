@@ -19,7 +19,7 @@ func humanMeld(meld model.Meld) string {
 func humanHands(playerInfo *model.PlayerInfo) string {
 	humanHands := util.Tiles34ToStr(playerInfo.HandTiles34)
 	if len(playerInfo.Melds) > 0 {
-		humanHands += " &"
+		humanHands += " " + model.SepMeld
 		for i := len(playerInfo.Melds) - 1; i >= 0; i-- {
 			humanHands += " " + humanMeld(playerInfo.Melds[i])
 		}
@@ -89,7 +89,7 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool
 
 	// 鸣牌
 	humanTiles := humanHands(playerInfo)
-	handsTobeNaki := humanTiles + " + " + util.Tile34ToStr(targetTile34) + "?"
+	handsTobeNaki := humanTiles + " " + model.SepTargetTile + " " + util.Tile34ToStr(targetTile34) + "?"
 	fmt.Println(handsTobeNaki)
 	fmt.Println(strings.Repeat("=", len(handsTobeNaki)))
 

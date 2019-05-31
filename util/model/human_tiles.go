@@ -22,10 +22,15 @@ func NewSimpleHumanTilesInfo(humanTiles string) *HumanTilesInfo {
 	}
 }
 
+const (
+	SepMeld       = "#"
+	SepTargetTile = "+"
+)
+
 func (i *HumanTilesInfo) SelfParse() error {
 	raw := strings.TrimSpace(i.HumanTiles)
 
-	splits := strings.Split(raw, "+")
+	splits := strings.Split(raw, SepTargetTile)
 	if len(splits) >= 2 {
 		raw = strings.TrimSpace(splits[0])
 		tile := strings.TrimSpace(splits[1])
@@ -35,7 +40,7 @@ func (i *HumanTilesInfo) SelfParse() error {
 		i.HumanTargetTile = tile[:2]
 	}
 
-	splits = strings.Split(raw, "&")
+	splits = strings.Split(raw, SepMeld)
 	if len(splits) >= 2 {
 		raw = strings.TrimSpace(splits[0])
 		humanMelds := strings.TrimSpace(splits[1])
