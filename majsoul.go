@@ -123,11 +123,7 @@ func (d *majsoulRoundData) parseWho(seat int) int {
 }
 
 func (d *majsoulRoundData) mustParseMajsoulTile(humanTile string) (tile34 int, isRedFive bool) {
-	if humanTile[0] == '0' {
-		humanTile = "5" + humanTile[1:]
-		isRedFive = true
-	}
-	tile34, err := util.StrToTile34(humanTile)
+	tile34, isRedFive, err := util.StrToTile34(humanTile)
 	if err != nil {
 		panic(err)
 	}

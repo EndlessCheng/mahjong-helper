@@ -29,6 +29,7 @@ type mjHandler struct {
 	majsoulRoundData    *majsoulRoundData
 }
 
+// 调试用
 func (h *mjHandler) index(c echo.Context) error {
 	data, err := ioutil.ReadAll(c.Request().Body)
 	if err != nil {
@@ -40,6 +41,7 @@ func (h *mjHandler) index(c echo.Context) error {
 	return c.String(http.StatusOK, time.Now().Format("2006-01-02 15:04:05"))
 }
 
+// 打一摸一分析器
 func (h *mjHandler) analysis(c echo.Context) error {
 	if h.analysing {
 		return c.NoContent(http.StatusForbidden)
@@ -51,8 +53,6 @@ func (h *mjHandler) analysis(c echo.Context) error {
 	d := struct {
 		Reset bool   `json:"reset"`
 		Tiles string `json:"tiles"`
-		//TargetTile string `json:"target_tile"`
-		//ShowDetail bool   `json:"show_detail"`
 	}{}
 	if err := c.Bind(&d); err != nil {
 		fmt.Println(err)
@@ -63,11 +63,6 @@ func (h *mjHandler) analysis(c echo.Context) error {
 		fmt.Println(err)
 		return c.String(http.StatusBadRequest, err.Error())
 	}
-
-	//_, counts, _ := convert(d.Tiles)
-	//tile34, _ := _convert(d.TargetTile)
-	//counts[tile34]--
-	//analysisMeld(counts, nil, tile34, true)
 
 	return c.NoContent(http.StatusOK)
 }
@@ -83,7 +78,6 @@ func (h *mjHandler) analysisTenhou(c echo.Context) error {
 	h.tenhouMessageQueue <- data
 	return c.NoContent(http.StatusOK)
 }
-
 func (h *mjHandler) runAnalysisTenhouMessageTask() {
 	for msg := range h.tenhouMessageQueue {
 		d := tenhouMessage{}
@@ -137,7 +131,6 @@ func (h *mjHandler) analysisMajsoul(c echo.Context) error {
 	h.majsoulMessageQueue <- data
 	return c.NoContent(http.StatusOK)
 }
-
 func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 	for msg := range h.majsoulMessageQueue {
 		d := majsoulMessage{}

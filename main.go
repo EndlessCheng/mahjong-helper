@@ -73,7 +73,7 @@ func main() {
 	isTenhou := flags.Bool("tenhou")
 	isAnalysis := flags.Bool("analysis")
 	isInteractive := flags.Bool("i", "interactive")
-	showImproveDetail = flags.Bool("id", "detail")
+	showImproveDetail = flags.Bool("detail")
 	showAgariAboveShanten1 = flags.Bool("a", "agari")
 	showScore = flags.Bool("s", "score")
 	showAllYakuTypes = flags.Bool("y", "yaku")
@@ -92,13 +92,14 @@ func main() {
 		runServer(false)
 	case isInteractive:
 		// 交互模式
-		interact(humanTilesInfo)
-	case len(restArgs) > 0:
-		//t0 := time.Now()
-		if _, err := analysisHumanTiles(humanTilesInfo); err != nil {
-			fmt.Println(err)
+		if err := interact(humanTilesInfo); err != nil {
+			errorExit(err)
 		}
-		//fmt.Printf("耗时 %.2f 秒\n", float64(time.Now().UnixNano()-t0.UnixNano())/float64(time.Second))
+	case len(restArgs) > 0:
+		// 静态分析
+		if _, err := analysisHumanTiles(humanTilesInfo); err != nil {
+			errorExit(err)
+		}
 	default:
 		// 服务器模式
 		isHTTPS := welcome() == 1

@@ -2,37 +2,68 @@ package util
 
 import (
 	"strings"
-	"sort"
 	"errors"
 	"fmt"
 )
 
+func Tiles34ToTiles(tiles34 []int) (tiles []int) {
+	for i, c := range tiles34 {
+		for j := 0; j < c; j++ {
+			tiles = append(tiles, i)
+		}
+	}
+	return
+}
+
+func TilesToTiles34(tiles []int) (tiles34 []int) {
+	tiles34 = make([]int, 34)
+	for _, tile := range tiles {
+		tiles34[tile]++
+	}
+	return
+}
+
 // e.g. "3m" => 2
-func StrToTile34(humanTile string) (tile34 int, err error) {
+// 可以接收赤5，如 0p
+func StrToTile34(humanTile string) (tile34 int, isRedFive bool, err error) {
 	defer func() {
 		if er := recover(); er != nil {
-			err = errors.New("[StrToTile34] 参数错误: " + humanTile)
+			err = fmt.Errorf("[StrToTile34] %#v 参数错误: %s", er, humanTile)
 		}
 	}()
 
+	wrongHumanTileError := errors.New("[StrToTile34] 参数错误: " + humanTile)
+
 	humanTile = strings.TrimSpace(humanTile)
 	if len(humanTile) != 2 {
-		return -1, errors.New("[StrToTile34] 参数错误: " + humanTile)
+		return -1, false, wrongHumanTileError
 	}
 
-	idx := ByteAtStr(humanTile[1], "mpsz")
+	idx := ByteAtStr(Lower(humanTile[1]), "mpsz")
 	if idx == -1 {
-		return -1, errors.New("[StrToTile34] 参数错误: " + humanTile)
+		return -1, false, wrongHumanTileError
 	}
+
 	i := humanTile[0]
 	if i == '0' {
+		if idx == 3 { // 没有 0z 这种东西
+			return -1, false, wrongHumanTileError
+		}
 		i = '5'
+		isRedFive = true
 	}
-	return 9*idx + int(i-'1'), nil
+
+	tile34 = 9*idx + int(i-'1')
+	if tile34 >= 34 {
+		return -1, false, wrongHumanTileError
+	}
+
+	return
 }
 
+// 调试用
 func MustStrToTile34(humanTile string) int {
-	tile34, err := StrToTile34(humanTile)
+	tile34, _, err := StrToTile34(humanTile)
 	if err != nil {
 		panic(err)
 	}
@@ -40,7 +71,9 @@ func MustStrToTile34(humanTile string) int {
 }
 
 // e.g. "224m 24p" => [0, 2, 0, 1, 0, ..., 1, 0, 1, ...]
-func StrToTiles34(humanTiles string) (tiles34 []int, err error) {
+// 也可以传入不含空格的手牌，如 "224m24p"
+// 可以接收赤5，如 0p
+func StrToTiles34(humanTiles string) (tiles34 []int, numRedFives []int, err error) {
 	defer func() {
 		if er := recover(); er != nil {
 			err = errors.New("[StrToTiles34] 参数错误: " + humanTiles)
@@ -48,43 +81,46 @@ func StrToTiles34(humanTiles string) (tiles34 []int, err error) {
 	}()
 
 	// 在 mpsz 后面加上空格方便解析不含空格的 humanTiles
-	humanTiles = strings.Replace(humanTiles, "m", "m ", -1)
-	humanTiles = strings.Replace(humanTiles, "p", "p ", -1)
-	humanTiles = strings.Replace(humanTiles, "s", "s ", -1)
-	humanTiles = strings.Replace(humanTiles, "z", "z ", -1)
-
+	for _, tileType := range []string{"m", "p", "s", "z"} {
+		humanTiles = strings.Replace(humanTiles, tileType, tileType+" ", -1)
+	}
 	humanTiles = strings.TrimSpace(humanTiles)
 	if humanTiles == "" {
-		return nil, errors.New("[StrToTiles34] 参数错误: 处理的手牌不能为空")
+		return nil, nil, errors.New("[StrToTiles34] 参数错误: 处理的手牌不能为空")
 	}
 
 	tiles34 = make([]int, 34)
+	numRedFives = make([]int, 3)
 	for _, split := range strings.Split(humanTiles, " ") {
 		split = strings.TrimSpace(split)
 		if split == "" {
 			continue
 		}
 		if len(split) < 2 {
-			return nil, errors.New("[StrToTiles34] 参数错误: " + humanTiles)
+			return nil, nil, errors.New("[StrToTiles34] 参数错误: " + humanTiles)
 		}
 		tileType := split[len(split)-1:]
 		for _, c := range split[:len(split)-1] {
 			tile := string(c) + tileType
-			tile34, er := StrToTile34(tile)
+			tile34, isRedFive, er := StrToTile34(tile)
 			if er != nil {
-				return nil, er
+				return nil, nil, er
 			}
 			tiles34[tile34]++
 			if tiles34[tile34] > 4 {
-				return nil, fmt.Errorf("[StrToTiles34] 参数错误: %s 有超过 4 张一样的牌", humanTiles)
+				return nil, nil, fmt.Errorf("[StrToTiles34] 参数错误: %s 有超过 4 张一样的牌", humanTiles)
+			}
+			if isRedFive {
+				numRedFives[tile34/9]++
 			}
 		}
 	}
 	return
 }
 
+// 调试用
 func MustStrToTiles34(humanTiles string) []int {
-	tiles34, err := StrToTiles34(humanTiles)
+	tiles34, _, err := StrToTiles34(humanTiles)
 	if err != nil {
 		panic(err)
 	}
@@ -92,38 +128,18 @@ func MustStrToTiles34(humanTiles string) []int {
 }
 
 // e.g. "11122z" => [27, 27, 27, 28, 28]
-func StrToTiles(humanTiles string) (tiles []int, err error) {
-	defer func() {
-		if er := recover(); er != nil {
-			err = errors.New("[StrToTiles34] 参数错误: " + humanTiles)
-		}
-	}()
-
-	humanTiles = strings.TrimSpace(humanTiles)
-	if humanTiles == "" {
-		return nil, errors.New("[StrToTiles34] 参数错误: 处理的手牌不能为空")
+func StrToTiles(humanTiles string) (tiles []int, numRedFives []int, err error) {
+	tiles34, numRedFives, err := StrToTiles34(humanTiles)
+	if err != nil {
+		return
 	}
-
-	for _, split := range strings.Split(humanTiles, " ") {
-		split = strings.TrimSpace(split)
-		if len(split) < 2 {
-			return nil, errors.New("[StrToTiles34] 参数错误: " + humanTiles)
-		}
-		tileType := split[len(split)-1:]
-		for _, c := range split[:len(split)-1] {
-			tile := string(c) + tileType
-			tile34, er := StrToTile34(tile)
-			if er != nil {
-				return nil, er
-			}
-			tiles = append(tiles, tile34)
-		}
-	}
+	tiles = Tiles34ToTiles(tiles34)
 	return
 }
 
+// 调试用
 func MustStrToTiles(humanTiles string) []int {
-	tiles, err := StrToTiles(humanTiles)
+	tiles, _, err := StrToTiles(humanTiles)
 	if err != nil {
 		panic(err)
 	}
@@ -132,43 +148,13 @@ func MustStrToTiles(humanTiles string) []int {
 
 //
 
-// e.g. [9, 11, 27] => "13p 1z"
-func TilesToStr(tiles []int) (humanTiles string) {
-	_tiles := make([]int, len(tiles))
-	copy(_tiles, tiles)
-	sort.Ints(_tiles)
-	convert := func(lowerIndex, upperIndex int, endsWith string) {
-		found := false
-		for _, idx := range _tiles {
-			if idx >= lowerIndex && idx < upperIndex {
-				found = true
-				humanTiles += string('1' + idx - lowerIndex)
-			}
-		}
-		if found {
-			humanTiles += endsWith
-		}
-	}
-	convert(0, 9, "m ")
-	convert(9, 18, "p ")
-	convert(18, 27, "s ")
-	convert(27, 34, "z")
-	return strings.TrimSpace(humanTiles)
-}
-
-func Tile34ToStr(tile34 int) string {
-	return TilesToStr([]int{tile34})
-}
-
 func Tiles34ToStr(tiles34 []int) (humanTiles string) {
 	merge := func(lowerIndex, upperIndex int, endsWith string) {
 		found := false
-		for i, c := range tiles34 {
-			if i >= lowerIndex && i < upperIndex {
-				for j := 0; j < c; j++ {
-					found = true
-					humanTiles += string('1' + i - lowerIndex)
-				}
+		for i, c := range tiles34[lowerIndex:upperIndex] {
+			for j := 0; j < c; j++ {
+				found = true
+				humanTiles += string('1' + i)
 			}
 		}
 		if found {
@@ -180,6 +166,15 @@ func Tiles34ToStr(tiles34 []int) (humanTiles string) {
 	merge(18, 27, "s ")
 	merge(27, 34, "z")
 	return strings.TrimSpace(humanTiles)
+}
+
+// e.g. [9, 11, 27] => "13p 1z"
+func TilesToStr(tiles []int) (humanTiles string) {
+	return Tiles34ToStr(TilesToTiles34(tiles))
+}
+
+func Tile34ToStr(tile34 int) string {
+	return TilesToStr([]int{tile34})
 }
 
 // e.g. [9, 11, 27] => "[13p 1z]"

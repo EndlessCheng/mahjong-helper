@@ -20,11 +20,11 @@ func TestAnalysisTilesRisk(t *testing.T) {
 	debugMode = true
 
 	d := newRoundData(&tenhouRoundData{}, 0, 0)
-	handsTiles34, err := util.StrToTiles34("123456789m 123456789p 123456789s 1234567z")
+	handsTiles34, _, err := util.StrToTiles34("123456789m 123456789p 123456789s 1234567z")
 	if err != nil {
 		t.Fatal(err)
 	}
-	globalDiscardTiles34, err := util.StrToTiles34("22m 158p 123789s 6z") //
+	globalDiscardTiles34, _, err := util.StrToTiles34("22m 158p 123789s 6z")
 	if err != nil {
 		t.Fatal(err)
 	}

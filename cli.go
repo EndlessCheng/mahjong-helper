@@ -241,6 +241,18 @@ func (l riskInfoList) printWithHands(hands []int, leftCounts []int) {
 
 //
 
+func alertBackwardToShanten2(results util.Hand14AnalysisResultList, incShantenResults util.Hand14AnalysisResultList) {
+	if len(results) == 0 || len(incShantenResults) == 0 {
+		return
+	}
+
+	if results[0].Result13.Waits.AllCount() < 10 {
+		if results[0].Result13.MixedWaitsScore < incShantenResults[0].Result13.MixedWaitsScore {
+			color.HiGreen("建议向听倒退")
+		}
+	}
+}
+
 // 需要提醒的役种
 var yakuTypesToAlert = []int{
 	util.YakuChiitoi,
@@ -511,5 +523,24 @@ func printWaitsWithImproves13_oneRow(result13 *util.Hand13AnalysisResult, discar
 		for tile, waits := range result13.Improves {
 			fmt.Printf("摸 %s 改良成 %s\n", util.Mahjong[tile], waits.String())
 		}
+	}
+}
+
+func printResults14WithRisk(results14 util.Hand14AnalysisResultList, mixedRiskTable riskTable) {
+	if len(results14) == 0 {
+		return
+	}
+	// FIXME: 选择很多时如何精简何切选项？
+	const maxShown = 10
+	shownResults14 := results14
+	if len(shownResults14) > maxShown { // 限制输出数量
+		shownResults14 = shownResults14[:maxShown]
+	}
+	if len(results14[0].OpenTiles) > 0 {
+		fmt.Print("鸣牌后")
+	}
+	fmt.Println(util.NumberToChineseShanten(results14[0].Result13.Shanten) + "：")
+	for _, result := range results14 {
+		printWaitsWithImproves13_oneRow(result.Result13, result.DiscardTile, result.OpenTiles, mixedRiskTable)
 	}
 }

@@ -421,7 +421,7 @@ func (d *roundData) analysis() error {
 		d.numRedFives = numRedFives
 
 		if len(hands) == 14 {
-			return analysisTiles34(d.newModelPlayerInfo(), nil)
+			return analysisPlayerWithRisk(d.newModelPlayerInfo(), nil)
 		}
 	case d.parser.IsOpen():
 		// 某家鸣牌（含暗杠、加杠）
@@ -545,7 +545,7 @@ func (d *roundData) analysis() error {
 
 		// 何切
 		// TODO: 根据是否听牌/一向听、打点、巡目、和率等进行攻守判断
-		return analysisTiles34(d.newModelPlayerInfo(), mixedRiskTable)
+		return analysisPlayerWithRisk(d.newModelPlayerInfo(), mixedRiskTable)
 	case d.parser.IsDiscard():
 		who, discardTile, isRedFive, isTsumogiri, isReach, canBeMeld, kanDoraIndicator := d.parser.ParseDiscard()
 

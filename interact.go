@@ -7,54 +7,57 @@ import (
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 )
 
-func interact(humanTilesInfo *model.HumanTilesInfo) {
-	tiles34, err := analysisHumanTiles(humanTilesInfo)
+func interact(humanTilesInfo *model.HumanTilesInfo) error {
+	playerInfo, err := analysisHumanTiles(humanTilesInfo)
 	if err != nil {
-		errorExit(err)
+		return err
 	}
+	tiles34 := playerInfo.HandTiles34
 	var tile string
 	for {
 		count := util.CountOfTiles34(tiles34)
 		switch count % 3 {
 		case 0:
-			errorExit("参数错误", count, "张牌")
+			return fmt.Errorf("参数错误: %d 张牌", count)
 		case 1:
 			fmt.Print("> 摸 ")
 			fmt.Scanf("%s\n", &tile)
-
-			// TODO: 0p
-
-			tile34, err := util.StrToTile34(tile)
+			tile, isRedFive, err := util.StrToTile34(tile)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, err.Error())
-				break
+				// 让用户重新输入
+				fmt.Fprintln(os.Stderr, err)
+				continue
 			}
-			if tiles34[tile34] == 4 {
+			if tiles34[tile] == 4 {
+				// 让用户重新输入
 				fmt.Fprintln(os.Stderr, "不可能摸更多的牌了")
-				break
+				continue
 			}
-			tiles34[tile34]++
-			humanTilesInfo.HumanTiles = util.Tiles34ToStr(tiles34)
-			if _, err := analysisHumanTiles(humanTilesInfo); err != nil {
-				fmt.Fprintln(os.Stderr, err.Error())
+			if isRedFive {
+				playerInfo.NumRedFives[tile/9]++
 			}
+			tiles34[tile]++
 		case 2:
 			fmt.Print("> 切 ")
 			fmt.Scanf("%s\n", &tile)
-			tile34, err := util.StrToTile34(tile)
+			tile, isRedFive, err := util.StrToTile34(tile)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, err.Error())
-				break
+				// 让用户重新输入
+				fmt.Fprintln(os.Stderr, err)
+				continue
 			}
-			if tiles34[tile34] == 0 {
+			if tiles34[tile] == 0 {
+				// 让用户重新输入
 				fmt.Fprintln(os.Stderr, "切掉的牌不存在")
-				break
+				continue
 			}
-			tiles34[tile34]--
-			humanTilesInfo.HumanTiles = util.Tiles34ToStr(tiles34)
-			if _, err := analysisHumanTiles(humanTilesInfo); err != nil {
-				fmt.Fprintln(os.Stderr, err.Error())
+			if isRedFive {
+				playerInfo.NumRedFives[tile/9]--
 			}
+			tiles34[tile]--
+		}
+		if err := analysisPlayerWithRisk(playerInfo, nil); err != nil {
+			fmt.Fprintln(os.Stderr, err)
 		}
 	}
 }
