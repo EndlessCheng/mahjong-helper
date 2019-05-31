@@ -344,7 +344,7 @@ func (d *roundData) newModelPlayerInfo() *model.PlayerInfo {
 		RoundWindTile: d.roundWindTile,
 		SelfWindTile:  selfPlayer.selfWindTile,
 		IsParent:      d.dealer == self,
-		IsDaburii:     d.isPlayerDaburii(self),
+		//IsDaburii:     d.isPlayerDaburii(self), // FIXME PLS，应该在立直时就判断
 		IsRiichi:      selfPlayer.isReached,
 
 		DiscardTiles: normalDiscardTiles(selfPlayer.discardTiles),
