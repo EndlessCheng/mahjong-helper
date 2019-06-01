@@ -40,6 +40,13 @@ func (i *majsoulRecordBaseInfo) getFistRoundDealer(accountID int) (firstRoundDea
 	return (playerNumber - selfSeat) % playerNumber, nil
 }
 
+// 获取第x局的庄家：0=自家, 1=下家, 2=对家, 3=上家
+// x从0开始算，表示东一局
+//func (i *majsoulRecordBaseInfo) getRoundDealer(selfSeat int, round int) int {
+//	const playerNumber = 4
+//	return (playerNumber - selfSeat + round) % playerNumber
+//}
+
 // 牌谱中的单个操作信息
 type majsoulRecordAction struct {
 	Name   string          `json:"name"`

@@ -28,6 +28,7 @@ type majsoulMessage struct {
 	// 玩家在网页上的（点击）操作（网页响应了的）
 	RecordClickAction      string `json:"record_click_action"`
 	RecordClickActionIndex int    `json:"record_click_action_index"`
+	FastRecordTo           int    `json:"fast_record_to"` // 闭区间
 
 	// ResAuthGame
 	IsGameStart *bool `json:"is_game_start"` // false=新游戏，true=重连
@@ -297,7 +298,10 @@ func (d *majsoulRoundData) ParseDiscard() (who int, discardTile int, isRedFive b
 	who = d.parseWho(*msg.Seat)
 	discardTile, isRedFive = d.mustParseMajsoulTile(msg.Tile)
 	isTsumogiri = *msg.Moqie
-	isReach = *msg.IsLiqi || *msg.IsWliqi
+	isReach = *msg.IsLiqi
+	if msg.IsWliqi != nil && !isReach { // 兼容雀魂早期牌谱（无 IsWliqi 字段）
+		isReach = *msg.IsWliqi
+	}
 	canBeMeld = msg.Operation != nil
 	kanDoraIndicator = -1
 	if d.isNewDora(msg.Doras) {

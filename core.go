@@ -76,6 +76,8 @@ type DataParser interface {
 type playerInfo struct {
 	name string // 自家/下家/对家/上家
 
+	//turn int // 该玩家的巡目（从13张牌的状态开始算，每「得到」一张牌，巡目就+1。比如：亲家一开始就是第一巡、副露后巡目加一 ）
+
 	selfWindTile int // 自风
 
 	melds                []*model.Meld // 副露
@@ -107,6 +109,8 @@ func newPlayerInfo(name string, selfWindTile int) *playerInfo {
 
 type roundData struct {
 	parser DataParser
+
+	skipOutput bool
 
 	// 场数（如东1为0，东2为1，...，南1为4，...）
 	roundNumber int
@@ -169,7 +173,9 @@ func newGame(parser DataParser) *roundData {
 
 // 新的一局
 func (d *roundData) reset(roundNumber int, dealer int) {
+	skipOutput := d.skipOutput
 	newData := newRoundData(d.parser, roundNumber, dealer)
+	newData.skipOutput = skipOutput
 	*d = *newData
 }
 
@@ -186,9 +192,14 @@ func (d *roundData) descLeftCounts(tile int) {
 }
 
 func (d *roundData) newDora(kanDoraIndicator int) {
-	color.Yellow("杠宝牌指示牌是 %s", util.MahjongZH[kanDoraIndicator])
 	d.doraIndicators = append(d.doraIndicators, kanDoraIndicator)
 	d.descLeftCounts(kanDoraIndicator)
+
+	if d.skipOutput {
+		return
+	}
+
+	color.Yellow("杠宝牌指示牌是 %s", util.MahjongZH[kanDoraIndicator])
 }
 
 // 根据宝牌指示牌计算出宝牌
@@ -367,12 +378,13 @@ func (d *roundData) analysis() error {
 	}
 
 	if debugMode {
-		msg := d.parser.GetMessage()
-		const printLimit = 500
-		if len(msg) > printLimit {
-			msg = msg[:printLimit]
+		if msg := d.parser.GetMessage(); len(msg) > 0 {
+			const printLimit = 500
+			if len(msg) > printLimit {
+				msg = msg[:printLimit]
+			}
+			fmt.Println("收到", msg)
 		}
-		fmt.Println("收到", msg)
 	}
 
 	if !d.parser.CheckMessage() {
@@ -388,7 +400,7 @@ func (d *roundData) analysis() error {
 	switch {
 	case d.parser.IsInit():
 		// round 开始/重连
-		if !debugMode {
+		if !debugMode && !d.skipOutput {
 			clearConsole()
 		}
 
@@ -398,7 +410,7 @@ func (d *roundData) analysis() error {
 			d.reset(roundNumber, dealer)
 		case dataSourceTypeMajsoul:
 			playerNumber := len(d.players)
-			if dealer != -1 {
+			if dealer != -1 { // 先就坐，还没洗牌呢~
 				// 设置第一局的 dealer
 				d.dealer = dealer
 
@@ -408,32 +420,30 @@ func (d *roundData) analysis() error {
 
 				return nil
 			} else {
-				// 获取上一局的 dealer
-				dealer = d.dealer
-				// 计算当前局的 dealer
-				if roundNumber > 0 && roundNumber != d.roundNumber {
-					dealer = (dealer + 1) % playerNumber
-				}
+				// 根据当前的 roundNumber 和新的 roundNumber 计算当前局的 dealer
+				delta := roundNumber - d.roundNumber
+				newDealer := (d.dealer + delta + len(d.players)) % len(d.players)
 				// 新的一局
-				d.reset(roundNumber, dealer)
+				d.reset(roundNumber, newDealer)
 			}
 		default:
 			panic("not impl!")
 		}
 
-		fmt.Printf("%s%d局开始，自风为%s\n", util.MahjongZH[d.roundWindTile], roundNumber%4+1, util.MahjongZH[d.players[0].selfWindTile])
-
-		color.HiYellow("宝牌指示牌是 %s", util.MahjongZH[doraIndicator])
 		d.doraIndicators = []int{doraIndicator}
 		d.descLeftCounts(doraIndicator)
-
 		for _, tile := range hands {
 			d.counts[tile]++
 			d.descLeftCounts(tile)
 		}
-
 		d.numRedFives = numRedFives
 
+		if d.skipOutput {
+			return nil
+		}
+		fmt.Printf("%s%d局开始，自风为%s\n", util.MahjongZH[d.roundWindTile], roundNumber%4+1, util.MahjongZH[d.players[0].selfWindTile])
+		color.HiYellow("宝牌指示牌是 %s", util.MahjongZH[doraIndicator])
+		// TODO: 显示地和概率
 		return analysisPlayerWithRisk(d.newModelPlayerInfo(), nil)
 	case d.parser.IsOpen():
 		// 某家鸣牌（含暗杠、加杠）
@@ -525,13 +535,16 @@ func (d *roundData) analysis() error {
 		//	// 重连
 	case d.parser.IsFuriten():
 		// 振听
+		if d.skipOutput {
+			return nil
+		}
 		color.HiYellow("振听")
 		//case "U", "V", "W":
 		//	//（下家,对家,上家 不要其上家的牌）摸牌
 		//case "HELO", "RANKING", "TAIKYOKU", "UN", "LN", "SAIKAI":
 		//	// 其他
 	case d.parser.IsSelfDraw():
-		if !debugMode {
+		if !debugMode && !d.skipOutput {
 			clearConsole()
 		}
 		// 自家（从牌山 d.leftCounts）摸牌（至手牌 d.counts）
@@ -543,6 +556,10 @@ func (d *roundData) analysis() error {
 		}
 		if kanDoraIndicator != -1 {
 			d.newDora(kanDoraIndicator)
+		}
+
+		if d.skipOutput {
+			return nil
 		}
 
 		// 打印他家舍牌信息
@@ -591,7 +608,7 @@ func (d *roundData) analysis() error {
 
 		// 天凤fix：为防止先收到自家摸牌，然后收到上家摸牌，上家舍牌时不刷新
 		if d.parser.GetDataSourceType() != dataSourceTypeTenhou || who != 3 {
-			if !debugMode {
+			if !debugMode && !d.skipOutput {
 				clearConsole()
 			}
 		}
@@ -615,7 +632,7 @@ func (d *roundData) analysis() error {
 			player.reachTileAt = len(player.discardTiles) - 1
 
 			// 若该玩家摸切立直，打印提示信息
-			if isTsumogiri {
+			if isTsumogiri && !d.skipOutput {
 				color.HiYellow("%s 摸切立直！", d.players[who].name)
 			}
 		} else if len(player.meldDiscardsAt) != len(player.melds) {
@@ -631,6 +648,10 @@ func (d *roundData) analysis() error {
 		// 若玩家在立直后摸牌舍牌，则没有一发
 		if player.reachTileAt < len(player.discardTiles)-1 {
 			player.canIppatsu = false
+		}
+
+		if d.skipOutput {
+			return nil
 		}
 
 		// 安全度分析

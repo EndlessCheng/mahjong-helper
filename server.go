@@ -221,10 +221,12 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			h.majsoulCurrentActionIndex = 0
 
 			// 分析第一局的起始信息
-			d = h.majsoulCurrentRecordActions[0][0].Action
-			h._analysisMajsoulRoundData(d, originJSON)
+			data := h.majsoulCurrentRecordActions[0][0].Action
+			h._analysisMajsoulRoundData(data, originJSON)
 		case d.RecordClickAction != "":
-			h._onRecordClick(d.RecordClickAction, d.RecordClickActionIndex)
+			// 处理网页上的牌谱点击：上一局/跳到某局/下一局/上一巡/跳到某巡/下一巡/上一步/播放/暂停/下一步/点击桌面
+			// 暂不能分析他家手牌
+			h._onRecordClick(d.RecordClickAction, d.RecordClickActionIndex, d.FastRecordTo)
 		default:
 			// 其他：场况分析
 			h._analysisMajsoulRoundData(d, originJSON)
@@ -232,8 +234,8 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 	}
 }
 
-func (h *mjHandler) _analysisMajsoulRoundData(d *majsoulMessage, originJSON string) {
-	h.majsoulRoundData.msg = d
+func (h *mjHandler) _analysisMajsoulRoundData(data *majsoulMessage, originJSON string) {
+	h.majsoulRoundData.msg = data
 	h.majsoulRoundData.originJSON = originJSON
 	if err := h.majsoulRoundData.analysis(); err != nil {
 		fmt.Fprintln(os.Stderr, "错误：", err)
@@ -241,7 +243,7 @@ func (h *mjHandler) _analysisMajsoulRoundData(d *majsoulMessage, originJSON stri
 	}
 }
 
-func (h *mjHandler) _onRecordClick(clickAction string, clickActionIndex int) {
+func (h *mjHandler) _onRecordClick(clickAction string, clickActionIndex int, fastRecordTo int) {
 	if debugMode {
 		fmt.Println("收到", clickAction, clickActionIndex)
 	}
@@ -262,20 +264,36 @@ func (h *mjHandler) _onRecordClick(clickAction string, clickActionIndex int) {
 	case "jumpRound":
 		h.majsoulCurrentRoundIndex = clickActionIndex % len(h.majsoulCurrentRecordActions)
 		h.majsoulCurrentActionIndex = 0
-	case "nextXun", "preXun", "jumpXun", "preStep":
-		fmt.Println(clickAction)
-		return
+	case "nextXun", "preXun", "jumpXun", "preStep", "jumpToLastRoundXun":
+		if clickAction == "jumpToLastRoundXun" {
+			h.majsoulCurrentRoundIndex = (h.majsoulCurrentRoundIndex - 1 + len(h.majsoulCurrentRecordActions)) % len(h.majsoulCurrentRecordActions)
+		}
+
+		h.majsoulRoundData.skipOutput = true
+		currentRoundActions := h.majsoulCurrentRecordActions[h.majsoulCurrentRoundIndex]
+		startActionIndex := 0
+		endActionIndex := fastRecordTo
+		if clickAction == "nextXun" {
+			startActionIndex = h.majsoulCurrentActionIndex + 1
+		}
+		if debugMode {
+			fmt.Printf("快速处理牌谱中的操作：局 %d 动作 %d-%d\n", h.majsoulCurrentRoundIndex, startActionIndex, endActionIndex)
+		}
+		for _, action := range currentRoundActions[startActionIndex : endActionIndex+1] {
+			h._analysisMajsoulRoundData(action.Action, "")
+		}
+		h.majsoulRoundData.skipOutput = false
+
+		h.majsoulCurrentActionIndex = endActionIndex + 1
 	default:
 		return
 	}
 
 	if debugMode {
-		fmt.Println("处理牌谱中的操作", h.majsoulCurrentRoundIndex, h.majsoulCurrentActionIndex)
+		fmt.Printf("处理牌谱中的操作：局 %d 动作 %d\n", h.majsoulCurrentRoundIndex, h.majsoulCurrentActionIndex)
 	}
-
 	action := h.majsoulCurrentRecordActions[h.majsoulCurrentRoundIndex][h.majsoulCurrentActionIndex]
-	d := action.Action
-	h._analysisMajsoulRoundData(d, "")
+	h._analysisMajsoulRoundData(action.Action, "")
 
 	if action.Name == "RecordHule" || action.Name == "RecordLiuJu" || action.Name == "RecordNoTile" {
 		// 播放和牌/流局动画，进入下一局或显示终局动画
@@ -285,9 +303,11 @@ func (h *mjHandler) _onRecordClick(clickAction string, clickActionIndex int) {
 			h.majsoulCurrentRoundIndex = 0
 			return
 		}
+
 		time.Sleep(time.Second)
-		d = h.majsoulCurrentRecordActions[h.majsoulCurrentRoundIndex][h.majsoulCurrentActionIndex].Action
-		h._analysisMajsoulRoundData(d, "")
+		// 分析下一局的起始信息
+		data := h.majsoulCurrentRecordActions[h.majsoulCurrentRoundIndex][h.majsoulCurrentActionIndex].Action
+		h._analysisMajsoulRoundData(data, "")
 	}
 }
 
