@@ -18,6 +18,7 @@ func Test_majsoul_analysis(t *testing.T) {
 	}
 
 	s := struct {
+		Level   string `json:"level"`
 		Message string `json:"message"`
 	}{}
 
@@ -55,6 +56,11 @@ func Test_majsoul_analysis(t *testing.T) {
 			continue
 		}
 
+		if s.Level != "INFO" {
+			fmt.Println(s.Message)
+			continue
+		}
+
 		msg := s.Message
 		d := majsoulMessage{}
 		if err := json.Unmarshal([]byte(msg), &d); err != nil {
@@ -85,6 +91,7 @@ func Test_tenhou_analysis(t *testing.T) {
 	}
 
 	s := struct {
+		Level   string `json:"level"`
 		Message string `json:"message"`
 	}{}
 
@@ -118,6 +125,11 @@ func Test_tenhou_analysis(t *testing.T) {
 
 		if err := json.Unmarshal([]byte(line), &s); err != nil {
 			fmt.Println(err)
+			continue
+		}
+
+		if s.Level != "INFO" {
+			fmt.Println(s.Message)
 			continue
 		}
 

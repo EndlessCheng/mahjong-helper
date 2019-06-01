@@ -13,7 +13,21 @@ type majsoulMessage struct {
 	// 对应到服务器用户数据库中的ID，该值越小表示您的注册时间越早
 	AccountID int `json:"account_id"`
 
+	// 友人列表
 	Friends []*majsoulFriend `json:"friends"`
+
+	// 新获取到的牌谱列表
+	RecordBaseInfoList []*majsoulRecordBaseInfo `json:"record_list"`
+
+	// 当前正在观看的牌谱的 UUID
+	CurrentRecordUUID string `json:"current_record_uuid"`
+
+	// 当前正在观看的牌谱的全部操作
+	RecordActions []*majsoulRecordAction `json:"record_actions"`
+
+	// 玩家在网页上的（点击）操作（网页响应了的）
+	RecordClickAction      string `json:"record_click_action"`
+	RecordClickActionIndex int    `json:"record_click_action_index"`
 
 	// ResAuthGame
 	IsGameStart *bool `json:"is_game_start"` // false=新游戏，true=重连
@@ -30,6 +44,12 @@ type majsoulMessage struct {
 	Ju    *int        `json:"ju"`
 	Tiles interface{} `json:"tiles"` // 一般情况下为 []interface{}, interface{} 即 string，但是暗杠的情况下，该值为一个 string
 	Dora  string      `json:"dora"`
+
+	// RecordNewRound
+	Tiles0 []string `json:"tiles0"`
+	Tiles1 []string `json:"tiles1"`
+	Tiles2 []string `json:"tiles2"`
+	Tiles3 []string `json:"tiles3"`
 
 	// ActionDealTile
 	// {"seat":1,"tile":"5m","left_tile_count":23,"operation":{"seat":1,"operation_list":[{"type":1}],"time_add":0,"time_fixed":60000},"zhenting":false}
@@ -87,7 +107,7 @@ type majsoulRoundData struct {
 
 	originJSON string
 	accountID  int
-	seat       int // 初始座位：0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
+	selfSeat   int // 自家初始座位：0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
 	msg        *majsoulMessage
 }
 
@@ -225,7 +245,13 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicat
 	roundNumber = playerNumber*(*msg.Chang) + *msg.Ju
 	doraIndicator, _ = d.mustParseMajsoulTile(msg.Dora)
 	numRedFives = make([]int, 3)
-	majsoulTiles := d.normalTiles(msg.Tiles)
+
+	var majsoulTiles []string
+	if msg.Tiles != nil { // 实战
+		majsoulTiles = d.normalTiles(msg.Tiles)
+	} else { // 牌谱
+		majsoulTiles = [][]string{msg.Tiles0, msg.Tiles1, msg.Tiles2, msg.Tiles3}[d.selfSeat]
+	}
 	for _, majsoulTile := range majsoulTiles {
 		tile, isRedFive := d.mustParseMajsoulTile(majsoulTile)
 		handTiles = append(handTiles, tile)
@@ -233,6 +259,7 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicat
 			numRedFives[tile/9]++
 		}
 	}
+
 	return
 }
 

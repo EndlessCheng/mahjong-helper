@@ -367,7 +367,12 @@ func (d *roundData) analysis() error {
 	}
 
 	if debugMode {
-		fmt.Println("收到", d.parser.GetMessage())
+		msg := d.parser.GetMessage()
+		const printLimit = 500
+		if len(msg) > printLimit {
+			msg = msg[:printLimit]
+		}
+		fmt.Println("收到", msg)
 	}
 
 	if !d.parser.CheckMessage() {
@@ -394,6 +399,7 @@ func (d *roundData) analysis() error {
 		case dataSourceTypeMajsoul:
 			playerNumber := len(d.players)
 			if dealer != -1 {
+				// 设置第一局的 dealer
 				d.dealer = dealer
 
 				fmt.Printf("游戏即将开始，您分配到的座位是：")
@@ -402,10 +408,13 @@ func (d *roundData) analysis() error {
 
 				return nil
 			} else {
+				// 获取上一局的 dealer
 				dealer = d.dealer
+				// 计算当前局的 dealer
 				if roundNumber > 0 && roundNumber != d.roundNumber {
 					dealer = (dealer + 1) % playerNumber
 				}
+				// 新的一局
 				d.reset(roundNumber, dealer)
 			}
 		default:
@@ -425,9 +434,7 @@ func (d *roundData) analysis() error {
 
 		d.numRedFives = numRedFives
 
-		if len(hands) == 14 {
-			return analysisPlayerWithRisk(d.newModelPlayerInfo(), nil)
-		}
+		return analysisPlayerWithRisk(d.newModelPlayerInfo(), nil)
 	case d.parser.IsOpen():
 		// 某家鸣牌（含暗杠、加杠）
 		who, meld, kanDoraIndicator := d.parser.ParseOpen()

@@ -27,6 +27,13 @@ type mjHandler struct {
 
 	majsoulMessageQueue chan []byte
 	majsoulRoundData    *majsoulRoundData
+
+	majsoulRecordMap         map[string]*majsoulRecordBaseInfo
+	majsoulCurrentRecordUUID string
+
+	majsoulCurrentRecordActions [][]*majsoulRecordAction
+	majsoulCurrentRoundIndex    int
+	majsoulCurrentActionIndex   int
 }
 
 // 调试用
@@ -72,6 +79,7 @@ func (h *mjHandler) analysisTenhou(c echo.Context) error {
 	data, err := ioutil.ReadAll(c.Request().Body)
 	if err != nil {
 		fmt.Println(err)
+		h.log.Error(err)
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
@@ -82,7 +90,8 @@ func (h *mjHandler) runAnalysisTenhouMessageTask() {
 	for msg := range h.tenhouMessageQueue {
 		d := tenhouMessage{}
 		if err := json.Unmarshal(msg, &d); err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stderr, err)
+			h.log.Error(err)
 			continue
 		}
 
@@ -105,6 +114,7 @@ func (h *mjHandler) runAnalysisTenhouMessageTask() {
 			username, err := url.QueryUnescape(d.UserName)
 			if err != nil {
 				fmt.Println(err)
+				h.log.Error(err)
 			}
 			if username != h.tenhouRoundData.username {
 				fmt.Printf("%s 登录成功\n", username)
@@ -115,7 +125,8 @@ func (h *mjHandler) runAnalysisTenhouMessageTask() {
 		h.tenhouRoundData.msg = &d
 		h.tenhouRoundData.originJSON = originJSON
 		if err := h.tenhouRoundData.analysis(); err != nil {
-			fmt.Println("错误：", err)
+			fmt.Fprintln(os.Stderr, "错误：", err)
+			h.log.Error(err)
 		}
 	}
 }
@@ -125,6 +136,7 @@ func (h *mjHandler) analysisMajsoul(c echo.Context) error {
 	data, err := ioutil.ReadAll(c.Request().Body)
 	if err != nil {
 		fmt.Println(err)
+		h.log.Error(err)
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
@@ -133,9 +145,10 @@ func (h *mjHandler) analysisMajsoul(c echo.Context) error {
 }
 func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 	for msg := range h.majsoulMessageQueue {
-		d := majsoulMessage{}
-		if err := json.Unmarshal(msg, &d); err != nil {
-			fmt.Println(err)
+		d := &majsoulMessage{}
+		if err := json.Unmarshal(msg, d); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			h.log.Error(err)
 			continue
 		}
 
@@ -144,26 +157,137 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			h.log.Info(originJSON)
 		}
 
-		// 登录验证通过
-		if d.AccountID > 0 && h.majsoulRoundData.accountID != d.AccountID {
-			h.majsoulRoundData.accountID = d.AccountID
+		switch {
+		case d.AccountID > 0 && h.majsoulRoundData.accountID != d.AccountID:
+			// 登录验证通过
 			printAccountInfo(d.AccountID)
-			continue
-		}
-
-		if d.Friends != nil {
+			h.majsoulRoundData.accountID = d.AccountID
+		case len(d.Friends) > 0:
+			// 处理好友列表
 			fmt.Println("好友账号ID   好友上次登录时间        好友上次登出时间       好友昵称")
 			for _, friend := range d.Friends {
 				fmt.Println(friend)
 			}
-			continue
-		}
+		case len(d.RecordBaseInfoList) > 0:
+			// 处理牌谱基本信息列表
+			for _, record := range d.RecordBaseInfoList {
+				h.majsoulRecordMap[record.UUID] = record
+			}
+			color.HiGreen("收到 %2d 个牌谱（已收集 %d 个），请在网页上点击「查看」", len(d.RecordBaseInfoList), len(h.majsoulRecordMap))
+		case d.CurrentRecordUUID != "":
+			// 标记当前正在观看的牌谱
+			if d.CurrentRecordUUID == h.majsoulCurrentRecordUUID {
+				break
+			}
+			clearConsole()
+			color.HiGreen("正在解析牌谱：%s", d.CurrentRecordUUID)
+			h.majsoulCurrentRecordUUID = d.CurrentRecordUUID
+		case len(d.RecordActions) > 0:
+			if h.majsoulCurrentRecordUUID == "" {
+				err := fmt.Errorf("错误：程序未收到所观看的牌谱的 UUID")
+				fmt.Fprintln(os.Stderr, err)
+				h.log.Error(err)
+				break
+			}
 
-		h.majsoulRoundData.msg = &d
-		h.majsoulRoundData.originJSON = originJSON
-		if err := h.majsoulRoundData.analysis(); err != nil {
-			fmt.Println("错误：", err)
+			// 获取并设置第一局的庄家
+			baseInfo, ok := h.majsoulRecordMap[h.majsoulCurrentRecordUUID]
+			if !ok {
+				err := fmt.Errorf("错误：找不到牌谱 %s", h.majsoulCurrentRecordUUID)
+				fmt.Fprintln(os.Stderr, err)
+				h.log.Error(err)
+				break
+			}
+			firstRoundDealer, err := baseInfo.getFistRoundDealer(h.majsoulRoundData.accountID)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "错误：", err)
+				h.log.Error(err)
+				break
+			}
+			h.majsoulRoundData.dealer = firstRoundDealer
+			// 顺便设置下初始座位
+			h.majsoulRoundData.selfSeat, _ = baseInfo.getSelfSeat(h.majsoulRoundData.accountID)
+
+			// 记录 RecordActions
+			majsoulCurrentRecordActions, err := parseMajsoulRecordAction(d.RecordActions)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "错误：", err)
+				h.log.Error(err)
+				break
+			}
+			h.majsoulCurrentRecordActions = majsoulCurrentRecordActions
+
+			h.majsoulCurrentRoundIndex = 0
+			h.majsoulCurrentActionIndex = 0
+
+			// 分析第一局的起始信息
+			d = h.majsoulCurrentRecordActions[0][0].Action
+			h._analysisMajsoulRoundData(d, originJSON)
+		case d.RecordClickAction != "":
+			h._onRecordClick(d.RecordClickAction, d.RecordClickActionIndex)
+		default:
+			// 其他：场况分析
+			h._analysisMajsoulRoundData(d, originJSON)
 		}
+	}
+}
+
+func (h *mjHandler) _analysisMajsoulRoundData(d *majsoulMessage, originJSON string) {
+	h.majsoulRoundData.msg = d
+	h.majsoulRoundData.originJSON = originJSON
+	if err := h.majsoulRoundData.analysis(); err != nil {
+		fmt.Fprintln(os.Stderr, "错误：", err)
+		h.log.Error(err)
+	}
+}
+
+func (h *mjHandler) _onRecordClick(clickAction string, clickActionIndex int) {
+	if debugMode {
+		fmt.Println("收到", clickAction, clickActionIndex)
+	}
+
+	switch clickAction {
+	case "nextStep", "update":
+		newActionIndex := h.majsoulCurrentActionIndex + 1
+		if newActionIndex >= len(h.majsoulCurrentRecordActions[h.majsoulCurrentRoundIndex]) {
+			return
+		}
+		h.majsoulCurrentActionIndex = newActionIndex
+	case "nextRound":
+		h.majsoulCurrentRoundIndex = (h.majsoulCurrentRoundIndex + 1) % len(h.majsoulCurrentRecordActions)
+		h.majsoulCurrentActionIndex = 0
+	case "preRound":
+		h.majsoulCurrentRoundIndex = (h.majsoulCurrentRoundIndex - 1 + len(h.majsoulCurrentRecordActions)) % len(h.majsoulCurrentRecordActions)
+		h.majsoulCurrentActionIndex = 0
+	case "jumpRound":
+		h.majsoulCurrentRoundIndex = clickActionIndex % len(h.majsoulCurrentRecordActions)
+		h.majsoulCurrentActionIndex = 0
+	case "nextXun", "preXun", "jumpXun", "preStep":
+		fmt.Println(clickAction)
+		return
+	default:
+		return
+	}
+
+	if debugMode {
+		fmt.Println("处理牌谱中的操作", h.majsoulCurrentRoundIndex, h.majsoulCurrentActionIndex)
+	}
+
+	action := h.majsoulCurrentRecordActions[h.majsoulCurrentRoundIndex][h.majsoulCurrentActionIndex]
+	d := action.Action
+	h._analysisMajsoulRoundData(d, "")
+
+	if action.Name == "RecordHule" || action.Name == "RecordLiuJu" || action.Name == "RecordNoTile" {
+		// 播放和牌/流局动画，进入下一局或显示终局动画
+		h.majsoulCurrentRoundIndex++
+		h.majsoulCurrentActionIndex = 0
+		if h.majsoulCurrentRoundIndex == len(h.majsoulCurrentRecordActions) {
+			h.majsoulCurrentRoundIndex = 0
+			return
+		}
+		time.Sleep(time.Second)
+		d = h.majsoulCurrentRecordActions[h.majsoulCurrentRoundIndex][h.majsoulCurrentActionIndex].Action
+		h._analysisMajsoulRoundData(d, "")
 	}
 }
 
@@ -197,6 +321,7 @@ func runServer(isHTTPS bool) {
 		tenhouRoundData:     &tenhouRoundData{isRoundEnd: true},
 		majsoulMessageQueue: make(chan []byte, 100),
 		majsoulRoundData:    &majsoulRoundData{accountID: gameConf.MajsoulAccountID},
+		majsoulRecordMap:    map[string]*majsoulRecordBaseInfo{},
 	}
 	h.tenhouRoundData.roundData = newGame(h.tenhouRoundData)
 	h.majsoulRoundData.roundData = newGame(h.majsoulRoundData)

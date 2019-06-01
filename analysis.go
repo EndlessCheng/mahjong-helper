@@ -37,7 +37,7 @@ func analysisPlayerWithRisk(playerInfo *model.PlayerInfo, mixedRiskTable riskTab
 	switch countOfTiles % 3 {
 	case 1:
 		result := util.CalculateShantenWithImproves13(playerInfo)
-		fmt.Println(util.NumberToChineseShanten(result.Shanten) + "：")
+		fmt.Println("当前" + util.NumberToChineseShanten(result.Shanten) + "：")
 		printWaitsWithImproves13_oneRow(result, -1, nil, mixedRiskTable)
 	case 2:
 		// 分析手牌
