@@ -197,7 +197,7 @@ type gameAnalysisCache struct {
 }
 
 func newGameAnalysisCache(majsoulRecordUUID string, selfSeat int) *gameAnalysisCache {
-	cache := make([][]*roundAnalysisCache, 12)
+	cache := make([][]*roundAnalysisCache, 3*4) // 最多到西四
 	for i := range cache {
 		cache[i] = make([]*roundAnalysisCache, 20)
 	}

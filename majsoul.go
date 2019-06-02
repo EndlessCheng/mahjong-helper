@@ -93,6 +93,10 @@ type majsoulMessage struct {
 	} `json:"hules"`
 
 	// ActionLiuJu
+	// {"liujumanguan":false,"players":[{"tingpai":true,"hand":["3s","3s","4s","5s","6s","1z","1z","7z","7z","7z"],"tings":[{"tile":"1z","haveyi":true},{"tile":"3s","haveyi":true}]},{"tingpai":false},{"tingpai":false},{"tingpai":true,"hand":["4m","0m","6m","6m","6m","4s","4s","4s","5s","7s"],"tings":[{"tile":"6s","haveyi":true}]}],"scores":[{"old_scores":[23000,29000,24000,24000],"delta_scores":[1500,-1500,-1500,1500]}],"gameend":false}
+	//Liujumanguan *bool `json:"liujumanguan"`
+	//Players *struct{ } `json:"players"`
+	//Gameend      *bool `json:"gameend"`
 
 	// ActionBabei
 }

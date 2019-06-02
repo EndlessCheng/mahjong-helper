@@ -163,10 +163,13 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			fmt.Println(originJSON)
 		}
 
-		if d.AccountID > 0 && h.majsoulRoundData.accountID != d.AccountID {
-			// 登录验证通过
-			printAccountInfo(d.AccountID)
-			h.majsoulRoundData.accountID = d.AccountID
+		if d.AccountID > 0 {
+			h.majsoulCurrentRecordUUID = ""
+			if h.majsoulRoundData.accountID != d.AccountID {
+				// 登录验证通过
+				printAccountInfo(d.AccountID)
+				h.majsoulRoundData.accountID = d.AccountID
+			}
 		}
 
 		switch {
@@ -236,14 +239,14 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			h._onRecordClick(d.RecordClickAction, d.RecordClickActionIndex, d.FastRecordTo)
 		default:
 			// TODO: 重构
-			if d.AccountID > 0 {
-				break
-			}
+			//if d.AccountID > 0 {
+			//	break
+			//}
 
-			if debugMode {
-				color.HiGreen("加入对战……")
-			}
-			h.majsoulCurrentRecordUUID = ""
+			//if debugMode {
+			//	color.HiGreen("加入对战……")
+			//}
+			//h.majsoulCurrentRecordUUID = ""
 
 			// 其他：场况分析
 			h._analysisMajsoulRoundData(d, originJSON)
@@ -332,7 +335,7 @@ func (h *mjHandler) _onRecordClick(clickAction string, clickActionIndex int, fas
 		actions := h.majsoulCurrentRecordActions[h.majsoulCurrentRoundIndex]
 		go globalAnalysisCache.runMajsoulRecordAnalysisTask(actions)
 		// 分析下一局的起始信息
-		data := actions [h.majsoulCurrentActionIndex].Action
+		data := actions[h.majsoulCurrentActionIndex].Action
 		h._analysisMajsoulRoundData(data, "")
 	}
 }
