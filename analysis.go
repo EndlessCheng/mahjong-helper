@@ -18,7 +18,7 @@ func simpleBestDiscardTile(playerInfo *model.PlayerInfo) int {
 	} else {
 		return -1
 	}
-	if shanten == 1 && len(playerInfo.DiscardTiles) < 9 && len(results14) > 0 && len(incShantenResults14) > 0 {
+	if shanten == 1 && len(playerInfo.DiscardTiles) < 9 && len(results14) > 0 && len(incShantenResults14) > 0 && !playerInfo.IsNaki() { // 鸣牌时的向听倒退暂不考虑
 		if results14[0].Result13.Waits.AllCount() < 9 && results14[0].Result13.MixedWaitsScore < incShantenResults14[0].Result13.MixedWaitsScore {
 			bestAttackDiscardTile = incShantenResults14[0].DiscardTile
 		}
