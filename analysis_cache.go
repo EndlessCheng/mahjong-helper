@@ -55,7 +55,7 @@ func (rc *roundAnalysisCache) print() {
 	if !done {
 		color.HiGreen(baseInfo)
 	} else {
-		// 检查最后的是否自摸，若为自摸则去掉
+		// 检查最后的是否自摸，若为自摸则去掉推荐
 		if len(rc.cache) > 0 {
 			latestCache := rc.cache[len(rc.cache)-1]
 			if latestCache.selfDiscardTile == -1 {
@@ -89,11 +89,11 @@ func (rc *roundAnalysisCache) print() {
 
 	fmt.Print("自家切牌")
 	if done {
-		for _, c := range rc.cache {
+		for i, c := range rc.cache {
 			suffix := ""
 			if c.isRiichiWhenDiscard {
 				suffix = "[立直]"
-			} else if c.selfDiscardTile == -1 {
+			} else if c.selfDiscardTile == -1 && i == len(rc.cache)-1 {
 				suffix = "[自摸]"
 			}
 			printTileInfo(c.selfDiscardTile, c.selfDiscardTileRisk, suffix)
@@ -129,7 +129,7 @@ func (rc *roundAnalysisCache) addSelfDiscardTile(tile int, risk float64, isRiich
 }
 
 // 摸牌时的切牌推荐
-func (rc *roundAnalysisCache) addAIDiscardTile(attackTile int, defenceTile int, attackTileRisk float64, defenceDiscardTileRisk float64) {
+func (rc *roundAnalysisCache) addAIDiscardTileWhenDrawTile(attackTile int, defenceTile int, attackTileRisk float64, defenceDiscardTileRisk float64) {
 	// 摸牌，巡目+1
 	rc.cache = append(rc.cache, &analysisCache{
 		analysisOpType:           analysisOpTypeTsumo, // TODO ?
@@ -139,22 +139,24 @@ func (rc *roundAnalysisCache) addAIDiscardTile(attackTile int, defenceTile int, 
 		aiAttackDiscardTileRisk:  attackTileRisk,
 		aiDefenceDiscardTileRisk: defenceDiscardTileRisk,
 	})
+	rc.analysisCacheBeforeChiPon = nil
 }
 
 // 加杠 暗杠
 func (rc *roundAnalysisCache) addKan(meldType int) {
-	// 巡目+1
-	rc.cache = append(rc.cache, &analysisCache{
-		analysisOpType:       analysisOpTypeKan,
-		selfDiscardTile:      -1,
-		aiAttackDiscardTile:  -1,
-		aiDefenceDiscardTile: -1,
-		meldType:             meldType,
-	})
+	// latestCache 是摸牌
+	latestCache := rc.cache[len(rc.cache)-1]
+	latestCache.analysisOpType = analysisOpTypeKan
+	latestCache.meldType = meldType
+	// 杠完之后又会摸牌，巡目+1
 }
 
 // 吃 碰 明杠
 func (rc *roundAnalysisCache) addChiPonKan(meldType int) {
+	if meldType == meldTypeMinkan {
+		// 暂时忽略明杠，巡目不+1，留给摸牌时+1
+		return
+	}
 	// 巡目+1
 	var newCache *analysisCache
 	if rc.analysisCacheBeforeChiPon != nil {

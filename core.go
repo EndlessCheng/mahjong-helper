@@ -462,7 +462,7 @@ func (d *roundData) analysis() error {
 		// 牌谱分析模式下，记录舍牌推荐
 		if d.gameMode == gameModeRecordCache && len(hands) == 14 {
 			currentRoundCache := globalAnalysisCache.wholeGameCache[d.roundNumber][d.benNumber]
-			currentRoundCache.addAIDiscardTile(simpleBestDiscardTile(playerInfo), -1, 0, 0)
+			currentRoundCache.addAIDiscardTileWhenDrawTile(simpleBestDiscardTile(playerInfo), -1, 0, 0)
 		}
 
 		if d.skipOutput {
@@ -630,7 +630,7 @@ func (d *roundData) analysis() error {
 				bestAttackDiscardTileRisk = mixedRiskTable[bestAttackDiscardTile]
 				bestDefenceDiscardTileRisk = mixedRiskTable[bestDefenceDiscardTile]
 			}
-			currentRoundCache.addAIDiscardTile(bestAttackDiscardTile, bestDefenceDiscardTile, bestAttackDiscardTileRisk, bestDefenceDiscardTileRisk)
+			currentRoundCache.addAIDiscardTileWhenDrawTile(bestAttackDiscardTile, bestDefenceDiscardTile, bestAttackDiscardTileRisk, bestDefenceDiscardTileRisk)
 		}
 
 		if d.skipOutput {
