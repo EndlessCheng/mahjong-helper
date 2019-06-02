@@ -295,16 +295,20 @@ func TestBestDiscard(t *testing.T) {
 	assert.Equal("8m", bestHumanDiscardTile(t, "234788m 234567s 33z", "3z"))   // C3Q17 打点充足时和率优先
 	assert.Equal("7m", bestHumanDiscardTile(t, "334557m 222p 789s 33z", "9s")) // C3Q18 和率下降一点但是打点提升
 
-	// 一向听
-	assert.Equal("1m", bestHumanDiscardTile(t, "1223446m 345p 1178s", "8s"))
-	assert.Equal("6m", bestHumanDiscardTile(t, "1223446m 345p 78s 77z", "8s"))
-	assert.Equal("2m", bestHumanDiscardTile(t, "1223446789m 1178s", "8s")) // 4m 也可以
-	assert.Equal("2m", bestHumanDiscardTile(t, "1223446789m 78s 77z", "8s"))
+	// 一向听 技术论
+	//assert.Equal("1m", bestHumanDiscardTile(t, "1223446m 345p 1178s", "8s"))
+	//assert.Equal("6m", bestHumanDiscardTile(t, "1223446m 345p 78s 77z", "8s"))
+	//assert.Equal("2m", bestHumanDiscardTile(t, "1223446789m 1178s", "8s")) // 4m 也可以
+	//assert.Equal("2m", bestHumanDiscardTile(t, "1223446789m 78s 77z", "8s"))
 
-	assert.Equal("4m", bestHumanDiscardTile(t, "334456788m 45p 456s", ""))
+	//assert.Equal("4m", bestHumanDiscardTile(t, "334456788m 45p 456s", ""))
 
 	// 两向听
 
+	// 三向听
+	assert.Equal("8p", bestHumanDiscardTile(t, "23668m 258p 4678s 77z", "2p"))
+	assert.Equal("2p", bestHumanDiscardTile(t, "23668m 258p 4678s 77z", "8p"))
+	assert.Equal("2p", bestHumanDiscardTile(t, "23668m 258p 4678s 77z", ""))
 }
 
 func TestFuritenBestDiscard(t *testing.T) {

@@ -443,6 +443,9 @@ func calculateIsolatedTileValue(tile int, playerInfo *model.PlayerInfo) tileValu
 		if tile == doraTile {
 			value += doraValue
 			//} else if doraTile < 27 {
+			//	if tile/3 != doraTile/3 {
+			//		continue
+			//	}
 			//	t9 := tile % 9
 			//	dt9 := doraTile % 9
 			//	if t9+1 == dt9 || t9-1 == dt9 {
@@ -497,15 +500,36 @@ func calculateIsolatedTileValue(tile int, playerInfo *model.PlayerInfo) tileValu
 	return value
 }
 
+func calculateTileValue(tile int, playerInfo *model.PlayerInfo) (value tileValue) {
+	// 是否为宝牌或宝牌周边
+	for _, doraTile := range playerInfo.DoraTiles {
+		if tile == doraTile {
+			value += doraValue
+		} else if doraTile < 27 {
+			if tile/3 != doraTile/3 {
+				continue
+			}
+			t9 := tile % 9
+			dt9 := doraTile % 9
+			if t9+1 == dt9 || t9-1 == dt9 {
+				value += doraFirstNeighbourValue
+			} else if t9+2 == dt9 || t9-2 == dt9 {
+				value += doraSecondNeighbourValue
+			}
+		}
+	}
+	return
+}
+
 type Hand14AnalysisResult struct {
 	// 需要切的牌
 	DiscardTile int
 
+	// 切的牌的价值（宝牌或宝牌周边）
+	DiscardTileValue tileValue
+
 	// 切的牌是否为幺九浮牌
 	isIsolatedYaochuDiscardTile bool
-
-	// 切的牌是幺九浮牌时，该浮牌的价值
-	isolatedDiscardTileValue tileValue
 
 	// 切牌后的手牌分析结果
 	Result13 *Hand13AnalysisResult
@@ -583,12 +607,12 @@ func (l Hand14AnalysisResultList) Sort(improveFirst bool) {
 			// 两向听及以上时单独比较浮牌
 			if l[i].isIsolatedYaochuDiscardTile && l[j].isIsolatedYaochuDiscardTile {
 				// 优先切掉价值最低的浮牌，这里直接比较浮点数
-				if l[i].isolatedDiscardTileValue != l[j].isolatedDiscardTileValue {
-					return l[i].isolatedDiscardTileValue < l[j].isolatedDiscardTileValue
+				if l[i].DiscardTileValue != l[j].DiscardTileValue {
+					return l[i].DiscardTileValue < l[j].DiscardTileValue
 				}
-			} else if l[i].isIsolatedYaochuDiscardTile && l[i].isolatedDiscardTileValue < 500 {
+			} else if l[i].isIsolatedYaochuDiscardTile && l[i].DiscardTileValue < 500 {
 				return true
-			} else if l[j].isIsolatedYaochuDiscardTile && l[j].isolatedDiscardTileValue < 500 {
+			} else if l[j].isIsolatedYaochuDiscardTile && l[j].DiscardTileValue < 500 {
 				return false
 			}
 		}
@@ -600,7 +624,7 @@ func (l Hand14AnalysisResultList) Sort(improveFirst bool) {
 			}
 		}
 
-		// 排序规则：综合评分（速度） - 进张 - 前进后的进张 - 和率 - 改良 - 好牌先走
+		// 排序规则：综合评分（速度） - 进张 - 前进后的进张 - 和率 - 改良 - 价值低 - 好牌先走
 		// 必须注意到的一点是，随着游戏的进行，进张会被他家打出，所以进张是有减少的趋势的
 		// 对于一向听，考虑到未听牌之前要听的牌会被他家打出而造成听牌时的枚数降低，所以听牌枚数比和率更重要
 		// 对比当前进张与前进后的进张，在二者综合评分相近的情况下（注意这个前提），由于进张越多听牌速度越快，听牌时的进张数也就越接近预期进张数，所以进张越多越好（再次强调是在二者综合评分相近的情况下）
@@ -626,9 +650,13 @@ func (l Hand14AnalysisResultList) Sort(improveFirst bool) {
 			return ri.AvgImproveWaitsCount > rj.AvgImproveWaitsCount
 		}
 
-		idxI, idxJ := l[i].DiscardTile, l[j].DiscardTile
+		if l[i].DiscardTileValue != l[j].DiscardTileValue {
+			// 价值低的先走
+			return l[i].DiscardTileValue < l[j].DiscardTileValue
+		}
 
 		// 好牌先走
+		idxI, idxJ := l[i].DiscardTile, l[j].DiscardTile
 		if idxI < 27 && idxJ < 27 {
 			idxI %= 9
 			if idxI > 4 {
@@ -687,7 +715,9 @@ func (n *shantenSearchNode14) analysis(playerInfo *model.PlayerInfo, considerImp
 		if n.shanten >= 2 {
 			if isYaochupai(discardTile) && isIsolatedTile(discardTile, playerInfo.HandTiles34) {
 				r14.isIsolatedYaochuDiscardTile = true
-				r14.isolatedDiscardTileValue = calculateIsolatedTileValue(discardTile, playerInfo)
+				r14.DiscardTileValue = calculateIsolatedTileValue(discardTile, playerInfo)
+			} else {
+				r14.DiscardTileValue = calculateTileValue(discardTile, playerInfo)
 			}
 		}
 
