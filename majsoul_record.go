@@ -20,16 +20,18 @@ type majsoulRecordBaseInfo struct {
 	} `json:"accounts"`
 }
 
+var seatNameZH = []string{"东", "南", "西", "北"}
+
 func (i *majsoulRecordBaseInfo) String() string {
 	const timeFormat = "2006-01-02 15:04:05"
-	output := fmt.Sprintf("%s\n从 %s\n到 %s\n", i.UUID, time.Unix(i.StartTime, 0).Format(timeFormat), time.Unix(i.EndTime, 0).Format(timeFormat))
+	output := fmt.Sprintf("%s\n从 %s\n到 %s\n\n", i.UUID, time.Unix(i.StartTime, 0).Format(timeFormat), time.Unix(i.EndTime, 0).Format(timeFormat))
 	maxAccountID := 0
 	for _, account := range i.Accounts {
 		maxAccountID = util.MaxInt(maxAccountID, account.AccountID)
 	}
 	accountShownWidth := len(strconv.Itoa(maxAccountID))
-	for _, account := range i.Accounts {
-		output += fmt.Sprintf("%*d %s\n", accountShownWidth, account.AccountID, account.Nickname)
+	for i, account := range i.Accounts {
+		output += fmt.Sprintf("%s %*d %s\n", seatNameZH[i], accountShownWidth, account.AccountID, account.Nickname)
 	}
 	return output
 }
