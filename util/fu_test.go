@@ -119,7 +119,7 @@ func Benchmark_handInfo_calcFu(b *testing.B) {
 		divideResult: results[0],
 	}
 	for i := 0; i < b.N; i++ {
-		// 19.5 ns/op
+		// 17.5 ns/op
 		_hi.calcFu(false)
 	}
 }
