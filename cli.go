@@ -267,7 +267,7 @@ func alertBackwardToShanten2(results util.Hand14AnalysisResultList, incShantenRe
 		return
 	}
 
-	if results[0].Result13.Waits.AllCount() < 10 {
+	if results[0].Result13.Waits.AllCount() < 9 {
 		if results[0].Result13.MixedWaitsScore < incShantenResults[0].Result13.MixedWaitsScore {
 			color.HiGreen("建议向听倒退")
 		}
