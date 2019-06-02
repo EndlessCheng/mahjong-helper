@@ -357,6 +357,7 @@ func TestQ300(t *testing.T) {
 	assert.Equal("8p", bestHumanDiscardTile2(t, "23468p 130777s 444z", "1p"))                // Q030
 	assert.Equal("3m", bestHumanDiscardTile2(t, "3356m 23478p 56777s", "7p"), "6m 也可以")      // Q033
 	assert.Equal("1p", bestHumanDiscardTile2(t, "3456m 137899p 4578s", "1m"), "3m 也可以")      // Q037
+	assert.Equal("8s", bestHumanDiscardTile2(t, "34056m 2224p 23468s", "8m"), "考虑改良的影响")     // Q058
 }
 
 //

@@ -80,9 +80,10 @@ type PointResult struct {
 	yakumanTimes int
 	isParent     bool
 
-	winTile   int
-	yakuTypes []int
-	agariRate float64 // 无役时的和率为 0
+	divideResult *DivideResult
+	winTile      int
+	yakuTypes    []int
+	agariRate    float64 // 无役时的和率为 0
 }
 
 // 已和牌，计算自摸或荣和时的点数（不考虑里宝、一发等情况）
@@ -122,6 +123,7 @@ func CalcPoint(playerInfo *model.PlayerInfo) (result *PointResult) {
 			fu,
 			yakumanTimes,
 			_hi.IsParent,
+			divideResult,
 			_hi.WinTile,
 			yakuTypes,
 			0.0, // 后面会补上

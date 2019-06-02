@@ -64,13 +64,37 @@ func (hi *_handInfo) calcFu(isNaki bool) int {
 		}
 	}
 
-	// 特殊：门清 + 自摸 + 平和型，计 20 符
-	if !isNaki && hi.IsTsumo && fu == baseFu {
-		// 考虑能否两面和牌
+	if fu == baseFu {
+		// 手牌全是顺子，且雀头不是役牌
+		if isNaki {
+			// 无论怎样都不可能超过 30 符，直接返回
+			return 30
+		}
+		// 门清状态下需要检测能否平和
+		// 若没有平和则一定是坎张、边张、单骑和牌
+		isPinfu := false
 		for _, tile := range divideResult.ShuntsuFirstTiles {
-			if tile%9 < 6 && tile == hi.WinTile || tile%9 > 0 && tile+2 == hi.WinTile {
+			t9 := tile%9
+			if t9 < 6 && tile == hi.WinTile || t9 > 0 && tile+2 == hi.WinTile {
+				isPinfu = true
+				break
+			}
+		}
+		if hi.IsTsumo {
+			if isPinfu {
+				// 门清自摸平和 20 符
 				return 20
 			}
+			// 坎张、边张、单骑自摸，30 符
+			return 30
+		} else {
+			// 荣和
+			if isPinfu {
+				// 门清平和荣和 30 符
+				return 30
+			}
+			// 坎张、边张、单骑荣和，40 符
+			return 40
 		}
 	}
 
@@ -101,10 +125,10 @@ func (hi *_handInfo) calcFu(isNaki bool) int {
 		}
 	}
 
-	// 特殊：若仍然为 20 符（副露荣和平和型）视作 30 符
-	if fu == baseFu {
-		return 30
-	}
+	//// 特殊：若仍然为 20 符（副露荣和平和型）视作 30 符
+	//if fu == baseFu {
+	//	return 30
+	//}
 
 	// 进位
 	return roundUpFu(fu)
