@@ -2,6 +2,13 @@ package main
 
 var debugMode = false
 
+type gameMode int
+
+const (
+	gameModeMatch gameMode = iota
+	gameModeRecord
+)
+
 const (
 	dataSourceTypeTenhou = iota
 	dataSourceTypeMajsoul

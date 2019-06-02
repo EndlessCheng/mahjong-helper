@@ -64,7 +64,11 @@ type DataParser interface {
 	ParseRoundWin() (whos []int, points []int)
 
 	// 是否流局
+	// 四风连打 四家立直 四杠散了 九种九牌 三家和了 | 流局听牌 流局未听牌 | 流局满贯
+	// 三家和了
+	// "{\"tag\":\"RYUUKYOKU\",\"type\":\"ron3\",\"ba\":\"1,1\",\"sc\":\"290,0,228,0,216,0,256,0\",\"hai0\":\"18,19,30,32,33,41,43,94,95,114,115,117,119\",\"hai2\":\"29,31,74,75\",\"hai3\":\"8,13,17,25,35,46,48,53,78,79\"}"
 	//IsRyuukyoku() bool
+	//ParseRyuukyoku() (type_ int, whos []int, points []int)
 
 	// 这一项放在末尾处理
 	// 杠宝牌（雀魂在暗杠后的摸牌时出现）
@@ -109,6 +113,8 @@ func newPlayerInfo(name string, selfWindTile int) *playerInfo {
 
 type roundData struct {
 	parser DataParser
+
+	gameMode gameMode
 
 	skipOutput bool
 
@@ -175,8 +181,10 @@ func newGame(parser DataParser) *roundData {
 // 新的一局
 func (d *roundData) reset(roundNumber int, dealer int) {
 	skipOutput := d.skipOutput
+	gameMode := d.gameMode
 	newData := newRoundData(d.parser, roundNumber, dealer)
 	newData.skipOutput = skipOutput
+	newData.gameMode = gameMode
 	*d = *newData
 }
 
@@ -414,6 +422,7 @@ func (d *roundData) analysis() error {
 			if dealer != -1 { // 先就坐，还没洗牌呢~
 				// 设置第一局的 dealer
 				d.reset(0, dealer)
+				d.gameMode = gameModeMatch
 
 				fmt.Printf("游戏即将开始，您分配到的座位是：")
 				windTile := 27 + (playerNumber-dealer)%playerNumber

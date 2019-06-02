@@ -206,6 +206,7 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 				break
 			}
 			h.majsoulRoundData.reset(0, firstRoundDealer)
+			h.majsoulRoundData.gameMode = gameModeRecord
 
 			// 顺便设置下初始座位
 			h.majsoulRoundData.selfSeat, _ = baseInfo.getSelfSeat(h.majsoulRoundData.accountID)
