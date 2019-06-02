@@ -119,6 +119,7 @@ type roundData struct {
 	roundWindTile int
 
 	// 庄家 0=自家, 1=下家, 2=对家, 3=上家
+	// 请用 reset 设置
 	dealer int
 
 	// 宝牌指示牌
@@ -412,7 +413,7 @@ func (d *roundData) analysis() error {
 			playerNumber := len(d.players)
 			if dealer != -1 { // 先就坐，还没洗牌呢~
 				// 设置第一局的 dealer
-				d.dealer = dealer
+				d.reset(0, dealer)
 
 				fmt.Printf("游戏即将开始，您分配到的座位是：")
 				windTile := 27 + (playerNumber-dealer)%playerNumber
@@ -441,8 +442,12 @@ func (d *roundData) analysis() error {
 		if d.skipOutput {
 			return nil
 		}
-		fmt.Printf("%s%d局开始，自风为%s\n", util.MahjongZH[d.roundWindTile], roundNumber%4+1, util.MahjongZH[d.players[0].selfWindTile])
+		color.New(color.FgHiGreen).Printf("%s", util.MahjongZH[d.roundWindTile])
+		fmt.Printf("%d局开始，自风为", roundNumber%4+1)
+		color.New(color.FgHiGreen).Printf("%s", util.MahjongZH[d.players[0].selfWindTile])
+		fmt.Println()
 		color.HiYellow("宝牌指示牌是 %s", util.MahjongZH[doraIndicator])
+		fmt.Println()
 		// TODO: 显示地和概率
 		return analysisPlayerWithRisk(d.newModelPlayerInfo(), nil)
 	case d.parser.IsOpen():

@@ -1,18 +1,37 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/EndlessCheng/mahjong-helper/util"
+	"strconv"
+	"time"
+)
 
 // 牌谱基本信息
 type majsoulRecordBaseInfo struct {
 	UUID      string `json:"uuid"`
 	StartTime int64  `json:"start_time"`
-	EndTime   int    `json:"end_time"`
+	EndTime   int64  `json:"end_time"`
 	Accounts  []struct {
 		AccountID int `json:"account_id"`
 		// 初始座位：0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
 		Seat     int    `json:"seat"` // *重点是拿到自己的座位
 		Nickname string `json:"nickname"`
 	} `json:"accounts"`
+}
+
+func (i *majsoulRecordBaseInfo) String() string {
+	const timeFormat = "2006-01-02 15:04:05"
+	output := fmt.Sprintf("%s\n从 %s\n到 %s\n", i.UUID, time.Unix(i.StartTime, 0).Format(timeFormat), time.Unix(i.EndTime, 0).Format(timeFormat))
+	maxAccountID := 0
+	for _, account := range i.Accounts {
+		maxAccountID = util.MaxInt(maxAccountID, account.AccountID)
+	}
+	accountShownWidth := len(strconv.Itoa(maxAccountID))
+	for _, account := range i.Accounts {
+		output += fmt.Sprintf("%*d %s\n", accountShownWidth, account.AccountID, account.Nickname)
+	}
+	return output
 }
 
 func (i *majsoulRecordBaseInfo) getSelfSeat(accountID int) (int, error) {
@@ -40,12 +59,7 @@ func (i *majsoulRecordBaseInfo) getFistRoundDealer(accountID int) (firstRoundDea
 	return (playerNumber - selfSeat) % playerNumber, nil
 }
 
-// 获取第x局的庄家：0=自家, 1=下家, 2=对家, 3=上家
-// x从0开始算，表示东一局
-//func (i *majsoulRecordBaseInfo) getRoundDealer(selfSeat int, round int) int {
-//	const playerNumber = 4
-//	return (playerNumber - selfSeat + round) % playerNumber
-//}
+//
 
 // 牌谱中的单个操作信息
 type majsoulRecordAction struct {

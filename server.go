@@ -15,6 +15,7 @@ import (
 	"github.com/fatih/color"
 	"net/url"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
+	"github.com/EndlessCheng/mahjong-helper/util/debug"
 )
 
 type mjHandler struct {
@@ -28,12 +29,18 @@ type mjHandler struct {
 	majsoulMessageQueue chan []byte
 	majsoulRoundData    *majsoulRoundData
 
-	majsoulRecordMap         map[string]*majsoulRecordBaseInfo
-	majsoulCurrentRecordUUID string
-
+	majsoulRecordMap            map[string]*majsoulRecordBaseInfo
+	majsoulCurrentRecordUUID    string
 	majsoulCurrentRecordActions [][]*majsoulRecordAction
 	majsoulCurrentRoundIndex    int
 	majsoulCurrentActionIndex   int
+}
+
+func (h *mjHandler) logError(err error) {
+	fmt.Fprintln(os.Stderr, err)
+	if !debugMode {
+		h.log.Error(err)
+	}
 }
 
 // 调试用
@@ -78,8 +85,7 @@ func (h *mjHandler) analysis(c echo.Context) error {
 func (h *mjHandler) analysisTenhou(c echo.Context) error {
 	data, err := ioutil.ReadAll(c.Request().Body)
 	if err != nil {
-		fmt.Println(err)
-		h.log.Error(err)
+		h.logError(err)
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
@@ -90,8 +96,7 @@ func (h *mjHandler) runAnalysisTenhouMessageTask() {
 	for msg := range h.tenhouMessageQueue {
 		d := tenhouMessage{}
 		if err := json.Unmarshal(msg, &d); err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			h.log.Error(err)
+			h.logError(err)
 			continue
 		}
 
@@ -113,8 +118,7 @@ func (h *mjHandler) runAnalysisTenhouMessageTask() {
 		if d.Tag == "HELO" {
 			username, err := url.QueryUnescape(d.UserName)
 			if err != nil {
-				fmt.Println(err)
-				h.log.Error(err)
+				h.logError(err)
 			}
 			if username != h.tenhouRoundData.username {
 				fmt.Printf("%s 登录成功\n", username)
@@ -125,8 +129,7 @@ func (h *mjHandler) runAnalysisTenhouMessageTask() {
 		h.tenhouRoundData.msg = &d
 		h.tenhouRoundData.originJSON = originJSON
 		if err := h.tenhouRoundData.analysis(); err != nil {
-			fmt.Fprintln(os.Stderr, "错误：", err)
-			h.log.Error(err)
+			h.logError(err)
 		}
 	}
 }
@@ -135,8 +138,7 @@ func (h *mjHandler) runAnalysisTenhouMessageTask() {
 func (h *mjHandler) analysisMajsoul(c echo.Context) error {
 	data, err := ioutil.ReadAll(c.Request().Body)
 	if err != nil {
-		fmt.Println(err)
-		h.log.Error(err)
+		h.logError(err)
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
@@ -147,14 +149,18 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 	for msg := range h.majsoulMessageQueue {
 		d := &majsoulMessage{}
 		if err := json.Unmarshal(msg, d); err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			h.log.Error(err)
+			h.logError(err)
 			continue
 		}
 
 		originJSON := string(msg)
-		if h.log != nil {
+		if h.log != nil && debug.Lo == 0 {
 			h.log.Info(originJSON)
+		} else {
+			if len(originJSON) > 500 {
+				originJSON = originJSON[:500]
+			}
+			fmt.Println(originJSON)
 		}
 
 		switch {
@@ -175,48 +181,43 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			}
 			color.HiGreen("收到 %2d 个牌谱（已收集 %d 个），请在网页上点击「查看」", len(d.RecordBaseInfoList), len(h.majsoulRecordMap))
 		case d.CurrentRecordUUID != "":
-			// 标记当前正在观看的牌谱
 			if d.CurrentRecordUUID == h.majsoulCurrentRecordUUID {
 				break
 			}
-			clearConsole()
-			color.HiGreen("正在解析牌谱：%s", d.CurrentRecordUUID)
+			baseInfo, ok := h.majsoulRecordMap[d.CurrentRecordUUID]
+			if !ok {
+				h.logError(fmt.Errorf("错误：找不到牌谱 %s", h.majsoulCurrentRecordUUID))
+				break
+			}
+			// 标记当前正在观看的牌谱
 			h.majsoulCurrentRecordUUID = d.CurrentRecordUUID
+			clearConsole()
+			fmt.Printf("正在解析牌谱：%s", baseInfo.String())
 		case len(d.RecordActions) > 0:
 			if h.majsoulCurrentRecordUUID == "" {
-				err := fmt.Errorf("错误：程序未收到所观看的牌谱的 UUID")
-				fmt.Fprintln(os.Stderr, err)
-				h.log.Error(err)
+				h.logError(fmt.Errorf("错误：程序未收到所观看的牌谱的 UUID"))
 				break
 			}
 
 			// 获取并设置第一局的庄家
-			baseInfo, ok := h.majsoulRecordMap[h.majsoulCurrentRecordUUID]
-			if !ok {
-				err := fmt.Errorf("错误：找不到牌谱 %s", h.majsoulCurrentRecordUUID)
-				fmt.Fprintln(os.Stderr, err)
-				h.log.Error(err)
-				break
-			}
+			baseInfo, _ := h.majsoulRecordMap[h.majsoulCurrentRecordUUID]
 			firstRoundDealer, err := baseInfo.getFistRoundDealer(h.majsoulRoundData.accountID)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, "错误：", err)
-				h.log.Error(err)
+				h.logError(err)
 				break
 			}
-			h.majsoulRoundData.dealer = firstRoundDealer
+			h.majsoulRoundData.reset(0, firstRoundDealer)
+
 			// 顺便设置下初始座位
 			h.majsoulRoundData.selfSeat, _ = baseInfo.getSelfSeat(h.majsoulRoundData.accountID)
 
-			// 记录 RecordActions
+			// 准备分析……
 			majsoulCurrentRecordActions, err := parseMajsoulRecordAction(d.RecordActions)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, "错误：", err)
-				h.log.Error(err)
+				h.logError(err)
 				break
 			}
 			h.majsoulCurrentRecordActions = majsoulCurrentRecordActions
-
 			h.majsoulCurrentRoundIndex = 0
 			h.majsoulCurrentActionIndex = 0
 
@@ -238,8 +239,7 @@ func (h *mjHandler) _analysisMajsoulRoundData(data *majsoulMessage, originJSON s
 	h.majsoulRoundData.msg = data
 	h.majsoulRoundData.originJSON = originJSON
 	if err := h.majsoulRoundData.analysis(); err != nil {
-		fmt.Fprintln(os.Stderr, "错误：", err)
-		h.log.Error(err)
+		h.logError(err)
 	}
 }
 
@@ -279,7 +279,10 @@ func (h *mjHandler) _onRecordClick(clickAction string, clickActionIndex int, fas
 		if debugMode {
 			fmt.Printf("快速处理牌谱中的操作：局 %d 动作 %d-%d\n", h.majsoulCurrentRoundIndex, startActionIndex, endActionIndex)
 		}
-		for _, action := range currentRoundActions[startActionIndex : endActionIndex+1] {
+		for i, action := range currentRoundActions[startActionIndex : endActionIndex+1] {
+			if debugMode {
+				fmt.Printf("快速处理牌谱中的操作：局 %d 动作 %d\n", h.majsoulCurrentRoundIndex, startActionIndex+i)
+			}
 			h._analysisMajsoulRoundData(action.Action, "")
 		}
 		h.majsoulRoundData.skipOutput = false
