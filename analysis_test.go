@@ -50,10 +50,11 @@ func TestAnalysis(t *testing.T) {
 
 	raw = "3456667m 345566p"
 	raw = "3456667m 34566p 5s"
-	raw = "24688m 34s & 6666P 234p + 3m"
-	raw = "24688m 34s & 111p 234p + 3m"
+	raw = "24688m 34s # 6666P 234p + 3m"
+	raw = "24688m 34s # 111p 234p + 3m"
 	raw = "1112234567999m"
 	raw = "123567m 3334688p + 7z"
+	raw = "23777m 45677s # 777p + 7s"
 	if _, err := analysisHumanTiles(model.NewSimpleHumanTilesInfo(raw)); err != nil {
 		t.Fatal(err)
 	}

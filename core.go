@@ -581,7 +581,7 @@ func (d *roundData) analysis() error {
 		// TODO: 根据是否听牌/一向听、打点、巡目、和率等进行攻守判断
 		return analysisPlayerWithRisk(d.newModelPlayerInfo(), mixedRiskTable)
 	case d.parser.IsDiscard():
-		who, discardTile, isRedFive, isTsumogiri, isReach, canBeMeld, kanDoraIndicator := d.parser.ParseDiscard()
+		who, discardTile, isRedFive, isTsumogiri, isReach, _, kanDoraIndicator := d.parser.ParseDiscard()
 
 		if kanDoraIndicator != -1 {
 			d.newDora(kanDoraIndicator)
@@ -669,13 +669,11 @@ func (d *roundData) analysis() error {
 			riskTables.printWithHands(d.counts, d.leftCounts)
 		}
 
-		// 若能副露，计算何切
-		if canBeMeld {
-			// TODO: 提醒: 消除海底/避免河底/型听
-			allowChi := who == 3 // 上家舍牌允许吃
-			mixedRiskTable := riskTables.mixedRiskTable()
-			return analysisMeld(d.newModelPlayerInfo(), discardTile, isRedFive, allowChi, mixedRiskTable)
-		}
+		// 为了方便解析牌谱，这里尽可能地解析副露
+		// TODO: 提醒: 消除海底/避免河底/型听
+		allowChi := who == 3 // 上家舍牌允许吃
+		mixedRiskTable := riskTables.mixedRiskTable()
+		return analysisMeld(d.newModelPlayerInfo(), discardTile, isRedFive, allowChi, mixedRiskTable)
 	case d.parser.IsRoundWin():
 		if !debugMode {
 			clearConsole()

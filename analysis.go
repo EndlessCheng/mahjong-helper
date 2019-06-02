@@ -84,7 +84,7 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool
 	// 副露分析
 	shanten, results14, incShantenResults14 := util.CalculateMeld(playerInfo, targetTile34, isRedFive, allowChi)
 	if len(results14) == 0 && len(incShantenResults14) == 0 {
-		return fmt.Errorf("输入错误：无法鸣这张牌")
+		return nil // fmt.Errorf("输入错误：无法鸣这张牌")
 	}
 
 	// 鸣牌

@@ -163,11 +163,13 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			fmt.Println(originJSON)
 		}
 
-		switch {
-		case d.AccountID > 0 && h.majsoulRoundData.accountID != d.AccountID:
+		if d.AccountID > 0 && h.majsoulRoundData.accountID != d.AccountID {
 			// 登录验证通过
 			printAccountInfo(d.AccountID)
 			h.majsoulRoundData.accountID = d.AccountID
+		}
+
+		switch {
 		case len(d.Friends) > 0:
 			// 处理好友列表
 			fmt.Println("好友账号ID   好友上次登录时间        好友上次登出时间       好友昵称")
@@ -181,9 +183,6 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			}
 			color.HiGreen("收到 %2d 个牌谱（已收集 %d 个），请在网页上点击「查看」", len(d.RecordBaseInfoList), len(h.majsoulRecordMap))
 		case d.CurrentRecordUUID != "":
-			if d.CurrentRecordUUID == h.majsoulCurrentRecordUUID {
-				break
-			}
 			baseInfo, ok := h.majsoulRecordMap[d.CurrentRecordUUID]
 			if !ok {
 				h.logError(fmt.Errorf("错误：找不到牌谱 %s", h.majsoulCurrentRecordUUID))
