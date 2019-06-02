@@ -516,6 +516,12 @@ func (d *roundData) analysis() error {
 				// 自家加杠成功，修改手牌
 				d.counts[calledTile]--
 				// 由于均为自家操作，宝牌数是不变的
+
+				// 牌谱分析模式下，记录加杠操作
+				if d.gameMode == gameModeRecordCache {
+					currentRoundCache := globalAnalysisCache.wholeGameCache[d.roundNumber][d.benNumber]
+					currentRoundCache.addKan(meldType)
+				}
 			}
 			// 修改原副露
 			for _, _meld := range player.melds {
@@ -546,6 +552,12 @@ func (d *roundData) analysis() error {
 			// 自家，修改手牌
 			if meldType == meldTypeAnkan {
 				d.counts[meldTiles[0]] = 0
+
+				// 牌谱分析模式下，记录暗杠操作
+				if d.gameMode == gameModeRecordCache {
+					currentRoundCache := globalAnalysisCache.wholeGameCache[d.roundNumber][d.benNumber]
+					currentRoundCache.addKan(meldType)
+				}
 			} else {
 				d.counts[calledTile]++
 				for _, tile := range meldTiles {
@@ -554,6 +566,12 @@ func (d *roundData) analysis() error {
 				if meld.RedFiveFromOthers {
 					tileType := meldTiles[0] / 9
 					d.numRedFives[tileType]++
+				}
+
+				// 牌谱分析模式下，记录吃碰明杠操作
+				if d.gameMode == gameModeRecordCache {
+					currentRoundCache := globalAnalysisCache.wholeGameCache[d.roundNumber][d.benNumber]
+					currentRoundCache.addChiPonKan(meldType)
 				}
 			}
 		}
@@ -719,6 +737,33 @@ func (d *roundData) analysis() error {
 			player.canIppatsu = false
 		}
 
+		playerInfo := d.newModelPlayerInfo()
+
+		// 安全度分析
+		riskTables := d.analysisTilesRisk()
+		mixedRiskTable := riskTables.mixedRiskTable()
+
+		// 牌谱分析模式下，记录可能的鸣牌
+		if d.gameMode == gameModeRecordCache {
+			currentRoundCache := globalAnalysisCache.wholeGameCache[d.roundNumber][d.benNumber]
+			allowChi := who == 3
+			_, results14, incShantenResults14 := util.CalculateMeld(playerInfo, discardTile, isRedFive, allowChi)
+			bestAttackDiscardTile := -1
+			if len(results14) > 0 {
+				bestAttackDiscardTile = results14[0].DiscardTile
+			} else if len(incShantenResults14) > 0 {
+				bestAttackDiscardTile = incShantenResults14[0].DiscardTile
+			}
+			if bestAttackDiscardTile != -1 {
+				bestDefenceDiscardTile := mixedRiskTable.getBestDefenceTile()
+				bestAttackDiscardTileRisk := 0.0
+				if bestDefenceDiscardTile >= 0 {
+					bestAttackDiscardTileRisk = mixedRiskTable[bestAttackDiscardTile]
+				}
+				currentRoundCache.addPossibleChiPonKan(bestAttackDiscardTile, bestAttackDiscardTileRisk)
+			}
+		}
+
 		if d.skipOutput {
 			return nil
 		}
@@ -729,11 +774,8 @@ func (d *roundData) analysis() error {
 			currentRoundCache.print()
 		}
 
-		// 安全度分析
-		riskTables := d.analysisTilesRisk()
-
+		// 打印他家舍牌信息
 		if d.parser.GetDataSourceType() != dataSourceTypeTenhou || who != 3 {
-			// 打印他家舍牌信息
 			d.printDiscards()
 			fmt.Println()
 			riskTables.printWithHands(d.counts, d.leftCounts)
@@ -741,9 +783,8 @@ func (d *roundData) analysis() error {
 
 		// 为了方便解析牌谱，这里尽可能地解析副露
 		// TODO: 提醒: 消除海底/避免河底/型听
-		allowChi := who == 3 // 上家舍牌允许吃
-		mixedRiskTable := riskTables.mixedRiskTable()
-		return analysisMeld(d.newModelPlayerInfo(), discardTile, isRedFive, allowChi, mixedRiskTable)
+		allowChi := who == 3
+		return analysisMeld(playerInfo, discardTile, isRedFive, allowChi, mixedRiskTable)
 	case d.parser.IsRoundWin():
 		if !debugMode {
 			clearConsole()

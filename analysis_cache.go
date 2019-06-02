@@ -9,10 +9,12 @@ import (
 type analysisOpType int
 
 const (
-	analysisOpTypeTsumo analysisOpType = iota
-	analysisOpTypeNaki
-	analysisOpTypeKan  // 加杠和暗杠
+	analysisOpTypeTsumo     analysisOpType = iota
+	analysisOpTypeChiPonKan  // 吃 碰 明杠
+	analysisOpTypeKan        // 加杠 暗杠 TODO: 加杠会让巡目加一吗？
 )
+
+// TODO: 提醒「此处应该副露，不应跳过」
 
 type analysisCache struct {
 	analysisOpType analysisOpType
@@ -21,6 +23,7 @@ type analysisCache struct {
 	//isSelfDiscardRedFive bool
 	selfDiscardTileRisk float64
 	isRiichiWhenDiscard bool
+	meldType            int
 
 	// 用手牌中的什么牌去鸣牌，空就是跳过不鸣
 	selfOpenTiles []int
@@ -37,15 +40,31 @@ type roundAnalysisCache struct {
 	isStart bool
 	isEnd   bool
 	cache   []*analysisCache
+
+	analysisCacheBeforeChiPon *analysisCache
 }
 
 func (rc *roundAnalysisCache) print() {
-	const baseInfo = "助手正在计算推荐舍牌，请稍等……（计算结果仅供参考）"
-	const sep = "  "
+	const (
+		baseInfo  = "助手正在计算推荐舍牌，请稍等……（计算结果仅供参考）"
+		emptyInfo = "--"
+		sep       = "  "
+	)
+
 	done := rc != nil && rc.isEnd
 	if !done {
 		color.HiGreen(baseInfo)
+	} else {
+		// 检查最后的是否自摸，若为自摸则去掉
+		if len(rc.cache) > 0 {
+			latestCache := rc.cache[len(rc.cache)-1]
+			if latestCache.selfDiscardTile == -1 {
+				latestCache.aiAttackDiscardTile = -1
+				latestCache.aiDefenceDiscardTile = -1
+			}
+		}
 	}
+
 	fmt.Print("巡目　　")
 	if done {
 		for i := range rc.cache {
@@ -53,60 +72,55 @@ func (rc *roundAnalysisCache) print() {
 		}
 	}
 	fmt.Println()
+
+	printTileInfo := func(tile int, risk float64, suffix string) {
+		info := emptyInfo
+		if tile != -1 {
+			info = util.Mahjong[tile]
+		}
+		fmt.Print(sep)
+		if info == emptyInfo || risk < 5 {
+			fmt.Print(info)
+		} else {
+			color.New(getNumRiskColor(risk)).Print(info)
+		}
+		fmt.Print(suffix)
+	}
+
 	fmt.Print("自家切牌")
 	if done {
 		for _, c := range rc.cache {
-			info := ""
-			if c.selfDiscardTile != -1 {
-				info = util.Mahjong[c.selfDiscardTile]
-			}
+			suffix := ""
 			if c.isRiichiWhenDiscard {
-				info += "[立直]"
+				suffix = "[立直]"
+			} else if c.selfDiscardTile == -1 {
+				suffix = "[自摸]"
 			}
-			fmt.Print(sep)
-			if c.selfDiscardTileRisk < 5 {
-				fmt.Print(info)
-			} else {
-				color.New(getNumRiskColor(c.selfDiscardTileRisk)).Print(info)
-			}
+			printTileInfo(c.selfDiscardTile, c.selfDiscardTileRisk, suffix)
 		}
 	}
 	fmt.Println()
+
 	fmt.Print("进攻推荐")
 	if done {
 		for _, c := range rc.cache {
-			info := ""
-			if c.aiAttackDiscardTile != -1 {
-				info = util.Mahjong[c.aiAttackDiscardTile]
-			}
-			fmt.Print(sep)
-			if c.aiAttackDiscardTileRisk < 5 {
-				fmt.Print(info)
-			} else {
-				color.New(getNumRiskColor(c.aiAttackDiscardTileRisk)).Print(info)
-			}
+			printTileInfo(c.aiAttackDiscardTile, c.aiAttackDiscardTileRisk, "")
 		}
 	}
 	fmt.Println()
+
 	fmt.Print("防守推荐")
 	if done {
 		for _, c := range rc.cache {
-			info := "--"
-			if c.aiDefenceDiscardTile != -1 {
-				info = util.Mahjong[c.aiDefenceDiscardTile]
-			}
-			fmt.Print(sep)
-			if c.aiDefenceDiscardTileRisk < 5 {
-				fmt.Print(info)
-			} else {
-				color.New(getNumRiskColor(c.aiDefenceDiscardTileRisk)).Print(info)
-			}
+			printTileInfo(c.aiDefenceDiscardTile, c.aiDefenceDiscardTileRisk, "")
 		}
 	}
 	fmt.Println()
+
 	fmt.Println()
 }
 
+// （摸牌后、鸣牌后的）实际舍牌
 func (rc *roundAnalysisCache) addSelfDiscardTile(tile int, risk float64, isRiichiWhenDiscard bool) {
 	latestCache := rc.cache[len(rc.cache)-1]
 	latestCache.selfDiscardTile = tile
@@ -114,13 +128,61 @@ func (rc *roundAnalysisCache) addSelfDiscardTile(tile int, risk float64, isRiich
 	latestCache.isRiichiWhenDiscard = isRiichiWhenDiscard
 }
 
+// 摸牌时的切牌推荐
 func (rc *roundAnalysisCache) addAIDiscardTile(attackTile int, defenceTile int, attackTileRisk float64, defenceDiscardTileRisk float64) {
+	// 摸牌，巡目+1
 	rc.cache = append(rc.cache, &analysisCache{
+		analysisOpType:           analysisOpTypeTsumo, // TODO ?
+		selfDiscardTile:          -1,
 		aiAttackDiscardTile:      attackTile,
 		aiDefenceDiscardTile:     defenceTile,
 		aiAttackDiscardTileRisk:  attackTileRisk,
 		aiDefenceDiscardTileRisk: defenceDiscardTileRisk,
 	})
+}
+
+// 加杠 暗杠
+func (rc *roundAnalysisCache) addKan(meldType int) {
+	// 巡目+1
+	rc.cache = append(rc.cache, &analysisCache{
+		analysisOpType:       analysisOpTypeKan,
+		selfDiscardTile:      -1,
+		aiAttackDiscardTile:  -1,
+		aiDefenceDiscardTile: -1,
+		meldType:             meldType,
+	})
+}
+
+// 吃 碰 明杠
+func (rc *roundAnalysisCache) addChiPonKan(meldType int) {
+	// 巡目+1
+	var newCache *analysisCache
+	if rc.analysisCacheBeforeChiPon != nil {
+		newCache = rc.analysisCacheBeforeChiPon
+		newCache.analysisOpType = analysisOpTypeChiPonKan
+		newCache.meldType = meldType
+		rc.analysisCacheBeforeChiPon = nil
+	} else {
+		newCache = &analysisCache{
+			analysisOpType:       analysisOpTypeChiPonKan,
+			selfDiscardTile:      -1,
+			aiAttackDiscardTile:  -1,
+			aiDefenceDiscardTile: -1,
+			meldType:             meldType,
+		}
+	}
+	rc.cache = append(rc.cache, newCache)
+}
+
+// 吃 碰 杠 跳过
+func (rc *roundAnalysisCache) addPossibleChiPonKan(attackTile int, attackTileRisk float64) {
+	rc.analysisCacheBeforeChiPon = &analysisCache{
+		analysisOpType:          analysisOpTypeChiPonKan,
+		selfDiscardTile:         -1,
+		aiAttackDiscardTile:     attackTile,
+		aiDefenceDiscardTile:    -1,
+		aiAttackDiscardTileRisk: attackTileRisk,
+	}
 }
 
 //
