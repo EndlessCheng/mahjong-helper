@@ -211,6 +211,10 @@ func (d *tenhouRoundData) GetDataSourceType() int {
 	return dataSourceTypeTenhou
 }
 
+func (d *tenhouRoundData) GetSelfSeat() int {
+	return -1
+}
+
 func (d *tenhouRoundData) GetMessage() string {
 	return d.originJSON
 }
@@ -228,14 +232,15 @@ func (d *tenhouRoundData) IsInit() bool {
 	return d.msg.Tag == "INIT" || d.msg.Tag == "REINIT"
 }
 
-func (d *tenhouRoundData) ParseInit() (roundNumber int, dealer int, doraIndicator int, handTiles []int, numRedFives []int) {
-	splits := strings.Split(d.msg.Seed, ",")
-	if len(splits) != 6 {
+func (d *tenhouRoundData) ParseInit() (roundNumber int, benNumber int, dealer int, doraIndicator int, handTiles []int, numRedFives []int) {
+	seedSplits := strings.Split(d.msg.Seed, ",")
+	if len(seedSplits) != 6 {
 		panic(fmt.Sprintln("seed 解析失败", d.msg.Seed))
 	}
-	roundNumber, _ = strconv.Atoi(splits[0])
+	roundNumber, _ = strconv.Atoi(seedSplits[0])
+	benNumber, _ = strconv.Atoi(seedSplits[1])
 	dealer, _ = strconv.Atoi(d.msg.Dealer)
-	doraIndicator, _ = d._parseTenhouTile(splits[5])
+	doraIndicator, _ = d._parseTenhouTile(seedSplits[5])
 	numRedFives = make([]int, 3)
 	tenhouTiles := strings.Split(d.msg.Hai, ",")
 	for _, tenhouTile := range tenhouTiles {

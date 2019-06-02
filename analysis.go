@@ -8,6 +8,24 @@ import (
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 )
 
+func simpleBestDiscardTile(playerInfo *model.PlayerInfo) int {
+	shanten, results14, incShantenResults14 := util.CalculateShantenWithImproves14(playerInfo)
+	bestAttackDiscardTile := -1
+	if len(results14) > 0 {
+		bestAttackDiscardTile = results14[0].DiscardTile
+	} else if len(incShantenResults14) > 0 {
+		bestAttackDiscardTile = incShantenResults14[0].DiscardTile
+	} else {
+		return -1
+	}
+	if shanten == 1 && len(playerInfo.DiscardTiles) < 9 && len(results14) > 0 && len(incShantenResults14) > 0 {
+		if results14[0].Result13.Waits.AllCount() < 9 && results14[0].Result13.MixedWaitsScore < incShantenResults14[0].Result13.MixedWaitsScore {
+			bestAttackDiscardTile = incShantenResults14[0].DiscardTile
+		}
+	}
+	return bestAttackDiscardTile
+}
+
 // TODO: 重构至 model
 func humanMeld(meld model.Meld) string {
 	humanMeld := util.TilesToStr(meld.Tiles)

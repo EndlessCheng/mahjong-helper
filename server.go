@@ -205,7 +205,7 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 				h.logError(err)
 				break
 			}
-			h.majsoulRoundData.reset(0, firstRoundDealer)
+			h.majsoulRoundData.reset(0, 0, firstRoundDealer)
 			h.majsoulRoundData.gameMode = gameModeRecord
 
 			// 顺便设置下初始座位
@@ -221,14 +221,30 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			h.majsoulCurrentRoundIndex = 0
 			h.majsoulCurrentActionIndex = 0
 
+			actions := h.majsoulCurrentRecordActions[0]
+
+			// 创建分析任务
+			globalAnalysisCache = newGameAnalysisCache(h.majsoulCurrentRecordUUID, h.majsoulRoundData.selfSeat)
+			go globalAnalysisCache.runMajsoulRecordAnalysisTask(actions)
+
 			// 分析第一局的起始信息
-			data := h.majsoulCurrentRecordActions[0][0].Action
+			data := actions[0].Action
 			h._analysisMajsoulRoundData(data, originJSON)
 		case d.RecordClickAction != "":
 			// 处理网页上的牌谱点击：上一局/跳到某局/下一局/上一巡/跳到某巡/下一巡/上一步/播放/暂停/下一步/点击桌面
 			// 暂不能分析他家手牌
 			h._onRecordClick(d.RecordClickAction, d.RecordClickActionIndex, d.FastRecordTo)
 		default:
+			// TODO: 重构
+			if d.AccountID > 0 {
+				break
+			}
+
+			if debugMode {
+				color.HiGreen("加入对战……")
+			}
+			h.majsoulCurrentRecordUUID = ""
+
 			// 其他：场况分析
 			h._analysisMajsoulRoundData(d, originJSON)
 		}
@@ -258,15 +274,19 @@ func (h *mjHandler) _onRecordClick(clickAction string, clickActionIndex int, fas
 	case "nextRound":
 		h.majsoulCurrentRoundIndex = (h.majsoulCurrentRoundIndex + 1) % len(h.majsoulCurrentRecordActions)
 		h.majsoulCurrentActionIndex = 0
+		go globalAnalysisCache.runMajsoulRecordAnalysisTask(h.majsoulCurrentRecordActions[h.majsoulCurrentRoundIndex])
 	case "preRound":
 		h.majsoulCurrentRoundIndex = (h.majsoulCurrentRoundIndex - 1 + len(h.majsoulCurrentRecordActions)) % len(h.majsoulCurrentRecordActions)
 		h.majsoulCurrentActionIndex = 0
+		go globalAnalysisCache.runMajsoulRecordAnalysisTask(h.majsoulCurrentRecordActions[h.majsoulCurrentRoundIndex])
 	case "jumpRound":
 		h.majsoulCurrentRoundIndex = clickActionIndex % len(h.majsoulCurrentRecordActions)
 		h.majsoulCurrentActionIndex = 0
+		go globalAnalysisCache.runMajsoulRecordAnalysisTask(h.majsoulCurrentRecordActions[h.majsoulCurrentRoundIndex])
 	case "nextXun", "preXun", "jumpXun", "preStep", "jumpToLastRoundXun":
 		if clickAction == "jumpToLastRoundXun" {
 			h.majsoulCurrentRoundIndex = (h.majsoulCurrentRoundIndex - 1 + len(h.majsoulCurrentRecordActions)) % len(h.majsoulCurrentRecordActions)
+			go globalAnalysisCache.runMajsoulRecordAnalysisTask(h.majsoulCurrentRecordActions[h.majsoulCurrentRoundIndex])
 		}
 
 		h.majsoulRoundData.skipOutput = true
@@ -308,10 +328,19 @@ func (h *mjHandler) _onRecordClick(clickAction string, clickActionIndex int, fas
 		}
 
 		time.Sleep(time.Second)
+
+		actions := h.majsoulCurrentRecordActions[h.majsoulCurrentRoundIndex]
+		go globalAnalysisCache.runMajsoulRecordAnalysisTask(actions)
 		// 分析下一局的起始信息
-		data := h.majsoulCurrentRecordActions[h.majsoulCurrentRoundIndex][h.majsoulCurrentActionIndex].Action
+		data := actions [h.majsoulCurrentActionIndex].Action
 		h._analysisMajsoulRoundData(data, "")
 	}
+}
+
+var h *mjHandler
+
+func getGlobalMJHandler() *mjHandler {
+	return h
 }
 
 func runServer(isHTTPS bool) {
@@ -337,7 +366,7 @@ func runServer(isHTTPS bool) {
 	if isHTTPS && gameConf.MajsoulAccountID != -1 {
 		color.HiYellow("[提醒] 从配置中读取出雀魂账号 %d", gameConf.MajsoulAccountID)
 	}
-	h := &mjHandler{
+	h = &mjHandler{
 		log: e.Logger,
 
 		tenhouMessageQueue:  make(chan []byte, 100),

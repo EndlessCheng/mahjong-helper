@@ -102,6 +102,26 @@ func (t riskTable) printWithHands(hands []int, fixedRiskMulti float64) {
 	}
 }
 
+func (t riskTable) getBestDefenceTile() (result int) {
+	minRisk := 100.0
+	maxRisk := 0.0
+	for tile, risk := range t {
+		if risk < minRisk {
+			minRisk = risk
+			result = tile
+		}
+		if risk > maxRisk {
+			maxRisk = risk
+		}
+	}
+	if maxRisk == 0 {
+		return -1
+	}
+	return result
+}
+
+//
+
 type riskInfo struct {
 	// 该玩家的安牌
 	safeTiles34 []bool
@@ -123,6 +143,7 @@ type riskInfo struct {
 
 type riskInfoList []riskInfo
 
+// 考虑了听牌率的综合危险度
 func (l riskInfoList) mixedRiskTable() riskTable {
 	mixedRiskTable := make(riskTable, 34)
 	for i := range mixedRiskTable {

@@ -7,6 +7,7 @@ type gameMode int
 const (
 	gameModeMatch gameMode = iota
 	gameModeRecord
+	gameModeRecordCache
 )
 
 const (

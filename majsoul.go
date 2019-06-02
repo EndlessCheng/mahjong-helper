@@ -43,6 +43,7 @@ type majsoulMessage struct {
 	MD5   string      `json:"md5"`
 	Chang *int        `json:"chang"`
 	Ju    *int        `json:"ju"`
+	Ben   *int        `json:"ben"`
 	Tiles interface{} `json:"tiles"` // 一般情况下为 []interface{}, interface{} 即 string，但是暗杠的情况下，该值为一个 string
 	Dora  string      `json:"dora"`
 
@@ -171,6 +172,10 @@ func (d *majsoulRoundData) GetDataSourceType() int {
 	return dataSourceTypeMajsoul
 }
 
+func (d *majsoulRoundData) GetSelfSeat() int {
+	return d.selfSeat
+}
+
 func (d *majsoulRoundData) GetMessage() string {
 	return d.originJSON
 }
@@ -225,25 +230,26 @@ func (d *majsoulRoundData) IsInit() bool {
 	return len(msg.SeatList) == playerNumber || msg.MD5 != ""
 }
 
-func (d *majsoulRoundData) ParseInit() (roundNumber int, dealer int, doraIndicator int, handTiles []int, numRedFives []int) {
+func (d *majsoulRoundData) ParseInit() (roundNumber int, benNumber int, dealer int, doraIndicator int, handTiles []int, numRedFives []int) {
 	msg := d.msg
 	const playerNumber = 4
 
 	if len(msg.SeatList) == playerNumber {
-		// dealer: 0=自家, 1=下家, 2=对家, 3=上家
-		dealer = 1
-		for i := len(msg.SeatList) - 1; i >= 0; i-- {
-			if msg.SeatList[i] == d.accountID {
+		// 获取自家初始座位：0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
+		for i, accountID := range msg.SeatList {
+			if accountID == d.accountID {
+				d.selfSeat = i
 				break
 			}
-			dealer++
 		}
-		dealer %= playerNumber
+		// dealer: 0=自家, 1=下家, 2=对家, 3=上家
+		dealer = (playerNumber - d.selfSeat) % playerNumber
 		return
 	}
 	dealer = -1
 
 	roundNumber = playerNumber*(*msg.Chang) + *msg.Ju
+	benNumber = *msg.Ben
 	doraIndicator, _ = d.mustParseMajsoulTile(msg.Dora)
 	numRedFives = make([]int, 3)
 
