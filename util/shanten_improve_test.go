@@ -267,6 +267,9 @@ func bestHumanDiscardTile2(t *testing.T, humanTiles string, doraIndicatorHumanTi
 		playerInfo.DoraTiles = model.DoraList(doraIndicators)
 	}
 	playerInfo.NumRedFives = numRedFives
+
+	playerInfo.SelfWindTile = 28
+
 	_, results, _ := CalculateShantenWithImproves14(playerInfo)
 	if true {
 		t.Log(humanTiles, doraIndicatorHumanTiles)
@@ -302,13 +305,23 @@ func TestBestDiscard(t *testing.T) {
 	//assert.Equal("2m", bestHumanDiscardTile(t, "1223446789m 78s 77z", "8s"))
 
 	//assert.Equal("4m", bestHumanDiscardTile(t, "334456788m 45p 456s", ""))
+	assert.Equal("8p", bestHumanDiscardTile(t, "23668m 258p 4678s 77z", "2p"))
 
 	// 两向听
+	assert.Equal("8p", bestHumanDiscardTile(t, "23668m 258p 4678s 77z", "2p"))
 
 	// 三向听
 	assert.Equal("8p", bestHumanDiscardTile(t, "23668m 258p 4678s 77z", "2p"))
 	assert.Equal("2p", bestHumanDiscardTile(t, "23668m 258p 4678s 77z", "8p"))
 	assert.Equal("2p", bestHumanDiscardTile(t, "23668m 258p 4678s 77z", ""))
+}
+
+func TestBest2(t *testing.T) {
+	assert := assert.New(t)
+
+	// 传入手牌和宝牌指示牌，赤牌用 0 表示
+	assert.Equal("5z", bestHumanDiscardTile2(t, "789m 23678p 1235s 25z", "3z"))
+	assert.Equal("2p", bestHumanDiscardTile2(t, "24668m 2078p 23457s", "3z"))
 }
 
 func TestFuritenBestDiscard(t *testing.T) {

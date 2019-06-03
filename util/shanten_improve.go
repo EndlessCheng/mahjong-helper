@@ -426,6 +426,13 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *Hand13Anal
 
 //
 
+const (
+	honorRiskRoundWind = 4
+	honorRiskYaku      = 3
+	honorRiskOtakaze   = 2
+	honorRiskSelfWind  = 1
+)
+
 type tileValue float64
 
 const (
@@ -533,6 +540,8 @@ type Hand14AnalysisResult struct {
 
 	// 切牌后的手牌分析结果
 	Result13 *Hand13AnalysisResult
+
+	DiscardHonorTileRisk int
 
 	// 副露信息（没有副露就是 nil）
 	// 比如用 23m 吃了牌，OpenTiles 就是 [1,2]
@@ -668,7 +677,12 @@ func (l Hand14AnalysisResultList) Sort(improveFirst bool) {
 			}
 			return idxI > idxJ
 		}
-		return idxI < idxJ
+		if idxI < 27 || idxJ < 27 {
+			// 数牌先走
+			return idxI < idxJ
+		}
+		// 场风 - 三元牌 - 他家客风 - 自风
+		return l[i].DiscardHonorTileRisk > l[j].DiscardHonorTileRisk
 
 		//// 改良种类、方式多的优先
 		//if len(ri.Improves) != len(rj.Improves) {
@@ -718,6 +732,19 @@ func (n *shantenSearchNode14) analysis(playerInfo *model.PlayerInfo, considerImp
 				r14.DiscardTileValue = calculateIsolatedTileValue(discardTile, playerInfo)
 			} else {
 				r14.DiscardTileValue = calculateTileValue(discardTile, playerInfo)
+			}
+		}
+
+		if discardTile >= 27 {
+			switch discardTile {
+			case playerInfo.RoundWindTile:
+				r14.DiscardHonorTileRisk = honorRiskRoundWind
+			case 31, 32, 33:
+				r14.DiscardHonorTileRisk = honorRiskYaku
+			case playerInfo.SelfWindTile:
+				r14.DiscardHonorTileRisk = honorRiskSelfWind
+			default:
+				r14.DiscardHonorTileRisk = honorRiskOtakaze
 			}
 		}
 
