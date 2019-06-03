@@ -302,10 +302,8 @@ func TestBestDiscard(t *testing.T) {
 	//assert.Equal("2m", bestHumanDiscardTile(t, "1223446789m 78s 77z", "8s"))
 
 	//assert.Equal("4m", bestHumanDiscardTile(t, "334456788m 45p 456s", ""))
-	assert.Equal("8p", bestHumanDiscardTile(t, "23668m 258p 4678s 77z", "2p"))
 
 	// 两向听
-	assert.Equal("8p", bestHumanDiscardTile(t, "23668m 258p 4678s 77z", "2p"))
 
 	// 三向听
 	assert.Equal("8p", bestHumanDiscardTile(t, "23668m 258p 4678s 77z", "2p"))
