@@ -563,7 +563,7 @@ func (r *Hand14AnalysisResult) String() string {
 type Hand14AnalysisResultList []*Hand14AnalysisResult
 
 // 按照特定规则排序
-// 若 improveFirst 为 true，则优先按照 AvgImproveWaitsCount 排序
+// 若 improveFirst 为 true，则优先按照 AvgImproveWaitsCount 排序（对于三向听及以上来说）
 func (l Hand14AnalysisResultList) Sort(improveFirst bool) {
 	if len(l) <= 1 {
 		return
@@ -757,8 +757,8 @@ func (n *shantenSearchNode14) analysis(playerInfo *model.PlayerInfo, considerImp
 		}
 
 		shanten := l[0].Result13.Shanten
-		// 一向听及以下进张优先，改良其次
-		if shanten <= 1 {
+		// 两向听及以下进张优先，改良其次
+		if shanten <= 2 {
 			return false
 		}
 
@@ -767,7 +767,7 @@ func (n *shantenSearchNode14) analysis(playerInfo *model.PlayerInfo, considerImp
 			maxWaitsCount = MaxInt(maxWaitsCount, r14.Result13.Waits.AllCount())
 		}
 
-		// 两向听及以上的垃圾进张考虑改良
+		// 三向听及以上的垃圾进张考虑改良
 		return maxWaitsCount <= 9*shanten+3
 	}
 

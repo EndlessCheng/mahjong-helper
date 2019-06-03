@@ -316,7 +316,7 @@ func TestBest2(t *testing.T) {
 
 	// 传入手牌和宝牌指示牌，赤牌用 0 表示
 	assert.Equal("5z", bestHumanDiscardTile2(t, "789m 23678p 1235s 25z", "3z"))
-	assert.Equal("2p", bestHumanDiscardTile2(t, "24668m 2078p 23457s", "3z"))
+	assert.Equal("8p", bestHumanDiscardTile2(t, "24668m 2078p 23457s", "3z"))
 }
 
 func TestFuritenBestDiscard(t *testing.T) {
