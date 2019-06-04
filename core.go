@@ -718,9 +718,7 @@ func (d *roundData) analysis() error {
 		} else if len(player.meldDiscardsAt) != len(player.melds) {
 			// 标记鸣牌的舍牌
 			// 注意这里会标记到暗杠后的舍牌上
-			if len(player.meldDiscardsAt)+1 != len(player.melds) {
-				fmt.Printf("玩家数据异常 %#v", *player)
-			}
+			// 注意对于连续开杠的情况，len(player.meldDiscardsAt) 和 len(player.melds) 是不等的
 			player.meldDiscardsAt = append(player.meldDiscardsAt, len(player.discardTiles)-1)
 			player.meldDiscardsAtGlobal = append(player.meldDiscardsAtGlobal, len(d.globalDiscardTiles)-1)
 		}
