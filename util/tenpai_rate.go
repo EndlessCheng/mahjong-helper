@@ -16,11 +16,13 @@ func CalcTenpaiRate(meldCount int, discardTiles []int, meldDiscardsAt []int) flo
 
 	// 计算上一次副露后的手切数
 	countTedashi := 0
-	latestDiscardAt := meldDiscardsAt[len(meldDiscardsAt)-1]
-	if len(discardTiles) > latestDiscardAt {
-		for _, disTile := range discardTiles[latestDiscardAt+1:] {
-			if disTile >= 0 {
-				countTedashi++
+	if len(meldDiscardsAt) > 0 { // FIXME 实际上这恒为 true，只不过天凤偶尔会有先收到自家摸牌再收到上家摸牌的问题
+		latestDiscardAt := meldDiscardsAt[len(meldDiscardsAt)-1]
+		if len(discardTiles) > latestDiscardAt {
+			for _, disTile := range discardTiles[latestDiscardAt+1:] {
+				if disTile >= 0 {
+					countTedashi++
+				}
 			}
 		}
 	}
