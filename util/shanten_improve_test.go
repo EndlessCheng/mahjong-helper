@@ -153,9 +153,10 @@ func TestCalculateShantenWithImproves14Closed(t *testing.T) {
 	tiles = "145599m 18p 124s 157z"
 	tiles = "2389m 4566p 2289s 44z" // 垃圾进张考虑改良
 	tiles = "11233456789m 333p"     // 默听进张和立直不一样
+	tiles = "136688m 456p 55677s"
 	playerInfo := model.NewSimplePlayerInfo(MustStrToTiles34(tiles), nil)
 	//playerInfo.SelfWindTile = MustStrToTile34("4z")
-	//playerInfo.LeftTiles34 = InitLeftTiles34WithTiles34(MustStrToTiles34("789m 11223344455666677788999p 11z")) // 注意手牌也算上
+	playerInfo.LeftTiles34 = InitLeftTiles34WithTiles34(MustStrToTiles34("1366668888m 456p 55666677s")) // 注意手牌也算上
 	//playerInfo.DiscardTiles = []int{MustStrToTile34("1p")}
 	//playerInfo.DoraTiles = MustStrToTiles("3m")
 	shanten, results, incShantenResults := CalculateShantenWithImproves14(playerInfo)

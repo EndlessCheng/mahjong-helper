@@ -575,6 +575,15 @@ func (l Hand14AnalysisResultList) Sort(improveFirst bool) {
 		ri, rj := l[i].Result13, l[j].Result13
 		riWaitsCount, rjWaitsCount := ri.Waits.AllCount(), rj.Waits.AllCount()
 
+		// 首先，无论怎样，进张数为 0，无条件排在后面，也不看改良
+		// 进张数都为 0 就看改良
+		if riWaitsCount == 0 || rjWaitsCount == 0 {
+			if riWaitsCount == 0 && rjWaitsCount == 0 {
+				return ri.AvgImproveWaitsCount > rj.AvgImproveWaitsCount
+			}
+			return riWaitsCount > rjWaitsCount
+		}
+
 		switch shanten {
 		case 0:
 			// 听牌的话：局收支 - 和率
