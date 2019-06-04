@@ -576,7 +576,7 @@ func (l Hand14AnalysisResultList) Sort(improveFirst bool) {
 		riWaitsCount, rjWaitsCount := ri.Waits.AllCount(), rj.Waits.AllCount()
 
 		// 首先，无论怎样，进张数为 0，无条件排在后面，也不看改良
-		// 进张数都为 0 就看改良
+		// 进张数都为 0 才看改良
 		if riWaitsCount == 0 || rjWaitsCount == 0 {
 			if riWaitsCount == 0 && rjWaitsCount == 0 {
 				return ri.AvgImproveWaitsCount > rj.AvgImproveWaitsCount
