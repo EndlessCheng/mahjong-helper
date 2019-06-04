@@ -654,7 +654,7 @@ func (d *roundData) analysis() error {
 		// TODO: 根据是否听牌/一向听、打点、巡目、和率等进行攻守判断
 		return analysisPlayerWithRisk(playerInfo, mixedRiskTable)
 	case d.parser.IsDiscard():
-		who, discardTile, isRedFive, isTsumogiri, isReach, _, kanDoraIndicator := d.parser.ParseDiscard()
+		who, discardTile, isRedFive, isTsumogiri, isReach, canBeMeld, kanDoraIndicator := d.parser.ParseDiscard()
 
 		if kanDoraIndicator != -1 {
 			d.newDora(kanDoraIndicator)
@@ -667,6 +667,7 @@ func (d *roundData) analysis() error {
 		}
 
 		if who == 0 {
+			// 特殊处理自家舍牌的情况
 			riskTables := d.analysisTilesRisk()
 			mixedRiskTable := riskTables.mixedRiskTable()
 
@@ -693,13 +694,6 @@ func (d *roundData) analysis() error {
 		// 他家舍牌
 		d.descLeftCounts(discardTile)
 
-		// 天凤fix：为防止先收到自家摸牌，然后收到上家摸牌，上家舍牌时不刷新
-		if d.parser.GetDataSourceType() != dataSourceTypeTenhou || who != 3 {
-			if !debugMode && !d.skipOutput {
-				clearConsole()
-			}
-		}
-
 		_disTile := discardTile
 		if isTsumogiri {
 			_disTile = ^_disTile
@@ -717,10 +711,9 @@ func (d *roundData) analysis() error {
 			// 标记立直宣言牌
 			player.reachTileAtGlobal = len(d.globalDiscardTiles) - 1
 			player.reachTileAt = len(player.discardTiles) - 1
-
 			// 若该玩家摸切立直，打印提示信息
 			if isTsumogiri && !d.skipOutput {
-				color.HiYellow("%s 摸切立直！", d.players[who].name)
+				color.HiYellow("%s 摸切立直！", player.name)
 			}
 		} else if len(player.meldDiscardsAt) != len(player.melds) {
 			// 标记鸣牌的舍牌
@@ -768,6 +761,15 @@ func (d *roundData) analysis() error {
 			return nil
 		}
 
+		// 上家舍牌时若无法鸣牌则跳过显示
+		if who == 3 && !canBeMeld {
+			return nil
+		}
+
+		if !debugMode {
+			clearConsole()
+		}
+
 		// 牌谱模式下，打印舍牌推荐
 		if d.gameMode == gameModeRecord {
 			currentRoundCache := globalAnalysisCache.wholeGameCache[d.roundNumber][d.benNumber]
@@ -775,14 +777,20 @@ func (d *roundData) analysis() error {
 		}
 
 		// 打印他家舍牌信息
-		if d.parser.GetDataSourceType() != dataSourceTypeTenhou || who != 3 {
-			d.printDiscards()
-			fmt.Println()
-			riskTables.printWithHands(d.counts, d.leftCounts)
+		d.printDiscards()
+		fmt.Println()
+		riskTables.printWithHands(d.counts, d.leftCounts)
+
+		// 天凤人机对战时，偶尔会有先收到他家舍牌消息然后才收到自家舍牌消息的情况
+		// 这时 analysisMeld 会因手牌数量异常而失败
+		// TODO: 可以考虑在绘制动画时才发送消息给客户端？
+		if d.parser.GetDataSourceType() == dataSourceTypeTenhou && !canBeMeld {
+			return nil
 		}
 
 		// 为了方便解析牌谱，这里尽可能地解析副露
 		// TODO: 提醒: 消除海底/避免河底/型听
+		// FIXME: 最后一张牌是无法鸣牌的
 		allowChi := who == 3
 		return analysisMeld(playerInfo, discardTile, isRedFive, allowChi, mixedRiskTable)
 	case d.parser.IsRoundWin():
