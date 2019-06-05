@@ -8,30 +8,30 @@ import (
 	"sort"
 )
 
+func calcStrYaku(humanTiles string, humanWinTile string, isTsumo bool, melds ...model.Meld) string {
+	output := ""
+	pi := &model.PlayerInfo{
+		HandTiles34:   MustStrToTiles34(humanTiles),
+		Melds:         melds,
+		IsTsumo:       isTsumo,
+		WinTile:       MustStrToTile34(humanWinTile),
+		RoundWindTile: 27,
+		SelfWindTile:  27,
+	}
+	isNaki := pi.IsNaki()
+	for _, result := range DivideTiles34(pi.HandTiles34) {
+		yakuTypes := findYakuTypes(&_handInfo{
+			PlayerInfo:   pi,
+			divideResult: result,
+		}, isNaki)
+		sort.Ints(yakuTypes)
+		output += YakuTypesToStr(yakuTypes) + " "
+	}
+	return strings.TrimSpace(output)
+}
+
 func Test_findYakuTypes(t *testing.T) {
 	assert := assert.New(t)
-
-	calcStrYaku := func(humanTiles string, humanWinTile string, isTsumo bool, melds ...model.Meld) string {
-		output := ""
-		pi := &model.PlayerInfo{
-			HandTiles34:   MustStrToTiles34(humanTiles),
-			Melds:         melds,
-			IsTsumo:       isTsumo,
-			WinTile:       MustStrToTile34(humanWinTile),
-			RoundWindTile: 27,
-			SelfWindTile:  27,
-		}
-		isNaki := pi.IsNaki()
-		for _, result := range DivideTiles34(pi.HandTiles34) {
-			yakuTypes := findYakuTypes(&_handInfo{
-				PlayerInfo:   pi,
-				divideResult: result,
-			}, isNaki)
-			sort.Ints(yakuTypes)
-			output += YakuTypesToStr(yakuTypes) + " "
-		}
-		return strings.TrimSpace(output)
-	}
 
 	assert.Equal("[七对 混老头 混一色]", calcStrYaku("99s 112233445566z", "9s", false))
 	assert.Equal("[七对 混一色]", calcStrYaku("22m 112233445566z", "2m", false))
@@ -98,6 +98,15 @@ func Test_findYakuTypes(t *testing.T) {
 	assert.Equal("[无役]", calcStrYaku("333m 123s 123p 77z", "3m", false,
 		model.Meld{MeldType: model.MeldTypeChi, Tiles: MustStrToTiles("789p")},
 	))
+}
+
+func Test_findOldYakuTypes(t *testing.T) {
+	considerOldYaku = true
+
+	assert := assert.New(t)
+
+	assert.Equal("[三暗刻 三连刻] [平和 一杯口 一色三顺]", calcStrYaku("222333444p 11m 789s", "9s", false))
+	assert.Equal("[役牌 混全 五门齐]", calcStrYaku("123p 111m 789s 11777z", "9s", false))
 }
 
 func Benchmark_findYakuTypes(b *testing.B) {

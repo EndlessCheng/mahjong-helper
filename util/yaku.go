@@ -2,6 +2,7 @@ package util
 
 import (
 	"github.com/EndlessCheng/mahjong-helper/util/model"
+	"sort"
 )
 
 // 门清限定
@@ -380,6 +381,22 @@ func findNormalYaku(hi *_handInfo, isNaki bool) (yakuTypes []int) {
 		}
 	}
 
+	if considerOldYaku {
+		if !isNaki {
+			yakuHanMap = OldYakuHanMap
+		} else {
+			yakuHanMap = OldNakiYakuHanMap
+		}
+
+		for yakuType := range yakuHanMap {
+			if checker, ok := oldYakuCheckerMap[yakuType]; ok {
+				if checker(hi) {
+					yakuTypes = append(yakuTypes, yakuType)
+				}
+			}
+		}
+	}
+
 	// 役牌单独算（连风算两个）
 	numYakuhai := hi.numYakuhai()
 	for i := 0; i < numYakuhai; i++ {
@@ -395,6 +412,11 @@ func findYakuTypes(hi *_handInfo, isNaki bool) (yakuTypes []int) {
 	// *计算役种前必须设置顺子牌和刻子牌
 	hi.allShuntsuFirstTiles = hi.getAllShuntsuFirstTiles()
 	hi.allKotsuTiles = hi.getAllKotsuTiles()
+
+	if considerOldYaku {
+		sort.Ints(hi.allShuntsuFirstTiles)
+		sort.Ints(hi.allKotsuTiles)
+	}
 
 	// 先检测是否有役满，存在役满直接 return
 	if yakuTypes = findYakumanTypes(hi, isNaki); len(yakuTypes) > 0 {

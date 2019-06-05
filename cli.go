@@ -309,6 +309,11 @@ var yakuTypesToAlert = []int{
 	util.YakuShousangen,
 	util.YakuHonitsu,
 	util.YakuChinitsu,
+
+	util.YakuShiiaruraotai,
+	util.YakuUumensai,
+	util.YakuSanrenkou,
+	util.YakuIsshokusanjun,
 }
 
 /*

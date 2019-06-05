@@ -8,10 +8,27 @@ import (
 	"github.com/fatih/color"
 	"math/rand"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
+	"github.com/EndlessCheng/mahjong-helper/util"
 )
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
+
+	platforms = map[int]string{
+		platformTenhou:  "天凤",
+		platformMajsoul: "雀魂",
+	}
+
+	now := time.Now()
+	const tf = "2006-01-02 15:04:05"
+	start, err := time.Parse(tf, "2019-06-07 05:00:00")
+	if err != nil {
+		panic(err)
+	}
+	end, err := time.Parse(tf, "2019-06-10 05:00:00")
+	if now.After(start) && now.Before(end) {
+		platforms[platformMajsoulOldYaku] = "雀魂-乱斗之间"
+	}
 }
 
 // go build -ldflags "-X main.version=$(git describe --abbrev=0 --tags)" -o mahjong-helper
@@ -22,14 +39,21 @@ var (
 	showAgariAboveShanten1 bool
 	showScore              bool
 	showAllYakuTypes       bool
+
+	considerOldYaku bool
 )
 
-func welcome() int {
-	platforms := map[int]string{
-		0: "天凤",
-		1: "雀魂",
-	}
+const (
+	platformTenhou         = 0
+	platformMajsoul        = 1
+	platformMajsoulOldYaku = 9
 
+	defaultPlatform = platformMajsoul
+)
+
+var platforms map[int]string
+
+func welcome() int {
 	fmt.Println("使用说明：https://github.com/EndlessCheng/mahjong-helper")
 	fmt.Println("问题反馈：https://github.com/EndlessCheng/mahjong-helper/issues")
 	fmt.Println("吐槽群：375865038")
@@ -41,19 +65,20 @@ func welcome() int {
 		fmt.Printf("%d - %s\n", k, v)
 	}
 
-	choose := 1
+	choose := defaultPlatform
 	fmt.Scanf("%d", &choose)
-	if choose < 0 || choose > 1 {
-		choose = 1
+	platformName, ok := platforms[choose]
+	if !ok {
+		choose = defaultPlatform
+		platformName = platforms[choose]
 	}
 
 	clearConsole()
-	platformName := platforms[choose]
-	if choose == 1 {
+	if choose == platformMajsoul {
 		platformName += "（水晶杠杠版）"
 	}
 	color.HiGreen("已选择 - %s", platformName)
-	if choose == 1 {
+	if choose == platformMajsoul || choose == platformMajsoulOldYaku {
 		color.HiYellow("提醒：若您已登录游戏，请刷新网页，或者开启一局人机对战\n" +
 			"该步骤用于获取您的账号 ID，便于在游戏开始时分析自风，否则程序将无法解析后续数据")
 	}
@@ -76,7 +101,10 @@ func main() {
 	showImproveDetail = flags.Bool("detail")
 	showAgariAboveShanten1 = flags.Bool("a", "agari")
 	showScore = flags.Bool("s", "score")
+	considerOldYaku = flags.Bool("old")
 	showAllYakuTypes = flags.Bool("y", "yaku")
+
+	util.SetConsiderOldYaku(considerOldYaku)
 
 	humanDoraTiles := flags.String("d", "dora")
 	humanTiles := strings.Join(restArgs, " ")
@@ -102,7 +130,10 @@ func main() {
 		}
 	default:
 		// 服务器模式
-		isHTTPS := welcome() == 1
+		choose := welcome()
+		considerOldYaku = choose == platformMajsoulOldYaku
+		util.SetConsiderOldYaku(considerOldYaku)
+		isHTTPS := choose == platformMajsoul || choose == platformMajsoulOldYaku
 		runServer(isHTTPS)
 	}
 }

@@ -5,6 +5,14 @@ import (
 	"sort"
 )
 
+var considerOldYaku bool
+
+func SetConsiderOldYaku(b bool) {
+	considerOldYaku = b
+}
+
+//
+
 const (
 	// https://en.wikipedia.org/wiki/Japanese_Mahjong_yaku
 	// Special criteria
@@ -62,10 +70,16 @@ const (
 	//YakuTenhou
 	//YakuChiihou
 
-	_endYakuType  // 标记 enum 结束，方便计算有多少个 YakuType
+	// 古役
+	YakuShiiaruraotai
+	YakuUumensai
+	YakuSanrenkou
+	YakuIsshokusanjun
+
+	//_endYakuType  // 标记 enum 结束，方便计算有多少个 YakuType
 )
 
-const maxYakuType = _endYakuType
+//const maxYakuType = _endYakuType
 
 var YakuNameMap = map[int]string{
 	// Special criteria
@@ -124,14 +138,32 @@ var YakuNameMap = map[int]string{
 	//YakuChiihou:       "地和",
 }
 
+var OldYakuNameMap = map[int]string{
+	YakuShiiaruraotai: "十二落抬",
+	YakuUumensai:      "五门齐",
+	YakuSanrenkou:     "三连刻",
+	YakuIsshokusanjun: "一色三顺",
+}
+
 func YakuTypesToStr(yakuTypes []int) string {
 	if len(yakuTypes) == 0 {
 		return "[无役]"
 	}
 	names := []string{}
 	for _, t := range yakuTypes {
-		names = append(names, YakuNameMap[t])
+		if name, ok := YakuNameMap[t]; ok {
+			names = append(names, name)
+		}
 	}
+
+	if considerOldYaku {
+		for _, t := range yakuTypes {
+			if name, ok := OldYakuNameMap[t]; ok {
+				names = append(names, name)
+			}
+		}
+	}
+
 	return fmt.Sprint(names)
 }
 
@@ -148,6 +180,7 @@ func YakuTypesWithDoraToStr(yakuTypes map[int]struct{}, numDora int) string {
 	for _, t := range yt {
 		names = append(names, YakuNameMap[t])
 	}
+	// TODO: old yaku
 	if numDora > 0 {
 		names = append(names, fmt.Sprintf("宝牌%d", numDora))
 	}
@@ -218,6 +251,19 @@ var NakiYakuHanMap = _yakuHanMap{
 	YakuChinitsu: 5,
 }
 
+var OldYakuHanMap = _yakuHanMap{
+	YakuUumensai:      2,
+	YakuSanrenkou:     2,
+	YakuIsshokusanjun: 3,
+}
+
+var OldNakiYakuHanMap = _yakuHanMap{
+	YakuShiiaruraotai: 1, // 四副露大吊车
+	YakuUumensai:      2,
+	YakuSanrenkou:     2,
+	YakuIsshokusanjun: 2,
+}
+
 // 计算 yakuTypes(非役满) 累积的番数
 func CalcYakuHan(yakuTypes []int, isNaki bool) (cntHan int) {
 	var yakuHanMap _yakuHanMap
@@ -232,6 +278,21 @@ func CalcYakuHan(yakuTypes []int, isNaki bool) (cntHan int) {
 			cntHan += han
 		}
 	}
+
+	if considerOldYaku {
+		if !isNaki {
+			yakuHanMap = OldYakuHanMap
+		} else {
+			yakuHanMap = OldNakiYakuHanMap
+		}
+
+		for _, yakuType := range yakuTypes {
+			if han, ok := yakuHanMap[yakuType]; ok {
+				cntHan += han
+			}
+		}
+	}
+
 	return
 }
 
