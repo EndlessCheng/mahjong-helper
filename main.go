@@ -39,8 +39,6 @@ var (
 	showAgariAboveShanten1 bool
 	showScore              bool
 	showAllYakuTypes       bool
-
-	considerOldYaku bool
 )
 
 const (
@@ -101,7 +99,7 @@ func main() {
 	showImproveDetail = flags.Bool("detail")
 	showAgariAboveShanten1 = flags.Bool("a", "agari")
 	showScore = flags.Bool("s", "score")
-	considerOldYaku = flags.Bool("old")
+	considerOldYaku := flags.Bool("old")
 	showAllYakuTypes = flags.Bool("y", "yaku")
 
 	util.SetConsiderOldYaku(considerOldYaku)
