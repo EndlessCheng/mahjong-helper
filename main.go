@@ -58,8 +58,11 @@ func welcome() int {
 	fmt.Println()
 
 	fmt.Println("请输入数字，以选择对应的平台：")
-	for k, v := range platforms {
-		fmt.Printf("%d - %s\n", k, v)
+	for i, cnt := 0, 0; cnt < len(platforms); i++ {
+		if platformName, ok := platforms[i]; ok {
+			fmt.Printf("%d - %s\n", i, platformName)
+			cnt++
+		}
 	}
 
 	choose := defaultPlatform
