@@ -342,8 +342,8 @@ func (h *mjHandler) _onRecordClick(clickAction string, clickActionIndex int, fas
 
 var h *mjHandler
 
-func getGlobalMJHandler() *mjHandler {
-	return h
+func getMajsoulCurrentRecordUUID() string {
+	return h.majsoulCurrentRecordUUID
 }
 
 func runServer(isHTTPS bool) {

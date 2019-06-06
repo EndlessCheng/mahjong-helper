@@ -245,8 +245,7 @@ func (c *gameAnalysisCache) runMajsoulRecordAnalysisTask(actions []*majsoulRecor
 	majsoulRoundData.roundData.gameMode = gameModeRecordCache
 	majsoulRoundData.skipOutput = true
 	for i, action := range actions[:len(actions)-1] {
-		h := getGlobalMJHandler()
-		if c.majsoulRecordUUID != h.majsoulCurrentRecordUUID {
+		if c.majsoulRecordUUID != getMajsoulCurrentRecordUUID() {
 			if debugMode {
 				fmt.Println("用户退出该牌谱")
 			}
@@ -260,7 +259,7 @@ func (c *gameAnalysisCache) runMajsoulRecordAnalysisTask(actions []*majsoulRecor
 	}
 	roundCache.isEnd = true
 
-	if c.majsoulRecordUUID != h.majsoulCurrentRecordUUID {
+	if c.majsoulRecordUUID != getMajsoulCurrentRecordUUID() {
 		if debugMode {
 			fmt.Println("用户退出该牌谱")
 		}
