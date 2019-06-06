@@ -107,6 +107,16 @@ func Test_findOldYakuTypes(t *testing.T) {
 
 	assert.Equal("[三暗刻 三连刻] [平和 一杯口 一色三顺]", calcStrYaku("222333444p 11m 789s", "9s", false))
 	assert.Equal("[役牌 混全 五门齐]", calcStrYaku("123p 111m 789s 11777z", "9s", false))
+	assert.Equal("[纯全 十二落抬]", calcStrYaku("99p", "9p", true,
+		model.Meld{MeldType: model.MeldTypeChi, Tiles: MustStrToTiles("123m")},
+		model.Meld{MeldType: model.MeldTypeChi, Tiles: MustStrToTiles("789p")},
+		model.Meld{MeldType: model.MeldTypeChi, Tiles: MustStrToTiles("789s")},
+		model.Meld{MeldType: model.MeldTypePon, Tiles: MustStrToTiles("999m")},
+	))
+	assert.Equal("[大数邻] [大数邻] [大数邻]", calcStrYaku("22334455667788m", "2m", false))
+	assert.Equal("[大车轮] [大车轮] [大车轮]", calcStrYaku("22334455667788p", "2p", false))
+	assert.Equal("[大竹林] [大竹林] [大竹林]", calcStrYaku("22334455667788s", "2s", false))
+	assert.Equal("[字一色 大七星]", calcStrYaku("11223344556677z", "2z", false))
 }
 
 func Benchmark_findYakuTypes(b *testing.B) {

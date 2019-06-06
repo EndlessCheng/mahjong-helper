@@ -157,6 +157,44 @@ var yakumanCheckerMap = map[int]yakuChecker{
 	YakuSuuKantsu:     (*_handInfo).suuKantsu,
 }
 
+//
+
+func (*_handInfo) checkAllPairs(tiles []int) bool {
+	for _, c := range tiles {
+		if c != 2 {
+			return false
+		}
+	}
+	return true
+}
+
+// 门清限定
+func (hi *_handInfo) daisuurin() bool {
+	return hi.checkAllPairs(hi.HandTiles34[1:8])
+}
+
+// 门清限定
+func (hi *_handInfo) daisharin() bool {
+	return hi.checkAllPairs(hi.HandTiles34[9+1 : 9+8])
+}
+
+// 门清限定
+func (hi *_handInfo) daichikurin() bool {
+	return hi.checkAllPairs(hi.HandTiles34[18+1 : 18+8])
+}
+
+// 门清限定
+func (hi *_handInfo) daichisei() bool {
+	return hi.checkAllPairs(hi.HandTiles34[27:])
+}
+
+var oldYakumanCheckerMap = map[int]yakuChecker{
+	YakuDaisuurin:   (*_handInfo).daisuurin,
+	YakuDaisharin:   (*_handInfo).daisharin,
+	YakuDaichikurin: (*_handInfo).daichikurin,
+	YakuDaichisei:   (*_handInfo).daichisei,
+}
+
 // 检测役满
 // 结果未排序
 // *计算前必须设置顺子牌和刻子牌
@@ -169,9 +207,22 @@ func findYakumanTypes(hi *_handInfo, isNaki bool) (yakumanTypes []int) {
 	}
 
 	for yakuman := range yakumanTimesMap {
-		if yakumanCheckerMap[yakuman](hi) {
-			yakumanTypes = append(yakumanTypes, yakuman)
+		if checker, ok := yakumanCheckerMap[yakuman]; ok {
+			if checker(hi) {
+				yakumanTypes = append(yakumanTypes, yakuman)
+			}
 		}
 	}
+
+	if considerOldYaku && !isNaki {
+		for yakuman := range OldYakumanTimesMap {
+			if checker, ok := oldYakumanCheckerMap[yakuman]; ok {
+				if checker(hi) {
+					yakumanTypes = append(yakumanTypes, yakuman)
+				}
+			}
+		}
+	}
+
 	return
 }

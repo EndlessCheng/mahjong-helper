@@ -76,6 +76,12 @@ const (
 	YakuSanrenkou
 	YakuIsshokusanjun
 
+	// 古役役满
+	YakuDaisuurin
+	YakuDaisharin
+	YakuDaichikurin
+	YakuDaichisei
+
 	//_endYakuType  // 标记 enum 结束，方便计算有多少个 YakuType
 )
 
@@ -143,6 +149,11 @@ var OldYakuNameMap = map[int]string{
 	YakuUumensai:      "五门齐",
 	YakuSanrenkou:     "三连刻",
 	YakuIsshokusanjun: "一色三顺",
+
+	YakuDaisuurin:   "大数邻",
+	YakuDaisharin:   "大车轮",
+	YakuDaichikurin: "大竹林",
+	YakuDaichisei:   "大七星",
 }
 
 func YakuTypesToStr(yakuTypes []int) string {
@@ -326,6 +337,13 @@ var NakiYakumanTimesMap = map[int]int{
 	YakuSuuKantsu:   1,
 }
 
+var OldYakumanTimesMap = map[int]int{
+	YakuDaisuurin:   1,
+	YakuDaisharin:   1,
+	YakuDaichikurin: 1,
+	YakuDaichisei:   1, // 复合字一色，实际为两倍役满
+}
+
 // 计算役满倍数
 func CalcYakumanTimes(yakuTypes []int, isNaki bool) (times int) {
 	var yakumanTimesMap _yakumanTimesMap
@@ -340,5 +358,14 @@ func CalcYakumanTimes(yakuTypes []int, isNaki bool) (times int) {
 			times += t
 		}
 	}
+
+	if considerOldYaku && !isNaki {
+		for _, yakuman := range yakuTypes {
+			if t, ok := OldYakumanTimesMap[yakuman]; ok {
+				times += t
+			}
+		}
+	}
+
 	return
 }
