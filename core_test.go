@@ -23,11 +23,10 @@ func Test_majsoul_analysis(t *testing.T) {
 	}{}
 
 	// config
-	accountID := gameConf.MajsoulAccountID
 	startLo := -1
 	endLo := -1
 
-	majsoulRoundData := &majsoulRoundData{accountID: accountID}
+	majsoulRoundData := &majsoulRoundData{}
 	majsoulRoundData.roundData = newGame(majsoulRoundData)
 
 	lines := strings.Split(string(logData), "\n")
@@ -57,7 +56,7 @@ func Test_majsoul_analysis(t *testing.T) {
 		}
 
 		if s.Level != "INFO" {
-			fmt.Println(s.Message)
+			fmt.Println(s.Level, s.Message)
 			continue
 		}
 
@@ -65,12 +64,6 @@ func Test_majsoul_analysis(t *testing.T) {
 		d := majsoulMessage{}
 		if err := json.Unmarshal([]byte(msg), &d); err != nil {
 			fmt.Println(err)
-			continue
-		}
-
-		if d.AccountID > 0 {
-			majsoulRoundData.accountID = d.AccountID
-			printAccountInfo(d.AccountID)
 			continue
 		}
 

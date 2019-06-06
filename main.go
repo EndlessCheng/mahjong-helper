@@ -46,7 +46,7 @@ func init() {
 		panic(err)
 	}
 	end, err := time.Parse(tf, "2019-06-10 05:00:00")
-	if now.After(start) && now.Before(end) {
+	if now.After(start.Add(-8*time.Hour)) && now.Before(end.Add(-8*time.Hour)) {
 		platforms[platformMajsoulOldYaku] = "雀魂-乱斗之间"
 	}
 }

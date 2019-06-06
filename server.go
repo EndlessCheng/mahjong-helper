@@ -13,7 +13,6 @@ import (
 	"crypto/tls"
 	"net"
 	"github.com/fatih/color"
-	"net/url"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 	"github.com/EndlessCheng/mahjong-helper/util/debug"
 )
@@ -93,6 +92,14 @@ func (h *mjHandler) analysisTenhou(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 func (h *mjHandler) runAnalysisTenhouMessageTask() {
+	if !debugMode {
+		defer func() {
+			if err := recover(); err != nil {
+				fmt.Println("内部错误：", err)
+			}
+		}()
+	}
+
 	for msg := range h.tenhouMessageQueue {
 		d := tenhouMessage{}
 		if err := json.Unmarshal(msg, &d); err != nil {
@@ -112,18 +119,6 @@ func (h *mjHandler) runAnalysisTenhouMessageTask() {
 		originJSON := string(msg)
 		if h.log != nil {
 			h.log.Info(originJSON)
-		}
-
-		// 登录验证通过
-		if d.Tag == "HELO" {
-			username, err := url.QueryUnescape(d.UserName)
-			if err != nil {
-				h.logError(err)
-			}
-			if username != h.tenhouRoundData.username {
-				fmt.Printf("%s 登录成功\n", username)
-				h.tenhouRoundData.username = username
-			}
 		}
 
 		h.tenhouRoundData.msg = &d
@@ -146,6 +141,14 @@ func (h *mjHandler) analysisMajsoul(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 func (h *mjHandler) runAnalysisMajsoulMessageTask() {
+	if !debugMode {
+		defer func() {
+			if err := recover(); err != nil {
+				fmt.Println("内部错误：", err)
+			}
+		}()
+	}
+
 	for msg := range h.majsoulMessageQueue {
 		d := &majsoulMessage{}
 		if err := json.Unmarshal(msg, d); err != nil {
@@ -163,15 +166,6 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			fmt.Println(originJSON)
 		}
 
-		if d.AccountID > 0 {
-			h.majsoulCurrentRecordUUID = ""
-			if h.majsoulRoundData.accountID != d.AccountID {
-				// 登录验证通过
-				printAccountInfo(d.AccountID)
-				h.majsoulRoundData.accountID = d.AccountID
-			}
-		}
-
 		switch {
 		case len(d.Friends) > 0:
 			// 处理好友列表
@@ -184,26 +178,36 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			for _, record := range d.RecordBaseInfoList {
 				h.majsoulRecordMap[record.UUID] = record
 			}
-			color.HiGreen("收到 %2d 个牌谱（已收集 %d 个），请在网页上点击「查看」", len(d.RecordBaseInfoList), len(h.majsoulRecordMap))
+			color.HiGreen("收到 %2d 个雀魂牌谱（已收集 %d 个），请在网页上点击「查看」", len(d.RecordBaseInfoList), len(h.majsoulRecordMap))
 		case d.CurrentRecordUUID != "":
 			baseInfo, ok := h.majsoulRecordMap[d.CurrentRecordUUID]
 			if !ok {
-				h.logError(fmt.Errorf("错误：找不到牌谱 %s", h.majsoulCurrentRecordUUID))
+				h.logError(fmt.Errorf("错误：找不到雀魂牌谱 %s", h.majsoulCurrentRecordUUID))
 				break
 			}
 			// 标记当前正在观看的牌谱
 			h.majsoulCurrentRecordUUID = d.CurrentRecordUUID
 			clearConsole()
-			fmt.Printf("正在解析牌谱：%s", baseInfo.String())
+			fmt.Printf("正在解析雀魂牌谱：%s", baseInfo.String())
 		case len(d.RecordActions) > 0:
 			if h.majsoulCurrentRecordUUID == "" {
-				h.logError(fmt.Errorf("错误：程序未收到所观看的牌谱的 UUID"))
+				h.logError(fmt.Errorf("错误：程序未收到所观看的雀魂牌谱的 UUID"))
+				break
+			}
+
+			baseInfo, ok := h.majsoulRecordMap[h.majsoulCurrentRecordUUID]
+			if !ok {
+				h.logError(fmt.Errorf("错误：找不到雀魂牌谱 %s", h.majsoulCurrentRecordUUID))
+				break
+			}
+
+			if gameConf.currentActiveMajsoulAccountID == -1 {
+				h.logError(fmt.Errorf("错误：当前雀魂账号为空"))
 				break
 			}
 
 			// 获取并设置第一局的庄家
-			baseInfo, _ := h.majsoulRecordMap[h.majsoulCurrentRecordUUID]
-			firstRoundDealer, err := baseInfo.getFistRoundDealer(h.majsoulRoundData.accountID)
+			firstRoundDealer, err := baseInfo.getFistRoundDealer(gameConf.currentActiveMajsoulAccountID)
 			if err != nil {
 				h.logError(err)
 				break
@@ -211,8 +215,12 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			h.majsoulRoundData.reset(0, 0, firstRoundDealer)
 			h.majsoulRoundData.gameMode = gameModeRecord
 
-			// 顺便设置下初始座位
-			h.majsoulRoundData.selfSeat, _ = baseInfo.getSelfSeat(h.majsoulRoundData.accountID)
+			// 设置初始座位
+			h.majsoulRoundData.selfSeat, err = baseInfo.getSelfSeat(gameConf.currentActiveMajsoulAccountID)
+			if err != nil {
+				h.logError(err)
+				break
+			}
 
 			// 准备分析……
 			majsoulCurrentRecordActions, err := parseMajsoulRecordAction(d.RecordActions)
@@ -366,16 +374,13 @@ func runServer(isHTTPS bool) {
 		e.Logger.Info("服务启动")
 	}()
 
-	if isHTTPS && gameConf.MajsoulAccountID != -1 {
-		color.HiYellow("[提醒] 从配置中读取出雀魂账号 %d", gameConf.MajsoulAccountID)
-	}
 	h = &mjHandler{
 		log: e.Logger,
 
 		tenhouMessageQueue:  make(chan []byte, 100),
 		tenhouRoundData:     &tenhouRoundData{isRoundEnd: true},
 		majsoulMessageQueue: make(chan []byte, 100),
-		majsoulRoundData:    &majsoulRoundData{accountID: gameConf.MajsoulAccountID},
+		majsoulRoundData:    &majsoulRoundData{},
 		majsoulRecordMap:    map[string]*majsoulRecordBaseInfo{},
 	}
 	h.tenhouRoundData.roundData = newGame(h.tenhouRoundData)

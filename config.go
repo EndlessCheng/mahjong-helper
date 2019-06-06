@@ -4,7 +4,8 @@ import (
 	"io/ioutil"
 	"encoding/json"
 	"bytes"
-	)
+	"os"
+)
 
 const (
 	configFile = "config.json"
@@ -12,14 +13,22 @@ const (
 )
 
 type gameConfig struct {
-	MajsoulAccountID int `json:"majsoul_account_id"`
+	MajsoulAccountIDs []int `json:"majsoul_account_ids"`
+
+	currentActiveMajsoulAccountID int    `json:"-"`
+	currentActiveTenhouUsername   string `json:"-"`
 }
 
 var gameConf = &gameConfig{
-	MajsoulAccountID: -1,
+	MajsoulAccountIDs:             []int{},
+	currentActiveMajsoulAccountID: -1,
 }
 
 func init() {
+	if _, err := os.Stat(configFile); !os.IsNotExist(err) {
+		return
+	}
+
 	data, err := ioutil.ReadFile(configFile)
 	if err != nil {
 		if debugMode {
@@ -36,4 +45,32 @@ func init() {
 	}
 
 	//fmt.Println(*gameConf)
+}
+
+func (c *gameConfig) saveConfigToFile() error {
+	data, err := json.Marshal(c)
+	if err != nil {
+		return err
+	}
+	if err := ioutil.WriteFile(configFile, data, os.ModePerm); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *gameConfig) isIDExist(majsoulAccountID int) bool {
+	for _, id := range c.MajsoulAccountIDs {
+		if id == majsoulAccountID {
+			return true
+		}
+	}
+	return false
+}
+
+func (c *gameConfig) addMajsoulAccountID(majsoulAccountID int) error {
+	if c.isIDExist(majsoulAccountID) {
+		return nil
+	}
+	gameConf.MajsoulAccountIDs = append(gameConf.MajsoulAccountIDs, majsoulAccountID)
+	return c.saveConfigToFile()
 }

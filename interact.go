@@ -8,6 +8,14 @@ import (
 )
 
 func interact(humanTilesInfo *model.HumanTilesInfo) error {
+	if !debugMode {
+		defer func() {
+			if err := recover(); err != nil {
+				fmt.Println("内部错误：", err)
+			}
+		}()
+	}
+
 	playerInfo, err := analysisHumanTiles(humanTilesInfo)
 	if err != nil {
 		return err
@@ -57,7 +65,7 @@ func interact(humanTilesInfo *model.HumanTilesInfo) error {
 				playerInfo.NumRedFives[tile/9]--
 			}
 			tiles34[tile]--
-			playerInfo.DiscardTiles = append(playerInfo.DiscardTiles, tile)
+			playerInfo.DiscardTiles = append(playerInfo.DiscardTiles, tile) // 仅判断振听用
 		}
 		if err := analysisPlayerWithRisk(playerInfo, nil); err != nil {
 			fmt.Fprintln(os.Stderr, err)

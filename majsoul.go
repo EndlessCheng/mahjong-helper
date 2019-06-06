@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"time"
 	"github.com/fatih/color"
 	"github.com/EndlessCheng/mahjong-helper/util"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
@@ -112,7 +111,6 @@ type majsoulRoundData struct {
 	*roundData
 
 	originJSON string
-	accountID  int
 	selfSeat   int // 自家初始座位：0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
 	msg        *majsoulMessage
 }
@@ -184,47 +182,78 @@ func (d *majsoulRoundData) GetMessage() string {
 	return d.originJSON
 }
 
-func (d *majsoulRoundData) CheckMessage() bool {
+func (d *majsoulRoundData) SkipMessage() bool {
 	msg := d.msg
 
-	// 首先，获取玩家账号
-	if msg.SeatList != nil {
-		if d.accountID > 0 {
-			// 有 accountID 时，检查 accountID 是否正确
-			if !util.InInts(d.accountID, msg.SeatList) {
-				color.HiRed("尚未正确获取到玩家账号 ID，请您刷新网页，或开启一局人机对战（错误信息：您的账号 ID %d 不在对战列表 %v 中）", d.accountID, msg.SeatList)
-				return false
-			}
-		} else {
-			// 判断是否为人机对战，若为人机对战，则获取 accountID
-			if util.InInts(0, msg.SeatList) {
-				for _, accountID := range msg.SeatList {
-					if accountID > 0 {
-						d.accountID = accountID
-						printAccountInfo(accountID)
-						time.Sleep(2 * time.Second)
-					}
-				}
-			}
-		}
+	// 没有账号 skip
+	if gameConf.currentActiveMajsoulAccountID == -1 {
+		return true
 	}
 
-	// 没有账号直接 return false
-	if d.accountID == -1 {
-		return false
-	}
-
-	// 当自家准备好时（msg.SeatList == nil），打印准备信息
+	// 打印准备信息
+	// TODO: 重构
 	if msg.SeatList == nil && msg.ReadyIDList != nil {
 		fmt.Printf("等待玩家准备 (%d/%d) %v\n", len(msg.ReadyIDList), 4, msg.ReadyIDList)
 	}
 
-	// 筛去重连的消息，目前的程序不考虑重连的情况
+	// 筛去重连的消息，目前的程序不考虑重连的情况 TODO
 	if msg.IsGameStart != nil && *msg.IsGameStart {
-		return false
+		return true
 	}
 
-	return true
+	return false
+}
+
+func (d *majsoulRoundData) IsLogin() bool {
+	msg := d.msg
+	return msg.AccountID > 0 || msg.SeatList != nil
+}
+
+func (d *majsoulRoundData) HandleLogin() {
+	msg := d.msg
+
+	if accountID := msg.AccountID; accountID > 0 {
+		gameConf.addMajsoulAccountID(accountID)
+		if accountID != gameConf.currentActiveMajsoulAccountID {
+			printAccountInfo(accountID)
+			gameConf.currentActiveMajsoulAccountID = accountID
+		}
+		return
+	}
+
+	// 从对战 ID 列表中获取玩家 ID
+	if seatList := msg.SeatList; seatList != nil {
+		// 尝试从中找到缓存 ID
+		for _, accountID := range seatList {
+			if accountID > 0 && gameConf.isIDExist(accountID) {
+				// 找到了
+				if accountID != gameConf.currentActiveMajsoulAccountID {
+					printAccountInfo(accountID)
+					gameConf.currentActiveMajsoulAccountID = accountID
+				}
+				return
+			}
+		}
+
+		// 未找到缓存 ID
+		if gameConf.currentActiveMajsoulAccountID > 0 {
+			color.HiRed("尚未正确获取到玩家账号 ID，请您刷新网页，或开启一局人机对战（错误信息：您的账号 ID %d 不在对战列表 %v 中）", gameConf.currentActiveMajsoulAccountID, msg.SeatList)
+			return
+		}
+
+		// 判断是否为人机对战，若为人机对战，则获取玩家 ID
+		if !util.InInts(0, msg.SeatList) {
+			return
+		}
+		for _, accountID := range msg.SeatList {
+			if accountID > 0 {
+				gameConf.addMajsoulAccountID(accountID)
+				printAccountInfo(accountID)
+				gameConf.currentActiveMajsoulAccountID = accountID
+				return
+			}
+		}
+	}
 }
 
 func (d *majsoulRoundData) IsInit() bool {
@@ -241,7 +270,7 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, benNumber int, dealer i
 	if len(msg.SeatList) == playerNumber {
 		// 获取自家初始座位：0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
 		for i, accountID := range msg.SeatList {
-			if accountID == d.accountID {
+			if accountID == gameConf.currentActiveMajsoulAccountID {
 				d.selfSeat = i
 				break
 			}
@@ -447,6 +476,16 @@ func (d *majsoulRoundData) ParseRoundWin() (whos []int, points []int) {
 		}
 		points = append(points, point)
 	}
+	return
+}
+
+func (d *majsoulRoundData) IsRyuukyoku() bool {
+	// TODO
+	return false
+}
+
+func (d *majsoulRoundData) ParseRyuukyoku() (type_ int, whos []int, points []int) {
+	// TODO
 	return
 }
 

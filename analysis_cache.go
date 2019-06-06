@@ -11,7 +11,7 @@ type analysisOpType int
 const (
 	analysisOpTypeTsumo     analysisOpType = iota
 	analysisOpTypeChiPonKan  // 吃 碰 明杠
-	analysisOpTypeKan        // 加杠 暗杠 TODO: 加杠会让巡目加一吗？
+	analysisOpTypeKan        // 加杠 暗杠
 )
 
 // TODO: 提醒「此处应该副露，不应跳过」
@@ -132,7 +132,7 @@ func (rc *roundAnalysisCache) addSelfDiscardTile(tile int, risk float64, isRiich
 func (rc *roundAnalysisCache) addAIDiscardTileWhenDrawTile(attackTile int, defenceTile int, attackTileRisk float64, defenceDiscardTileRisk float64) {
 	// 摸牌，巡目+1
 	rc.cache = append(rc.cache, &analysisCache{
-		analysisOpType:           analysisOpTypeTsumo, // TODO ?
+		analysisOpType:           analysisOpTypeTsumo,
 		selfDiscardTile:          -1,
 		aiAttackDiscardTile:      attackTile,
 		aiDefenceDiscardTile:     defenceTile,
@@ -160,11 +160,15 @@ func (rc *roundAnalysisCache) addChiPonKan(meldType int) {
 	// 巡目+1
 	var newCache *analysisCache
 	if rc.analysisCacheBeforeChiPon != nil {
-		newCache = rc.analysisCacheBeforeChiPon
+		newCache = rc.analysisCacheBeforeChiPon // 见 addPossibleChiPonKan
 		newCache.analysisOpType = analysisOpTypeChiPonKan
 		newCache.meldType = meldType
 		rc.analysisCacheBeforeChiPon = nil
 	} else {
+		// 此处代码应该不会触发
+		if debugMode {
+			panic("rc.analysisCacheBeforeChiPon == nil")
+		}
 		newCache = &analysisCache{
 			analysisOpType:       analysisOpTypeChiPonKan,
 			selfDiscardTile:      -1,
@@ -237,10 +241,7 @@ func (c *gameAnalysisCache) runMajsoulRecordAnalysisTask(actions []*majsoulRecor
 	// 若为摸牌操作，计算出此时的 AI 进攻舍牌和防守舍牌
 	// 若为鸣牌操作，计算出此时的 AI 进攻舍牌（无进攻舍牌则设为 -1），防守舍牌设为 -1
 	// TODO: 玩家跳过，但是 AI 觉得应鸣牌？
-	majsoulRoundData := &majsoulRoundData{
-		accountID: gameConf.MajsoulAccountID,
-		selfSeat:  c.selfSeat,
-	}
+	majsoulRoundData := &majsoulRoundData{selfSeat: c.selfSeat}
 	majsoulRoundData.roundData = newGame(majsoulRoundData)
 	majsoulRoundData.roundData.gameMode = gameModeRecordCache
 	majsoulRoundData.skipOutput = true

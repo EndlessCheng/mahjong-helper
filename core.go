@@ -8,7 +8,7 @@ import (
 )
 
 type DataParser interface {
-	// 数据来源是天凤还是雀魂
+	// 数据来源（是天凤还是雀魂）
 	GetDataSourceType() int
 
 	// 获取自家初始座位：0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
@@ -19,12 +19,11 @@ type DataParser interface {
 	GetMessage() string
 
 	// 解析前，根据消息内容来决定是否要进行后续解析
-	CheckMessage() bool
+	SkipMessage() bool
 
-	// 登录成功
-	// TODO: 重构，目前是在 server 逻辑上解析的
-	//IsLogin() bool
-	//HandleLogin()
+	// 尝试解析用户名
+	IsLogin() bool
+	HandleLogin()
 
 	// round 开始/重连
 	// roundNumber: 场数（如东1为0，东2为1，...，南1为4，...，南4为7，...）
@@ -71,9 +70,8 @@ type DataParser interface {
 	// 是否流局
 	// 四风连打 四家立直 四杠散了 九种九牌 三家和了 | 流局听牌 流局未听牌 | 流局满贯
 	// 三家和了
-	// "{\"tag\":\"RYUUKYOKU\",\"type\":\"ron3\",\"ba\":\"1,1\",\"sc\":\"290,0,228,0,216,0,256,0\",\"hai0\":\"18,19,30,32,33,41,43,94,95,114,115,117,119\",\"hai2\":\"29,31,74,75\",\"hai3\":\"8,13,17,25,35,46,48,53,78,79\"}"
-	//IsRyuukyoku() bool
-	//ParseRyuukyoku() (type_ int, whos []int, points []int)
+	IsRyuukyoku() bool
+	ParseRyuukyoku() (type_ int, whos []int, points []int)
 
 	// 这一项放在末尾处理
 	// 杠宝牌（雀魂在暗杠后的摸牌时出现）
@@ -406,13 +404,18 @@ func (d *roundData) analysis() error {
 		}
 	}
 
-	if !d.parser.CheckMessage() {
+	// 先获取用户信息
+	if d.parser.IsLogin() {
+		d.parser.HandleLogin()
+	}
+
+	if d.parser.SkipMessage() {
 		return nil
 	}
 
 	// 若自家立直，则进入看戏模式
 	// TODO: 见逃判断
-	if !d.parser.IsInit() && !d.parser.IsRoundWin() && d.players[0].isReached {
+	if !d.parser.IsInit() && !d.parser.IsRoundWin() && !d.parser.IsRyuukyoku() && d.players[0].isReached {
 		return nil
 	}
 
@@ -806,6 +809,9 @@ func (d *roundData) analysis() error {
 		for i, who := range whos {
 			fmt.Println(d.players[who].name, points[i])
 		}
+	case d.parser.IsRyuukyoku():
+		// TODO
+		d.parser.ParseRyuukyoku()
 	case d.parser.IsNewDora():
 		// 杠宝牌
 		// 1. 剩余牌减少

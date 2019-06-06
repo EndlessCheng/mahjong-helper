@@ -8,6 +8,8 @@ import (
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 	"sort"
 	"github.com/EndlessCheng/mahjong-helper/util"
+	"net/url"
+	"github.com/fatih/color"
 )
 
 const (
@@ -98,9 +100,8 @@ type tenhouRoundData struct {
 	*roundData
 
 	originJSON string
-	username   string
 	msg        *tenhouMessage
-	isRoundEnd bool // 某人和牌或流局，初始化为 true
+	isRoundEnd bool // 某人和牌或流局。初始值为 true
 }
 
 func (*tenhouRoundData) _tenhouTileToTile34(tenhouTile int) int {
@@ -219,13 +220,25 @@ func (d *tenhouRoundData) GetMessage() string {
 	return d.originJSON
 }
 
-func (d *tenhouRoundData) CheckMessage() bool {
-	if d.msg.Tag == "AGARI" || d.msg.Tag == "RYUUKYOKU" {
-		d.isRoundEnd = true
-	} else if d.IsInit() {
-		d.isRoundEnd = false
+func (d *tenhouRoundData) SkipMessage() bool {
+	// 注意：即使没有获取到用户名也能正常进行游戏
+	return false
+}
+
+func (d *tenhouRoundData) IsLogin() bool {
+	// TODO: 重连时要填入 gameConf.currentActiveTenhouUsername
+	return d.msg.Tag == "HELO"
+}
+
+func (d *tenhouRoundData) HandleLogin() {
+	username, err := url.QueryUnescape(d.msg.UserName)
+	if err != nil {
+		h.logError(err)
 	}
-	return true
+	if username != gameConf.currentActiveTenhouUsername {
+		color.HiGreen("%s 登录成功", username)
+		gameConf.currentActiveTenhouUsername = username
+	}
 }
 
 func (d *tenhouRoundData) IsInit() bool {
@@ -233,6 +246,8 @@ func (d *tenhouRoundData) IsInit() bool {
 }
 
 func (d *tenhouRoundData) ParseInit() (roundNumber int, benNumber int, dealer int, doraIndicator int, handTiles []int, numRedFives []int) {
+	d.isRoundEnd = false
+
 	seedSplits := strings.Split(d.msg.Seed, ",")
 	if len(seedSplits) != 6 {
 		panic(fmt.Sprintln("seed 解析失败", d.msg.Seed))
@@ -334,6 +349,8 @@ func (d *tenhouRoundData) IsRoundWin() bool {
 }
 
 func (d *tenhouRoundData) ParseRoundWin() (whos []int, points []int) {
+	d.isRoundEnd = true
+
 	who, _ := strconv.Atoi(d.msg.Who)
 	splits := strings.Split(d.msg.Ten, ",")
 	if len(splits) < 2 {
@@ -341,6 +358,18 @@ func (d *tenhouRoundData) ParseRoundWin() (whos []int, points []int) {
 	}
 	point, _ := strconv.Atoi(splits[1])
 	return []int{who}, []int{point}
+}
+
+func (d *tenhouRoundData) IsRyuukyoku() bool {
+	return d.msg.Tag == "RYUUKYOKU"
+}
+
+// "{\"tag\":\"RYUUKYOKU\",\"type\":\"ron3\",\"ba\":\"1,1\",\"sc\":\"290,0,228,0,216,0,256,0\",\"hai0\":\"18,19,30,32,33,41,43,94,95,114,115,117,119\",\"hai2\":\"29,31,74,75\",\"hai3\":\"8,13,17,25,35,46,48,53,78,79\"}"
+func (d *tenhouRoundData) ParseRyuukyoku() (type_ int, whos []int, points []int) {
+	d.isRoundEnd = true
+
+	// TODO
+	return
 }
 
 func (d *tenhouRoundData) IsNewDora() bool {
