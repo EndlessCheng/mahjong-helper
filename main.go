@@ -4,32 +4,12 @@ import (
 	"strings"
 	"fmt"
 	"os"
-	"time"
 	"github.com/fatih/color"
-	"math/rand"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 	"github.com/EndlessCheng/mahjong-helper/util"
+	"math/rand"
+	"time"
 )
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
-
-	platforms = map[int]string{
-		platformTenhou:  "天凤",
-		platformMajsoul: "雀魂",
-	}
-
-	now := time.Now()
-	const tf = "2006-01-02 15:04:05"
-	start, err := time.Parse(tf, "2019-06-07 05:00:00")
-	if err != nil {
-		panic(err)
-	}
-	end, err := time.Parse(tf, "2019-06-10 05:00:00")
-	if now.After(start) && now.Before(end) {
-		platforms[platformMajsoulOldYaku] = "雀魂-乱斗之间"
-	}
-}
 
 // go build -ldflags "-X main.version=$(git describe --abbrev=0 --tags)" -o mahjong-helper
 var version = "dev"
@@ -51,11 +31,30 @@ const (
 
 var platforms map[int]string
 
+func init() {
+	rand.Seed(time.Now().UnixNano())
+
+	platforms = map[int]string{
+		platformTenhou:  "天凤",
+		platformMajsoul: "雀魂",
+	}
+
+	now := time.Now()
+	const tf = "2006-01-02 15:04:05"
+	start, err := time.Parse(tf, "2019-06-07 05:00:00")
+	if err != nil {
+		panic(err)
+	}
+	end, err := time.Parse(tf, "2019-06-10 05:00:00")
+	if now.After(start) && now.Before(end) {
+		platforms[platformMajsoulOldYaku] = "雀魂-乱斗之间"
+	}
+}
+
 func welcome() int {
 	fmt.Println("使用说明：https://github.com/EndlessCheng/mahjong-helper")
 	fmt.Println("问题反馈：https://github.com/EndlessCheng/mahjong-helper/issues")
 	fmt.Println("吐槽群：375865038")
-
 	fmt.Println()
 
 	fmt.Println("请输入数字，以选择对应的平台：")
