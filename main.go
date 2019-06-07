@@ -24,7 +24,6 @@ var (
 const (
 	platformTenhou         = 0
 	platformMajsoul        = 1
-	platformMajsoulOldYaku = 9
 
 	defaultPlatform = platformMajsoul
 )
@@ -37,17 +36,6 @@ func init() {
 	platforms = map[int]string{
 		platformTenhou:  "天凤",
 		platformMajsoul: "雀魂",
-	}
-
-	now := time.Now()
-	const tf = "2006-01-02 15:04:05"
-	start, err := time.Parse(tf, "2019-06-07 05:00:00")
-	if err != nil {
-		panic(err)
-	}
-	end, err := time.Parse(tf, "2019-06-10 05:00:00")
-	if now.After(start.Add(-8*time.Hour)) && now.Before(end.Add(-8*time.Hour)) {
-		platforms[platformMajsoulOldYaku] = "雀魂-乱斗之间"
 	}
 }
 
@@ -78,7 +66,7 @@ func welcome() int {
 		platformName += "（水晶杠杠版）"
 	}
 	color.HiGreen("已选择 - %s", platformName)
-	if choose == platformMajsoul || choose == platformMajsoulOldYaku {
+	if choose == platformMajsoul {
 		color.HiYellow("提醒：若您已登录游戏，请刷新网页，或者开启一局人机对战\n" +
 			"该步骤用于获取您的账号 ID，便于在游戏开始时分析自风，否则程序将无法解析后续数据")
 	}
@@ -131,9 +119,7 @@ func main() {
 	default:
 		// 服务器模式
 		choose := welcome()
-		considerOldYaku = choose == platformMajsoulOldYaku
-		util.SetConsiderOldYaku(considerOldYaku)
-		isHTTPS := choose == platformMajsoul || choose == platformMajsoulOldYaku
+		isHTTPS := choose == platformMajsoul
 		runServer(isHTTPS)
 	}
 }

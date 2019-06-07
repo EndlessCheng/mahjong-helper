@@ -6,6 +6,7 @@ import (
 	"github.com/EndlessCheng/mahjong-helper/util"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 	"sort"
+	"time"
 )
 
 type majsoulMessage struct {
@@ -30,9 +31,11 @@ type majsoulMessage struct {
 	FastRecordTo           int    `json:"fast_record_to"` // 闭区间
 
 	// ResAuthGame
-	IsGameStart *bool `json:"is_game_start"` // false=新游戏，true=重连
-	SeatList    []int `json:"seat_list"`
-	ReadyIDList []int `json:"ready_id_list"`
+	// {"seat_list":[x,x,x,x],"is_game_start":false,"game_config":{"category":1,"mode":{"mode":1,"ai":true,"detail_rule":{"time_fixed":60,"time_add":0,"dora_count":3,"shiduan":1,"init_point":25000,"fandian":30000,"bianjietishi":true,"ai_level":1,"fanfu":1}},"meta":{"room_id":18269}},"ready_id_list":[0,0,0]}
+	IsGameStart *bool              `json:"is_game_start"` // false=新游戏，true=重连
+	SeatList    []int              `json:"seat_list"`
+	ReadyIDList []int              `json:"ready_id_list"`
+	GameConfig  *majsoulGameConfig `json:"game_config"`
 
 	// NotifyPlayerLoadGameReady
 	//ReadyIDList []int `json:"ready_id_list"`
@@ -190,10 +193,21 @@ func (d *majsoulRoundData) SkipMessage() bool {
 		return true
 	}
 
-	// 打印准备信息
 	// TODO: 重构
-	if msg.SeatList == nil && msg.ReadyIDList != nil {
-		fmt.Printf("等待玩家准备 (%d/%d) %v\n", len(msg.ReadyIDList), 4, msg.ReadyIDList)
+	if msg.SeatList != nil {
+		// 特判古役模式
+		isGuyiMode := msg.GameConfig.isGuyiMode()
+		util.SetConsiderOldYaku(isGuyiMode)
+		if isGuyiMode {
+			color.HiGreen("古役模式已开启")
+			time.Sleep(2 * time.Second)
+		}
+	} else {
+		// msg.SeatList 必须为 nil
+		if msg.ReadyIDList != nil {
+			// 打印准备信息
+			fmt.Printf("等待玩家准备 (%d/%d) %v\n", len(msg.ReadyIDList), 4, msg.ReadyIDList)
+		}
 	}
 
 	// 筛去重连的消息，目前的程序不考虑重连的情况 TODO

@@ -25,7 +25,7 @@ var gameConf = &gameConfig{
 }
 
 func init() {
-	if _, err := os.Stat(configFile); !os.IsNotExist(err) {
+	if _, err := os.Stat(configFile); os.IsNotExist(err) {
 		return
 	}
 
