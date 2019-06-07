@@ -627,7 +627,7 @@ func (d *roundData) analysis() error {
 		if d.gameMode == gameModeRecordCache {
 			currentRoundCache := globalAnalysisCache.wholeGameCache[d.roundNumber][d.benNumber]
 			bestAttackDiscardTile := simpleBestDiscardTile(playerInfo)
-			bestDefenceDiscardTile := mixedRiskTable.getBestDefenceTile()
+			bestDefenceDiscardTile := mixedRiskTable.getBestDefenceTile(playerInfo.HandTiles34)
 			bestAttackDiscardTileRisk, bestDefenceDiscardTileRisk := 0.0, 0.0
 			if bestDefenceDiscardTile >= 0 {
 				bestAttackDiscardTileRisk = mixedRiskTable[bestAttackDiscardTile]
@@ -749,7 +749,7 @@ func (d *roundData) analysis() error {
 				bestAttackDiscardTile = incShantenResults14[0].DiscardTile
 			}
 			if bestAttackDiscardTile != -1 {
-				bestDefenceDiscardTile := mixedRiskTable.getBestDefenceTile()
+				bestDefenceDiscardTile := mixedRiskTable.getBestDefenceTile(playerInfo.HandTiles34)
 				bestAttackDiscardTileRisk := 0.0
 				if bestDefenceDiscardTile >= 0 {
 					bestAttackDiscardTileRisk = mixedRiskTable[bestAttackDiscardTile]

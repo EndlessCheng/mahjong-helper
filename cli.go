@@ -102,10 +102,14 @@ func (t riskTable) printWithHands(hands []int, fixedRiskMulti float64) {
 	}
 }
 
-func (t riskTable) getBestDefenceTile() (result int) {
+func (t riskTable) getBestDefenceTile(tiles34 []int) (result int) {
 	minRisk := 100.0
 	maxRisk := 0.0
-	for tile, risk := range t {
+	for tile, c := range tiles34 {
+		if c == 0 {
+			continue
+		}
+		risk := t[tile]
 		if risk < minRisk {
 			minRisk = risk
 			result = tile
