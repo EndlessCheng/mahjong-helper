@@ -763,7 +763,7 @@ func (d *roundData) analysis() error {
 		}
 
 		// 上家舍牌时若无法鸣牌则跳过显示
-		if who == 3 && !canBeMeld {
+		if d.gameMode == gameModeMatch && who == 3 && !canBeMeld {
 			return nil
 		}
 
@@ -785,7 +785,7 @@ func (d *roundData) analysis() error {
 		// 天凤人机对战时，偶尔会有先收到他家舍牌消息然后才收到自家舍牌消息的情况
 		// 这时 analysisMeld 会因手牌数量异常而失败
 		// TODO: 可以考虑在绘制动画时才发送消息给客户端？
-		if d.parser.GetDataSourceType() == dataSourceTypeTenhou && !canBeMeld {
+		if d.gameMode == gameModeMatch && d.parser.GetDataSourceType() == dataSourceTypeTenhou && !canBeMeld {
 			return nil
 		}
 
