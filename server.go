@@ -385,22 +385,19 @@ func getMajsoulCurrentRecordUUID() string {
 func runServer(isHTTPS bool) {
 	e := echo.New()
 	e.HideBanner = true
-	e.Use(middleware.Recover())
-	e.Use(middleware.CORS())
+	e.HidePort = true
 
 	// 默认是 log.ERROR
 	e.Logger.SetLevel(log.INFO)
-	go func() {
-		// 等待服务启动再设置输出
-		time.Sleep(time.Second)
-		logFile, err := os.OpenFile(logFile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
-		if err != nil {
-			panic(err)
-		}
-		e.Logger.SetOutput(logFile)
-		e.Logger.Info("============================================================================================")
-		e.Logger.Info("服务启动")
-	}()
+
+	// 设置输出
+	logFile, err := os.OpenFile(logFile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	if err != nil {
+		panic(err)
+	}
+	e.Logger.SetOutput(logFile)
+	e.Logger.Info("============================================================================================")
+	e.Logger.Info("服务启动")
 
 	h = &mjHandler{
 		log: e.Logger,
@@ -417,13 +414,14 @@ func runServer(isHTTPS bool) {
 	go h.runAnalysisTenhouMessageTask()
 	go h.runAnalysisMajsoulMessageTask()
 
+	e.Use(middleware.Recover())
+	e.Use(middleware.CORS())
 	e.GET("/", h.index)
 	e.POST("/analysis", h.analysis)
 	e.POST("/tenhou", h.analysisTenhou)
 	e.POST("/majsoul", h.analysisMajsoul)
 
-	addr := ":12121"
-	var err error
+	const addr = ":12121"
 	if !isHTTPS {
 		e.POST("/", h.analysisTenhou)
 		err = e.Start(addr)
