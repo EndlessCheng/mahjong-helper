@@ -9,7 +9,6 @@ import (
 
 const (
 	configFile = "config.json"
-	logFile    = "gamedata.log"
 )
 
 type gameConfig struct {

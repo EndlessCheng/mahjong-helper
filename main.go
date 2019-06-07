@@ -11,8 +11,10 @@ import (
 	"time"
 )
 
+const versionDev = "dev"
+
 // go build -ldflags "-X main.version=$(git describe --abbrev=0 --tags)" -o mahjong-helper
-var version = "dev"
+var version = versionDev
 
 var (
 	showImproveDetail      bool

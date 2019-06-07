@@ -18,6 +18,14 @@ import (
 	"github.com/EndlessCheng/mahjong-helper/util"
 )
 
+var logFile = "gamedata.log"
+
+func init() {
+	if version == versionDev {
+		logFile = fmt.Sprintf("gamedata-%s.log", time.Now().Format("20060102-150405"))
+	}
+}
+
 type mjHandler struct {
 	log echo.Logger
 
