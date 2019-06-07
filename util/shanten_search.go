@@ -156,7 +156,7 @@ func _search14(targetShanten int, playerInfo *model.PlayerInfo, stopAtShanten in
 	}
 }
 
-// 3k+1 张牌，计算向听数、进张（考虑了剩余枚数）
+// 3k+1 张牌，计算向听数、进张（考虑了剩余枚数），不计算改良
 func CalculateShantenAndWaits13(tiles34 []int, leftTiles34 []int) (shanten int, waits Waits) {
 	if len(leftTiles34) == 0 {
 		leftTiles34 = InitLeftTiles34WithTiles34(tiles34)

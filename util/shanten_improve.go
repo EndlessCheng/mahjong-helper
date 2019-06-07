@@ -420,7 +420,11 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *Hand13Anal
 	}
 
 	shanten := CalculateShanten(playerInfo.HandTiles34)
-	shantenSearchRoot := _search13(shanten, playerInfo, shanten-1)
+	stopAtShanten := shanten - 2
+	if shanten >= 3 {
+		stopAtShanten = shanten - 1
+	}
+	shantenSearchRoot := _search13(shanten, playerInfo, stopAtShanten)
 	return shantenSearchRoot.analysis(playerInfo, true)
 }
 
