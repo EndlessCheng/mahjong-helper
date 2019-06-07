@@ -22,7 +22,11 @@ var logFile = "gamedata.log"
 
 func init() {
 	if version == versionDev {
-		logFile = fmt.Sprintf("gamedata-%s.log", time.Now().Format("20060102-150405"))
+		const logDir = "log"
+		if err := os.MkdirAll(logDir, os.ModePerm); err != nil {
+			panic(err)
+		}
+		logFile = fmt.Sprintf(logDir+"/gamedata-%s.log", time.Now().Format("20060102-150405"))
 	}
 }
 

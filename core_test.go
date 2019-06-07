@@ -12,7 +12,9 @@ import (
 func Test_majsoul_analysis(t *testing.T) {
 	debugMode = true
 
-	logData, err := ioutil.ReadFile(logFile)
+	_logFile := logFile
+	_logFile = "gamedata-.log"
+	logData, err := ioutil.ReadFile(_logFile)
 	if err != nil {
 		t.Fatal(err)
 	}
