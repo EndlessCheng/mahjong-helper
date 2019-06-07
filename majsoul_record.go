@@ -21,6 +21,8 @@ type majsoulRecordBaseInfo struct {
 	StartTime int64  `json:"start_time"`
 	EndTime   int64  `json:"end_time"`
 
+	Config *majsoulGameConfig `json:"config"`
+
 	Accounts []_majsoulRecordAccount `json:"accounts"`
 }
 

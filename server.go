@@ -15,6 +15,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 	"github.com/EndlessCheng/mahjong-helper/util/debug"
+	"github.com/EndlessCheng/mahjong-helper/util"
 )
 
 type mjHandler struct {
@@ -189,6 +190,21 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			h.majsoulCurrentRecordUUID = d.CurrentRecordUUID
 			clearConsole()
 			fmt.Printf("正在解析雀魂牌谱：%s", baseInfo.String())
+
+			// 标记古役模式
+			isGuyiMode := baseInfo.Config.isGuyiMode()
+			util.SetConsiderOldYaku(isGuyiMode)
+			if isGuyiMode {
+				fmt.Println()
+				color.HiGreen("古役模式已开启")
+			}
+
+			gameConf.addMajsoulAccountID(d.AccountID)
+			if d.AccountID != gameConf.currentActiveMajsoulAccountID {
+				fmt.Println()
+				printAccountInfo(d.AccountID)
+				gameConf.currentActiveMajsoulAccountID = d.AccountID
+			}
 		case len(d.RecordActions) > 0:
 			if h.majsoulCurrentRecordUUID == "" {
 				h.logError(fmt.Errorf("错误：程序未收到所观看的雀魂牌谱的 UUID"))
