@@ -413,6 +413,13 @@ func (n *shantenSearchNode13) analysis(playerInfo *model.PlayerInfo, considerImp
 	return
 }
 
+func _stopShanten(shanten int) int {
+	if shanten >= 3 {
+		return shanten - 1
+	}
+	return shanten - 2
+}
+
 // 3k+1 张牌，计算向听数、进张、改良等（考虑了剩余枚数）
 func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *Hand13AnalysisResult) {
 	if len(playerInfo.LeftTiles34) == 0 {
@@ -420,11 +427,7 @@ func CalculateShantenWithImproves13(playerInfo *model.PlayerInfo) (r *Hand13Anal
 	}
 
 	shanten := CalculateShanten(playerInfo.HandTiles34)
-	stopAtShanten := shanten - 2
-	if shanten >= 3 {
-		stopAtShanten = shanten - 1
-	}
-	shantenSearchRoot := _search13(shanten, playerInfo, stopAtShanten)
+	shantenSearchRoot := _search13(shanten, playerInfo, _stopShanten(shanten))
 	return shantenSearchRoot.analysis(playerInfo, true)
 }
 
@@ -797,10 +800,7 @@ func CalculateShantenWithImproves14(playerInfo *model.PlayerInfo) (shanten int, 
 	}
 
 	shanten = CalculateShanten(playerInfo.HandTiles34)
-	stopAtShanten := shanten - 2
-	if shanten >= 3 {
-		stopAtShanten = shanten - 1
-	}
+	stopAtShanten := _stopShanten(shanten)
 	shantenSearchRoot := searchShanten14(shanten, playerInfo, stopAtShanten)
 	results = shantenSearchRoot.analysis(playerInfo, true)
 	incShantenSearchRoot := searchShanten14(shanten+1, playerInfo, stopAtShanten+1)
