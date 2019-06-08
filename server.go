@@ -421,6 +421,7 @@ func runServer(isHTTPS bool) {
 	e.POST("/tenhou", h.analysisTenhou)
 	e.POST("/majsoul", h.analysisMajsoul)
 
+	// code.js 也用的该端口
 	const addr = ":12121"
 	if !isHTTPS {
 		e.POST("/", h.analysisTenhou)
