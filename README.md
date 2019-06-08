@@ -224,7 +224,7 @@
     `mahjong-helper -d=38p33m -s 34568m 5678p 23567s`
 
 
-## 如何获取WebSocket收发的消息
+## 如何获取 WebSocket 收发的消息
 
 1. 打开开发者工具，找到相关 JS 文件，保存到本地。
 2. 搜索 `WebSocket`, `socket`，找到 `message`, `onmessage` 等函数。
