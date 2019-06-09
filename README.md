@@ -229,7 +229,7 @@
 1. 打开开发者工具，找到相关 JS 文件，保存到本地。
 2. 搜索 `WebSocket`, `socket`，找到 `message`, `onmessage` 等函数。
 3. 修改代码，使用 `XMLHttpRequest` 将收发的消息发送到（在 localhost 开启的）mahjong-helper 服务器，服务器收到消息后会自动进行相关分析。（这一步也可以用油猴脚本来完成）
-4. 上传 JS 代码到一个可以公网访问的地方，最简单的方法是传至个人的 github.io 项目。拿到该 JS 文件地址。
+4. 上传 JS 代码到一个可以公网访问的地方，最简单的方法是传至 GitHub Pages，即个人的 github.io 项目。拿到该 JS 文件地址。
 5. 安装浏览器扩展 Header Editor，重定向原 JS 文件地址到上一步中拿到的地址。
 6. 允许本地证书通过浏览器，在浏览器（仅限 Chrome 内核）中输入
     
