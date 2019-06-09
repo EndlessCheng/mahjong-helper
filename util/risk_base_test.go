@@ -6,7 +6,15 @@ import (
 )
 
 func TestCalculateRiskTiles34(t *testing.T) {
-
+	safeTiles34 := make([]bool, 34)
+	for _, tile := range MustStrToTiles("4m 5p 3s") {
+		safeTiles34[tile] = true
+	}
+	leftTiles34 := InitLeftTiles34WithTiles34(MustStrToTiles34("11112222p 7777s"))
+	risk34 := CalculateRiskTiles34(8, safeTiles34, leftTiles34, nil, 27, 28)
+	for i, risk := range risk34 {
+		t.Log(Mahjong[i], risk)
+	}
 }
 
 func TestCalculateLeftNoSujiTiles(t *testing.T) {
