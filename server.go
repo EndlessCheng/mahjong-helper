@@ -63,7 +63,8 @@ func (h *mjHandler) index(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
-	h.log.Info(string(data))
+	fmt.Println(data, string(data))
+	h.log.Info(data)
 	return c.String(http.StatusOK, time.Now().Format("2006-01-02 15:04:05"))
 }
 
