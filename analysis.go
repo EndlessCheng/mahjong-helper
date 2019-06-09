@@ -97,6 +97,9 @@ func analysisPlayerWithRisk(playerInfo *model.PlayerInfo, mixedRiskTable riskTab
 // allowChi: 是否能吃
 // mixedRiskTable: 危险度表
 func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool, allowChi bool, mixedRiskTable riskTable) error {
+	if handsCount := util.CountOfTiles34(playerInfo.HandTiles34); handsCount%3 != 1 {
+		return fmt.Errorf("手牌错误：%d 张牌 %v", handsCount, playerInfo.HandTiles34)
+	}
 	// 原始手牌分析
 	result := util.CalculateShantenWithImproves13(playerInfo)
 	// 副露分析

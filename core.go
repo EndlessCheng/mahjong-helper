@@ -536,6 +536,15 @@ func (d *roundData) analysis() error {
 					break
 				}
 			}
+
+			if debugMode {
+				if who == 0 {
+					if handsCount := util.CountOfTiles34(d.counts); handsCount%3 != 1 {
+						return fmt.Errorf("手牌错误：%d 张牌 %v", handsCount, d.counts)
+					}
+				}
+			}
+
 			break
 		}
 
@@ -575,6 +584,18 @@ func (d *roundData) analysis() error {
 				if d.gameMode == gameModeRecordCache {
 					currentRoundCache := globalAnalysisCache.wholeGameCache[d.roundNumber][d.benNumber]
 					currentRoundCache.addChiPonKan(meldType)
+				}
+			}
+
+			if debugMode {
+				if meldType == meldTypeMinkan || meldType == meldTypeAnkan {
+					if handsCount := util.CountOfTiles34(d.counts); handsCount%3 != 1 {
+						return fmt.Errorf("手牌错误：%d 张牌 %v", handsCount, d.counts)
+					}
+				} else {
+					if handsCount := util.CountOfTiles34(d.counts); handsCount%3 != 2 {
+						return fmt.Errorf("手牌错误：%d 张牌 %v", handsCount, d.counts)
+					}
 				}
 			}
 		}
@@ -636,6 +657,12 @@ func (d *roundData) analysis() error {
 			currentRoundCache.addAIDiscardTileWhenDrawTile(bestAttackDiscardTile, bestDefenceDiscardTile, bestAttackDiscardTileRisk, bestDefenceDiscardTileRisk)
 		}
 
+		if debugMode {
+			if handsCount := util.CountOfTiles34(d.counts); handsCount%3 != 2 {
+				return fmt.Errorf("手牌错误：%d 张牌 %v", handsCount, d.counts)
+			}
+		}
+
 		if d.skipOutput {
 			return nil
 		}
@@ -689,6 +716,12 @@ func (d *roundData) analysis() error {
 			if d.gameMode == gameModeRecordCache {
 				currentRoundCache := globalAnalysisCache.wholeGameCache[d.roundNumber][d.benNumber]
 				currentRoundCache.addSelfDiscardTile(discardTile, mixedRiskTable[discardTile], isReach)
+			}
+
+			if debugMode {
+				if handsCount := util.CountOfTiles34(d.counts); handsCount%3 != 1 {
+					return fmt.Errorf("手牌错误：%d 张牌 %v", handsCount, d.counts)
+				}
 			}
 
 			return nil
@@ -755,6 +788,12 @@ func (d *roundData) analysis() error {
 					bestAttackDiscardTileRisk = mixedRiskTable[bestAttackDiscardTile]
 				}
 				currentRoundCache.addPossibleChiPonKan(bestAttackDiscardTile, bestAttackDiscardTileRisk)
+			}
+		}
+
+		if debugMode {
+			if handsCount := util.CountOfTiles34(d.counts); handsCount%3 != 1 {
+				return fmt.Errorf("手牌错误：%d 张牌 %v", handsCount, d.counts)
 			}
 		}
 

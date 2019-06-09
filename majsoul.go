@@ -387,7 +387,7 @@ func (d *majsoulRoundData) ParseOpen() (who int, meld *model.Meld, kanDoraIndica
 	var meldType, calledTile int
 
 	majsoulTiles := d.normalTiles(msg.Tiles)
-	isSelfKan := len(majsoulTiles) == 1 // 加杠/暗杠
+	isSelfKan := len(majsoulTiles) == 1 // 自家加杠或暗杠
 	if isSelfKan {
 		majsoulTile := majsoulTiles[0]
 		majsoulTiles = []string{majsoulTile, majsoulTile, majsoulTile, majsoulTile}
@@ -401,7 +401,8 @@ func (d *majsoulRoundData) ParseOpen() (who int, meld *model.Meld, kanDoraIndica
 
 	if isSelfKan {
 		calledTile = meldTiles[0]
-		// 也可以通过副露来判断是加杠还是暗杠，这里简单地用 msg.Type 判断
+		// 用 msg.Type 判断是加杠还是暗杠
+		// 也可以通过是否有相关碰副露来判断是加杠还是暗杠
 		if msg.Type == majsoulMeldTypeMinkanOrKakan {
 			meldType = meldTypeKakan // 加杠
 		} else if msg.Type == majsoulMeldTypeAnkan {
@@ -431,18 +432,12 @@ func (d *majsoulRoundData) ParseOpen() (who int, meld *model.Meld, kanDoraIndica
 	if len(meldTiles) == 3 {
 		if meldTiles[0] == meldTiles[1] {
 			meldType = meldTypePon // 碰
-			//calledTile = meldTiles[0]
 		} else {
 			meldType = meldTypeChi // 吃
-			sort.Ints(meldTiles)   // 排序
-			//calledTile = d.globalDiscardTiles[len(d.globalDiscardTiles)-1]
-			//if calledTile < 0 {
-			//	calledTile = ^calledTile
-			//}
+			sort.Ints(meldTiles)
 		}
 	} else if len(meldTiles) == 4 {
 		meldType = meldTypeMinkan // 大明杠
-		//calledTile = meldTiles[0]
 	} else {
 		panic("鸣牌数据解析失败！")
 	}
