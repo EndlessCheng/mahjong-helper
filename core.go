@@ -83,8 +83,6 @@ type DataParser interface {
 type playerInfo struct {
 	name string // 自家/下家/对家/上家
 
-	//turn int // 该玩家的巡目（从13张牌的状态开始算，每「得到」一张牌，巡目就+1。比如：亲家一开始就是第一巡、副露后巡目加一 ）
-
 	selfWindTile int // 自风
 
 	melds                []*model.Meld // 副露
@@ -343,7 +341,9 @@ func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
 		riList[who].riskTable = riskTable(risk34)
 
 		// 计算剩余筋牌
-		riList[who].leftNoSujiTiles = util.CalculateLeftNoSujiTiles(riList[who].safeTiles34, d.leftCounts)
+		if len(player.melds) < 4 {
+			riList[who].leftNoSujiTiles = util.CalculateLeftNoSujiTiles(riList[who].safeTiles34, d.leftCounts)
+		}
 	}
 
 	return riList
