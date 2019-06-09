@@ -127,7 +127,7 @@ func (d *tenhouRoundData) _parseChi(data int) (meldType int, tenhouMeldTiles []i
 	baseAndCalled := data >> 10
 	base, called := baseAndCalled/3, baseAndCalled%3
 	base = (base/7)*9 + base%7
-	tenhouMeldTiles = []int{t0 + 4*(base+0), t1 + 4*(base+1), t2 + 4*(base+2)}
+	tenhouMeldTiles = []int{t0 + 4*base, t1 + 4*(base+1), t2 + 4*(base+2)}
 	tenhouCalledTile = tenhouMeldTiles[called]
 	return
 }
@@ -156,22 +156,17 @@ func (d *tenhouRoundData) _parseKan(data int) (meldType int, tenhouMeldTiles []i
 	baseAndCalled := data >> 8
 	base, called := baseAndCalled/4, baseAndCalled%4
 	tenhouMeldTiles = []int{4 * base, 1 + 4*base, 2 + 4*base, 3 + 4*base}
-	tenhouCalledTile = d._tenhouTileToTile34(tenhouMeldTiles[called])
+	tenhouCalledTile = tenhouMeldTiles[called]
 
-	// 通过判断 calledTile 的来源来是否为上一张舍牌，来判断是大明杠还是暗杠
-	latestDiscard := -1
-	if len(d.globalDiscardTiles) > 0 {
-		latestDiscard = d.globalDiscardTiles[len(d.globalDiscardTiles)-1]
-		if latestDiscard < 0 {
-			latestDiscard = ^latestDiscard
-		}
-	}
-	if d._tenhouTileToTile34(tenhouCalledTile) == latestDiscard {
-		// 大明杠
-		meldType = meldTypeMinkan
-	} else {
+	// 通过剩余枚数是 4 还是 3，来判断杠的类型
+	// 也可以通过比较 FromWho 来解决
+	tile := d._tenhouTileToTile34(tenhouCalledTile)
+	if d.leftCounts[tile] == 4 {
 		// 暗杠
 		meldType = meldTypeAnkan
+	} else { // d.leftCounts[tile] == 3
+		// 大明杠
+		meldType = meldTypeMinkan
 	}
 	return
 }
@@ -186,7 +181,7 @@ func (d *tenhouRoundData) _parseTenhouMeld(data string) (meldType int, tenhouMel
 	case bits&0x4 > 0:
 		return d._parseChi(bits)
 	case bits&0x18 > 0:
-		return d._parsePon(bits)
+		return d._parsePon(bits) // 包含加杠
 	case bits&0x20 > 0:
 		// 拔北
 		panic("暂不支持三人麻将")
