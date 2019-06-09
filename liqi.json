@@ -15,6 +15,10 @@
             "game_uuid": {
               "type": "string",
               "id": 3
+            },
+            "location": {
+              "type": "string",
+              "id": 4
             }
           }
         },
@@ -35,6 +39,10 @@
             "match_mode_id": {
               "type": "uint32",
               "id": 4
+            },
+            "location": {
+              "type": "string",
+              "id": 5
             }
           }
         },
@@ -131,14 +139,6 @@
             "removed_id": {
               "type": "uint32",
               "id": 3
-            }
-          }
-        },
-        "NotifyChatMessage": {
-          "fields": {
-            "chat": {
-              "type": "ChatMessage",
-              "id": 1
             }
           }
         },
@@ -272,6 +272,10 @@
             "buddy_bonus": {
               "type": "float",
               "id": 5
+            },
+            "record_collect_limit": {
+              "type": "uint32",
+              "id": 6
             }
           }
         },
@@ -547,6 +551,10 @@
                 "hupai": {
                   "type": "string",
                   "id": 6
+                },
+                "title_id": {
+                  "type": "uint32",
+                  "id": 7
                 }
               }
             },
@@ -657,6 +665,10 @@
             "vip": {
               "type": "uint32",
               "id": 14
+            },
+            "birthday": {
+              "type": "uint32",
+              "id": 15
             },
             "platform_diamond": {
               "rule": "repeated",
@@ -799,6 +811,90 @@
                   "id": 1
                 }
               }
+            }
+          }
+        },
+        "GameMetaData": {
+          "fields": {
+            "room_id": {
+              "type": "uint32",
+              "id": 1
+            },
+            "mode_id": {
+              "type": "uint32",
+              "id": 2
+            },
+            "contest_uid": {
+              "type": "uint32",
+              "id": 3
+            }
+          }
+        },
+        "AccountPlayingGame": {
+          "fields": {
+            "game_uuid": {
+              "type": "string",
+              "id": 1
+            },
+            "category": {
+              "type": "uint32",
+              "id": 2
+            },
+            "meta": {
+              "type": "GameMetaData",
+              "id": 3
+            }
+          }
+        },
+        "AccountCacheView": {
+          "fields": {
+            "cache_version": {
+              "type": "uint32",
+              "id": 1
+            },
+            "account_id": {
+              "type": "uint32",
+              "id": 2
+            },
+            "nickname": {
+              "type": "string",
+              "id": 3
+            },
+            "login_time": {
+              "type": "uint32",
+              "id": 4
+            },
+            "logout_time": {
+              "type": "uint32",
+              "id": 5
+            },
+            "is_online": {
+              "type": "bool",
+              "id": 6
+            },
+            "room_id": {
+              "type": "uint32",
+              "id": 7
+            },
+            "title": {
+              "type": "uint32",
+              "id": 8
+            },
+            "avatar_id": {
+              "type": "uint32",
+              "id": 9
+            },
+            "vip": {
+              "type": "uint32",
+              "id": 10
+            },
+            "level": {
+              "type": "AccountLevel",
+              "id": 11
+            },
+            "playing_game": {
+              "type": "AccountPlayingGame",
+              "id": 12
             }
           }
         },
@@ -1051,6 +1147,14 @@
             "disable_multi_yukaman": {
               "type": "bool",
               "id": 40
+            },
+            "fanfu": {
+              "type": "uint32",
+              "id": 41
+            },
+            "guyi_mode": {
+              "type": "uint32",
+              "id": 42
             }
           }
         },
@@ -1074,7 +1178,7 @@
             },
             "persons": {
               "rule": "repeated",
-              "type": "PlayerBaseView",
+              "type": "PlayerGameView",
               "id": 5
             },
             "ready_list": {
@@ -1141,10 +1245,6 @@
         },
         "GameConnectInfo": {
           "fields": {
-            "game_url": {
-              "type": "string",
-              "id": 1
-            },
             "connect_token": {
               "type": "string",
               "id": 2
@@ -1152,61 +1252,9 @@
             "game_uuid": {
               "type": "string",
               "id": 3
-            }
-          }
-        },
-        "ChatMessage": {
-          "fields": {
-            "type": {
-              "type": "uint32",
-              "id": 1
             },
-            "world_chat": {
-              "type": "WorldChatMessage",
-              "id": 2
-            },
-            "private_chat": {
-              "type": "PrivateChatMessage",
-              "id": 3
-            }
-          }
-        },
-        "PrivateChatMessage": {
-          "fields": {
-            "sender_id": {
-              "type": "uint32",
-              "id": 1
-            },
-            "timestamp": {
-              "type": "uint32",
-              "id": 2
-            },
-            "content": {
+            "location": {
               "type": "string",
-              "id": 3
-            },
-            "target_id": {
-              "type": "uint32",
-              "id": 4
-            }
-          }
-        },
-        "WorldChatMessage": {
-          "fields": {
-            "sender_id": {
-              "type": "uint32",
-              "id": 1
-            },
-            "timestamp": {
-              "type": "uint32",
-              "id": 2
-            },
-            "content": {
-              "type": "string",
-              "id": 3
-            },
-            "sender": {
-              "type": "PlayerBaseView",
               "id": 4
             }
           }
@@ -1337,6 +1385,10 @@
             "expire_time": {
               "type": "uint32",
               "id": 8
+            },
+            "reference_id": {
+              "type": "uint32",
+              "id": 9
             }
           }
         },
@@ -1683,30 +1735,8 @@
               "id": 2
             },
             "meta": {
-              "type": "MetaData",
+              "type": "GameMetaData",
               "id": 3
-            }
-          },
-          "nested": {
-            "MetaData": {
-              "fields": {
-                "room_id": {
-                  "type": "uint32",
-                  "id": 1
-                },
-                "mode_id": {
-                  "type": "uint32",
-                  "id": 2
-                },
-                "tournament_id": {
-                  "type": "uint32",
-                  "id": 3
-                },
-                "customized_contest_uid": {
-                  "type": "uint32",
-                  "id": 4
-                }
-              }
             }
           }
         },
@@ -1729,40 +1759,8 @@
               "id": 4
             },
             "playing": {
-              "type": "PlayingState",
+              "type": "AccountPlayingGame",
               "id": 5
-            }
-          },
-          "nested": {
-            "PlayingState": {
-              "fields": {
-                "game_uuid": {
-                  "type": "string",
-                  "id": 1
-                },
-                "category": {
-                  "type": "uint32",
-                  "id": 2
-                },
-                "meta": {
-                  "type": "MetaData",
-                  "id": 3
-                }
-              },
-              "nested": {
-                "MetaData": {
-                  "fields": {
-                    "room_id": {
-                      "type": "uint32",
-                      "id": 1
-                    },
-                    "mode_id": {
-                      "type": "uint32",
-                      "id": 2
-                    }
-                  }
-                }
-              }
             }
           }
         },
@@ -2494,6 +2492,319 @@
             }
           }
         },
+        "GameRoundHuData": {
+          "fields": {
+            "hupai": {
+              "type": "HuPai",
+              "id": 1
+            },
+            "fans": {
+              "rule": "repeated",
+              "type": "Fan",
+              "id": 2
+            },
+            "score": {
+              "type": "uint32",
+              "id": 3
+            },
+            "xun": {
+              "type": "uint32",
+              "id": 4
+            },
+            "title_id": {
+              "type": "uint32",
+              "id": 5
+            },
+            "fan_sum": {
+              "type": "uint32",
+              "id": 6
+            },
+            "fu_sum": {
+              "type": "uint32",
+              "id": 7
+            },
+            "yakuman_count": {
+              "type": "uint32",
+              "id": 8
+            },
+            "biao_dora_count": {
+              "type": "uint32",
+              "id": 9
+            },
+            "red_dora_count": {
+              "type": "uint32",
+              "id": 10
+            },
+            "li_dora_count": {
+              "type": "uint32",
+              "id": 11
+            },
+            "babei_count": {
+              "type": "uint32",
+              "id": 12
+            },
+            "xuan_shang_count": {
+              "type": "uint32",
+              "id": 13
+            }
+          },
+          "nested": {
+            "HuPai": {
+              "fields": {
+                "tile": {
+                  "type": "string",
+                  "id": 1
+                },
+                "seat": {
+                  "type": "uint32",
+                  "id": 2
+                },
+                "liqi": {
+                  "type": "uint32",
+                  "id": 3
+                }
+              }
+            },
+            "Fan": {
+              "fields": {
+                "id": {
+                  "type": "uint32",
+                  "id": 1
+                },
+                "count": {
+                  "type": "uint32",
+                  "id": 2
+                },
+                "fan": {
+                  "type": "uint32",
+                  "id": 3
+                }
+              }
+            }
+          }
+        },
+        "GameRoundPlayerResult": {
+          "fields": {
+            "type": {
+              "type": "uint32",
+              "id": 1
+            },
+            "hands": {
+              "rule": "repeated",
+              "type": "string",
+              "id": 2
+            },
+            "ming": {
+              "rule": "repeated",
+              "type": "string",
+              "id": 3
+            },
+            "liqi_type": {
+              "type": "uint32",
+              "id": 4
+            },
+            "is_fulu": {
+              "type": "bool",
+              "id": 5
+            },
+            "is_liujumanguan": {
+              "type": "bool",
+              "id": 6
+            },
+            "lian_zhuang": {
+              "type": "uint32",
+              "id": 7
+            },
+            "hu": {
+              "type": "GameRoundHuData",
+              "id": 8
+            }
+          }
+        },
+        "GameRoundPlayer": {
+          "fields": {
+            "score": {
+              "type": "int32",
+              "id": 1
+            },
+            "rank": {
+              "type": "uint32",
+              "id": 2
+            },
+            "result": {
+              "type": "GameRoundPlayerResult",
+              "id": 3
+            }
+          }
+        },
+        "GameRoundSnapshot": {
+          "fields": {
+            "ju": {
+              "type": "uint32",
+              "id": 1
+            },
+            "ben": {
+              "type": "uint32",
+              "id": 2
+            },
+            "players": {
+              "rule": "repeated",
+              "type": "GameRoundPlayer",
+              "id": 3
+            }
+          }
+        },
+        "GameFinalSnapshot": {
+          "fields": {
+            "uuid": {
+              "type": "string",
+              "id": 1
+            },
+            "state": {
+              "type": "uint32",
+              "id": 2
+            },
+            "category": {
+              "type": "uint32",
+              "id": 3
+            },
+            "mode": {
+              "type": "GameMode",
+              "id": 4
+            },
+            "meta": {
+              "type": "GameMetaData",
+              "id": 5
+            },
+            "calculate_param": {
+              "type": "CalculateParam",
+              "id": 6
+            },
+            "create_time": {
+              "type": "uint32",
+              "id": 7
+            },
+            "start_time": {
+              "type": "uint32",
+              "id": 8
+            },
+            "finish_time": {
+              "type": "uint32",
+              "id": 9
+            },
+            "seats": {
+              "rule": "repeated",
+              "type": "GameSeat",
+              "id": 10
+            },
+            "rounds": {
+              "rule": "repeated",
+              "type": "GameRoundSnapshot",
+              "id": 11
+            },
+            "account_views": {
+              "rule": "repeated",
+              "type": "PlayerGameView",
+              "id": 12
+            },
+            "final_players": {
+              "rule": "repeated",
+              "type": "FinalPlayer",
+              "id": 13
+            }
+          },
+          "nested": {
+            "CalculateParam": {
+              "fields": {
+                "init_point": {
+                  "type": "uint32",
+                  "id": 1
+                },
+                "jingsuanyuandian": {
+                  "type": "uint32",
+                  "id": 2
+                },
+                "rank_points": {
+                  "rule": "repeated",
+                  "type": "int32",
+                  "id": 3
+                }
+              }
+            },
+            "GameSeat": {
+              "fields": {
+                "type": {
+                  "type": "uint32",
+                  "id": 1
+                },
+                "account_id": {
+                  "type": "uint32",
+                  "id": 2
+                },
+                "notify_endpoint": {
+                  "type": "NetworkEndpoint",
+                  "id": 3
+                },
+                "client_address": {
+                  "type": "string",
+                  "id": 4
+                },
+                "is_connected": {
+                  "type": "bool",
+                  "id": 5
+                }
+              }
+            },
+            "FinalPlayer": {
+              "fields": {
+                "seat": {
+                  "type": "uint32",
+                  "id": 1
+                },
+                "total_point": {
+                  "type": "int32",
+                  "id": 2
+                },
+                "part_point_1": {
+                  "type": "int32",
+                  "id": 3
+                },
+                "part_point_2": {
+                  "type": "int32",
+                  "id": 4
+                },
+                "grading_score": {
+                  "type": "int32",
+                  "id": 5
+                },
+                "gold": {
+                  "type": "int32",
+                  "id": 6
+                }
+              }
+            }
+          }
+        },
+        "RecordCollectedData": {
+          "fields": {
+            "uuid": {
+              "type": "string",
+              "id": 1
+            },
+            "remarks": {
+              "type": "string",
+              "id": 2
+            },
+            "start_time": {
+              "type": "uint32",
+              "id": 3
+            },
+            "end_time": {
+              "type": "uint32",
+              "id": 4
+            }
+          }
+        },
         "Lobby": {
           "methods": {
             "fetchConnectionInfo": {
@@ -2552,9 +2863,17 @@
               "requestType": "ReqHeatBeat",
               "responseType": "ResCommon"
             },
+            "createNickname": {
+              "requestType": "ReqCreateNickname",
+              "responseType": "ResCommon"
+            },
             "modifyNickname": {
               "requestType": "ReqModifyNickname",
-              "responseType": "ResModifyNickname"
+              "responseType": "ResCommon"
+            },
+            "modifyBirthday": {
+              "requestType": "ReqModifyBirthday",
+              "responseType": "ResCommon"
             },
             "fetchRoom": {
               "requestType": "ReqCommon",
@@ -2624,6 +2943,26 @@
               "requestType": "ReqGameRecordList",
               "responseType": "ResGameRecordList"
             },
+            "fetchCollectedGameRecordList": {
+              "requestType": "ReqCommon",
+              "responseType": "ResCollectedGameRecordList"
+            },
+            "fetchGameRecordsDetail": {
+              "requestType": "ReqGameRecordsDetail",
+              "responseType": "ResGameRecordsDetail"
+            },
+            "addCollectedGameRecord": {
+              "requestType": "ReqAddCollectedGameRecord",
+              "responseType": "ResAddCollectedGameRecord"
+            },
+            "removeCollectedGameRecord": {
+              "requestType": "ReqRemoveCollectedGameRecord",
+              "responseType": "ResRemoveCollectedGameRecord"
+            },
+            "changeCollectedGameRecordRemarks": {
+              "requestType": "ReqChangeCollectedGameRecordRemarks",
+              "responseType": "ResChangeCollectedGameRecordRemarks"
+            },
             "fetchLevelLeaderboard": {
               "requestType": "ReqCommon",
               "responseType": "ResLevelLeaderboard"
@@ -2663,14 +3002,6 @@
             "fetchAccountState": {
               "requestType": "ReqAccountList",
               "responseType": "ResAccountStates"
-            },
-            "sendPrivateMessage": {
-              "requestType": "ReqPrivateMessage",
-              "responseType": "ResCommon"
-            },
-            "sendWorldMessage": {
-              "requestType": "ReqWorldMessage",
-              "responseType": "ResCommon"
             },
             "fetchBagInfo": {
               "requestType": "ReqCommon",
@@ -2724,9 +3055,13 @@
               "requestType": "ReqCommon",
               "responseType": "ResCommon"
             },
-            "plusWorldClientStatistic": {
-              "requestType": "ReqWorldClientStatistic",
+            "updateClientValue": {
+              "requestType": "ReqUpdateClientValue",
               "responseType": "ResCommon"
+            },
+            "fetchClientValue": {
+              "requestType": "ReqCommon",
+              "responseType": "ResClientValue"
             },
             "clientMessage": {
               "requestType": "ReqClientMessage",
@@ -2947,6 +3282,46 @@
             "createAlipayAppOrder": {
               "requestType": "ReqCreateAlipayAppOrder",
               "responseType": "ResCreateAlipayAppOrder"
+            },
+            "createJPCreditCardOrder": {
+              "requestType": "ReqCreateJPCreditCardOrder",
+              "responseType": "ResCreateJPCreditCardOrder"
+            },
+            "createJPPaypalOrder": {
+              "requestType": "ReqCreateJPPaypalOrder",
+              "responseType": "ResCreateJPPaypalOrder"
+            },
+            "createJPAuOrder": {
+              "requestType": "ReqCreateJPAuOrder",
+              "responseType": "ResCreateJPAuOrder"
+            },
+            "createJPDocomoOrder": {
+              "requestType": "ReqCreateJPDocomoOrder",
+              "responseType": "ResCreateJPDocomoOrder"
+            },
+            "createJPSoftbankOrder": {
+              "requestType": "ReqCreateJPSoftbankOrder",
+              "responseType": "ResCreateJPSoftbankOrder"
+            },
+            "createENPaypalOrder": {
+              "requestType": "ReqCreateENPaypalOrder",
+              "responseType": "ResCreateENPaypalOrder"
+            },
+            "createENMasterCardOrder": {
+              "requestType": "ReqCreateENMasterCardOrder",
+              "responseType": "ResCreateENMasterCardOrder"
+            },
+            "createENVisaOrder": {
+              "requestType": "ReqCreateENVisaOrder",
+              "responseType": "ResCreateENVisaOrder"
+            },
+            "createENJCBOrder": {
+              "requestType": "ReqCreateENJCBOrder",
+              "responseType": "ResCreateENJCBOrder"
+            },
+            "createENAlipayOrder": {
+              "requestType": "ReqCreateENAlipayOrder",
+              "responseType": "ResCreateENAlipayOrder"
             },
             "fetchMisc": {
               "requestType": "ReqCommon",
@@ -3232,6 +3607,10 @@
             "code": {
               "type": "string",
               "id": 2
+            },
+            "uid": {
+              "type": "string",
+              "id": 3
             }
           }
         },
@@ -3280,6 +3659,14 @@
             "access_token": {
               "type": "string",
               "id": 2
+            },
+            "email": {
+              "type": "string",
+              "id": 3
+            },
+            "advertise_str": {
+              "type": "string",
+              "id": 4
             }
           }
         },
@@ -3383,6 +3770,18 @@
             }
           }
         },
+        "ReqCreateNickname": {
+          "fields": {
+            "nickname": {
+              "type": "string",
+              "id": 1
+            },
+            "advertise_str": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
         "ReqModifyNickname": {
           "fields": {
             "nickname": {
@@ -3395,10 +3794,10 @@
             }
           }
         },
-        "ResModifyNickname": {
+        "ReqModifyBirthday": {
           "fields": {
-            "error": {
-              "type": "Error",
+            "birthday": {
+              "type": "uint32",
               "id": 1
             }
           }
@@ -3428,10 +3827,6 @@
             "public_live": {
               "type": "bool",
               "id": 3
-            },
-            "tournament_id": {
-              "type": "uint32",
-              "id": 4
             }
           }
         },
@@ -3597,6 +3992,10 @@
             "count": {
               "type": "uint32",
               "id": 2
+            },
+            "type": {
+              "type": "uint32",
+              "id": 3
             }
           }
         },
@@ -3614,6 +4013,109 @@
               "rule": "repeated",
               "type": "RecordGame",
               "id": 3
+            }
+          }
+        },
+        "ResCollectedGameRecordList": {
+          "fields": {
+            "error": {
+              "type": "Error",
+              "id": 1
+            },
+            "record_list": {
+              "rule": "repeated",
+              "type": "RecordCollectedData",
+              "id": 2
+            },
+            "record_collect_limit": {
+              "type": "uint32",
+              "id": 3
+            }
+          }
+        },
+        "ReqGameRecordsDetail": {
+          "fields": {
+            "uuid_list": {
+              "rule": "repeated",
+              "type": "string",
+              "id": 1
+            }
+          }
+        },
+        "ResGameRecordsDetail": {
+          "fields": {
+            "error": {
+              "type": "Error",
+              "id": 1
+            },
+            "record_list": {
+              "rule": "repeated",
+              "type": "RecordGame",
+              "id": 2
+            }
+          }
+        },
+        "ReqAddCollectedGameRecord": {
+          "fields": {
+            "uuid": {
+              "type": "string",
+              "id": 1
+            },
+            "remarks": {
+              "type": "string",
+              "id": 2
+            },
+            "start_time": {
+              "type": "uint32",
+              "id": 3
+            },
+            "end_time": {
+              "type": "uint32",
+              "id": 4
+            }
+          }
+        },
+        "ResAddCollectedGameRecord": {
+          "fields": {
+            "error": {
+              "type": "Error",
+              "id": 1
+            }
+          }
+        },
+        "ReqRemoveCollectedGameRecord": {
+          "fields": {
+            "uuid": {
+              "type": "string",
+              "id": 1
+            }
+          }
+        },
+        "ResRemoveCollectedGameRecord": {
+          "fields": {
+            "error": {
+              "type": "Error",
+              "id": 1
+            }
+          }
+        },
+        "ReqChangeCollectedGameRecordRemarks": {
+          "fields": {
+            "uuid": {
+              "type": "string",
+              "id": 1
+            },
+            "remarks": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "ResChangeCollectedGameRecordRemarks": {
+          "fields": {
+            "error": {
+              "type": "Error",
+              "id": 1
             }
           }
         },
@@ -3797,26 +4299,6 @@
             }
           }
         },
-        "ReqPrivateMessage": {
-          "fields": {
-            "target_id": {
-              "type": "uint32",
-              "id": 1
-            },
-            "content": {
-              "type": "string",
-              "id": 2
-            }
-          }
-        },
-        "ReqWorldMessage": {
-          "fields": {
-            "content": {
-              "type": "string",
-              "id": 1
-            }
-          }
-        },
         "ReqSearchAccountById": {
           "fields": {
             "account_id": {
@@ -3967,16 +4449,32 @@
             }
           }
         },
-        "ReqWorldClientStatistic": {
+        "ReqUpdateClientValue": {
+          "fields": {
+            "key": {
+              "type": "uint32",
+              "id": 1
+            },
+            "value": {
+              "type": "uint32",
+              "id": 2
+            }
+          }
+        },
+        "ResClientValue": {
           "fields": {
             "datas": {
               "rule": "repeated",
-              "type": "StatisticItem",
+              "type": "Value",
               "id": 1
+            },
+            "recharged_count": {
+              "type": "uint32",
+              "id": 2
             }
           },
           "nested": {
-            "StatisticItem": {
+            "Value": {
               "fields": {
                 "key": {
                   "type": "uint32",
@@ -4617,6 +5115,366 @@
               "id": 1
             },
             "alipay_url": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "ReqCreateJPCreditCardOrder": {
+          "fields": {
+            "goods_id": {
+              "type": "uint32",
+              "id": 1
+            },
+            "client_type": {
+              "type": "uint32",
+              "id": 2
+            },
+            "account_id": {
+              "type": "uint32",
+              "id": 3
+            },
+            "return_url": {
+              "type": "string",
+              "id": 4
+            },
+            "access_token": {
+              "type": "string",
+              "id": 5
+            }
+          }
+        },
+        "ResCreateJPCreditCardOrder": {
+          "fields": {
+            "error": {
+              "type": "Error",
+              "id": 1
+            },
+            "order_id": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "ReqCreateJPPaypalOrder": {
+          "fields": {
+            "goods_id": {
+              "type": "uint32",
+              "id": 1
+            },
+            "client_type": {
+              "type": "uint32",
+              "id": 2
+            },
+            "account_id": {
+              "type": "uint32",
+              "id": 3
+            },
+            "return_url": {
+              "type": "string",
+              "id": 4
+            },
+            "access_token": {
+              "type": "string",
+              "id": 5
+            }
+          }
+        },
+        "ResCreateJPPaypalOrder": {
+          "fields": {
+            "error": {
+              "type": "Error",
+              "id": 1
+            },
+            "order_id": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "ReqCreateJPAuOrder": {
+          "fields": {
+            "goods_id": {
+              "type": "uint32",
+              "id": 1
+            },
+            "client_type": {
+              "type": "uint32",
+              "id": 2
+            },
+            "account_id": {
+              "type": "uint32",
+              "id": 3
+            },
+            "return_url": {
+              "type": "string",
+              "id": 4
+            },
+            "access_token": {
+              "type": "string",
+              "id": 5
+            }
+          }
+        },
+        "ResCreateJPAuOrder": {
+          "fields": {
+            "error": {
+              "type": "Error",
+              "id": 1
+            },
+            "order_id": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "ReqCreateJPDocomoOrder": {
+          "fields": {
+            "goods_id": {
+              "type": "uint32",
+              "id": 1
+            },
+            "client_type": {
+              "type": "uint32",
+              "id": 2
+            },
+            "account_id": {
+              "type": "uint32",
+              "id": 3
+            },
+            "return_url": {
+              "type": "string",
+              "id": 4
+            },
+            "access_token": {
+              "type": "string",
+              "id": 5
+            }
+          }
+        },
+        "ResCreateJPDocomoOrder": {
+          "fields": {
+            "error": {
+              "type": "Error",
+              "id": 1
+            },
+            "order_id": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "ReqCreateJPSoftbankOrder": {
+          "fields": {
+            "goods_id": {
+              "type": "uint32",
+              "id": 1
+            },
+            "client_type": {
+              "type": "uint32",
+              "id": 2
+            },
+            "account_id": {
+              "type": "uint32",
+              "id": 3
+            },
+            "return_url": {
+              "type": "string",
+              "id": 4
+            },
+            "access_token": {
+              "type": "string",
+              "id": 5
+            }
+          }
+        },
+        "ResCreateJPSoftbankOrder": {
+          "fields": {
+            "error": {
+              "type": "Error",
+              "id": 1
+            },
+            "order_id": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "ReqCreateENPaypalOrder": {
+          "fields": {
+            "goods_id": {
+              "type": "uint32",
+              "id": 1
+            },
+            "client_type": {
+              "type": "uint32",
+              "id": 2
+            },
+            "account_id": {
+              "type": "uint32",
+              "id": 3
+            },
+            "return_url": {
+              "type": "string",
+              "id": 4
+            },
+            "access_token": {
+              "type": "string",
+              "id": 5
+            }
+          }
+        },
+        "ResCreateENPaypalOrder": {
+          "fields": {
+            "error": {
+              "type": "Error",
+              "id": 1
+            },
+            "order_id": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "ReqCreateENJCBOrder": {
+          "fields": {
+            "goods_id": {
+              "type": "uint32",
+              "id": 1
+            },
+            "client_type": {
+              "type": "uint32",
+              "id": 2
+            },
+            "account_id": {
+              "type": "uint32",
+              "id": 3
+            },
+            "return_url": {
+              "type": "string",
+              "id": 4
+            },
+            "access_token": {
+              "type": "string",
+              "id": 5
+            }
+          }
+        },
+        "ResCreateENJCBOrder": {
+          "fields": {
+            "error": {
+              "type": "Error",
+              "id": 1
+            },
+            "order_id": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "ReqCreateENMasterCardOrder": {
+          "fields": {
+            "goods_id": {
+              "type": "uint32",
+              "id": 1
+            },
+            "client_type": {
+              "type": "uint32",
+              "id": 2
+            },
+            "account_id": {
+              "type": "uint32",
+              "id": 3
+            },
+            "return_url": {
+              "type": "string",
+              "id": 4
+            },
+            "access_token": {
+              "type": "string",
+              "id": 5
+            }
+          }
+        },
+        "ResCreateENMasterCardOrder": {
+          "fields": {
+            "error": {
+              "type": "Error",
+              "id": 1
+            },
+            "order_id": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "ReqCreateENVisaOrder": {
+          "fields": {
+            "goods_id": {
+              "type": "uint32",
+              "id": 1
+            },
+            "client_type": {
+              "type": "uint32",
+              "id": 2
+            },
+            "account_id": {
+              "type": "uint32",
+              "id": 3
+            },
+            "return_url": {
+              "type": "string",
+              "id": 4
+            },
+            "access_token": {
+              "type": "string",
+              "id": 5
+            }
+          }
+        },
+        "ResCreateENVisaOrder": {
+          "fields": {
+            "error": {
+              "type": "Error",
+              "id": 1
+            },
+            "order_id": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "ReqCreateENAlipayOrder": {
+          "fields": {
+            "goods_id": {
+              "type": "uint32",
+              "id": 1
+            },
+            "client_type": {
+              "type": "uint32",
+              "id": 2
+            },
+            "account_id": {
+              "type": "uint32",
+              "id": 3
+            },
+            "return_url": {
+              "type": "string",
+              "id": 4
+            },
+            "access_token": {
+              "type": "string",
+              "id": 5
+            }
+          }
+        },
+        "ResCreateENAlipayOrder": {
+          "fields": {
+            "error": {
+              "type": "Error",
+              "id": 1
+            },
+            "order_id": {
               "type": "string",
               "id": 2
             }
@@ -5695,6 +6553,10 @@
             "val": {
               "type": "uint32",
               "id": 2
+            },
+            "id": {
+              "type": "uint32",
+              "id": 3
             }
           }
         },
@@ -5772,6 +6634,10 @@
             "point_zimo_xian": {
               "type": "uint32",
               "id": 17
+            },
+            "title_id": {
+              "type": "uint32",
+              "id": 18
             }
           }
         },
@@ -5784,6 +6650,18 @@
             "haveyi": {
               "type": "bool",
               "id": 2
+            },
+            "yiman": {
+              "type": "bool",
+              "id": 3
+            },
+            "count": {
+              "type": "uint32",
+              "id": 4
+            },
+            "fu": {
+              "type": "uint32",
+              "id": 5
             }
           }
         },
@@ -6444,13 +7322,17 @@
         },
         "ReqAuthGame": {
           "fields": {
+            "account_id": {
+              "type": "uint32",
+              "id": 1
+            },
             "token": {
               "type": "string",
-              "id": 1
+              "id": 2
             },
             "game_uuid": {
               "type": "string",
-              "id": 2
+              "id": 3
             }
           }
         },
