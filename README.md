@@ -245,7 +245,7 @@
 
 ### 天凤 (tenhou)
 
-1. 搜索 `new WebSocket`，找到下方的 `message` 函数，该函数中的 `a.data` 就是 WebSocket 收到的数据
+1. 搜索 `new WebSocket`，找到下方的 `message` 函数，该函数中的 `a.data` 就是 WebSocket 收到的 JSON 数据
 2. 在该函数末尾添加如下代码
 
     ```javascript

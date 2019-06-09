@@ -417,6 +417,7 @@ func runServer(isHTTPS bool) {
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 	e.GET("/", h.index)
+	e.POST("/debug", h.index)
 	e.POST("/analysis", h.analysis)
 	e.POST("/tenhou", h.analysisTenhou)
 	e.POST("/majsoul", h.analysisMajsoul)
