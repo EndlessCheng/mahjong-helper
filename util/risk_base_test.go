@@ -17,6 +17,18 @@ func TestCalculateRiskTiles34(t *testing.T) {
 	}
 }
 
+func TestCalculateRiskTiles34_19(t *testing.T) {
+	safeTiles34 := make([]bool, 34)
+	for _, tile := range MustStrToTiles("4m") {
+		safeTiles34[tile] = true
+	}
+	leftTiles34 := InitLeftTiles34WithTiles34(MustStrToTiles34("11117777m"))
+	risk34 := CalculateRiskTiles34(8, safeTiles34, leftTiles34, nil, 27, 28)
+	for i, risk := range risk34 {
+		t.Log(Mahjong[i], risk)
+	}
+}
+
 func TestCalculateLeftNoSujiTiles(t *testing.T) {
 	discardTiles34 := MustStrToTiles34("124689m 1346p 38s")
 	leftTiles34 := InitLeftTiles34WithTiles34(MustStrToTiles34("22225555s"))

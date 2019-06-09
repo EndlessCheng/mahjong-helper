@@ -111,6 +111,9 @@ func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, dora
 			idx := 9*i + j
 			t := TileTypeTable[j][lowRiskTiles27[idx+3]]
 			risk34[idx] = RiskRate[turns][t] * doraMulti(idx, t)
+			if j == 0 && leftTiles34[idx] == 0 {
+				risk34[idx] = 0
+			}
 		}
 		for j := 3; j < 6; j++ {
 			idx := 9*i + j
@@ -122,6 +125,9 @@ func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, dora
 			idx := 9*i + j
 			t := TileTypeTable[j][lowRiskTiles27[idx-3]]
 			risk34[idx] = RiskRate[turns][t] * doraMulti(idx, t)
+			if j == 8 && leftTiles34[idx] == 0 {
+				risk34[idx] = 0
+			}
 		}
 		// 5断，37视作安牌筋
 		if leftTiles34[9*i+4] == 0 {
