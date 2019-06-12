@@ -112,7 +112,7 @@ func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, dora
 			t := TileTypeTable[j][lowRiskTiles27[idx+3]]
 			risk34[idx] = RiskRate[turns][t] * doraMulti(idx, t)
 			if j == 0 && safeTiles34[idx+3] && leftTiles34[idx] == 0 {
-				// 两面 对碰单骑 都没有
+				// (1) 两面 对碰单骑 都不可能 -> 安牌
 				risk34[idx] = 0
 			}
 		}
@@ -127,7 +127,7 @@ func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, dora
 			t := TileTypeTable[j][lowRiskTiles27[idx-3]]
 			risk34[idx] = RiskRate[turns][t] * doraMulti(idx, t)
 			if j == 8 && safeTiles34[idx-3] && leftTiles34[idx] == 0 {
-				// 两面 对碰单骑 都没有
+				// (9) 两面 对碰单骑 都不可能 -> 安牌
 				risk34[idx] = 0
 			}
 		}
