@@ -252,6 +252,8 @@
 
 大致思路是根据 [liqi.json](https://github.com/EndlessCheng/mahjong-helper/blob/master/liqi.json) 文件提供的对分析玩家操作有用的字段查找相关关键字，如 `ActionDealTile` `ActionDiscardTile` `ActionChiPengGang` 等，具体修改了哪些内容可以对比雀魂的 JS 代码和我修改后的 https://jianyan.me/majsoul/code-v0.1.4.js
 
+此外，在解析牌谱时，助手可以同步用户在网页上的点击操作（点击桌面、跳转巡目、跳转局数等），这不涉及到 WebSocket，只能通过修改源码来完成
+
 PS: 在网页控制台输入 `GameMgr._inRelease = 0` 即可开启调试模式
 
 
