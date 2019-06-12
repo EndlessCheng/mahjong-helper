@@ -185,7 +185,7 @@ func (l riskInfoList) printWithHands(hands []int, leftCounts []int) {
 			} else {
 				fmt.Printf("%4.1f%%", tenpaiRate)
 			}
-			fmt.Print("听牌]")
+			fmt.Print("听牌率]")
 
 			// 打印无筋数量和种类
 			fmt.Print(" ")
