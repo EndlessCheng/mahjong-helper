@@ -177,9 +177,18 @@ func (l riskInfoList) printWithHands(hands []int, leftCounts []int) {
 			//}
 			l[i].riskTable.printWithHands(hands, tenpaiRate/100)
 
+			// 打印听牌率
 			fmt.Print(" ")
+			fmt.Print("[")
+			if tenpaiRate == 100 {
+				fmt.Print("100.%")
+			} else {
+				fmt.Printf("%4.1f%%", tenpaiRate)
+			}
+			fmt.Print("听牌]")
 
 			// 打印无筋数量和种类
+			fmt.Print(" ")
 			const badMachiLimit = 3
 			noSujiInfo := "" // util.TilesToStr(l[i].leftNoSujiTiles)
 			if len(l[i].leftNoSujiTiles) == 0 {
