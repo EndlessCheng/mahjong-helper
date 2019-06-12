@@ -71,7 +71,7 @@ type handsRisk struct {
 // 34 种牌的危险度
 type riskTable util.RiskTiles34
 
-func (t riskTable) printWithHands(hands []int, fixedRiskMulti float64) {
+func (t riskTable) printWithHands(hands []int, fixedRiskMulti float64) (containLine bool) {
 	// 打印铳率=0的牌（现物，或NC且剩余数=0）
 	safeCount := 0
 	for i, c := range hands {
@@ -94,12 +94,15 @@ func (t riskTable) printWithHands(hands []int, fixedRiskMulti float64) {
 	if len(handsRisks) > 0 {
 		if safeCount > 0 {
 			fmt.Print(" |")
+			containLine = true
 		}
 		for _, hr := range handsRisks {
 			// 颜色考虑了听牌率
 			color.New(getNumRiskColor(hr.risk * fixedRiskMulti)).Printf(" " + util.MahjongZH[hr.tile])
 		}
 	}
+
+	return
 }
 
 func (t riskTable) getBestDefenceTile(tiles34 []int) (result int) {
@@ -175,10 +178,13 @@ func (l riskInfoList) printWithHands(hands []int, leftCounts []int) {
 			//if debugMode {
 			//fmt.Printf("(%d*%2.2f%%听牌率)", int(l[i]._ronPoint), l[i].tenpaiRate)
 			//}
-			l[i].riskTable.printWithHands(hands, tenpaiRate/100)
+			containLine := l[i].riskTable.printWithHands(hands, tenpaiRate/100)
 
 			// 打印听牌率
 			fmt.Print(" ")
+			if !containLine {
+				fmt.Print("  ")
+			}
 			fmt.Print("[")
 			if tenpaiRate == 100 {
 				fmt.Print("100.%")
