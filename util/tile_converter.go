@@ -4,6 +4,7 @@ import (
 	"strings"
 	"errors"
 	"fmt"
+	"github.com/EndlessCheng/mahjong-helper/util/model"
 )
 
 func Tiles34ToTiles(tiles34 []int) (tiles []int) {
@@ -184,4 +185,68 @@ func TilesToStrWithBracket(tiles []int) string {
 
 func Tiles34ToStrWithBracket(tiles34 []int) string {
 	return "[" + Tiles34ToStr(tiles34) + "]"
+}
+
+func ParseHumanTilesWithMelds(humanTilesWithMelds string) (playerInfo *model.PlayerInfo, err error) {
+	humanTilesInfo := model.NewSimpleHumanTilesInfo(humanTilesWithMelds)
+
+	if err = humanTilesInfo.SelfParse(); err != nil {
+		return
+	}
+
+	tiles34, numRedFives, err := StrToTiles34(humanTilesInfo.HumanTiles)
+	if err != nil {
+		return
+	}
+	tileCount := CountOfTiles34(tiles34)
+	if tileCount%3 == 0 {
+		return nil, fmt.Errorf("输入错误: %s 是 %d 张牌", humanTilesInfo.HumanTiles, tileCount)
+	}
+
+	melds := []model.Meld{}
+	for _, humanMeld := range humanTilesInfo.HumanMelds {
+		tiles, _numRedFives, er := StrToTiles(humanMeld)
+		if er != nil {
+			return nil, er
+		}
+		isUpper := humanMeld[len(humanMeld)-1] <= 'Z'
+		var meldType int
+		switch {
+		case len(tiles) == 3 && tiles[0] != tiles[1]:
+			meldType = model.MeldTypeChi
+		case len(tiles) == 3 && tiles[0] == tiles[1]:
+			meldType = model.MeldTypePon
+		case len(tiles) == 4 && isUpper:
+			meldType = model.MeldTypeAnkan
+		case len(tiles) == 4 && !isUpper:
+			meldType = model.MeldTypeMinkan
+		default:
+			return nil, fmt.Errorf("输入错误: %s", humanMeld)
+		}
+		containRedFive := false
+		for i, c := range _numRedFives {
+			if c > 0 {
+				containRedFive = true
+				numRedFives[i] += c
+			}
+		}
+		melds = append(melds, model.Meld{
+			MeldType:       meldType,
+			Tiles:          tiles,
+			ContainRedFive: containRedFive,
+		})
+	}
+
+	playerInfo = model.NewSimplePlayerInfo(tiles34, melds)
+	playerInfo.NumRedFives = numRedFives
+
+	return
+}
+
+func MustParseHumanTilesWithMelds(humanTilesWithMelds string) *model.PlayerInfo {
+	playerInfo, err := ParseHumanTilesWithMelds(humanTilesWithMelds)
+	if err != nil {
+		panic(err)
+	}
+	return playerInfo
 }

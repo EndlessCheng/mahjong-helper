@@ -1,6 +1,6 @@
 package util
 
-// 根据玩家的副露、手切来判断其听牌率 (0-100)
+// 没有立直时，根据玩家的副露、手切来判断其听牌率 (0-100)
 func CalcTenpaiRate(meldCount int, discardTiles []int, meldDiscardsAt []int) float64 {
 	if meldCount == 0 {
 		return 0

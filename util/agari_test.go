@@ -41,10 +41,11 @@ func TestIsAgari(t *testing.T) {
 func TestDivideTiles34(t *testing.T) {
 	assert := assert.New(t)
 
+	const otherDivideResult = "国士 or 未和牌"
 	divideTiles := func(humanTiles string) string {
 		drs := DivideTiles34(MustStrToTiles34(humanTiles))
 		if len(drs) == 0 {
-			return "国士 or 未和牌"
+			return otherDivideResult
 		}
 		results := []string{}
 		for _, dr := range drs {
@@ -75,11 +76,11 @@ func TestDivideTiles34(t *testing.T) {
 	assert.Equal("[11p 111m 111s]", divideTiles("111m 11p 111s"))
 	assert.Equal("[11s 111m 111p]", divideTiles("111m 111p 11s"))
 
-	assert.Equal("国士 or 未和牌", divideTiles("119m 19p 19s 1234567z"))
+	assert.Equal(otherDivideResult, divideTiles("119m 19p 19s 1234567z"))
 
-	assert.Equal("国士 or 未和牌", divideTiles("4888m 499p 134557s 4z"))
-	assert.Equal("国士 or 未和牌", divideTiles("1122m"))
-	assert.Equal("国士 or 未和牌", divideTiles("5m"))
+	assert.Equal(otherDivideResult, divideTiles("4888m 499p 134557s 4z"))
+	assert.Equal(otherDivideResult, divideTiles("1122m"))
+	assert.Equal(otherDivideResult, divideTiles("5m"))
 }
 
 func BenchmarkIsAgari(b *testing.B) {

@@ -1,6 +1,8 @@
 package util
 
-import "github.com/EndlessCheng/mahjong-helper/util/model"
+import (
+	"github.com/EndlessCheng/mahjong-helper/util/model"
+)
 
 func roundUpFu(fu int) int {
 	return ((fu-1)/10 + 1) * 10
@@ -42,8 +44,7 @@ func (hi *_handInfo) calcFu(isNaki bool) int {
 		switch meld.MeldType {
 		case model.MeldTypePon:
 			_fu = 2
-		case model.MeldTypeMinkan:
-		case model.MeldTypeKakan:
+		case model.MeldTypeMinkan, model.MeldTypeKakan:
 			_fu = 8
 		case model.MeldTypeAnkan:
 			_fu = 16
@@ -74,7 +75,7 @@ func (hi *_handInfo) calcFu(isNaki bool) int {
 		// 若没有平和则一定是坎张、边张、单骑和牌
 		isPinfu := false
 		for _, tile := range divideResult.ShuntsuFirstTiles {
-			t9 := tile%9
+			t9 := tile % 9
 			if t9 < 6 && tile == hi.WinTile || t9 > 0 && tile+2 == hi.WinTile {
 				isPinfu = true
 				break
