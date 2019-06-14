@@ -44,8 +44,7 @@ func getOtherDiscardAlertColor(index int) color.Attribute {
 	if index >= 27 {
 		return color.FgWhite
 	}
-	idx := index%9 + 1
-	switch idx {
+	switch index%9 + 1 {
 	case 1, 2, 8, 9:
 		return color.FgWhite
 	case 3, 7:
