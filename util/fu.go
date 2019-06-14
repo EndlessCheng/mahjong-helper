@@ -2,7 +2,6 @@ package util
 
 import (
 	"github.com/EndlessCheng/mahjong-helper/util/model"
-	"fmt"
 )
 
 func roundUpFu(fu int) int {
