@@ -152,6 +152,9 @@ func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, dora
 		}
 	}
 
+	// TODO: 降级
+	// 如 1m 为壁，2m 变成无筋 19 等级，3m 变成无筋 28 等级
+
 	// 根据 No Chance 计算有没有两面的可能，完善上面的计算
 	// 更新铳率表：No Chance 的危险度
 	// 12和筋1差不多（2比1多10%）
