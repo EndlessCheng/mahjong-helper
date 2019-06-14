@@ -34,7 +34,11 @@
 
 2. 雀魂需要浏览器允许本地证书。目前仅支持 Chrome 和 360 浏览器等使用了 Chrome 内核的浏览器：
    
-   在浏览器中输入 `chrome://flags/#allow-insecure-localhost`，然后点击高亮那一项的「启用」按钮（不同浏览器/版本的描述可能不一样，如果是英文的话把 Disabled 改成 Enabled），之后重启浏览器
+   在浏览器中输入 `chrome://flags/#allow-insecure-localhost`，然后点击高亮那一项的「启用」按钮
+   
+   （不同浏览器/版本的描述可能不一样，如果是英文的话，高亮的是 `Allow invalid certificates for resources loaded from localhost`，把它的 Disabled 改成 Enabled）
+   
+   之后重启浏览器
 
 3. 安装浏览器扩展 Header Editor（[谷歌商城(需要翻墙)](https://chrome.google.com/webstore/detail/header-editor/eningockdidmgiojffjmkdblpjocbhgh?hl=zh) | [国内](https://www.chromefor.com/header-editor_v4-0-7/)）
    
