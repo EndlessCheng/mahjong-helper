@@ -170,18 +170,22 @@ func OutsideTiles(tile int) (outsideTiles []int) {
 	if tile >= 27 {
 		return
 	}
-	switch tile % 9 {
-	case 1, 2, 3:
+	switch tile%9 + 1 {
+	case 1, 9:
+		return
+	case 2, 3, 4:
 		for i := tile - tile%9; i < tile; i++ {
 			outsideTiles = append(outsideTiles, i)
 		}
-	case 4:
+	case 5:
 		// 早巡切5，37 比较安全（TODO 还有片筋A 46）
 		outsideTiles = append(outsideTiles, tile-2, tile+2)
-	case 5, 6, 7:
+	case 6, 7, 8:
 		for i := tile - tile%9 + 8; i > tile; i-- {
 			outsideTiles = append(outsideTiles, i)
 		}
+	default:
+		panic(fmt.Errorf("[OutsideTiles] 代码有误: tile = %d", tile))
 	}
 	return
 }

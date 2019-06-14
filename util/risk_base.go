@@ -1,5 +1,7 @@
 package util
 
+import "fmt"
+
 // 根据实际信息，某些牌的危险度远低于无筋（如现物、NC），这些牌可以用来计算筋牌的危险度
 // TODO: 早外产生的筋牌可能要单独计算
 func calcLowRiskTiles27(safeTiles34 []bool, leftTiles34 []int) []int {
@@ -158,7 +160,7 @@ func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, dora
 	ncSafeTile34 := CalcNCSafeTiles(leftTiles34)
 	for _, ncSafeTile := range ncSafeTile34 {
 		idx := ncSafeTile.Tile34
-		switch idx % 9 {
+		switch idx%9 + 1 {
 		case 1, 9:
 			t := tileTypeSuji19
 			risk34[idx] = RiskRate[turns][t] * doraMulti(idx, t)
@@ -174,6 +176,8 @@ func CalculateRiskTiles34(turns int, safeTiles34 []bool, leftTiles34 []int, dora
 		case 5:
 			t := tileTypeDoubleSuji5
 			risk34[idx] = RiskRate[turns][t] * doraMulti(idx, t)
+		default:
+			panic(fmt.Errorf("[CalculateRiskTiles34] 代码有误: ncSafeTile = %d", ncSafeTile.Tile34))
 		}
 	}
 
