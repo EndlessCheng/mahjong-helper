@@ -18,3 +18,5 @@ vendor/
 *.log
 *.bat
 config.json
+
+*.zip
