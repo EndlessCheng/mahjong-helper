@@ -363,7 +363,7 @@ func (d *majsoulRoundData) ParseDiscard() (who int, discardTile int, isRedFive b
 	if msg.IsWliqi != nil && !isReach { // 兼容雀魂早期牌谱（无 IsWliqi 字段）
 		isReach = *msg.IsWliqi
 	}
-	canBeMeld = msg.Operation != nil
+	canBeMeld = msg.Operation != nil // 注意：观战模式下无此选项
 	kanDoraIndicator = -1
 	if d.isNewDora(msg.Doras) {
 		kanDoraIndicator, _ = d.mustParseMajsoulTile(msg.Doras[len(msg.Doras)-1])

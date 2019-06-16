@@ -413,6 +413,7 @@ func (d *roundData) analysis() error {
 		switch d.parser.GetDataSourceType() {
 		case dataSourceTypeTenhou:
 			d.reset(roundNumber, 0, dealer)
+			d.gameMode = gameModeMatch // TODO: 牌谱模式？
 		case dataSourceTypeMajsoul:
 			playerNumber := len(d.players)
 			if dealer != -1 { // 先就坐，还没洗牌呢~

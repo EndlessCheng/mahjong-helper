@@ -279,7 +279,7 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			gameConf.currentActiveMajsoulAccountID = 1 // TODO: 重构
 			h.majsoulRoundData.reset(0, 0, 0)
 			h.majsoulRoundData.selfSeat = 0
-			h.majsoulRoundData.gameMode = gameModeMatch
+			h.majsoulRoundData.gameMode = gameModeLive
 			clearConsole()
 			fmt.Printf("正在载入对战：%s", d.LiveBaseInfo.String())
 		case d.LiveFastAction != nil:
