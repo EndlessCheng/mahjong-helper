@@ -94,7 +94,8 @@ func (rc *roundAnalysisCache) print() {
 			if c.isRiichiWhenDiscard {
 				suffix = "[立直]"
 			} else if c.selfDiscardTile == -1 && i == len(rc.cache)-1 {
-				suffix = "[自摸]"
+				//suffix = "[自摸]"
+				// TODO: 流局
 			}
 			printTileInfo(c.selfDiscardTile, c.selfDiscardTileRisk, suffix)
 		}
@@ -194,7 +195,7 @@ func (rc *roundAnalysisCache) addPossibleChiPonKan(attackTile int, attackTileRis
 //
 
 type gameAnalysisCache struct {
-	// roundNumber ben 巡目
+	// 局数 本场数
 	wholeGameCache [][]*roundAnalysisCache
 
 	majsoulRecordUUID string
@@ -205,7 +206,7 @@ type gameAnalysisCache struct {
 func newGameAnalysisCache(majsoulRecordUUID string, selfSeat int) *gameAnalysisCache {
 	cache := make([][]*roundAnalysisCache, 3*4) // 最多到西四
 	for i := range cache {
-		cache[i] = make([]*roundAnalysisCache, 20)
+		cache[i] = make([]*roundAnalysisCache, 100) // 最多连庄
 	}
 	return &gameAnalysisCache{
 		wholeGameCache:    cache,
@@ -214,7 +215,30 @@ func newGameAnalysisCache(majsoulRecordUUID string, selfSeat int) *gameAnalysisC
 	}
 }
 
-var globalAnalysisCache *gameAnalysisCache
+//
+
+// TODO: 重构成 struct
+var (
+	_analysisCacheList = make([]*gameAnalysisCache, 4)
+	_currentSeat       int
+)
+
+func resetAnalysisCache() {
+	_analysisCacheList = make([]*gameAnalysisCache, 4)
+}
+
+func setAnalysisCache(analysisCache *gameAnalysisCache) {
+	_analysisCacheList[analysisCache.selfSeat] = analysisCache
+	_currentSeat = analysisCache.selfSeat
+}
+
+func getAnalysisCache(seat int) *gameAnalysisCache {
+	return _analysisCacheList[seat]
+}
+
+func getCurrentAnalysisCache() *gameAnalysisCache {
+	return getAnalysisCache(_currentSeat)
+}
 
 func (c *gameAnalysisCache) runMajsoulRecordAnalysisTask(actions majsoulRoundActions) error {
 	// 从第一个 action 中取出局和场
@@ -234,6 +258,9 @@ func (c *gameAnalysisCache) runMajsoulRecordAnalysisTask(actions majsoulRoundAct
 		}
 		c.wholeGameCache[roundNumber][ben] = roundCache
 	} else if roundCache.isStart {
+		if debugMode {
+			fmt.Println("无需重复计算")
+		}
 		return nil
 	}
 
@@ -241,7 +268,7 @@ func (c *gameAnalysisCache) runMajsoulRecordAnalysisTask(actions majsoulRoundAct
 	// 若为摸牌操作，计算出此时的 AI 进攻舍牌和防守舍牌
 	// 若为鸣牌操作，计算出此时的 AI 进攻舍牌（无进攻舍牌则设为 -1），防守舍牌设为 -1
 	// TODO: 玩家跳过，但是 AI 觉得应鸣牌？
-	majsoulRoundData := &majsoulRoundData{selfSeat: c.selfSeat}
+	majsoulRoundData := &majsoulRoundData{selfSeat: c.selfSeat} // 注意这里是用的一个新的 majsoulRoundData 去计算的，不会有数据冲突
 	majsoulRoundData.roundData = newGame(majsoulRoundData)
 	majsoulRoundData.roundData.gameMode = gameModeRecordCache
 	majsoulRoundData.skipOutput = true
@@ -250,6 +277,7 @@ func (c *gameAnalysisCache) runMajsoulRecordAnalysisTask(actions majsoulRoundAct
 			if debugMode {
 				fmt.Println("用户退出该牌谱")
 			}
+			// 提前退出，减少不必要的计算
 			return nil
 		}
 		if debugMode {

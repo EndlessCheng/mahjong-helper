@@ -128,4 +128,3 @@ func parseMajsoulRecordAction(actions []*majsoulRecordAction) (roundActionsList 
 	}
 	return
 }
-

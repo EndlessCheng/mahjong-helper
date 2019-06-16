@@ -406,6 +406,15 @@ func (d *roundData) analysis() error {
 		return nil
 	}
 
+	if debugMode {
+		fmt.Println("当前座位为", d.parser.GetSelfSeat())
+	}
+
+	var currentRoundCache *roundAnalysisCache
+	if analysisCache := getAnalysisCache(d.parser.GetSelfSeat()); analysisCache != nil {
+		currentRoundCache = analysisCache.wholeGameCache[d.roundNumber][d.benNumber]
+	}
+
 	switch {
 	case d.parser.IsInit():
 		// round 开始/重连
@@ -440,6 +449,11 @@ func (d *roundData) analysis() error {
 			panic("not impl!")
 		}
 
+		// 由于 reset 了，重新获取 currentRoundCache
+		if analysisCache := getAnalysisCache(d.parser.GetSelfSeat()); analysisCache != nil {
+			currentRoundCache = analysisCache.wholeGameCache[d.roundNumber][d.benNumber]
+		}
+
 		d.doraIndicators = []int{doraIndicator}
 		d.descLeftCounts(doraIndicator)
 		for _, tile := range hands {
@@ -452,7 +466,6 @@ func (d *roundData) analysis() error {
 
 		// 牌谱分析模式下，记录舍牌推荐
 		if d.gameMode == gameModeRecordCache && len(hands) == 14 {
-			currentRoundCache := globalAnalysisCache.wholeGameCache[d.roundNumber][d.benNumber]
 			currentRoundCache.addAIDiscardTileWhenDrawTile(simpleBestDiscardTile(playerInfo), -1, 0, 0)
 		}
 
@@ -462,7 +475,6 @@ func (d *roundData) analysis() error {
 
 		// 牌谱模式下，打印舍牌推荐
 		if d.gameMode == gameModeRecord {
-			currentRoundCache := globalAnalysisCache.wholeGameCache[d.roundNumber][d.benNumber]
 			currentRoundCache.print()
 		}
 
@@ -510,7 +522,6 @@ func (d *roundData) analysis() error {
 
 				// 牌谱分析模式下，记录加杠操作
 				if d.gameMode == gameModeRecordCache {
-					currentRoundCache := globalAnalysisCache.wholeGameCache[d.roundNumber][d.benNumber]
 					currentRoundCache.addKan(meldType)
 				}
 			}
@@ -555,7 +566,6 @@ func (d *roundData) analysis() error {
 
 				// 牌谱分析模式下，记录暗杠操作
 				if d.gameMode == gameModeRecordCache {
-					currentRoundCache := globalAnalysisCache.wholeGameCache[d.roundNumber][d.benNumber]
 					currentRoundCache.addKan(meldType)
 				}
 			} else {
@@ -570,7 +580,6 @@ func (d *roundData) analysis() error {
 
 				// 牌谱分析模式下，记录吃碰明杠操作
 				if d.gameMode == gameModeRecordCache {
-					currentRoundCache := globalAnalysisCache.wholeGameCache[d.roundNumber][d.benNumber]
 					currentRoundCache.addChiPonKan(meldType)
 				}
 			}
@@ -634,7 +643,6 @@ func (d *roundData) analysis() error {
 
 		// 牌谱分析模式下，记录舍牌推荐
 		if d.gameMode == gameModeRecordCache {
-			currentRoundCache := globalAnalysisCache.wholeGameCache[d.roundNumber][d.benNumber]
 			bestAttackDiscardTile := simpleBestDiscardTile(playerInfo)
 			bestDefenceDiscardTile := mixedRiskTable.getBestDefenceTile(playerInfo.HandTiles34)
 			bestAttackDiscardTileRisk, bestDefenceDiscardTileRisk := 0.0, 0.0
@@ -657,7 +665,6 @@ func (d *roundData) analysis() error {
 
 		// 牌谱模式下，打印舍牌推荐
 		if d.gameMode == gameModeRecord {
-			currentRoundCache := globalAnalysisCache.wholeGameCache[d.roundNumber][d.benNumber]
 			currentRoundCache.print()
 		}
 
@@ -702,7 +709,6 @@ func (d *roundData) analysis() error {
 
 			// 牌谱分析模式下，记录自家舍牌
 			if d.gameMode == gameModeRecordCache {
-				currentRoundCache := globalAnalysisCache.wholeGameCache[d.roundNumber][d.benNumber]
 				currentRoundCache.addSelfDiscardTile(discardTile, mixedRiskTable[discardTile], isReach)
 			}
 
@@ -760,7 +766,6 @@ func (d *roundData) analysis() error {
 
 		// 牌谱分析模式下，记录可能的鸣牌
 		if d.gameMode == gameModeRecordCache {
-			currentRoundCache := globalAnalysisCache.wholeGameCache[d.roundNumber][d.benNumber]
 			allowChi := who == 3
 			_, results14, incShantenResults14 := util.CalculateMeld(playerInfo, discardTile, isRedFive, allowChi)
 			bestAttackDiscardTile := -1
@@ -800,7 +805,6 @@ func (d *roundData) analysis() error {
 
 		// 牌谱模式下，打印舍牌推荐
 		if d.gameMode == gameModeRecord {
-			currentRoundCache := globalAnalysisCache.wholeGameCache[d.roundNumber][d.benNumber]
 			currentRoundCache.print()
 		}
 
