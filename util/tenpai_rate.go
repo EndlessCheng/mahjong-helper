@@ -1,15 +1,26 @@
 package util
 
+import "github.com/EndlessCheng/mahjong-helper/util/model"
+
 // 没有立直时，根据玩家的副露、手切来判断其听牌率 (0-100)
-func CalcTenpaiRate(meldCount int, discardTiles []int, meldDiscardsAt []int) float64 {
-	if meldCount == 0 {
+// TODO: 传入 *model.PlayerInfo
+func CalcTenpaiRate(melds []*model.Meld, discardTiles []int, meldDiscardsAt []int) float64 {
+	isNaki := false
+	for _, meld := range melds {
+		if meld.MeldType != model.MeldTypeAnkan {
+			isNaki = true
+		}
+	}
+	// 暂时不防默听玩家
+	if !isNaki {
 		return 0
 	}
-	if meldCount == 4 {
+
+	if len(melds) == 4 {
 		return 100
 	}
 
-	_tenpaiRate := tenpaiRate[meldCount]
+	_tenpaiRate := tenpaiRate[len(melds)]
 
 	turn := MinInt(len(discardTiles), len(_tenpaiRate)-1)
 	_tenpaiRateWithTurn := _tenpaiRate[turn]

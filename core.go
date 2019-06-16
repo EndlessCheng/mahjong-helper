@@ -278,7 +278,7 @@ func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
 		if player.isReached {
 			riList[who].tenpaiRate = 100.0
 		} else {
-			riList[who].tenpaiRate = util.CalcTenpaiRate(len(player.melds), player.discardTiles, player.meldDiscardsAt)
+			riList[who].tenpaiRate = util.CalcTenpaiRate(player.melds, player.discardTiles, player.meldDiscardsAt)
 		}
 
 		// 估计该玩家荣和点数
