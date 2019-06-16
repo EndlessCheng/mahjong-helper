@@ -33,6 +33,11 @@ type majsoulMessage struct {
 	RecordClickActionIndex int    `json:"record_click_action_index"`
 	FastRecordTo           int    `json:"fast_record_to"` // 闭区间
 
+	// 观战
+	LiveBaseInfo   *majsoulLiveRecordBaseInfo `json:"live_head"`
+	LiveFastAction *majsoulLiveAction         `json:"live_fast_action"`
+	LiveAction     *majsoulLiveAction         `json:"live_action"`
+
 	// ResAuthGame
 	// {"seat_list":[x,x,x,x],"is_game_start":false,"game_config":{"category":1,"mode":{"mode":1,"ai":true,"detail_rule":{"time_fixed":60,"time_add":0,"dora_count":3,"shiduan":1,"init_point":25000,"fandian":30000,"bianjietishi":true,"ai_level":1,"fanfu":1}},"meta":{"room_id":18269}},"ready_id_list":[0,0,0]}
 	IsGameStart *bool              `json:"is_game_start"` // false=新游戏，true=重连
@@ -306,7 +311,7 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, benNumber int, dealer i
 	var majsoulTiles []string
 	if msg.Tiles != nil { // 实战
 		majsoulTiles = d.normalTiles(msg.Tiles)
-	} else { // 牌谱
+	} else { // 牌谱、观战
 		majsoulTiles = [][]string{msg.Tiles0, msg.Tiles1, msg.Tiles2, msg.Tiles3}[d.selfSeat]
 	}
 	for _, majsoulTile := range majsoulTiles {

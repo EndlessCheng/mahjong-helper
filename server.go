@@ -274,6 +274,28 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			// 处理网页上的牌谱点击：上一局/跳到某局/下一局/上一巡/跳到某巡/下一巡/上一步/播放/暂停/下一步/点击桌面
 			// 暂不能分析他家手牌
 			h._onRecordClick(d.RecordClickAction, d.RecordClickActionIndex, d.FastRecordTo)
+		case d.LiveBaseInfo != nil:
+			// 观战
+			gameConf.currentActiveMajsoulAccountID = 1 // TODO: 重构
+			h.majsoulRoundData.reset(0, 0, 0)
+			h.majsoulRoundData.selfSeat = 0
+			h.majsoulRoundData.gameMode = gameModeMatch
+			clearConsole()
+			fmt.Printf("正在载入对战：%s", d.LiveBaseInfo.String())
+		case d.LiveFastAction != nil:
+			action := d.LiveFastAction
+			if debugMode {
+				fmt.Println("收到", action.Name)
+			}
+			h.majsoulRoundData.skipOutput = true
+			h._analysisMajsoulRoundData(action.Action, "")
+		case d.LiveAction != nil:
+			action := d.LiveAction
+			if debugMode {
+				fmt.Println("收到", action.Name)
+			}
+			h.majsoulRoundData.skipOutput = false
+			h._analysisMajsoulRoundData(action.Action, "")
 		default:
 			// TODO: 重构
 			//if d.AccountID > 0 {

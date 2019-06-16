@@ -39,6 +39,7 @@ func (i *majsoulRecordBaseInfo) String() string {
 
 	const timeFormat = "2006-01-02 15:04:05"
 	output := fmt.Sprintf("%s\n从 %s\n到 %s\n\n", i.UUID, time.Unix(i.StartTime, 0).Format(timeFormat), time.Unix(i.EndTime, 0).Format(timeFormat))
+
 	maxAccountID := 0
 	for _, account := range i.Accounts {
 		maxAccountID = util.MaxInt(maxAccountID, account.AccountID)
