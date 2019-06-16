@@ -41,13 +41,13 @@ type mjHandler struct {
 	majsoulMessageQueue chan []byte
 	majsoulRoundData    *majsoulRoundData
 
-	majsoulRecordMap            map[string]*majsoulRecordBaseInfo
-	majsoulCurrentRecordUUID    string
-	majsoulCurrentRecordActions [][]*majsoulRecordAction
-	majsoulCurrentRoundIndex    int
-	majsoulCurrentActionIndex   int
+	majsoulRecordMap                map[string]*majsoulRecordBaseInfo
+	majsoulCurrentRecordUUID        string
+	majsoulCurrentRecordActionsList []majsoulRoundActions
+	majsoulCurrentRoundIndex        int
+	majsoulCurrentActionIndex       int
 
-	majsoulLiveRoundActions majsoulLiveRoundActions
+	majsoulCurrentRoundActions majsoulRoundActions
 }
 
 func (h *mjHandler) logError(err error) {
@@ -259,11 +259,11 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 				h.logError(err)
 				break
 			}
-			h.majsoulCurrentRecordActions = majsoulCurrentRecordActions
+			h.majsoulCurrentRecordActionsList = majsoulCurrentRecordActions
 			h.majsoulCurrentRoundIndex = 0
 			h.majsoulCurrentActionIndex = 0
 
-			actions := h.majsoulCurrentRecordActions[0]
+			actions := h.majsoulCurrentRecordActionsList[0]
 
 			// 创建分析任务
 			globalAnalysisCache = newGameAnalysisCache(h.majsoulCurrentRecordUUID, h.majsoulRoundData.selfSeat)
@@ -299,32 +299,27 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			changeSeatTo := *(d.ChangeSeatTo)
 			if h.majsoulRoundData.gameMode == gameModeLive { // 观战
 				h.majsoulRoundData.selfSeat = changeSeatTo
-				actions := h.majsoulLiveRoundActions
+				actions := h.majsoulCurrentRoundActions
 				if len(actions) == 0 {
 					break
 				}
+				if len(actions) == 1 {
+					h._analysisMajsoulRoundData(actions[0].Action, "")
+					break
+				}
 				h.majsoulRoundData.skipOutput = true
-				// 留最后一个刷新
-				for _, action := range actions[:len(actions)-1] {
+				// 留最后两个刷新，这样确保会刷新界面？
+				for _, action := range actions[:len(actions)-2] {
 					h._analysisMajsoulRoundData(action.Action, "")
 				}
 				h.majsoulRoundData.skipOutput = false
+				h._analysisMajsoulRoundData(actions[len(actions)-2].Action, "")
 				h._analysisMajsoulRoundData(actions[len(actions)-1].Action, "")
 			} else { // 牌谱
 
 			}
 		default:
-			// TODO: 重构
-			//if d.AccountID > 0 {
-			//	break
-			//}
-
-			//if debugMode {
-			//	color.HiGreen("加入对战……")
-			//}
-			//h.majsoulCurrentRecordUUID = ""
-
-			// 其他：场况分析
+			// 其他：AI 分析
 			h._analysisMajsoulRoundData(d, originJSON)
 		}
 	}
@@ -352,16 +347,16 @@ func (h *mjHandler) _loadMajsoulRecordBaseInfo(majsoulRecordUUID string) error {
 	return nil
 }
 
-func (h *mjHandler) _loadLiveAction(action *majsoulLiveAction, isFast bool) error {
+func (h *mjHandler) _loadLiveAction(action *majsoulRecordAction, isFast bool) error {
 	if debugMode {
 		fmt.Println("[_loadLiveAction] 收到", action, isFast)
 	}
 
-	newActions, err := h.majsoulLiveRoundActions.append(action)
+	newActions, err := h.majsoulCurrentRoundActions.append(action)
 	if err != nil {
 		return err
 	}
-	h.majsoulLiveRoundActions = newActions
+	h.majsoulCurrentRoundActions = newActions
 
 	h.majsoulRoundData.skipOutput = isFast
 	h._analysisMajsoulRoundData(action.Action, "")
@@ -384,30 +379,30 @@ func (h *mjHandler) _onRecordClick(clickAction string, clickActionIndex int, fas
 	switch clickAction {
 	case "nextStep", "update":
 		newActionIndex := h.majsoulCurrentActionIndex + 1
-		if newActionIndex >= len(h.majsoulCurrentRecordActions[h.majsoulCurrentRoundIndex]) {
+		if newActionIndex >= len(h.majsoulCurrentRecordActionsList[h.majsoulCurrentRoundIndex]) {
 			return
 		}
 		h.majsoulCurrentActionIndex = newActionIndex
 	case "nextRound":
-		h.majsoulCurrentRoundIndex = (h.majsoulCurrentRoundIndex + 1) % len(h.majsoulCurrentRecordActions)
+		h.majsoulCurrentRoundIndex = (h.majsoulCurrentRoundIndex + 1) % len(h.majsoulCurrentRecordActionsList)
 		h.majsoulCurrentActionIndex = 0
-		go globalAnalysisCache.runMajsoulRecordAnalysisTask(h.majsoulCurrentRecordActions[h.majsoulCurrentRoundIndex])
+		go globalAnalysisCache.runMajsoulRecordAnalysisTask(h.majsoulCurrentRecordActionsList[h.majsoulCurrentRoundIndex])
 	case "preRound":
-		h.majsoulCurrentRoundIndex = (h.majsoulCurrentRoundIndex - 1 + len(h.majsoulCurrentRecordActions)) % len(h.majsoulCurrentRecordActions)
+		h.majsoulCurrentRoundIndex = (h.majsoulCurrentRoundIndex - 1 + len(h.majsoulCurrentRecordActionsList)) % len(h.majsoulCurrentRecordActionsList)
 		h.majsoulCurrentActionIndex = 0
-		go globalAnalysisCache.runMajsoulRecordAnalysisTask(h.majsoulCurrentRecordActions[h.majsoulCurrentRoundIndex])
+		go globalAnalysisCache.runMajsoulRecordAnalysisTask(h.majsoulCurrentRecordActionsList[h.majsoulCurrentRoundIndex])
 	case "jumpRound":
-		h.majsoulCurrentRoundIndex = clickActionIndex % len(h.majsoulCurrentRecordActions)
+		h.majsoulCurrentRoundIndex = clickActionIndex % len(h.majsoulCurrentRecordActionsList)
 		h.majsoulCurrentActionIndex = 0
-		go globalAnalysisCache.runMajsoulRecordAnalysisTask(h.majsoulCurrentRecordActions[h.majsoulCurrentRoundIndex])
+		go globalAnalysisCache.runMajsoulRecordAnalysisTask(h.majsoulCurrentRecordActionsList[h.majsoulCurrentRoundIndex])
 	case "nextXun", "preXun", "jumpXun", "preStep", "jumpToLastRoundXun":
 		if clickAction == "jumpToLastRoundXun" {
-			h.majsoulCurrentRoundIndex = (h.majsoulCurrentRoundIndex - 1 + len(h.majsoulCurrentRecordActions)) % len(h.majsoulCurrentRecordActions)
-			go globalAnalysisCache.runMajsoulRecordAnalysisTask(h.majsoulCurrentRecordActions[h.majsoulCurrentRoundIndex])
+			h.majsoulCurrentRoundIndex = (h.majsoulCurrentRoundIndex - 1 + len(h.majsoulCurrentRecordActionsList)) % len(h.majsoulCurrentRecordActionsList)
+			go globalAnalysisCache.runMajsoulRecordAnalysisTask(h.majsoulCurrentRecordActionsList[h.majsoulCurrentRoundIndex])
 		}
 
 		h.majsoulRoundData.skipOutput = true
-		currentRoundActions := h.majsoulCurrentRecordActions[h.majsoulCurrentRoundIndex]
+		currentRoundActions := h.majsoulCurrentRecordActionsList[h.majsoulCurrentRoundIndex]
 		startActionIndex := 0
 		endActionIndex := fastRecordTo
 		if clickAction == "nextXun" {
@@ -432,21 +427,21 @@ func (h *mjHandler) _onRecordClick(clickAction string, clickActionIndex int, fas
 	if debugMode {
 		fmt.Printf("处理牌谱中的操作：局 %d 动作 %d\n", h.majsoulCurrentRoundIndex, h.majsoulCurrentActionIndex)
 	}
-	action := h.majsoulCurrentRecordActions[h.majsoulCurrentRoundIndex][h.majsoulCurrentActionIndex]
+	action := h.majsoulCurrentRecordActionsList[h.majsoulCurrentRoundIndex][h.majsoulCurrentActionIndex]
 	h._analysisMajsoulRoundData(action.Action, "")
 
 	if action.Name == "RecordHule" || action.Name == "RecordLiuJu" || action.Name == "RecordNoTile" {
 		// 播放和牌/流局动画，进入下一局或显示终局动画
 		h.majsoulCurrentRoundIndex++
 		h.majsoulCurrentActionIndex = 0
-		if h.majsoulCurrentRoundIndex == len(h.majsoulCurrentRecordActions) {
+		if h.majsoulCurrentRoundIndex == len(h.majsoulCurrentRecordActionsList) {
 			h.majsoulCurrentRoundIndex = 0
 			return
 		}
 
 		time.Sleep(time.Second)
 
-		actions := h.majsoulCurrentRecordActions[h.majsoulCurrentRoundIndex]
+		actions := h.majsoulCurrentRecordActionsList[h.majsoulCurrentRoundIndex]
 		go globalAnalysisCache.runMajsoulRecordAnalysisTask(actions)
 		// 分析下一局的起始信息
 		data := actions[h.majsoulCurrentActionIndex].Action

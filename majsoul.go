@@ -35,8 +35,8 @@ type majsoulMessage struct {
 
 	// 观战
 	LiveBaseInfo   *majsoulLiveRecordBaseInfo `json:"live_head"`
-	LiveFastAction *majsoulLiveAction         `json:"live_fast_action"`
-	LiveAction     *majsoulLiveAction         `json:"live_action"`
+	LiveFastAction *majsoulRecordAction       `json:"live_fast_action"`
+	LiveAction     *majsoulRecordAction       `json:"live_action"`
 
 	// 座位变更
 	ChangeSeatTo *int `json:"change_seat_to"`

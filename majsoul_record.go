@@ -78,18 +78,38 @@ func (i *majsoulRecordBaseInfo) getFistRoundDealer(accountID int) (firstRoundDea
 
 //
 
-// 牌谱中的单个操作信息
+// 牌谱、观战中的单个操作信息
 type majsoulRecordAction struct {
 	Name   string          `json:"name"`
 	Action *majsoulMessage `json:"data"`
 }
 
-func parseMajsoulRecordAction(actions []*majsoulRecordAction) (roundActionsList [][]*majsoulRecordAction, err error) {
+type majsoulRoundActions []*majsoulRecordAction
+
+func (l majsoulRoundActions) append(action *majsoulRecordAction) (majsoulRoundActions, error) {
+	if action == nil {
+		return nil, fmt.Errorf("数据异常：拿到的操作内容为空")
+	}
+	newL := l
+
+	if action.Name == "RecordNewRound" {
+		newL = majsoulRoundActions{action}
+	} else {
+		if len(newL) == 0 {
+			return nil, fmt.Errorf("数据异常：未收到 RecordNewRound")
+		}
+		newL = append(newL, action)
+	}
+
+	return newL, nil
+}
+
+func parseMajsoulRecordAction(actions []*majsoulRecordAction) (roundActionsList []majsoulRoundActions, err error) {
 	if len(actions) == 0 {
 		return nil, fmt.Errorf("数据异常：拿到的牌谱内容为空")
 	}
 
-	var currentRoundActions []*majsoulRecordAction
+	var currentRoundActions majsoulRoundActions
 	for _, action := range actions {
 		if action.Name == "RecordNewRound" {
 			if len(currentRoundActions) > 0 {
@@ -108,3 +128,4 @@ func parseMajsoulRecordAction(actions []*majsoulRecordAction) (roundActionsList 
 	}
 	return
 }
+

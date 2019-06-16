@@ -216,7 +216,7 @@ func newGameAnalysisCache(majsoulRecordUUID string, selfSeat int) *gameAnalysisC
 
 var globalAnalysisCache *gameAnalysisCache
 
-func (c *gameAnalysisCache) runMajsoulRecordAnalysisTask(actions []*majsoulRecordAction) error {
+func (c *gameAnalysisCache) runMajsoulRecordAnalysisTask(actions majsoulRoundActions) error {
 	// 从第一个 action 中取出局和场
 	if len(actions) == 0 {
 		return fmt.Errorf("数据异常：此局数据为空")

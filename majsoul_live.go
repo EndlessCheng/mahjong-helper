@@ -32,31 +32,3 @@ func (i *majsoulLiveRecordBaseInfo) String() string {
 	}
 	return output
 }
-
-//
-
-// 观战中的单个操作信息
-type majsoulLiveAction struct {
-	Name   string          `json:"name"`
-	Action *majsoulMessage `json:"data"`
-}
-
-type majsoulLiveRoundActions []*majsoulLiveAction
-
-func (l majsoulLiveRoundActions) append(action *majsoulLiveAction) (majsoulLiveRoundActions, error) {
-	if action == nil {
-		return nil, fmt.Errorf("数据异常：拿到的观战操作内容为空")
-	}
-	newL := l
-
-	if action.Name == "RecordNewRound" {
-		newL = majsoulLiveRoundActions{action}
-	} else {
-		if len(newL) == 0 {
-			return nil, fmt.Errorf("数据异常：未收到 RecordNewRound")
-		}
-		newL = append(newL, action)
-	}
-
-	return newL, nil
-}
