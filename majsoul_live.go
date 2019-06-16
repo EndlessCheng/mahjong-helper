@@ -43,20 +43,20 @@ type majsoulLiveAction struct {
 
 type majsoulLiveRoundActions []*majsoulLiveAction
 
-func (l majsoulLiveRoundActions) append(actions []*majsoulLiveAction) (majsoulLiveRoundActions, error) {
-	if len(actions) == 0 {
+func (l majsoulLiveRoundActions) append(action *majsoulLiveAction) (majsoulLiveRoundActions, error) {
+	if action == nil {
 		return nil, fmt.Errorf("数据异常：拿到的观战操作内容为空")
 	}
 	newL := l
-	for _, action := range actions {
-		if action.Name == "RecordNewRound" {
-			newL = majsoulLiveRoundActions{action}
-		} else {
-			if len(newL) == 0 {
-				return nil, fmt.Errorf("数据异常：未收到 RecordNewRound")
-			}
-			newL = append(newL, action)
+
+	if action.Name == "RecordNewRound" {
+		newL = majsoulLiveRoundActions{action}
+	} else {
+		if len(newL) == 0 {
+			return nil, fmt.Errorf("数据异常：未收到 RecordNewRound")
 		}
+		newL = append(newL, action)
 	}
+
 	return newL, nil
 }

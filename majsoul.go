@@ -38,6 +38,9 @@ type majsoulMessage struct {
 	LiveFastAction *majsoulLiveAction         `json:"live_fast_action"`
 	LiveAction     *majsoulLiveAction         `json:"live_action"`
 
+	// 座位变更
+	ChangeSeatTo *int `json:"change_seat_to"`
+
 	// ResAuthGame
 	// {"seat_list":[x,x,x,x],"is_game_start":false,"game_config":{"category":1,"mode":{"mode":1,"ai":true,"detail_rule":{"time_fixed":60,"time_add":0,"dora_count":3,"shiduan":1,"init_point":25000,"fandian":30000,"bianjietishi":true,"ai_level":1,"fanfu":1}},"meta":{"room_id":18269}},"ready_id_list":[0,0,0]}
 	IsGameStart *bool              `json:"is_game_start"` // false=新游戏，true=重连

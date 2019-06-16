@@ -194,6 +194,10 @@ func (d *roundData) reset(roundNumber int, benNumber int, dealer int) {
 	*d = *newData
 }
 
+func (d *roundData) newGame() {
+	d.reset(0, 0, 0)
+}
+
 func (d *roundData) descLeftCounts(tile int) {
 	d.leftCounts[tile]--
 	if d.leftCounts[tile] < 0 {
@@ -427,7 +431,7 @@ func (d *roundData) analysis() error {
 
 				return nil
 			} else {
-				// 根据当前的 roundNumber 和 selfSeat 计算当前局的 dealer
+				// 根据 selfSeat 和当前的 roundNumber 计算当前局的 dealer
 				newDealer := (len(d.players) - d.parser.GetSelfSeat() + roundNumber) % len(d.players)
 				// 新的一局
 				d.reset(roundNumber, benNumber, newDealer)
@@ -818,6 +822,8 @@ func (d *roundData) analysis() error {
 		allowChi := who == 3
 		return analysisMeld(playerInfo, discardTile, isRedFive, allowChi, mixedRiskTable)
 	case d.parser.IsRoundWin():
+		// TODO: 解析天凤牌谱 - 注意 skipOutput
+
 		if !debugMode {
 			clearConsole()
 		}

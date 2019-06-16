@@ -46,6 +46,8 @@ type mjHandler struct {
 	majsoulCurrentRecordActions [][]*majsoulRecordAction
 	majsoulCurrentRoundIndex    int
 	majsoulCurrentActionIndex   int
+
+	majsoulLiveRoundActions majsoulLiveRoundActions
 }
 
 func (h *mjHandler) logError(err error) {
@@ -277,25 +279,40 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 		case d.LiveBaseInfo != nil:
 			// 观战
 			gameConf.currentActiveMajsoulAccountID = 1 // TODO: 重构
-			h.majsoulRoundData.reset(0, 0, 0)
-			h.majsoulRoundData.selfSeat = 0
+			h.majsoulRoundData.newGame()
+			h.majsoulRoundData.selfSeat = 0 // 观战进来后看的是东起的玩家
 			h.majsoulRoundData.gameMode = gameModeLive
 			clearConsole()
 			fmt.Printf("正在载入对战：%s", d.LiveBaseInfo.String())
 		case d.LiveFastAction != nil:
-			action := d.LiveFastAction
-			if debugMode {
-				fmt.Println("收到", action.Name)
+			if err := h._loadLiveAction(d.LiveFastAction, true); err != nil {
+				h.logError(err)
+				break
 			}
-			h.majsoulRoundData.skipOutput = true
-			h._analysisMajsoulRoundData(action.Action, "")
 		case d.LiveAction != nil:
-			action := d.LiveAction
-			if debugMode {
-				fmt.Println("收到", action.Name)
+			if err := h._loadLiveAction(d.LiveAction, false); err != nil {
+				h.logError(err)
+				break
 			}
-			h.majsoulRoundData.skipOutput = false
-			h._analysisMajsoulRoundData(action.Action, "")
+		case d.ChangeSeatTo != nil:
+			// 切换座位
+			changeSeatTo := *(d.ChangeSeatTo)
+			if h.majsoulRoundData.gameMode == gameModeLive { // 观战
+				h.majsoulRoundData.selfSeat = changeSeatTo
+				actions := h.majsoulLiveRoundActions
+				if len(actions) == 0 {
+					break
+				}
+				h.majsoulRoundData.skipOutput = true
+				// 留最后一个刷新
+				for _, action := range actions[:len(actions)-1] {
+					h._analysisMajsoulRoundData(action.Action, "")
+				}
+				h.majsoulRoundData.skipOutput = false
+				h._analysisMajsoulRoundData(actions[len(actions)-1].Action, "")
+			} else { // 牌谱
+
+			}
 		default:
 			// TODO: 重构
 			//if d.AccountID > 0 {
@@ -335,6 +352,22 @@ func (h *mjHandler) _loadMajsoulRecordBaseInfo(majsoulRecordUUID string) error {
 	return nil
 }
 
+func (h *mjHandler) _loadLiveAction(action *majsoulLiveAction, isFast bool) error {
+	if debugMode {
+		fmt.Println("[_loadLiveAction] 收到", action, isFast)
+	}
+
+	newActions, err := h.majsoulLiveRoundActions.append(action)
+	if err != nil {
+		return err
+	}
+	h.majsoulLiveRoundActions = newActions
+
+	h.majsoulRoundData.skipOutput = isFast
+	h._analysisMajsoulRoundData(action.Action, "")
+	return nil
+}
+
 func (h *mjHandler) _analysisMajsoulRoundData(data *majsoulMessage, originJSON string) {
 	h.majsoulRoundData.msg = data
 	h.majsoulRoundData.originJSON = originJSON
@@ -345,7 +378,7 @@ func (h *mjHandler) _analysisMajsoulRoundData(data *majsoulMessage, originJSON s
 
 func (h *mjHandler) _onRecordClick(clickAction string, clickActionIndex int, fastRecordTo int) {
 	if debugMode {
-		fmt.Println("收到", clickAction, clickActionIndex)
+		fmt.Println("[_onRecordClick] 收到", clickAction, clickActionIndex, fastRecordTo)
 	}
 
 	switch clickAction {
