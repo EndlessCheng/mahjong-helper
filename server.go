@@ -193,27 +193,26 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 				h.majsoulRecordMap[record.UUID] = record
 			}
 			color.HiGreen("收到 %2d 个雀魂牌谱（已收集 %d 个），请在网页上点击「查看」", len(d.RecordBaseInfoList), len(h.majsoulRecordMap))
-		case d.CurrentRecordUUID != "":
-			baseInfo, ok := h.majsoulRecordMap[d.CurrentRecordUUID]
-			if !ok {
-				h.logError(fmt.Errorf("错误：找不到雀魂牌谱 %s", h.majsoulCurrentRecordUUID))
+		case d.SharedRecordBaseInfo != nil:
+			// 处理分享的牌谱基本信息
+			record := d.SharedRecordBaseInfo
+			h.majsoulRecordMap[record.UUID] = record
+			if err := h._loadMajsoulRecordBaseInfo(record.UUID); err != nil {
+				h.logError(err)
 				break
 			}
-			// 标记当前正在观看的牌谱
-			h.majsoulCurrentRecordUUID = d.CurrentRecordUUID
-			clearConsole()
-			fmt.Printf("正在解析雀魂牌谱：%s", baseInfo.String())
-
-			// 标记古役模式
-			isGuyiMode := baseInfo.Config.isGuyiMode()
-			util.SetConsiderOldYaku(isGuyiMode)
-			if isGuyiMode {
-				fmt.Println()
-				color.HiGreen("古役模式已开启")
+		case d.CurrentRecordUUID != "":
+			if err := h._loadMajsoulRecordBaseInfo(d.CurrentRecordUUID); err != nil {
+				// 看的是分享的牌谱（先收到 CurrentRecordUUID 和 AccountID，然后收到 SharedRecordBaseInfo）
+				// 记录主视角 ID
+				gameConf.currentActiveMajsoulAccountID = d.AccountID
+				break
 			}
 
+			// 看的是自己的牌谱
+			// 更新当前使用的账号
 			gameConf.addMajsoulAccountID(d.AccountID)
-			if d.AccountID != gameConf.currentActiveMajsoulAccountID {
+			if gameConf.currentActiveMajsoulAccountID != d.AccountID {
 				fmt.Println()
 				printAccountInfo(d.AccountID)
 				gameConf.currentActiveMajsoulAccountID = d.AccountID
@@ -230,13 +229,14 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 				break
 			}
 
-			if gameConf.currentActiveMajsoulAccountID == -1 {
+			selfAccountID := gameConf.currentActiveMajsoulAccountID
+			if selfAccountID == -1 {
 				h.logError(fmt.Errorf("错误：当前雀魂账号为空"))
 				break
 			}
 
-			// 获取并设置第一局的庄家
-			firstRoundDealer, err := baseInfo.getFistRoundDealer(gameConf.currentActiveMajsoulAccountID)
+			// 获取并设置第一局的庄家（相对于主视角的位置）
+			firstRoundDealer, err := baseInfo.getFistRoundDealer(selfAccountID)
 			if err != nil {
 				h.logError(err)
 				break
@@ -244,8 +244,8 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			h.majsoulRoundData.reset(0, 0, firstRoundDealer)
 			h.majsoulRoundData.gameMode = gameModeRecord
 
-			// 设置初始座位
-			h.majsoulRoundData.selfSeat, err = baseInfo.getSelfSeat(gameConf.currentActiveMajsoulAccountID)
+			// 设置主视角初始座位
+			h.majsoulRoundData.selfSeat, err = baseInfo.getSelfSeat(selfAccountID)
 			if err != nil {
 				h.logError(err)
 				break
@@ -289,6 +289,28 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			h._analysisMajsoulRoundData(d, originJSON)
 		}
 	}
+}
+
+func (h *mjHandler) _loadMajsoulRecordBaseInfo(majsoulRecordUUID string) error {
+	baseInfo, ok := h.majsoulRecordMap[majsoulRecordUUID]
+	if !ok {
+		return fmt.Errorf("错误：找不到雀魂牌谱 %s", majsoulRecordUUID)
+	}
+
+	// 标记当前正在观看的牌谱
+	h.majsoulCurrentRecordUUID = majsoulRecordUUID
+	clearConsole()
+	fmt.Printf("正在解析雀魂牌谱：%s", baseInfo.String())
+
+	// 标记古役模式
+	isGuyiMode := baseInfo.Config.isGuyiMode()
+	util.SetConsiderOldYaku(isGuyiMode)
+	if isGuyiMode {
+		fmt.Println()
+		color.HiGreen("古役模式已开启")
+	}
+
+	return nil
 }
 
 func (h *mjHandler) _analysisMajsoulRoundData(data *majsoulMessage, originJSON string) {

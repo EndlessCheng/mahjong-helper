@@ -24,8 +24,8 @@ var (
 )
 
 const (
-	platformTenhou         = 0
-	platformMajsoul        = 1
+	platformTenhou  = 0
+	platformMajsoul = 1
 
 	defaultPlatform = platformMajsoul
 )

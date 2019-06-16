@@ -1,5 +1,7 @@
 package main
 
+import "strconv"
+
 type flagKV map[string]string
 
 func parseArgs(args []string) (flags flagKV, restArgs []string) {
@@ -40,4 +42,13 @@ func (f flagKV) String(flagNames ...string) string {
 		}
 	}
 	return ""
+}
+
+func (f flagKV) Int(flagNames ...string) (int, error) {
+	for _, name := range flagNames {
+		if val, ok := f[name]; ok {
+			return strconv.Atoi(val)
+		}
+	}
+	return -1, nil
 }

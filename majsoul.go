@@ -16,8 +16,11 @@ type majsoulMessage struct {
 	// 友人列表
 	Friends []*majsoulFriend `json:"friends"`
 
-	// 新获取到的牌谱列表
+	// 新获取到的牌谱基本信息列表
 	RecordBaseInfoList []*majsoulRecordBaseInfo `json:"record_list"`
+
+	// 分享的牌谱基本信息
+	SharedRecordBaseInfo *majsoulRecordBaseInfo `json:"shared_record_base_info"`
 
 	// 当前正在观看的牌谱的 UUID
 	CurrentRecordUUID string `json:"current_record_uuid"`
@@ -235,13 +238,13 @@ func (d *majsoulRoundData) HandleLogin() {
 		return
 	}
 
-	// 从对战 ID 列表中获取玩家 ID
+	// 从对战 ID 列表中获取账号 ID
 	if seatList := msg.SeatList; seatList != nil {
-		// 尝试从中找到缓存 ID
+		// 尝试从中找到缓存账号 ID
 		for _, accountID := range seatList {
 			if accountID > 0 && gameConf.isIDExist(accountID) {
-				// 找到了
-				if accountID != gameConf.currentActiveMajsoulAccountID {
+				// 找到了，更新当前使用的账号 ID
+				if gameConf.currentActiveMajsoulAccountID != accountID {
 					printAccountInfo(accountID)
 					gameConf.currentActiveMajsoulAccountID = accountID
 				}
@@ -251,11 +254,11 @@ func (d *majsoulRoundData) HandleLogin() {
 
 		// 未找到缓存 ID
 		if gameConf.currentActiveMajsoulAccountID > 0 {
-			color.HiRed("尚未正确获取到玩家账号 ID，请您刷新网页，或开启一局人机对战（错误信息：您的账号 ID %d 不在对战列表 %v 中）", gameConf.currentActiveMajsoulAccountID, msg.SeatList)
+			color.HiRed("尚未获取到您的账号 ID，请您刷新网页，或开启一局人机对战（错误信息：您的账号 ID %d 不在对战列表 %v 中）", gameConf.currentActiveMajsoulAccountID, msg.SeatList)
 			return
 		}
 
-		// 判断是否为人机对战，若为人机对战，则获取玩家 ID
+		// 判断是否为人机对战，若为人机对战，则获取账号 ID
 		if !util.InInts(0, msg.SeatList) {
 			return
 		}
