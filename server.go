@@ -211,8 +211,9 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 
 			if err := h._loadMajsoulRecordBaseInfo(d.CurrentRecordUUID); err != nil {
 				// 看的是分享的牌谱（先收到 CurrentRecordUUID 和 AccountID，然后收到 SharedRecordBaseInfo）
-				// 记录主视角 ID
-				gameConf.currentActiveMajsoulAccountID = d.AccountID
+				// 或者是比赛场的牌谱
+				// 记录主视角 ID（可能是 0）
+				gameConf.setMajsoulAccountID(d.AccountID)
 				break
 			}
 
@@ -222,7 +223,7 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			if gameConf.currentActiveMajsoulAccountID != d.AccountID {
 				fmt.Println()
 				printAccountInfo(d.AccountID)
-				gameConf.currentActiveMajsoulAccountID = d.AccountID
+				gameConf.setMajsoulAccountID(d.AccountID)
 			}
 		case len(d.RecordActions) > 0:
 			if h.majsoulCurrentRecordActionsList != nil {
@@ -284,7 +285,7 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			h._onRecordClick(d.RecordClickAction, d.RecordClickActionIndex, d.FastRecordTo)
 		case d.LiveBaseInfo != nil:
 			// 观战
-			gameConf.currentActiveMajsoulAccountID = 1 // TODO: 重构
+			gameConf.setMajsoulAccountID(1) // TODO: 重构
 			h.majsoulRoundData.newGame()
 			h.majsoulRoundData.selfSeat = 0 // 观战进来后看的是东起的玩家
 			h.majsoulRoundData.gameMode = gameModeLive

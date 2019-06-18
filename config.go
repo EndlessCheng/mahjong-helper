@@ -73,3 +73,7 @@ func (c *gameConfig) addMajsoulAccountID(majsoulAccountID int) error {
 	gameConf.MajsoulAccountIDs = append(gameConf.MajsoulAccountIDs, majsoulAccountID)
 	return c.saveConfigToFile()
 }
+
+func (c *gameConfig) setMajsoulAccountID(majsoulAccountID int) {
+	c.currentActiveMajsoulAccountID = majsoulAccountID
+}

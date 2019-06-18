@@ -241,7 +241,7 @@ func (d *majsoulRoundData) HandleLogin() {
 		gameConf.addMajsoulAccountID(accountID)
 		if accountID != gameConf.currentActiveMajsoulAccountID {
 			printAccountInfo(accountID)
-			gameConf.currentActiveMajsoulAccountID = accountID
+			gameConf.setMajsoulAccountID(accountID)
 		}
 		return
 	}
@@ -254,7 +254,7 @@ func (d *majsoulRoundData) HandleLogin() {
 				// 找到了，更新当前使用的账号 ID
 				if gameConf.currentActiveMajsoulAccountID != accountID {
 					printAccountInfo(accountID)
-					gameConf.currentActiveMajsoulAccountID = accountID
+					gameConf.setMajsoulAccountID(accountID)
 				}
 				return
 			}
@@ -274,7 +274,7 @@ func (d *majsoulRoundData) HandleLogin() {
 			if accountID > 0 {
 				gameConf.addMajsoulAccountID(accountID)
 				printAccountInfo(accountID)
-				gameConf.currentActiveMajsoulAccountID = accountID
+				gameConf.setMajsoulAccountID(accountID)
 				return
 			}
 		}

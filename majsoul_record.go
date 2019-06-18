@@ -63,17 +63,8 @@ func (i *majsoulRecordBaseInfo) getSelfSeat(accountID int) (int, error) {
 			return account.Seat, nil
 		}
 	}
-	return -1, fmt.Errorf("找不到用户 %d", accountID)
-}
-
-// 获取第一局的庄家：0=自家, 1=下家, 2=对家, 3=上家
-func (i *majsoulRecordBaseInfo) getFistRoundDealer(accountID int) (firstRoundDealer int, err error) {
-	selfSeat, err := i.getSelfSeat(accountID)
-	if err != nil {
-		return
-	}
-	const playerNumber = 4
-	return (playerNumber - selfSeat) % playerNumber, nil
+	// 若没有，则以东家为主视角
+	return 0, nil
 }
 
 //
