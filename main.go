@@ -68,9 +68,12 @@ func welcome() int {
 		platformName += "（水晶杠杠版）"
 	}
 	color.HiGreen("已选择 - %s", platformName)
+
 	if choose == platformMajsoul {
-		color.HiYellow("提醒：若您已登录游戏，请刷新网页，或者开启一局人机对战\n" +
-			"该步骤用于获取您的账号 ID，便于在游戏开始时分析自风，否则程序将无法解析后续数据")
+		if len(gameConf.MajsoulAccountIDs) == 0 {
+			color.HiYellow("提醒：若您是第一次使用助手，请重新登录游戏，或者开启一局人机对战\n" +
+				"该步骤用于获取您的账号 ID，便于在游戏开始时分析自风，否则程序将无法解析后续数据")
+		}
 	}
 
 	return choose
