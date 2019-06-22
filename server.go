@@ -25,7 +25,8 @@ func newLogFilePath() (filePath string, err error) {
 		return
 	}
 	fileName := fmt.Sprintf("gamedata-%s.log", time.Now().Format("20060102-150405"))
-	return filepath.Join(logDir, fileName), nil
+	filePath = filepath.Join(logDir, fileName)
+	return filepath.Abs(filePath)
 }
 
 type mjHandler struct {
