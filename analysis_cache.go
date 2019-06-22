@@ -233,6 +233,9 @@ func setAnalysisCache(analysisCache *gameAnalysisCache) {
 }
 
 func getAnalysisCache(seat int) *gameAnalysisCache {
+	if seat == -1 {
+		return nil
+	}
 	return _analysisCacheList[seat]
 }
 
