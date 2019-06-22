@@ -35,6 +35,7 @@ func Test_mjHandler_runAnalysisTenhouMessageTask(t *testing.T) {
 func Test_mjHandler_runAnalysisMajsoulMessageTask(t *testing.T) {
 	debugMode = true
 
+	logFile := "log/gamedata.log"
 	startLo := 33020
 	endLo := 33369
 

@@ -106,25 +106,22 @@ func main() {
 		HumanDoraTiles: humanDoraTiles,
 	}
 
+	var err error
 	switch {
 	case isMajsoul:
-		runServer(true)
+		err = runServer(true)
 	case isTenhou || isAnalysis:
-		runServer(false)
-	case isInteractive:
-		// 交互模式
-		if err := interact(humanTilesInfo); err != nil {
-			errorExit(err)
-		}
-	case len(restArgs) > 0:
-		// 静态分析
-		if _, err := analysisHumanTiles(humanTilesInfo); err != nil {
-			errorExit(err)
-		}
-	default:
-		// 服务器模式
+		err = runServer(false)
+	case isInteractive: // 交互模式
+		err = interact(humanTilesInfo)
+	case len(restArgs) > 0: // 静态分析
+		_, err = analysisHumanTiles(humanTilesInfo)
+	default: // 服务器模式
 		choose := welcome()
 		isHTTPS := choose == platformMajsoul
-		runServer(isHTTPS)
+		err = runServer(isHTTPS)
+	}
+	if err != nil {
+		errorExit(err)
 	}
 }

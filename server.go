@@ -16,18 +16,16 @@ import (
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 	"github.com/EndlessCheng/mahjong-helper/util/debug"
 	"github.com/EndlessCheng/mahjong-helper/util"
+	"path/filepath"
 )
 
-var logFile = "gamedata.log"
-
-func init() {
-	if version == versionDev {
-		const logDir = "log"
-		if err := os.MkdirAll(logDir, os.ModePerm); err != nil {
-			panic(err)
-		}
-		logFile = fmt.Sprintf(logDir+"/gamedata-%s.log", time.Now().Format("20060102-150405"))
+func newLogFilePath() (filePath string, err error) {
+	const logDir = "log"
+	if err = os.MkdirAll(logDir, os.ModePerm); err != nil {
+		return
 	}
+	fileName := fmt.Sprintf("gamedata-%s.log", time.Now().Format("20060102-150405"))
+	return filepath.Join(logDir, fileName), nil
 }
 
 type mjHandler struct {
@@ -477,7 +475,7 @@ func getMajsoulCurrentRecordUUID() string {
 	return h.majsoulCurrentRecordUUID
 }
 
-func runServer(isHTTPS bool) {
+func runServer(isHTTPS bool) (err error) {
 	e := echo.New()
 	e.HideBanner = true
 	e.HidePort = true
@@ -485,12 +483,17 @@ func runServer(isHTTPS bool) {
 	// 默认是 log.ERROR
 	e.Logger.SetLevel(log.INFO)
 
-	// 设置输出
-	logFile, err := os.OpenFile(logFile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	// 设置日志输出到 log/gamedata-xxx.log
+	filePath, err := newLogFilePath()
 	if err != nil {
-		panic(err)
+		return
+	}
+	logFile, err := os.OpenFile(filePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	if err != nil {
+		return
 	}
 	e.Logger.SetOutput(logFile)
+
 	e.Logger.Info("============================================================================================")
 	e.Logger.Info("服务启动")
 
@@ -533,8 +536,9 @@ func runServer(isHTTPS bool) {
 				color.HiRed(addr + " 端口已被占用，程序无法启动（是否已经开启了本程序？）")
 			}
 		}
-		errorExit(err)
+		return
 	}
+	return nil
 }
 
 const (

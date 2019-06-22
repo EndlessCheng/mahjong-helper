@@ -12,9 +12,8 @@ import (
 func Test_majsoul_analysis(t *testing.T) {
 	debugMode = true
 
-	_logFile := logFile
-	_logFile = "log/gamedata-x.log"
-	logData, err := ioutil.ReadFile(_logFile)
+	logFile := "log/gamedata-x.log"
+	logData, err := ioutil.ReadFile(logFile)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -80,9 +79,8 @@ func Test_majsoul_analysis(t *testing.T) {
 func Test_tenhou_analysis(t *testing.T) {
 	debugMode = true
 
-	_logFile := logFile
-	_logFile = "log/gamedata-yyy.log"
-	logData, err := ioutil.ReadFile(_logFile)
+	logFile := "log/gamedata-yyy.log"
+	logData, err := ioutil.ReadFile(logFile)
 	if err != nil {
 		t.Fatal(err)
 	}
