@@ -322,20 +322,9 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 				go analysisCache.runMajsoulRecordAnalysisTask(fullActions)
 			}
 
-			if len(actions) == 0 {
-				break
-			}
-
-			fastRecordEnd := util.MaxInt(0, len(actions)-3)
-			h.majsoulRoundData.skipOutput = true
-			// 留最后三个刷新，这样确保会刷新界面
-			for _, action := range actions[:fastRecordEnd] {
-				h._analysisMajsoulRoundData(action.Action, "")
-			}
-			h.majsoulRoundData.skipOutput = false
-			for _, action := range actions[fastRecordEnd:] {
-				h._analysisMajsoulRoundData(action.Action, "")
-			}
+			h._fastLoadActions(actions)
+		case len(d.SyncGameActions) > 0:
+			h._fastLoadActions(d.SyncGameActions)
 		default:
 			// 其他：AI 分析
 			h._analysisMajsoulRoundData(d, originJSON)
@@ -382,10 +371,29 @@ func (h *mjHandler) _loadLiveAction(action *majsoulRecordAction, isFast bool) er
 }
 
 func (h *mjHandler) _analysisMajsoulRoundData(data *majsoulMessage, originJSON string) {
+	//if originJSON == "{}" {
+	//	return
+	//}
 	h.majsoulRoundData.msg = data
 	h.majsoulRoundData.originJSON = originJSON
 	if err := h.majsoulRoundData.analysis(); err != nil {
 		h.logError(err)
+	}
+}
+
+func (h *mjHandler) _fastLoadActions(actions []*majsoulRecordAction) {
+	if len(actions) == 0 {
+		return
+	}
+	fastRecordEnd := util.MaxInt(0, len(actions)-3)
+	h.majsoulRoundData.skipOutput = true
+	// 留最后三个刷新，这样确保会刷新界面
+	for _, action := range actions[:fastRecordEnd] {
+		h._analysisMajsoulRoundData(action.Action, "")
+	}
+	h.majsoulRoundData.skipOutput = false
+	for _, action := range actions[fastRecordEnd:] {
+		h._analysisMajsoulRoundData(action.Action, "")
 	}
 }
 

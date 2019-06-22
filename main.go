@@ -87,17 +87,18 @@ func main() {
 
 	flags, restArgs := parseArgs(os.Args[1:])
 
+	considerOldYaku := flags.Bool("old")
+	util.SetConsiderOldYaku(considerOldYaku)
+
 	isMajsoul := flags.Bool("majsoul")
 	isTenhou := flags.Bool("tenhou")
 	isAnalysis := flags.Bool("analysis")
 	isInteractive := flags.Bool("i", "interactive")
+
 	showImproveDetail = flags.Bool("detail")
 	showAgariAboveShanten1 = flags.Bool("a", "agari")
 	showScore = flags.Bool("s", "score")
-	considerOldYaku := flags.Bool("old")
 	showAllYakuTypes = flags.Bool("y", "yaku")
-
-	util.SetConsiderOldYaku(considerOldYaku)
 
 	humanDoraTiles := flags.String("d", "dora")
 	humanTiles := strings.Join(restArgs, " ")
