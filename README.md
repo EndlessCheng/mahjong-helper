@@ -43,7 +43,7 @@
 
 3. 安装浏览器扩展 Header Editor（[谷歌商城(需要翻墙)](https://chrome.google.com/webstore/detail/header-editor/eningockdidmgiojffjmkdblpjocbhgh?hl=zh) | [国内](https://www.chromefor.com/header-editor_v4-0-7/)）
    
-   （测试发现 Chrome 和 QQ 浏览器无法直接安装 .crx 文件，可以使用 360 浏览器）
+   （测试发现 Chrome 和 QQ 浏览器无法直接安装 .crx 文件，可以使用 360 浏览器打开 .crx 文件安装此扩展）
    
    安装好扩展后点进该扩展的`管理`界面，点击`导入和导出`，在下载规则中填入 `https://jianyan.me/js/mahjong-helper.json`，点击右侧的下载按钮，然后点击下方的`保存`
 
