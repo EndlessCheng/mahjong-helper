@@ -264,9 +264,9 @@
 
 大致思路是根据 liqi.json 提供的对分析玩家操作有用的字段查找相关关键字，如 `ActionDealTile` `ActionDiscardTile` `ActionChiPengGang` 等。
 
-具体修改了哪些内容可以对比雀魂的 code.js 和我修改后的 [code.js](https://jianyan.me/majsoul/code-v0.1.4.js)。
+前端 UI 事件可以在网页控制台输入 `GameMgr._inRelease = 0`，开启调试模式，通过雀魂已有的日志看到相关代码在哪。
 
-PS: 在网页控制台输入 `GameMgr._inRelease = 0` 即可开启调试模式。
+具体修改了哪些内容可以对比雀魂的 code.js 和我修改后的 [code.js](https://jianyan.me/majsoul/code-v0.1.4.js)。
 
 
 ## License
