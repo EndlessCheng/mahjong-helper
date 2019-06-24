@@ -41,8 +41,10 @@ func init() {
 	}
 }
 
+const readmeURL = "https://github.com/EndlessCheng/mahjong-helper/blob/master/README.md"
+
 func welcome() int {
-	fmt.Println("使用说明：https://github.com/EndlessCheng/mahjong-helper/blob/master/README.md")
+	fmt.Println("使用说明：" + readmeURL)
 	fmt.Println("问题反馈：https://github.com/EndlessCheng/mahjong-helper/issues")
 	fmt.Println("吐槽群：375865038")
 	fmt.Println()
@@ -71,8 +73,11 @@ func welcome() int {
 
 	if choose == platformMajsoul {
 		if len(gameConf.MajsoulAccountIDs) == 0 {
-			color.HiYellow("提醒：若您是第一次使用助手，请重新登录游戏，或者开启一局人机对战\n" +
-				"该步骤用于获取您的账号 ID，便于在游戏开始时获取自风，否则程序将无法解析后续数据")
+			color.HiYellow(`提醒：若您是第一次使用助手，请重新登录游戏，或者开启一局人机对战
+该步骤用于获取您的账号 ID，便于在游戏开始时获取自风，否则程序将无法解析后续数据
+
+若助手无响应，请确认您已按步骤安装完成
+安装及使用说明：` + readmeURL)
 		}
 	}
 
