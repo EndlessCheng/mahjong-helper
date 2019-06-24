@@ -243,12 +243,12 @@
 
 7. 重启浏览器。
 
-下面说明天凤和雀魂的代码注入点
+下面说明天凤和雀魂的代码注入点。
 
 ### 天凤 (tenhou)
 
-1. 搜索 `new WebSocket`，找到下方的 `message` 函数，该函数中的 `a.data` 就是 WebSocket 收到的 JSON 数据
-2. 在该函数末尾添加如下代码
+1. 搜索 `new WebSocket`，找到下方的 `message` 函数，该函数中的 `a.data` 就是 WebSocket 收到的 JSON 数据。
+2. 在该函数末尾添加如下代码：
 
     ```javascript
     var req = new XMLHttpRequest();
@@ -258,15 +258,15 @@
 
 ### 雀魂 (majsoul)
 
-考虑到雀魂的 WebSocket 收到的是封装后的 protobuf 二进制数据，不好解析，于是另寻他路
+由于有 [liqi.json](https://github.com/EndlessCheng/mahjong-helper/blob/master/res/liqi.json) 文件，可以直接用它来解析雀魂的 protobuf 数据。
 
-大致思路是根据 [liqi.json](https://github.com/EndlessCheng/mahjong-helper/blob/master/res/liqi.json) 文件提供的对分析玩家操作有用的字段查找相关关键字，如 `ActionDealTile` `ActionDiscardTile` `ActionChiPengGang` 等
+但是考虑到还有观看牌谱这种获取前端 UI 事件的情况，直接修改相关代码是最方便的。
 
-具体修改了哪些内容可以对比雀魂的 code.js 和我修改后的 [code.js](https://jianyan.me/majsoul/code-v0.1.4.js)
+大致思路是根据 liqi.json 提供的对分析玩家操作有用的字段查找相关关键字，如 `ActionDealTile` `ActionDiscardTile` `ActionChiPengGang` 等。
 
-此外，在解析牌谱时，助手可以同步用户在网页上的点击操作（点击桌面、跳转巡目、跳转局数等），这不涉及到 WebSocket，只能通过修改源码来完成
+具体修改了哪些内容可以对比雀魂的 code.js 和我修改后的 [code.js](https://jianyan.me/majsoul/code-v0.1.4.js)。
 
-PS: 在网页控制台输入 `GameMgr._inRelease = 0` 即可开启调试模式
+PS: 在网页控制台输入 `GameMgr._inRelease = 0` 即可开启调试模式。
 
 
 ## License
