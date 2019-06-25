@@ -73,8 +73,8 @@ func analysisPlayerWithRisk(playerInfo *model.PlayerInfo, mixedRiskTable riskTab
 				// 局收支相近时，提示：局收支相近，追求和率打xx，追求打点打xx
 			}
 		} else if shanten == 1 {
-			// 向听倒退
-			if len(playerInfo.DiscardTiles) < 9 {
+			// 早巡中巡门清时，提醒向听倒退
+			if len(playerInfo.DiscardTiles) < 9 && !playerInfo.IsNaki() {
 				alertBackwardToShanten2(results14, incShantenResults14)
 			}
 		}
