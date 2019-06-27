@@ -196,24 +196,23 @@ func (l riskInfoList) printWithHands(hands []int, leftCounts []int) {
 			}
 			fmt.Print("听牌率]")
 
-			// 打印无筋数量和种类
+			// 打印无筋数量
 			fmt.Print(" ")
 			const badMachiLimit = 3
-			noSujiInfo := "" // util.TilesToStr(l[i].leftNoSujiTiles)
-			if len(l[i].leftNoSujiTiles) == 0 {
+			noSujiInfo := ""
+			if l[i].isTsumogiriRiichi {
+				noSujiInfo = "摸切立直"
+			} else if len(l[i].leftNoSujiTiles) == 0 {
 				noSujiInfo = "愚形听牌/振听"
 			} else if len(l[i].leftNoSujiTiles) <= badMachiLimit {
 				noSujiInfo = "可能愚形听牌/振听"
 			}
 			if noSujiInfo != "" {
-				fmt.Printf("[%d无筋: %s]", len(l[i].leftNoSujiTiles), noSujiInfo)
+				fmt.Printf("[%d无筋: ", len(l[i].leftNoSujiTiles))
+				color.New(color.FgHiYellow).Printf("%s", noSujiInfo)
+				fmt.Print("]")
 			} else {
 				fmt.Printf("[%d无筋]", len(l[i].leftNoSujiTiles))
-			}
-
-			if l[i].isTsumogiriRiichi {
-				fmt.Print(" ")
-				color.HiYellow("[摸切立直]")
 			}
 
 			fmt.Println()

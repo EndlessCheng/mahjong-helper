@@ -333,6 +333,8 @@ func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
 		// 计算剩余筋牌
 		if len(player.melds) < 4 {
 			riList[who].leftNoSujiTiles = util.CalculateLeftNoSujiTiles(riList[who].safeTiles34, d.leftCounts)
+		} else {
+			// 大吊车：愚型听牌
 		}
 	}
 
