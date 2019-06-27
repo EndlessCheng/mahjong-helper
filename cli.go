@@ -130,11 +130,11 @@ func (t riskTable) getBestDefenceTile(tiles34 []int) (result int) {
 //
 
 type riskInfo struct {
-	// 该玩家的安牌
-	safeTiles34 []bool
-
 	// 该玩家的听牌率（立直时为 100.0）
 	tenpaiRate float64
+
+	// 该玩家的安牌
+	safeTiles34 []bool
 
 	// 各种牌的铳率表
 	riskTable riskTable
@@ -142,6 +142,9 @@ type riskInfo struct {
 	// 剩余无筋 123789
 	// 总计 18 种。剩余无筋牌数量越少，该无筋牌越危险
 	leftNoSujiTiles []int
+
+	// 是否摸切立直
+	isTsumogiriRiichi bool
 
 	// 荣和点数
 	// 仅调试用
@@ -206,6 +209,11 @@ func (l riskInfoList) printWithHands(hands []int, leftCounts []int) {
 				fmt.Printf("[%d无筋: %s]", len(l[i].leftNoSujiTiles), noSujiInfo)
 			} else {
 				fmt.Printf("[%d无筋]", len(l[i].leftNoSujiTiles))
+			}
+
+			if l[i].isTsumogiriRiichi {
+				fmt.Print(" ")
+				color.HiYellow("[摸切立直]")
 			}
 
 			fmt.Println()

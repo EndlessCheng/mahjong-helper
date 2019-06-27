@@ -281,6 +281,9 @@ func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
 		// TODO: 若某人一直摸切，然后突然手切了一张字牌，那他很有可能默听/一向听
 		if player.isReached {
 			riList[who].tenpaiRate = 100.0
+			if player.reachTileAtGlobal < len(d.globalDiscardTiles) { // 天凤可能有数据漏掉
+				riList[who].isTsumogiriRiichi = d.globalDiscardTiles[player.reachTileAtGlobal] < 0
+			}
 		} else {
 			riList[who].tenpaiRate = util.CalcTenpaiRate(player.melds, player.discardTiles, player.meldDiscardsAt)
 		}
