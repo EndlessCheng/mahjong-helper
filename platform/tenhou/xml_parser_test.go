@@ -1,4 +1,4 @@
-package parser
+package tenhou
 
 import (
 	"testing"
@@ -13,7 +13,7 @@ func Test(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	d := TenhouRecord{}
+	d := Record{}
 	if err := xml.Unmarshal(data, &d); err != nil {
 		t.Fatal(err)
 	}

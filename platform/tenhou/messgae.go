@@ -1,10 +1,6 @@
-package parser
+package tenhou
 
-import (
-	"encoding/xml"
-)
-
-type tenhouMessage struct {
+type message struct {
 	Tag string `json:"tag" xml:"-"`
 
 	//Name string `json:"name"` // id
@@ -82,22 +78,4 @@ type tenhouMessage struct {
 	//Kawa1 string `json:"kawa1"`
 	//Kawa2 string `json:"kawa2"`
 	//Kawa3 string `json:"kawa3"`
-}
-
-// 需要注意的是，牌谱并未记录舍牌是手切还是摸切，
-// 这里认为在摸牌后，只要切出的牌和摸的牌相同就认为是摸切，否则认为是手切
-type TenhouRecordAction struct {
-	XMLName xml.Name
-	tenhouMessage
-}
-
-func (a *TenhouRecordAction) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	a.Tag = start.Name.Local
-	type action TenhouRecordAction // 防止无限递归
-	return d.DecodeElement((*action)(a), &start)
-}
-
-type TenhouRecord struct {
-	XMLName xml.Name              `xml:"mjloggm"`
-	Actions []*TenhouRecordAction `xml:",any"`
 }
