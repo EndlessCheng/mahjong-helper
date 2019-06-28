@@ -263,6 +263,14 @@ func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
 				riList[who].safeTiles34[tile] = true
 			}
 		}
+
+		// 特殊：杠产生的安牌
+		// 很难想象一个人会在有 678888 的时候去开杠（即使有这个可能，本程序也是不防的）
+		for _, meld := range player.melds {
+			if meld.IsKan() {
+				riList[who].safeTiles34[meld.Tiles[0]] = true
+			}
+		}
 	}
 
 	// 计算各种数据

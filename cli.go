@@ -134,6 +134,7 @@ type riskInfo struct {
 	tenpaiRate float64
 
 	// 该玩家的安牌
+	// 若该玩家有杠操作，把杠的那张牌也算作安牌，这有助于判断筋壁危险度
 	safeTiles34 []bool
 
 	// 各种牌的铳率表
