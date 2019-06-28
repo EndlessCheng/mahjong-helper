@@ -128,8 +128,9 @@ type majsoulRoundData struct {
 	*roundData
 
 	originJSON string
-	selfSeat   int // 自家初始座位：0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
 	msg        *majsoulMessage
+
+	selfSeat int // 自家初始座位：0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
 }
 
 func (d *majsoulRoundData) fatalParse(info string, msg string) {

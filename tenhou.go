@@ -101,6 +101,7 @@ type tenhouRoundData struct {
 
 	originJSON string
 	msg        *tenhouMessage
+
 	isRoundEnd bool // 某人和牌或流局。初始值为 true
 }
 
