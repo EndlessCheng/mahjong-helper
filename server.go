@@ -17,7 +17,10 @@ import (
 	"github.com/EndlessCheng/mahjong-helper/util/debug"
 	"github.com/EndlessCheng/mahjong-helper/util"
 	"path/filepath"
+	"strconv"
 )
+
+const defaultPort = 12121
 
 func newLogFilePath() (filePath string, err error) {
 	const logDir = "log"
@@ -484,7 +487,7 @@ func getMajsoulCurrentRecordUUID() string {
 	return h.majsoulCurrentRecordUUID
 }
 
-func runServer(isHTTPS bool) (err error) {
+func runServer(isHTTPS bool, port int) (err error) {
 	e := echo.New()
 	e.HideBanner = true
 	e.HidePort = true
@@ -512,7 +515,7 @@ func runServer(isHTTPS bool) (err error) {
 		tenhouMessageQueue:  make(chan []byte, 100),
 		tenhouRoundData:     &tenhouRoundData{isRoundEnd: true},
 		majsoulMessageQueue: make(chan []byte, 100),
-		majsoulRoundData:    &majsoulRoundData{},
+		majsoulRoundData:    &majsoulRoundData{selfSeat: -1},
 		majsoulRecordMap:    map[string]*majsoulRecordBaseInfo{},
 	}
 	h.tenhouRoundData.roundData = newGame(h.tenhouRoundData)
@@ -530,7 +533,10 @@ func runServer(isHTTPS bool) (err error) {
 	e.POST("/majsoul", h.analysisMajsoul)
 
 	// code.js 也用的该端口
-	const addr = ":12121"
+	if port == 0 {
+		port = defaultPort
+	}
+	addr := ":" + strconv.Itoa(port)
 	if !isHTTPS {
 		e.POST("/", h.analysisTenhou)
 		err = e.Start(addr)

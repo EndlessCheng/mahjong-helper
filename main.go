@@ -6,9 +6,10 @@ import (
 	"os"
 	"github.com/fatih/color"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
-	"github.com/EndlessCheng/mahjong-helper/util"
 	"math/rand"
 	"time"
+	"github.com/EndlessCheng/mahjong-helper/util"
+	"strconv"
 )
 
 const versionDev = "dev"
@@ -112,12 +113,17 @@ func main() {
 		HumanDoraTiles: humanDoraTiles,
 	}
 
-	var err error
+	rawPort := flags.String("p", "port")
+	port, err := strconv.Atoi(rawPort)
+	if err != nil {
+		port = 0
+	}
+
 	switch {
 	case isMajsoul:
-		err = runServer(true)
+		err = runServer(true, port)
 	case isTenhou || isAnalysis:
-		err = runServer(false)
+		err = runServer(false, port)
 	case isInteractive: // 交互模式
 		err = interact(humanTilesInfo)
 	case len(restArgs) > 0: // 静态分析
@@ -125,7 +131,7 @@ func main() {
 	default: // 服务器模式
 		choose := welcome()
 		isHTTPS := choose == platformMajsoul
-		err = runServer(isHTTPS)
+		err = runServer(isHTTPS, port)
 	}
 	if err != nil {
 		errorExit(err)
