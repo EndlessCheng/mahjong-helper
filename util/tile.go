@@ -194,11 +194,9 @@ func OutsideTiles(tile int) (outsideTiles []int) {
 // 随机补充一张牌
 func RandomAddTile(tiles34 []int) {
 	for {
-		tile := rand.Intn(34)
-		if tiles34[tile] == 4 {
-			continue
+		if tile := rand.Intn(34); tiles34[tile] < 4 {
+			tiles34[tile]++
+			break
 		}
-		tiles34[tile]++
-		break
 	}
 }
