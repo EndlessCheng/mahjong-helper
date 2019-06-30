@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"sort"
+	"math/rand"
 )
 
 var Mahjong = [...]string{
@@ -188,4 +189,16 @@ func OutsideTiles(tile int) (outsideTiles []int) {
 		panic(fmt.Errorf("[OutsideTiles] 代码有误: tile = %d", tile))
 	}
 	return
+}
+
+// 随机补充一张牌
+func RandomAddTile(tiles34 []int) {
+	for {
+		tile := rand.Intn(34)
+		if tiles34[tile] == 4 {
+			continue
+		}
+		tiles34[tile]++
+		break
+	}
 }

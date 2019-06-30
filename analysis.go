@@ -152,7 +152,8 @@ func analysisHumanTiles(humanTilesInfo *model.HumanTilesInfo) (playerInfo *model
 	}
 	tileCount := util.CountOfTiles34(tiles34)
 	if tileCount%3 == 0 {
-		return nil, fmt.Errorf("输入错误: %s 是 %d 张牌", humanTilesInfo.HumanTiles, tileCount)
+		color.HiYellow("%s 是 %d 张牌\n助手随机补了一张牌", humanTilesInfo.HumanTiles, tileCount)
+		util.RandomAddTile(tiles34)
 	}
 
 	melds := []model.Meld{}
