@@ -1,4 +1,4 @@
-package main
+package handler
 
 const (
 	majsoulGameConfigCategoryFriends = 1 // 友人
