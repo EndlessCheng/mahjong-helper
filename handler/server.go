@@ -291,7 +291,7 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			h.majsoulRoundData.newGame()
 			h.majsoulRoundData.selfSeat = 0 // 观战进来后看的是东起的玩家
 			h.majsoulRoundData.gameMode = gameModeLive
-			clearConsole()
+			ClearConsole()
 			fmt.Printf("正在载入对战：%s", d.LiveBaseInfo.String())
 		case d.LiveFastAction != nil:
 			if err := h._loadLiveAction(d.LiveFastAction, true); err != nil {
@@ -344,7 +344,7 @@ func (h *mjHandler) _loadMajsoulRecordBaseInfo(majsoulRecordUUID string) error {
 
 	// 标记当前正在观看的牌谱
 	h.majsoulCurrentRecordUUID = majsoulRecordUUID
-	clearConsole()
+	ClearConsole()
 	fmt.Printf("正在解析雀魂牌谱：%s", baseInfo.String())
 
 	// 标记古役模式

@@ -1,4 +1,4 @@
-package handler
+package main
 
 import (
 	"strings"
@@ -10,6 +10,10 @@ import (
 	"time"
 	"github.com/EndlessCheng/mahjong-helper/util"
 	"strconv"
+	"github.com/EndlessCheng/mahjong-helper/cli"
+	"github.com/EndlessCheng/mahjong-helper/updater"
+	"github.com/EndlessCheng/mahjong-helper/config"
+	"github.com/EndlessCheng/mahjong-helper/handler"
 )
 
 const versionDev = "dev"
@@ -66,7 +70,7 @@ func welcome() int {
 		platformName = platforms[choose]
 	}
 
-	clearConsole()
+	cli.ClearConsole()
 	if choose == platformMajsoul {
 		platformName += "（水晶杠杠版）"
 	}
@@ -88,11 +92,12 @@ func welcome() int {
 func main() {
 	color.HiGreen("日本麻将助手 %s (by EndlessCheng)", version)
 	if version != versionDev {
-		go alertNewVersion(version)
+		go updater.AlertNewVersion(version)
 	}
 
-	flags, restArgs := parseArgs(os.Args[1:])
+	flags, restArgs := config.ParseArgs(os.Args[1:])
 
+	// TODO 以下全部移到 config
 	considerOldYaku := flags.Bool("old")
 	util.SetConsiderOldYaku(considerOldYaku)
 
@@ -119,19 +124,22 @@ func main() {
 		port = 0
 	}
 
+	// END TODO
+
+	// config.Run() ???
 	switch {
 	case isMajsoul:
-		err = runServer(true, port)
+		err = handler.runServer(true, port)
 	case isTenhou || isAnalysis:
-		err = runServer(false, port)
+		err = handler.runServer(false, port)
 	case isInteractive: // 交互模式
-		err = interact(humanTilesInfo)
+		err = handler.interact(humanTilesInfo)
 	case len(restArgs) > 0: // 静态分析
-		_, err = analysisHumanTiles(humanTilesInfo)
+		_, err = handler.analysisHumanTiles(humanTilesInfo)
 	default: // 服务器模式
 		choose := welcome()
 		isHTTPS := choose == platformMajsoul
-		err = runServer(isHTTPS, port)
+		err = handler.runServer(isHTTPS, port)
 	}
 	if err != nil {
 		errorExit(err)

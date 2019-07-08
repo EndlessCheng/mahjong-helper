@@ -1,4 +1,4 @@
-package handler
+package updater
 
 import (
 	"net/http"
@@ -32,7 +32,8 @@ func fetchLatestVersionTag() (latestVersionTag string, err error) {
 	return d.TagName, nil
 }
 
-func alertNewVersion(currentVersionTag string) {
+// TODO: move out
+func AlertNewVersion(currentVersionTag string) {
 	const latestReleasePage = "https://github.com/EndlessCheng/mahjong-helper/releases/latest"
 
 	latestVersionTag, err := fetchLatestVersionTag()

@@ -1,4 +1,4 @@
-package handler
+package cli
 
 import (
 	"os/exec"
@@ -22,7 +22,7 @@ func init() {
 	}
 }
 
-func clearConsole() {
+func ClearConsole() {
 	if clearFunc, ok := clearFuncMap[runtime.GOOS]; ok {
 		clearFunc()
 	}

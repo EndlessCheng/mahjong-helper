@@ -1,11 +1,11 @@
-package handler
+package config
 
 import "strconv"
 
-type flagKV map[string]string
+type FlagKV map[string]string
 
-func parseArgs(args []string) (flags flagKV, restArgs []string) {
-	flags = flagKV{}
+func ParseArgs(args []string) (flags FlagKV, restArgs []string) {
+	flags = FlagKV{}
 	for _, arg := range args {
 		if len(arg) >= 2 && arg[0] == '-' {
 			found := false
@@ -26,7 +26,7 @@ func parseArgs(args []string) (flags flagKV, restArgs []string) {
 	return
 }
 
-func (f flagKV) Bool(flagNames ...string) bool {
+func (f FlagKV) Bool(flagNames ...string) bool {
 	for _, name := range flagNames {
 		if _, ok := f[name]; ok {
 			return true
@@ -35,7 +35,7 @@ func (f flagKV) Bool(flagNames ...string) bool {
 	return false
 }
 
-func (f flagKV) String(flagNames ...string) string {
+func (f FlagKV) String(flagNames ...string) string {
 	for _, name := range flagNames {
 		if val, ok := f[name]; ok {
 			return val
@@ -44,7 +44,7 @@ func (f flagKV) String(flagNames ...string) string {
 	return ""
 }
 
-func (f flagKV) Int(flagNames ...string) (int, error) {
+func (f FlagKV) Int(flagNames ...string) (int, error) {
 	for _, name := range flagNames {
 		if val, ok := f[name]; ok {
 			return strconv.Atoi(val)

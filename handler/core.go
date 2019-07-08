@@ -432,7 +432,7 @@ func (d *roundData) analysis() error {
 	case d.parser.IsInit():
 		// round 开始/重连
 		if !debugMode && !d.skipOutput {
-			clearConsole()
+			ClearConsole()
 		}
 
 		roundNumber, benNumber, dealer, doraIndicator, hands, numRedFives := d.parser.ParseInit()
@@ -635,7 +635,7 @@ func (d *roundData) analysis() error {
 		//	// 其他
 	case d.parser.IsSelfDraw():
 		if !debugMode && !d.skipOutput {
-			clearConsole()
+			ClearConsole()
 		}
 		// 自家（从牌山 d.leftCounts）摸牌（至手牌 d.counts）
 		tile, isRedFive, kanDoraIndicator := d.parser.ParseSelfDraw()
@@ -813,7 +813,7 @@ func (d *roundData) analysis() error {
 		}
 
 		if !debugMode {
-			clearConsole()
+			ClearConsole()
 		}
 
 		// 牌谱模式下，打印舍牌推荐
@@ -842,7 +842,7 @@ func (d *roundData) analysis() error {
 		// TODO: 解析天凤牌谱 - 注意 skipOutput
 
 		if !debugMode {
-			clearConsole()
+			ClearConsole()
 		}
 		fmt.Println("和牌，本局结束")
 		whos, points := d.parser.ParseRoundWin()

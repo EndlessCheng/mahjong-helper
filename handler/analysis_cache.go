@@ -298,7 +298,7 @@ func (c *gameAnalysisCache) runMajsoulRecordAnalysisTask(actions majsoulRoundAct
 		return nil
 	}
 
-	clearConsole()
+	ClearConsole()
 	roundCache.print()
 
 	return nil
