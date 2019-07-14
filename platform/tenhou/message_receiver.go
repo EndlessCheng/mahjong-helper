@@ -60,9 +60,11 @@ func (mr *MessageReceiver) run() {
 		}
 	}()
 
-	for data := range mr.orderedMessageQueue {
-		mr.outMessage <- data
-	}
+	go func() {
+		for data := range mr.orderedMessageQueue {
+			mr.outMessage <- data
+		}
+	}()
 }
 
 func (mr *MessageReceiver) Put(data []byte) {
