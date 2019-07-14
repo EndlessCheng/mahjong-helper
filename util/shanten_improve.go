@@ -768,23 +768,21 @@ func (n *shantenSearchNode14) analysis(playerInfo *model.PlayerInfo, considerImp
 	}
 
 	improveFirst := func(l []*Hand14AnalysisResult) bool {
-		if len(l) <= 1 {
+		if !considerImprove || len(l) <= 1 {
 			return false
 		}
 
 		shanten := l[0].Result13.Shanten
-		// 两向听及以下进张优先，改良其次
-		if shanten <= 2 {
+		// 一向听及以下着眼于进张，改良其次
+		if shanten <= 1 {
 			return false
 		}
 
-		maxWaitsCount := 0
-		for _, r14 := range l {
-			maxWaitsCount = MaxInt(maxWaitsCount, r14.Result13.Waits.AllCount())
-		}
-
-		// 三向听及以上的垃圾进张考虑改良
-		return maxWaitsCount <= 9*shanten+3
+		// 判断七对和一般型的向听数是否相同，若七对更小则改良优先
+		tiles34 := playerInfo.HandTiles34
+		shantenChiitoi := CalculateShantenOfChiitoi(tiles34)
+		shantenNormal := CalculateShantenOfNormal(tiles34, CountOfTiles34(tiles34))
+		return shantenChiitoi < shantenNormal
 	}
 
 	improveFst := improveFirst(results)

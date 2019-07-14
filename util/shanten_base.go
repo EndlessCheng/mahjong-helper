@@ -324,21 +324,12 @@ func (st *shanten) run(depth int) {
 	}
 }
 
-// 根据手牌计算向听数（不考虑国士无双）
+// 根据手牌计算一般型（不考虑七对国士）的向听数
 // 3k+1 和 3k+2 张牌都行
-func CalculateShanten(tiles34 []int) int {
-	countOfTiles := CountOfTiles34(tiles34) // 若入参带 countOfTiles，能节省约 5% 的时间
-	if countOfTiles > 14 {
-		panic(fmt.Sprintln("[CalculateShanten] 参数错误 >14", tiles34, countOfTiles))
-	}
-
-	minShanten := 8 // 不考虑国士无双和七对子的最大向听
-	if countOfTiles >= 13 {
-		minShanten = CalculateShantenOfChiitoi(tiles34) // 考虑七对子
-	}
+func CalculateShantenOfNormal(tiles34 []int, countOfTiles int) int {
 	st := shanten{
 		numberMelds: (14 - countOfTiles) / 3,
-		minShanten:  minShanten,
+		minShanten:  8, // 不考虑国士无双和七对子的最大向听
 		tiles:       tiles34,
 	}
 
@@ -353,4 +344,18 @@ func CalculateShanten(tiles34 []int) int {
 	st.run(0)
 
 	return st.minShanten
+}
+
+// 根据手牌计算向听数（不考虑国士）
+// 3k+1 和 3k+2 张牌都行
+func CalculateShanten(tiles34 []int) int {
+	countOfTiles := CountOfTiles34(tiles34) // 若入参带 countOfTiles，能节省约 5% 的时间
+	if countOfTiles > 14 {
+		panic(fmt.Sprintln("[CalculateShanten] 参数错误 >14", tiles34, countOfTiles))
+	}
+	minShanten := CalculateShantenOfNormal(tiles34, countOfTiles)
+	if countOfTiles >= 13 { // 考虑七对子
+		minShanten = MinInt(minShanten, CalculateShantenOfChiitoi(tiles34))
+	}
+	return minShanten
 }
