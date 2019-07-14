@@ -666,12 +666,6 @@ func (d *roundData) analysis() error {
 			currentRoundCache.addAIDiscardTileWhenDrawTile(bestAttackDiscardTile, bestDefenceDiscardTile, bestAttackDiscardTileRisk, bestDefenceDiscardTileRisk)
 		}
 
-		if debugMode {
-			if handsCount := util.CountOfTiles34(d.counts); handsCount%3 != 2 {
-				return fmt.Errorf("手牌错误：%d 张牌 %v", handsCount, d.counts)
-			}
-		}
-
 		if d.skipOutput {
 			return nil
 		}
@@ -797,20 +791,14 @@ func (d *roundData) analysis() error {
 			}
 		}
 
-		if debugMode {
-			if handsCount := util.CountOfTiles34(d.counts); handsCount%3 != 1 {
-				return fmt.Errorf("手牌错误：%d 张牌 %v", handsCount, d.counts)
-			}
-		}
-
 		if d.skipOutput {
 			return nil
 		}
 
 		// 上家舍牌时若无法鸣牌则跳过显示
-		if d.gameMode == gameModeMatch && who == 3 && !canBeMeld {
-			return nil
-		}
+		//if d.gameMode == gameModeMatch && who == 3 && !canBeMeld {
+		//	return nil
+		//}
 
 		if !debugMode {
 			clearConsole()
@@ -825,6 +813,10 @@ func (d *roundData) analysis() error {
 		d.printDiscards()
 		fmt.Println()
 		riskTables.printWithHands(d.counts, d.leftCounts)
+
+		if d.gameMode == gameModeMatch && !canBeMeld {
+			return nil
+		}
 
 		// 为了方便解析牌谱，这里尽可能地解析副露
 		// TODO: 提醒: 消除海底/避免河底/型听

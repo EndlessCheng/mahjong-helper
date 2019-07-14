@@ -83,7 +83,11 @@ func analysisPlayerWithRisk(playerInfo *model.PlayerInfo, mixedRiskTable riskTab
 		printResults14WithRisk(results14, mixedRiskTable)
 		printResults14WithRisk(incShantenResults14, mixedRiskTable)
 	default:
-		return fmt.Errorf("参数错误: %d 张牌", countOfTiles)
+		err := fmt.Errorf("参数错误: %d 张牌", countOfTiles)
+		if debugMode {
+			panic(err)
+		}
+		return err
 	}
 
 	fmt.Println()
