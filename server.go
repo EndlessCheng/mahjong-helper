@@ -18,6 +18,7 @@ import (
 	"github.com/EndlessCheng/mahjong-helper/util"
 	"path/filepath"
 	"strconv"
+	"github.com/EndlessCheng/mahjong-helper/platform/tenhou"
 )
 
 const defaultPort = 12121
@@ -37,8 +38,8 @@ type mjHandler struct {
 
 	analysing bool
 
-	tenhouMessageQueue chan []byte
-	tenhouRoundData    *tenhouRoundData
+	tenhouMessageReceiver tenhou.MessageReceiver
+	tenhouRoundData       *tenhouRoundData
 
 	majsoulMessageQueue chan []byte
 	majsoulRoundData    *majsoulRoundData
@@ -106,7 +107,7 @@ func (h *mjHandler) analysisTenhou(c echo.Context) error {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	h.tenhouMessageQueue <- data
+	h.tenhouMessageReceiver.Put(data)
 	return c.NoContent(http.StatusOK)
 }
 func (h *mjHandler) runAnalysisTenhouMessageTask() {
@@ -118,20 +119,12 @@ func (h *mjHandler) runAnalysisTenhouMessageTask() {
 		}()
 	}
 
-	for msg := range h.tenhouMessageQueue {
+	for {
+		msg := h.tenhouMessageReceiver.Get()
 		d := tenhouMessage{}
 		if err := json.Unmarshal(msg, &d); err != nil {
 			h.logError(err)
 			continue
-		}
-
-		// FIX: 如果在 isRoundEnd 为 true 时收到了 IsSelfDraw()，则（等待收到 INIT）将其放入后面再解析
-		if h.tenhouRoundData.isRoundEnd {
-			if isTenhouSelfDraw(d.Tag) {
-				time.Sleep(100 * time.Millisecond)
-				h.tenhouMessageQueue <- msg
-				continue
-			}
 		}
 
 		originJSON := string(msg)

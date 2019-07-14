@@ -826,13 +826,6 @@ func (d *roundData) analysis() error {
 		fmt.Println()
 		riskTables.printWithHands(d.counts, d.leftCounts)
 
-		// 天凤人机对战时，偶尔会有先收到他家舍牌消息然后才收到自家舍牌消息的情况
-		// 这时 analysisMeld 会因手牌数量异常而失败
-		// TODO: 可以考虑在绘制动画时才发送消息给客户端？
-		if d.gameMode == gameModeMatch && d.parser.GetDataSourceType() == dataSourceTypeTenhou && !canBeMeld {
-			return nil
-		}
-
 		// 为了方便解析牌谱，这里尽可能地解析副露
 		// TODO: 提醒: 消除海底/避免河底/型听
 		// FIXME: 最后一张牌是无法鸣牌的
