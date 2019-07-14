@@ -74,3 +74,8 @@ func (mr *MessageReceiver) Put(data []byte) {
 func (mr *MessageReceiver) Get() []byte {
 	return <-mr.outMessage
 }
+
+// TODO
+//func (mr *MessageReceiver) IsEmpty() bool {
+//	return
+//}

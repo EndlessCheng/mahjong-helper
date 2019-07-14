@@ -38,7 +38,7 @@ type mjHandler struct {
 
 	analysing bool
 
-	tenhouMessageReceiver tenhou.MessageReceiver
+	tenhouMessageReceiver *tenhou.MessageReceiver
 	tenhouRoundData       *tenhouRoundData
 
 	majsoulMessageQueue chan []byte
@@ -505,11 +505,11 @@ func runServer(isHTTPS bool, port int) (err error) {
 	h = &mjHandler{
 		log: e.Logger,
 
-		tenhouMessageQueue:  make(chan []byte, 100),
-		tenhouRoundData:     &tenhouRoundData{isRoundEnd: true},
-		majsoulMessageQueue: make(chan []byte, 100),
-		majsoulRoundData:    &majsoulRoundData{selfSeat: -1},
-		majsoulRecordMap:    map[string]*majsoulRecordBaseInfo{},
+		tenhouMessageReceiver: tenhou.NewMessageReceiver(),
+		tenhouRoundData:       &tenhouRoundData{isRoundEnd: true},
+		majsoulMessageQueue:   make(chan []byte, 100),
+		majsoulRoundData:      &majsoulRoundData{selfSeat: -1},
+		majsoulRecordMap:      map[string]*majsoulRecordBaseInfo{},
 	}
 	h.tenhouRoundData.roundData = newGame(h.tenhouRoundData)
 	h.majsoulRoundData.roundData = newGame(h.majsoulRoundData)
