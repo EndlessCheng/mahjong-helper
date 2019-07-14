@@ -19,12 +19,12 @@ const (
 )
 
 type tenhouMessage struct {
-	Tag string `json:"tag"`
+	Tag string `json:"tag" xml:"-"`
 
 	//Name string `json:"name"` // id
 	//Sex  string `json:"sx"`
 
-	UserName string `json:"uname"`
+	UserName string `json:"uname" xml:"-"`
 	//RatingScale string `json:"ratingscale"`
 
 	//N string `json:"n"`
@@ -32,23 +32,27 @@ type tenhouMessage struct {
 	//G string `json:"g"`
 
 	// round 开始 tag=INIT
-	Seed   string `json:"seed"` // 本局信息：场数，场棒数，立直棒数，骰子A减一，骰子B减一，宝牌指示牌 1,0,0,3,2,92
-	Ten    string `json:"ten"`  // 各家点数 280,230,240,250
-	Dealer string `json:"oya"`  // 庄家 0=自家, 1=下家, 2=对家, 3=上家
-	Hai    string `json:"hai"`  // 初始手牌 30,114,108,31,78,107,25,23,2,14,122,44,49
+	Seed   string `json:"seed" xml:"seed,attr"` // 本局信息：场数，场棒数，立直棒数，骰子A减一，骰子B减一，宝牌指示牌 1,0,0,3,2,92
+	Ten    string `json:"ten" xml:"ten,attr"`   // 各家点数 280,230,240,250
+	Dealer string `json:"oya" xml:"oya,attr"`   // 庄家 0=自家, 1=下家, 2=对家, 3=上家
+	Hai    string `json:"hai" xml:"hai,attr"`   // 初始手牌 30,114,108,31,78,107,25,23,2,14,122,44,49
+	Hai0   string `json:"-" xml:"hai0,attr"`
+	Hai1   string `json:"-" xml:"hai1,attr"`
+	Hai2   string `json:"-" xml:"hai2,attr"`
+	Hai3   string `json:"-" xml:"hai3,attr"`
 
 	// 摸牌 tag=T编号，如 T68
 
 	// 副露 tag=N
-	Who  string `json:"who"` // 副露者 0=自家, 1=下家, 2=对家, 3=上家
-	Meld string `json:"m"`   // 副露编号 35914
+	Who  string `json:"who" xml:"who,attr"` // 副露者 0=自家, 1=下家, 2=对家, 3=上家
+	Meld string `json:"m" xml:"m,attr"`     // 副露编号 35914
 
 	// 杠宝牌指示牌 tag=DORA
 	// `json:"hai"` // 杠宝牌指示牌 39
 
 	// 立直声明 tag=REACH, step=1
 	// `json:"who"` // 立直者
-	Step string `json:"step"` // 1
+	Step string `json:"step" xml:"step,attr"` // 1
 
 	// 立直成功，扣1000点 tag=REACH, step=2
 	// `json:"who"` // 立直者
