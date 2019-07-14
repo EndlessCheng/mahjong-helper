@@ -600,11 +600,10 @@ func printResults14WithRisk(results14 util.Hand14AnalysisResultList, mixedRiskTa
 		return
 	}
 	// FIXME: 选择很多时如何精简何切选项？
-	const maxShown = 10
-	shownResults14 := results14
-	if len(shownResults14) > maxShown { // 限制输出数量
-		shownResults14 = shownResults14[:maxShown]
-	}
+	//const maxShown = 10
+	//if len(results14) > maxShown { // 限制输出数量
+	//	results14 = results14[:maxShown]
+	//}
 	if len(results14[0].OpenTiles) > 0 {
 		fmt.Print("鸣牌后")
 	}
