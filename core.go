@@ -265,9 +265,11 @@ func (d *roundData) doraList() (dl []int) {
 }
 
 func (d *roundData) printDiscards() {
-	// FIXME: 三麻有一家是不需要打印的
+	// 三麻的北家是不需要打印的
 	for i := len(d.players) - 1; i >= 1; i-- {
-		d.players[i].printDiscards()
+		if player := d.players[i]; d.playerNumber != 3 || player.selfWindTile != 30 {
+			player.printDiscards()
+		}
 	}
 }
 
