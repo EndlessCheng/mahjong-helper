@@ -20,3 +20,4 @@ vendor/
 config.json
 
 *.zip
+*.xml

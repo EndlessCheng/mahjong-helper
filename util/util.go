@@ -41,6 +41,15 @@ func InInts(e int, arr []int) bool {
 	return false
 }
 
+func InStrings(e string, arr []string) bool {
+	for _, _e := range arr {
+		if e == _e {
+			return true
+		}
+	}
+	return false
+}
+
 // 258m 258p 258s 12345z 在不考虑国士无双和七对子时为八向听
 var chineseShanten = []string{"和了", "听牌", "一向听", "两向听", "三向听", "四向听", "五向听", "六向听", "七向听", "八向听"}
 

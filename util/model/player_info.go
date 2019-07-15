@@ -21,6 +21,8 @@ type PlayerInfo struct {
 
 	//LeftRedFives []int // 剩余赤5个数，用于估算打点
 	//AvgUraDora float64 // 平均里宝牌个数，用于计算立直时的打点
+
+	NukiDoraNum int // 拔北宝牌数
 }
 
 func NewSimplePlayerInfo(tiles34 []int, melds []Meld) *PlayerInfo {
@@ -58,6 +60,16 @@ func (pi *PlayerInfo) CountDora() (count int) {
 	// 手牌和副露中的赤5
 	for _, num := range pi.NumRedFives {
 		count += num
+	}
+	// 拔北宝牌
+	if pi.NukiDoraNum > 0 {
+		count += pi.NukiDoraNum
+		// 特殊：西为指示牌
+		for _, doraTile := range pi.DoraTiles {
+			if doraTile == 30 {
+				count += pi.NukiDoraNum
+			}
+		}
 	}
 	return
 }
