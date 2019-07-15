@@ -313,18 +313,21 @@ func (d *tenhouRoundData) ParseDiscard() (who int, discardTile int, isRedFive bo
 	return
 }
 
+func (*tenhouRoundData) isNukiOperator(data string) bool {
+	bits, err := strconv.Atoi(data)
+	if err != nil {
+		panic(err)
+	}
+	return bits&0x4 == 0 && bits&0x18 == 0 && bits&0x20 > 0
+}
+
 func (d *tenhouRoundData) IsOpen() bool {
 	if d.msg.Tag != "N" {
 		return false
 	}
 
-	bits, err := strconv.Atoi(d.msg.Meld)
-	if err != nil {
-		panic(err)
-	}
-
 	// 除去拔北
-	return bits&0x20 == 0
+	return !d.isNukiOperator(d.msg.Meld)
 }
 
 func (d *tenhouRoundData) ParseOpen() (who int, meld *model.Meld, kanDoraIndicator int) {
@@ -396,12 +399,7 @@ func (d *tenhouRoundData) IsNukiDora() bool {
 		return false
 	}
 
-	bits, err := strconv.Atoi(d.msg.Meld)
-	if err != nil {
-		panic(err)
-	}
-
-	return bits&0x20 > 0
+	return d.isNukiOperator(d.msg.Meld)
 }
 
 func (d *tenhouRoundData) ParseNukiDora() (who int) {
