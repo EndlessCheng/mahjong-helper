@@ -876,11 +876,15 @@ func (d *roundData) analysis() error {
 		d.parser.ParseRyuukyoku()
 	case d.parser.IsNukiDora():
 		who := d.parser.ParseNukiDora()
+		player := d.players[who]
+		player.nukiDoraNum++
 		if who != 0 {
 			// 减少北的数量
 			d.descLeftCounts(30)
+		} else {
+			// 减少自己手牌中北的数量
+			d.counts[30]--
 		}
-		d.players[who].nukiDoraNum++
 	case d.parser.IsNewDora():
 		// 杠宝牌
 		// 1. 剩余牌减少
