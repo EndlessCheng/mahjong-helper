@@ -284,7 +284,6 @@ func (d *majsoulRoundData) HandleLogin() {
 func (d *majsoulRoundData) IsInit() bool {
 	msg := d.msg
 	// ResAuthGame || ActionNewRound RecordNewRound
-	// TODO: 测试下观战等
 	return msg.IsGameStart != nil || msg.MD5 != ""
 }
 
@@ -512,7 +511,6 @@ func (d *majsoulRoundData) ParseRyuukyoku() (type_ int, whos []int, points []int
 func (d *majsoulRoundData) IsNukiDora() bool {
 	msg := d.msg
 	// ActionBaBei RecordBaBei
-	// TODO: need test
 	return msg.Seat != nil && msg.Moqie != nil && msg.Tile == ""
 }
 
