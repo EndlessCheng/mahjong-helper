@@ -275,7 +275,7 @@ func (d *roundData) doraList() (dl []int) {
 func (d *roundData) printDiscards() {
 	// 三麻的北家是不需要打印的
 	for i := len(d.players) - 1; i >= 1; i-- {
-		if player := d.players[i]; d.playerNumber != 3 || player.selfWindTile != 30 {
+		if player := d.players[i]; d.playerNumber != 3 || len(player.discardTiles) > 0 {
 			player.printDiscards()
 		}
 	}

@@ -79,7 +79,7 @@ func Test_majsoul_analysis(t *testing.T) {
 func Test_tenhou_analysis(t *testing.T) {
 	debugMode = true
 
-	logFile := "log/gamedata-20190715-185005.log"
+	logFile := "log/gamedata-20190715-201349.log"
 	logData, err := ioutil.ReadFile(logFile)
 	if err != nil {
 		t.Fatal(err)
