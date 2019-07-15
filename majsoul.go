@@ -282,16 +282,16 @@ func (d *majsoulRoundData) HandleLogin() {
 
 func (d *majsoulRoundData) IsInit() bool {
 	msg := d.msg
-	// ResAuthGame || ActionNewRound
-	const playerNumber = 4
-	return len(msg.SeatList) == playerNumber || msg.MD5 != ""
+	// ResAuthGame || ActionNewRound RecordNewRound
+	// TODO: 测试下观战等
+	return msg.IsGameStart != nil || msg.MD5 != ""
 }
 
 func (d *majsoulRoundData) ParseInit() (roundNumber int, benNumber int, dealer int, doraIndicator int, handTiles []int, numRedFives []int) {
 	msg := d.msg
-	const playerNumber = 4
 
-	if len(msg.SeatList) == playerNumber {
+	if playerNumber := len(msg.SeatList); playerNumber >= 3 {
+		d.playerNumber = playerNumber
 		// 获取自家初始座位：0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
 		for i, accountID := range msg.SeatList {
 			if accountID == gameConf.currentActiveMajsoulAccountID {
@@ -300,12 +300,12 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, benNumber int, dealer i
 			}
 		}
 		// dealer: 0=自家, 1=下家, 2=对家, 3=上家
-		dealer = (playerNumber - d.selfSeat) % playerNumber
+		dealer = (4 - d.selfSeat) % 4
 		return
 	}
 	dealer = -1
 
-	roundNumber = playerNumber*(*msg.Chang) + *msg.Ju
+	roundNumber = 4*(*msg.Chang) + *msg.Ju
 	benNumber = *msg.Ben
 	doraIndicator, _ = d.mustParseMajsoulTile(msg.Dora)
 	numRedFives = make([]int, 3)
@@ -329,12 +329,8 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, benNumber int, dealer i
 
 func (d *majsoulRoundData) IsSelfDraw() bool {
 	msg := d.msg
-	// ActionDealTile
-	if msg.Seat == nil || msg.Moqie != nil || msg.Tile == "" {
-		return false
-	}
-	who := d.parseWho(*msg.Seat)
-	return who == 0
+	// ActionDealTile RecordDealTile
+	return msg.Seat != nil && msg.Tile != "" && msg.Moqie == nil && d.parseWho(*msg.Seat) == 0
 }
 
 func (d *majsoulRoundData) ParseSelfDraw() (tile int, isRedFive bool, kanDoraIndicator int) {
@@ -349,8 +345,8 @@ func (d *majsoulRoundData) ParseSelfDraw() (tile int, isRedFive bool, kanDoraInd
 
 func (d *majsoulRoundData) IsDiscard() bool {
 	msg := d.msg
-	// ActionDiscardTile
-	return msg.Moqie != nil
+	// ActionDiscardTile RecordDiscardTile
+	return msg.IsLiqi != nil
 }
 
 func (d *majsoulRoundData) ParseDiscard() (who int, discardTile int, isRedFive bool, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int) {
@@ -372,12 +368,8 @@ func (d *majsoulRoundData) ParseDiscard() (who int, discardTile int, isRedFive b
 
 func (d *majsoulRoundData) IsOpen() bool {
 	msg := d.msg
-	// ActionChiPengGang || ActionAnGangAddGang
-	if msg.Tiles == nil {
-		return false
-	}
-	majsoulTiles := d.normalTiles(msg.Tiles)
-	return len(majsoulTiles) <= 4
+	// ActionChiPengGang RecordChiPengGang || ActionAnGangAddGang RecordAnGangAddGang
+	return msg.Tiles != nil && len(d.normalTiles(msg.Tiles)) <= 4
 }
 
 func (d *majsoulRoundData) ParseOpen() (who int, meld *model.Meld, kanDoraIndicator int) {
@@ -471,7 +463,7 @@ func (d *majsoulRoundData) IsFuriten() bool {
 
 func (d *majsoulRoundData) IsRoundWin() bool {
 	msg := d.msg
-	// ActionHule
+	// ActionHule RecordHule
 	return msg.Hules != nil
 }
 
@@ -496,6 +488,7 @@ func (d *majsoulRoundData) ParseRoundWin() (whos []int, points []int) {
 
 func (d *majsoulRoundData) IsRyuukyoku() bool {
 	// TODO
+	// ActionLiuJu RecordLiuJu
 	return false
 }
 
@@ -506,18 +499,19 @@ func (d *majsoulRoundData) ParseRyuukyoku() (type_ int, whos []int, points []int
 
 // 拔北宝牌
 func (d *majsoulRoundData) IsNukiDora() bool {
-	// TODO
-	return false
+	msg := d.msg
+	// ActionBaBei RecordBaBei
+	// TODO: need test
+	return msg.Seat != nil && msg.Moqie != nil && msg.Tile == ""
 }
 
 func (d *majsoulRoundData) ParseNukiDora() (who int) {
-	// TODO
-	return
+	return d.parseWho(*d.msg.Seat)
 }
 
+// 在最后处理该项
 func (d *majsoulRoundData) IsNewDora() bool {
 	msg := d.msg
-	// 在最后处理该项
 	// ActionDealTile
 	return d.isNewDora(msg.Doras)
 }
