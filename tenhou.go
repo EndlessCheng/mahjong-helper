@@ -256,11 +256,13 @@ func (d *tenhouRoundData) ParseInit() (roundNumber int, benNumber int, dealer in
 
 	roundNumber, _ = strconv.Atoi(seedSplits[0])
 	benNumber, _ = strconv.Atoi(seedSplits[1])
-	// TODO: 重构至 core，parser 不要修改任何东西
-	if roundNumber == 0 && benNumber == 0 && util.InStrings("0", strings.Split(d.msg.Ten, ",")) {
-		d.playerNumber = 3
-	} else {
-		d.playerNumber = 4
+	// TODO: 重构至 core。parser 不要修改任何东西
+	if roundNumber == 0 && benNumber == 0 {
+		if util.InStrings("0", strings.Split(d.msg.Ten, ",")) {
+			d.playerNumber = 3
+		} else {
+			d.playerNumber = 4
+		}
 	}
 
 	dealer, _ = strconv.Atoi(d.msg.Dealer)
