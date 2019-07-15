@@ -62,7 +62,15 @@ func (pi *PlayerInfo) CountDora() (count int) {
 		count += num
 	}
 	// 拔北宝牌
-	count += pi.NukiDoraNum
+	if pi.NukiDoraNum > 0 {
+		count += pi.NukiDoraNum
+		// 特殊：西为指示牌
+		for _, doraTile := range pi.DoraTiles {
+			if doraTile == 30 {
+				count += pi.NukiDoraNum
+			}
+		}
+	}
 	return
 }
 

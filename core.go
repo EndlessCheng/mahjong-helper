@@ -121,8 +121,8 @@ func newPlayerInfo(name string, selfWindTile int) *playerInfo {
 func (p *playerInfo) doraNum(doraList []int) (doraCount int) {
 	for _, meld := range p.melds {
 		for _, tile := range meld.Tiles {
-			for _, dora := range doraList {
-				if tile == dora {
+			for _, doraTile := range doraList {
+				if tile == doraTile {
 					doraCount++
 				}
 			}
@@ -131,7 +131,15 @@ func (p *playerInfo) doraNum(doraList []int) (doraCount int) {
 			doraCount++
 		}
 	}
-	doraCount += p.nukiDoraNum
+	if p.nukiDoraNum > 0 {
+		doraCount += p.nukiDoraNum
+		// 特殊：西为指示牌
+		for _, doraTile := range doraList {
+			if doraTile == 30 {
+				doraCount += p.nukiDoraNum
+			}
+		}
+	}
 	return
 }
 
