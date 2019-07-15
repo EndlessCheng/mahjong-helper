@@ -56,7 +56,7 @@ func analysisPlayerWithRisk(playerInfo *model.PlayerInfo, mixedRiskTable riskTab
 	case 1:
 		result := util.CalculateShantenWithImproves13(playerInfo)
 		fmt.Println("当前" + util.NumberToChineseShanten(result.Shanten) + "：")
-		printWaitsWithImproves13_oneRow(result, -1, nil, mixedRiskTable)
+		printWaitsWithImproves13_oneRow(result, -1, nil, mixedRiskTable, false)
 	case 2:
 		// 分析手牌
 		shanten, results14, incShantenResults14 := util.CalculateShantenWithImproves14(playerInfo)
@@ -120,7 +120,7 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool
 
 	// 原始手牌分析结果
 	fmt.Println("当前" + util.NumberToChineseShanten(result.Shanten) + "：")
-	printWaitsWithImproves13_oneRow(result, -1, nil, mixedRiskTable)
+	printWaitsWithImproves13_oneRow(result, -1, nil, mixedRiskTable, false)
 
 	// 提示信息
 	if shanten == -1 {

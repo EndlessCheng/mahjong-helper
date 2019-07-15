@@ -437,11 +437,11 @@ func printWaitsWithImproves13_twoRows(result13 *util.Hand13AnalysisResult, disca
 
 */
 // 打印何切分析结果（单行）
-func printWaitsWithImproves13_oneRow(result13 *util.Hand13AnalysisResult, discardTile34 int, openTiles34 []int, mixedRiskTable riskTable) {
+func printWaitsWithImproves13_oneRow(result13 *util.Hand13AnalysisResult, discardTile34 int, openTiles34 []int, mixedRiskTable riskTable, highlightMixedScore bool) {
 	shanten := result13.Shanten
 
 	// 进张数
-	waitsCount, waitTiles := result13.Waits.ParseIndex()
+	waitsCount := result13.Waits.AllCount()
 	c := getWaitsCountColor(shanten, float64(waitsCount))
 	color.New(c).Printf("%2d", waitsCount)
 	// 改良进张均值
@@ -507,8 +507,13 @@ func printWaitsWithImproves13_oneRow(result13 *util.Hand13AnalysisResult, discar
 	// 手牌速度，用于快速过庄
 	if result13.MixedWaitsScore > 0 && shanten >= 1 && shanten <= 2 {
 		fmt.Print(" ")
-		mixedScore := result13.MixedWaitsScore
-		fmt.Printf("[%5.2f速度]", mixedScore)
+		fmt.Printf("[")
+		if highlightMixedScore {
+			color.New(color.FgHiWhite).Printf("%5.2f", result13.MixedWaitsScore)
+		} else {
+			fmt.Printf("%5.2f", result13.MixedWaitsScore)
+		}
+		fmt.Printf("速度]")
 	}
 
 	// 局收支
@@ -582,6 +587,7 @@ func printWaitsWithImproves13_oneRow(result13 *util.Hand13AnalysisResult, discar
 
 	// 进张类型
 	fmt.Print(" ")
+	waitTiles := result13.Waits.AvailableTiles()
 	fmt.Print(util.TilesToStrWithBracket(waitTiles))
 
 	//
@@ -599,16 +605,30 @@ func printResults14WithRisk(results14 util.Hand14AnalysisResultList, mixedRiskTa
 	if len(results14) == 0 {
 		return
 	}
+
+	maxMixedScore := -1.0
+	maxAvgImproveWaitsCount := -1.0
+	for _, result := range results14 {
+		if result.Result13.MixedWaitsScore > maxMixedScore {
+			maxMixedScore = result.Result13.MixedWaitsScore
+		}
+		if result.Result13.AvgImproveWaitsCount > maxAvgImproveWaitsCount {
+			maxAvgImproveWaitsCount = result.Result13.AvgImproveWaitsCount
+		}
+	}
+
+	if len(results14[0].OpenTiles) > 0 {
+		fmt.Print("鸣牌后")
+	}
+	fmt.Println(util.NumberToChineseShanten(results14[0].Result13.Shanten) + "：")
+
 	// FIXME: 选择很多时如何精简何切选项？
 	//const maxShown = 10
 	//if len(results14) > maxShown { // 限制输出数量
 	//	results14 = results14[:maxShown]
 	//}
-	if len(results14[0].OpenTiles) > 0 {
-		fmt.Print("鸣牌后")
-	}
-	fmt.Println(util.NumberToChineseShanten(results14[0].Result13.Shanten) + "：")
 	for _, result := range results14 {
-		printWaitsWithImproves13_oneRow(result.Result13, result.DiscardTile, result.OpenTiles, mixedRiskTable)
+		highlightMixedScore := result.Result13.MixedWaitsScore == maxMixedScore && result.Result13.AvgImproveWaitsCount == maxAvgImproveWaitsCount
+		printWaitsWithImproves13_oneRow(result.Result13, result.DiscardTile, result.OpenTiles, mixedRiskTable, highlightMixedScore)
 	}
 }

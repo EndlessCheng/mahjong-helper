@@ -40,6 +40,22 @@ func (w Waits) AllCount() (count int) {
 	return count
 }
 
+func (w Waits) AvailableTiles() []int {
+	if len(w) == 0 {
+		return nil
+	}
+
+	tileIndexes := []int{}
+	for idx, left := range w {
+		if left > 0 {
+			tileIndexes = append(tileIndexes, idx)
+		}
+	}
+	sort.Ints(tileIndexes)
+
+	return tileIndexes
+}
+
 func (w Waits) indexes() []int {
 	if len(w) == 0 {
 		return nil
