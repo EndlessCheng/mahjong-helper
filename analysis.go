@@ -56,7 +56,11 @@ func analysisPlayerWithRisk(playerInfo *model.PlayerInfo, mixedRiskTable riskTab
 	case 1:
 		result := util.CalculateShantenWithImproves13(playerInfo)
 		fmt.Println("当前" + util.NumberToChineseShanten(result.Shanten) + "：")
-		printWaitsWithImproves13_oneRow(result, -1, nil, mixedRiskTable, false)
+		r := &analysisResult{
+			result13:       result,
+			mixedRiskTable: mixedRiskTable,
+		}
+		r.printWaitsWithImproves13_oneRow()
 	case 2:
 		// 分析手牌
 		shanten, results14, incShantenResults14 := util.CalculateShantenWithImproves14(playerInfo)
@@ -120,7 +124,11 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool
 
 	// 原始手牌分析结果
 	fmt.Println("当前" + util.NumberToChineseShanten(result.Shanten) + "：")
-	printWaitsWithImproves13_oneRow(result, -1, nil, mixedRiskTable, false)
+	r := &analysisResult{
+		result13:       result,
+		mixedRiskTable: mixedRiskTable,
+	}
+	r.printWaitsWithImproves13_oneRow()
 
 	// 提示信息
 	if shanten == -1 {
@@ -154,7 +162,12 @@ func analysisHumanTiles(humanTilesInfo *model.HumanTilesInfo) (playerInfo *model
 	if err != nil {
 		return
 	}
+
 	tileCount := util.CountOfTiles34(tiles34)
+	if tileCount > 14 {
+		return nil, fmt.Errorf("输入错误：%d 张牌", tileCount)
+	}
+
 	if tileCount%3 == 0 {
 		color.HiYellow("%s 是 %d 张牌\n助手随机补了一张牌", humanTilesInfo.HumanTiles, tileCount)
 		util.RandomAddTile(tiles34)

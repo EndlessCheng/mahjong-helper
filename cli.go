@@ -424,6 +424,17 @@ func printWaitsWithImproves13_twoRows(result13 *util.Hand13AnalysisResult, disca
 	fmt.Println()
 }
 
+type analysisResult struct {
+	discardTile34 int
+	openTiles34   []int
+	result13      *util.Hand13AnalysisResult
+
+	mixedRiskTable riskTable
+
+	highlightAvgImproveWaitsCount bool
+	highlightMixedScore           bool
+}
+
 /*
 4[ 4.56] 切 8饼 => 44.50% 参考和率[ 4 改良] [7p 7s] [默听2000] [三色] [振听]
 
@@ -437,7 +448,11 @@ func printWaitsWithImproves13_twoRows(result13 *util.Hand13AnalysisResult, disca
 
 */
 // 打印何切分析结果（单行）
-func printWaitsWithImproves13_oneRow(result13 *util.Hand13AnalysisResult, discardTile34 int, openTiles34 []int, mixedRiskTable riskTable, highlightMixedScore bool) {
+func (r *analysisResult) printWaitsWithImproves13_oneRow() {
+	discardTile34 := r.discardTile34
+	openTiles34 := r.openTiles34
+	result13 := r.result13
+
 	shanten := result13.Shanten
 
 	// 进张数
@@ -446,7 +461,11 @@ func printWaitsWithImproves13_oneRow(result13 *util.Hand13AnalysisResult, discar
 	color.New(c).Printf("%2d", waitsCount)
 	// 改良进张均值
 	if len(result13.Improves) > 0 {
-		fmt.Printf("[%5.2f]", result13.AvgImproveWaitsCount)
+		if r.highlightAvgImproveWaitsCount {
+			color.New(color.FgHiWhite).Printf("[%5.2f]", result13.AvgImproveWaitsCount)
+		} else {
+			fmt.Printf("[%5.2f]", result13.AvgImproveWaitsCount)
+		}
 	} else {
 		fmt.Print(strings.Repeat(" ", 7))
 	}
@@ -470,9 +489,9 @@ func printWaitsWithImproves13_oneRow(result13 *util.Hand13AnalysisResult, discar
 		if discardTile34 >= 27 {
 			tileZH = " " + tileZH
 		}
-		if mixedRiskTable != nil {
+		if r.mixedRiskTable != nil {
 			// 若有实际危险度，则根据实际危险度来显示舍牌危险度
-			risk := mixedRiskTable[discardTile34]
+			risk := r.mixedRiskTable[discardTile34]
 			if risk == 0 {
 				fmt.Print(tileZH)
 			} else {
@@ -507,13 +526,11 @@ func printWaitsWithImproves13_oneRow(result13 *util.Hand13AnalysisResult, discar
 	// 手牌速度，用于快速过庄
 	if result13.MixedWaitsScore > 0 && shanten >= 1 && shanten <= 2 {
 		fmt.Print(" ")
-		fmt.Printf("[")
-		if highlightMixedScore {
-			color.New(color.FgHiWhite).Printf("%5.2f", result13.MixedWaitsScore)
+		if r.highlightMixedScore {
+			color.New(color.FgHiWhite).Printf("[%5.2f速度]", result13.MixedWaitsScore)
 		} else {
-			fmt.Printf("%5.2f", result13.MixedWaitsScore)
+			fmt.Printf("[%5.2f速度]", result13.MixedWaitsScore)
 		}
-		fmt.Printf("速度]")
 	}
 
 	// 局收支
@@ -628,7 +645,14 @@ func printResults14WithRisk(results14 util.Hand14AnalysisResultList, mixedRiskTa
 	//	results14 = results14[:maxShown]
 	//}
 	for _, result := range results14 {
-		highlightMixedScore := result.Result13.MixedWaitsScore == maxMixedScore && result.Result13.AvgImproveWaitsCount == maxAvgImproveWaitsCount
-		printWaitsWithImproves13_oneRow(result.Result13, result.DiscardTile, result.OpenTiles, mixedRiskTable, highlightMixedScore)
+		r := &analysisResult{
+			result.DiscardTile,
+			result.OpenTiles,
+			result.Result13,
+			mixedRiskTable,
+			result.Result13.AvgImproveWaitsCount == maxAvgImproveWaitsCount,
+			result.Result13.MixedWaitsScore == maxMixedScore,
+		}
+		r.printWaitsWithImproves13_oneRow()
 	}
 }
