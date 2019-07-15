@@ -160,6 +160,7 @@ func (d *majsoulRoundData) normalTiles(tiles interface{}) (majsoulTiles []string
 
 func (d *majsoulRoundData) parseWho(seat int) int {
 	// 转换成 0=自家, 1=下家, 2=对家, 3=上家
+	// 对三麻四麻均适用
 	who := (seat + d.dealer - d.roundNumber%4 + 4) % 4
 	return who
 }
@@ -221,7 +222,7 @@ func (d *majsoulRoundData) SkipMessage() bool {
 		// msg.SeatList 必须为 nil
 		if msg.ReadyIDList != nil {
 			// 打印准备信息
-			fmt.Printf("等待玩家准备 (%d/%d) %v\n", len(msg.ReadyIDList), 4, msg.ReadyIDList)
+			fmt.Printf("等待玩家准备 (%d/%d) %v\n", len(msg.ReadyIDList), d.playerNumber, msg.ReadyIDList)
 		}
 	}
 

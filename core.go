@@ -485,20 +485,16 @@ func (d *roundData) analysis() error {
 			d.reset(roundNumber, benNumber, dealer)
 			d.gameMode = gameModeMatch // TODO: 牌谱模式？
 		case dataSourceTypeMajsoul:
-			playerNumber := len(d.players)
 			if dealer != -1 { // 先就坐，还没洗牌呢~
 				// 设置第一局的 dealer
 				d.reset(0, 0, dealer)
 				d.gameMode = gameModeMatch
-
 				fmt.Printf("游戏即将开始，您分配到的座位是：")
-				windTile := 27 + (playerNumber-dealer)%playerNumber
-				color.HiGreen(util.MahjongZH[windTile])
-
+				color.HiGreen(util.MahjongZH[d.players[0].selfWindTile])
 				return nil
 			} else {
 				// 根据 selfSeat 和当前的 roundNumber 计算当前局的 dealer
-				newDealer := (len(d.players) - d.parser.GetSelfSeat() + roundNumber) % len(d.players)
+				newDealer := (4 - d.parser.GetSelfSeat() + roundNumber) % 4
 				// 新的一局
 				d.reset(roundNumber, benNumber, newDealer)
 			}
