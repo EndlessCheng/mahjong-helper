@@ -481,6 +481,10 @@ func (d *majsoulRoundData) ParseRoundWin() (whos []int, points []int) {
 			} else {
 				point = result.PointZimoQin + 2*result.PointZimoXian
 			}
+			if d.playerNumber == 3 {
+				// 自摸损（一个子家）
+				point -= result.PointZimoXian
+			}
 		}
 		points = append(points, point)
 	}
