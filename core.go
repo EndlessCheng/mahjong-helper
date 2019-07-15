@@ -377,10 +377,15 @@ func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
 	return riList
 }
 
+// TODO: 特殊处理w立直
 func (d *roundData) isPlayerDaburii(who int) bool {
 	// w立直成立的前提是没有任何玩家副露
 	for _, p := range d.players {
 		if len(p.melds) > 0 {
+			return false
+		}
+		// 对于三麻来说，还不能有拔北
+		if p.nukiDoraNum > 0 {
 			return false
 		}
 	}
@@ -884,6 +889,10 @@ func (d *roundData) analysis() error {
 		} else {
 			// 减少自己手牌中北的数量
 			d.counts[30]--
+		}
+		// 消除一发
+		for _, player := range d.players {
+			player.canIppatsu = false
 		}
 	case d.parser.IsNewDora():
 		// 杠宝牌
