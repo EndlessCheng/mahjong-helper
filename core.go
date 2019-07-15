@@ -852,7 +852,7 @@ func (d *roundData) analysis() error {
 		// 为了方便解析牌谱，这里尽可能地解析副露
 		// TODO: 提醒: 消除海底/避免河底/型听
 		// FIXME: 最后一张牌是无法鸣牌的
-		allowChi := who == 3
+		allowChi := d.playerNumber != 3 && who == 3
 		return analysisMeld(playerInfo, discardTile, isRedFive, allowChi, mixedRiskTable)
 	case d.parser.IsRoundWin():
 		// TODO: 解析天凤牌谱 - 注意 skipOutput
