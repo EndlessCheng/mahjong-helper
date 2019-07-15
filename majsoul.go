@@ -303,6 +303,12 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, benNumber int, dealer i
 		// dealer: 0=自家, 1=下家, 2=对家, 3=上家
 		dealer = (4 - d.selfSeat) % 4
 		return
+	} else if len(msg.Tiles2) > 0 {
+		if len(msg.Tiles3) > 0 {
+			d.playerNumber = 4
+		} else {
+			d.playerNumber = 3
+		}
 	}
 	dealer = -1
 

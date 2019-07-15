@@ -118,6 +118,27 @@ func newPlayerInfo(name string, selfWindTile int) *playerInfo {
 	}
 }
 
+func modifySanninPlayerInfoList(lst []*playerInfo, roundNumber int) []*playerInfo {
+	windToIdxMap := map[int]int{}
+	for i, pi := range lst {
+		windToIdxMap[pi.selfWindTile] = i
+	}
+
+	idxS, idxW, idxN := windToIdxMap[28], windToIdxMap[29], windToIdxMap[30]
+	switch roundNumber % 4 {
+	case 0:
+	case 1:
+		// 北和西交换
+		lst[idxN].selfWindTile, lst[idxW].selfWindTile = lst[idxW].selfWindTile, lst[idxN].selfWindTile
+	case 2:
+		// 北和西交换，再和南交换
+		lst[idxN].selfWindTile, lst[idxW].selfWindTile, lst[idxS].selfWindTile = lst[idxW].selfWindTile, lst[idxS].selfWindTile, lst[idxN].selfWindTile
+	default:
+		panic("[modifySanninPlayerInfoList] 代码有误")
+	}
+	return lst
+}
+
 func (p *playerInfo) doraNum(doraList []int) (doraCount int) {
 	for _, meld := range p.melds {
 		for _, tile := range meld.Tiles {
@@ -235,6 +256,7 @@ func (d *roundData) reset(roundNumber int, benNumber int, dealer int) {
 		for i := 1; i <= 7; i++ {
 			newData.leftCounts[i] = 0
 		}
+		newData.players = modifySanninPlayerInfoList(newData.players, roundNumber)
 	}
 	*d = *newData
 }
@@ -275,7 +297,7 @@ func (d *roundData) doraList() (dl []int) {
 func (d *roundData) printDiscards() {
 	// 三麻的北家是不需要打印的
 	for i := len(d.players) - 1; i >= 1; i-- {
-		if player := d.players[i]; d.playerNumber != 3 || len(player.discardTiles) > 0 {
+		if player := d.players[i]; d.playerNumber != 3 || player.selfWindTile != 30 {
 			player.printDiscards()
 		}
 	}

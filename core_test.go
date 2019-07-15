@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"encoding/json"
 	"github.com/EndlessCheng/mahjong-helper/util/debug"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_majsoul_analysis(t *testing.T) {
@@ -141,4 +142,35 @@ func Test_tenhou_analysis(t *testing.T) {
 			fmt.Println("错误：", err)
 		}
 	}
+}
+
+func Test_modifySanninPlayerInfoList(t *testing.T) {
+	assert := assert.New(t)
+
+	roundNumber := 0
+	dealer := 2
+	rd := newRoundData(nil, roundNumber, 0, dealer)
+	newPlayers := modifySanninPlayerInfoList(rd.players, roundNumber)
+	assert.Equal(newPlayers[0].selfWindTile, 29)
+	assert.Equal(newPlayers[1].selfWindTile, 30)
+	assert.Equal(newPlayers[2].selfWindTile, 27)
+	assert.Equal(newPlayers[3].selfWindTile, 28)
+
+	roundNumber = 1
+	dealer = 3
+	rd = newRoundData(nil, roundNumber, 0, dealer)
+	newPlayers = modifySanninPlayerInfoList(rd.players, roundNumber)
+	assert.Equal(newPlayers[0].selfWindTile, 28)
+	assert.Equal(newPlayers[1].selfWindTile, 30)
+	assert.Equal(newPlayers[2].selfWindTile, 29)
+	assert.Equal(newPlayers[3].selfWindTile, 27)
+
+	roundNumber = 2
+	dealer = 0
+	rd = newRoundData(nil, roundNumber, 0, dealer)
+	newPlayers = modifySanninPlayerInfoList(rd.players, roundNumber)
+	assert.Equal(newPlayers[0].selfWindTile, 27)
+	assert.Equal(newPlayers[1].selfWindTile, 30)
+	assert.Equal(newPlayers[2].selfWindTile, 28)
+	assert.Equal(newPlayers[3].selfWindTile, 29)
 }
