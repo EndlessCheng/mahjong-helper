@@ -504,6 +504,17 @@ func (d *majsoulRoundData) ParseRyuukyoku() (type_ int, whos []int, points []int
 	return
 }
 
+// 拔北宝牌
+func (d *majsoulRoundData) IsNukiDora() bool {
+	// TODO
+	return false
+}
+
+func (d *majsoulRoundData) ParseNukiDora() (who int) {
+	// TODO
+	return
+}
+
 func (d *majsoulRoundData) IsNewDora() bool {
 	msg := d.msg
 	// 在最后处理该项

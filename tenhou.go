@@ -32,6 +32,7 @@ type tenhouMessage struct {
 	//G string `json:"g"`
 
 	// round 开始 tag=INIT
+	// 注意无论是三麻还是四麻，南1的场数都是4
 	Seed   string `json:"seed" xml:"seed,attr"` // 本局信息：场数，场棒数，立直棒数，骰子A减一，骰子B减一，宝牌指示牌 1,0,0,3,2,92
 	Ten    string `json:"ten" xml:"ten,attr"`   // 各家点数 280,230,240,250
 	Dealer string `json:"oya" xml:"oya,attr"`   // 庄家 0=自家, 1=下家, 2=对家, 3=上家
@@ -189,7 +190,7 @@ func (d *tenhouRoundData) _parseTenhouMeld(data string) (meldType int, tenhouMel
 		return d._parsePon(bits) // 包含加杠
 	case bits&0x20 > 0:
 		// 拔北
-		panic("暂不支持三人麻将")
+		panic("[_parseTenhouMeld] 代码有误")
 	default:
 		return d._parseKan(bits)
 	}
@@ -252,8 +253,16 @@ func (d *tenhouRoundData) ParseInit() (roundNumber int, benNumber int, dealer in
 	if len(seedSplits) != 6 {
 		panic(fmt.Sprintln("seed 解析失败", d.msg.Seed))
 	}
+
 	roundNumber, _ = strconv.Atoi(seedSplits[0])
 	benNumber, _ = strconv.Atoi(seedSplits[1])
+	// TODO: 重构至 core，parser 不要修改任何东西
+	if roundNumber == 0 && benNumber == 0 && util.InStrings("0", strings.Split(d.msg.Ten, ",")) {
+		d.playerNumber = 3
+	} else {
+		d.playerNumber = 4
+	}
+
 	dealer, _ = strconv.Atoi(d.msg.Dealer)
 	doraIndicator, _ = d._parseTenhouTile(seedSplits[5])
 	numRedFives = make([]int, 3)
@@ -305,7 +314,17 @@ func (d *tenhouRoundData) ParseDiscard() (who int, discardTile int, isRedFive bo
 }
 
 func (d *tenhouRoundData) IsOpen() bool {
-	return d.msg.Tag == "N"
+	if d.msg.Tag != "N" {
+		return false
+	}
+
+	bits, err := strconv.Atoi(d.msg.Meld)
+	if err != nil {
+		panic(err)
+	}
+
+	// 除去拔北
+	return bits&0x20 == 0
 }
 
 func (d *tenhouRoundData) ParseOpen() (who int, meld *model.Meld, kanDoraIndicator int) {
@@ -369,6 +388,24 @@ func (d *tenhouRoundData) ParseRyuukyoku() (type_ int, whos []int, points []int)
 	d.isRoundEnd = true
 
 	// TODO
+	return
+}
+
+func (d *tenhouRoundData) IsNukiDora() bool {
+	if d.msg.Tag != "N" {
+		return false
+	}
+
+	bits, err := strconv.Atoi(d.msg.Meld)
+	if err != nil {
+		panic(err)
+	}
+
+	return bits&0x20 > 0
+}
+
+func (d *tenhouRoundData) ParseNukiDora() (who int) {
+	who, _ = strconv.Atoi(d.msg.Who)
 	return
 }
 

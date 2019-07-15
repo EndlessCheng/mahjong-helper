@@ -16,9 +16,14 @@ func InitLeftTiles34WithTiles34(tiles34 []int) []int {
 }
 
 // 根据宝牌指示牌计算出宝牌
-func DoraTile(doraIndicator int) (dora int) {
+// isSannin: 是否为三麻
+func DoraTile(doraIndicator int, isSannin bool) (dora int) {
 	if doraIndicator < 27 { // mps
 		if doraIndicator%9 < 8 {
+			if isSannin && doraIndicator == 0 {
+				// 三麻的1m->9m
+				return 8
+			}
 			return doraIndicator + 1
 		}
 		return doraIndicator - 8
@@ -36,9 +41,10 @@ func DoraTile(doraIndicator int) (dora int) {
 }
 
 // 根据宝牌指示牌计算出宝牌
-func DoraList(doraIndicators []int) (doraList []int) {
+// isSannin: 是否为三麻
+func DoraList(doraIndicators []int, isSannin bool) (doraList []int) {
 	for _, doraIndicator := range doraIndicators {
-		doraList = append(doraList, DoraTile(doraIndicator))
+		doraList = append(doraList, DoraTile(doraIndicator, isSannin))
 	}
 	return
 }

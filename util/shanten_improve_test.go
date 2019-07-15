@@ -265,7 +265,7 @@ func bestHumanDiscardTile2(t *testing.T, humanTiles string, doraIndicatorHumanTi
 		for _, tile := range doraIndicators {
 			playerInfo.LeftTiles34[tile]--
 		}
-		playerInfo.DoraTiles = model.DoraList(doraIndicators)
+		playerInfo.DoraTiles = model.DoraList(doraIndicators, false)
 	}
 	playerInfo.NumRedFives = numRedFives
 	_, results, _ := CalculateShantenWithImproves14(playerInfo)

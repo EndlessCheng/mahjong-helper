@@ -26,7 +26,7 @@ type DataParser interface {
 	HandleLogin()
 
 	// round 开始/重连
-	// roundNumber: 场数（如东1为0，东2为1，...，南1为4，...，南4为7，...）
+	// roundNumber: 场数（如东1为0，东2为1，...，南1为4，...，南4为7，...），对于三麻来说南1也是4
 	// benNumber: 本场数
 	// dealer: 庄家 0-3
 	// doraIndicator: 宝牌指示牌
@@ -73,6 +73,10 @@ type DataParser interface {
 	IsRyuukyoku() bool
 	ParseRyuukyoku() (type_ int, whos []int, points []int)
 
+	// 拔北宝牌
+	IsNukiDora() bool
+	ParseNukiDora() (who int)
+
 	// 这一项放在末尾处理
 	// 杠宝牌（雀魂在暗杠后的摸牌时出现）
 	// kanDoraIndicator: 0-33
@@ -100,6 +104,8 @@ type playerInfo struct {
 
 	reachTileAtGlobal int // 立直宣言牌在 globalDiscardTiles 中的下标，初始为 -1
 	reachTileAt       int // 立直宣言牌在 discardTiles 中的下标，初始为 -1
+
+	nukiDoraNum int // 拔北宝牌数
 }
 
 func newPlayerInfo(name string, selfWindTile int) *playerInfo {
@@ -112,12 +118,34 @@ func newPlayerInfo(name string, selfWindTile int) *playerInfo {
 	}
 }
 
+func (p *playerInfo) doraNum(doraList []int) (doraCount int) {
+	for _, meld := range p.melds {
+		for _, tile := range meld.Tiles {
+			for _, dora := range doraList {
+				if tile == dora {
+					doraCount++
+				}
+			}
+		}
+		if meld.ContainRedFive {
+			doraCount++
+		}
+	}
+	doraCount += p.nukiDoraNum
+	return
+}
+
+//
+
 type roundData struct {
 	parser DataParser
 
 	gameMode gameMode
 
 	skipOutput bool
+
+	// 玩家数，3 为三麻，4 为四麻
+	playerNumber int
 
 	// 场数（如东1为0，东2为1，...，南1为4，...）
 	roundNumber int
@@ -155,6 +183,7 @@ type roundData struct {
 }
 
 func newRoundData(parser DataParser, roundNumber int, benNumber int, dealer int) *roundData {
+	// 无论是三麻还是四麻，都视作四个人
 	const playerNumber = 4
 	roundWindTile := 27 + roundNumber/playerNumber
 	playerWindTile := make([]int, playerNumber)
@@ -188,9 +217,17 @@ func newGame(parser DataParser) *roundData {
 func (d *roundData) reset(roundNumber int, benNumber int, dealer int) {
 	skipOutput := d.skipOutput
 	gameMode := d.gameMode
+	playerNumber := d.playerNumber
 	newData := newRoundData(d.parser, roundNumber, benNumber, dealer)
 	newData.skipOutput = skipOutput
 	newData.gameMode = gameMode
+	newData.playerNumber = playerNumber
+	if playerNumber == 3 {
+		// 三麻没有 2-8m
+		for i := 1; i <= 7; i++ {
+			newData.leftCounts[i] = 0
+		}
+	}
 	*d = *newData
 }
 
@@ -210,6 +247,7 @@ func (d *roundData) descLeftCounts(tile int) {
 	}
 }
 
+// 杠！
 func (d *roundData) newDora(kanDoraIndicator int) {
 	d.doraIndicators = append(d.doraIndicators, kanDoraIndicator)
 	d.descLeftCounts(kanDoraIndicator)
@@ -223,10 +261,11 @@ func (d *roundData) newDora(kanDoraIndicator int) {
 
 // 根据宝牌指示牌计算出宝牌
 func (d *roundData) doraList() (dl []int) {
-	return model.DoraList(d.doraIndicators)
+	return model.DoraList(d.doraIndicators, d.playerNumber == 3)
 }
 
 func (d *roundData) printDiscards() {
+	// FIXME: 三麻有一家是不需要打印的
 	for i := len(d.players) - 1; i >= 1; i-- {
 		d.players[i].printDiscards()
 	}
@@ -307,20 +346,7 @@ func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
 			ronPoint = util.RonPointRiichiHiIppatsu
 		case player.isNaki:
 			// 副露时的荣和点数（非常粗略地估计）
-			doraCount := 0
-			doraList := d.doraList()
-			for _, meld := range player.melds {
-				for _, tile := range meld.Tiles {
-					for _, dora := range doraList {
-						if tile == dora {
-							doraCount++
-						}
-					}
-				}
-				if meld.ContainRedFive {
-					doraCount++
-				}
-			}
+			doraCount := player.doraNum(d.doraList())
 			ronPoint = util.RonPointOtherNakiWithDora(doraCount)
 		default:
 			// 默听时的荣和点数
@@ -359,6 +385,7 @@ func (d *roundData) isPlayerDaburii(who int) bool {
 	return d.players[who].reachTileAt == 0
 }
 
+// 自家的 PlayerInfo
 func (d *roundData) newModelPlayerInfo() *model.PlayerInfo {
 	melds := []model.Meld{}
 	for _, m := range d.players[0].melds {
@@ -382,6 +409,8 @@ func (d *roundData) newModelPlayerInfo() *model.PlayerInfo {
 
 		DiscardTiles: normalDiscardTiles(selfPlayer.discardTiles),
 		LeftTiles34:  d.leftCounts,
+
+		NukiDoraNum: selfPlayer.nukiDoraNum,
 	}
 }
 
@@ -438,7 +467,7 @@ func (d *roundData) analysis() error {
 		roundNumber, benNumber, dealer, doraIndicator, hands, numRedFives := d.parser.ParseInit()
 		switch d.parser.GetDataSourceType() {
 		case dataSourceTypeTenhou:
-			d.reset(roundNumber, 0, dealer)
+			d.reset(roundNumber, benNumber, dealer)
 			d.gameMode = gameModeMatch // TODO: 牌谱模式？
 		case dataSourceTypeMajsoul:
 			playerNumber := len(d.players)
@@ -843,6 +872,13 @@ func (d *roundData) analysis() error {
 	case d.parser.IsRyuukyoku():
 		// TODO
 		d.parser.ParseRyuukyoku()
+	case d.parser.IsNukiDora():
+		who := d.parser.ParseNukiDora()
+		if who != 0 {
+			// 减少北的数量
+			d.descLeftCounts(30)
+		}
+		d.players[who].nukiDoraNum++
 	case d.parser.IsNewDora():
 		// 杠宝牌
 		// 1. 剩余牌减少
