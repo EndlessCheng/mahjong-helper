@@ -473,11 +473,6 @@
               "type": "HighestHuRecord",
               "id": 4
             },
-            "recent_ranks": {
-              "rule": "repeated",
-              "type": "uint32",
-              "id": 5
-            },
             "recent_20_hu_summary": {
               "type": "Liqi20Summary",
               "id": 6
@@ -485,6 +480,11 @@
             "recent_10_hu_summary": {
               "type": "LiQi10Summary",
               "id": 7
+            },
+            "recent_10_game_result": {
+              "rule": "repeated",
+              "type": "GameResult",
+              "id": 8
             }
           },
           "nested": {
@@ -585,6 +585,18 @@
                   "id": 2
                 }
               }
+            },
+            "GameResult": {
+              "fields": {
+                "rank": {
+                  "type": "uint32",
+                  "id": 1
+                },
+                "final_point": {
+                  "type": "int32",
+                  "id": 2
+                }
+              }
             }
           }
         },
@@ -650,6 +662,14 @@
               "type": "string",
               "id": 8
             },
+            "email": {
+              "type": "string",
+              "id": 9
+            },
+            "email_verify": {
+              "type": "uint32",
+              "id": 10
+            },
             "gold": {
               "type": "uint32",
               "id": 11
@@ -679,8 +699,8 @@
               "type": "AccountLevel",
               "id": 21
             },
-            "shilian": {
-              "type": "AccountShiLian",
+            "level3": {
+              "type": "AccountLevel",
               "id": 22
             }
           },
@@ -895,6 +915,10 @@
             "playing_game": {
               "type": "AccountPlayingGame",
               "id": 12
+            },
+            "level3": {
+              "type": "AccountLevel",
+              "id": 13
             }
           }
         },
@@ -919,6 +943,10 @@
             "level": {
               "type": "AccountLevel",
               "id": 5
+            },
+            "level3": {
+              "type": "AccountLevel",
+              "id": 6
             }
           }
         },
@@ -947,6 +975,10 @@
             "character": {
               "type": "Character",
               "id": 6
+            },
+            "level3": {
+              "type": "AccountLevel",
+              "id": 7
             }
           }
         },
@@ -1297,6 +1329,18 @@
             },
             "count": {
               "type": "uint32",
+              "id": 2
+            }
+          }
+        },
+        "OpenResult": {
+          "fields": {
+            "reward": {
+              "type": "RewardSlot",
+              "id": 1
+            },
+            "replace": {
+              "type": "RewardSlot",
               "id": 2
             }
           }
@@ -2174,6 +2218,38 @@
             }
           }
         },
+        "ChestDataV2": {
+          "fields": {
+            "chest_id": {
+              "type": "uint32",
+              "id": 1
+            },
+            "total_open_count": {
+              "type": "uint32",
+              "id": 2
+            },
+            "face_black_count": {
+              "type": "uint32",
+              "id": 3
+            }
+          }
+        },
+        "FaithData": {
+          "fields": {
+            "faith_id": {
+              "type": "uint32",
+              "id": 1
+            },
+            "total_open_count": {
+              "type": "uint32",
+              "id": 2
+            },
+            "consume_count": {
+              "type": "uint32",
+              "id": 3
+            }
+          }
+        },
         "CustomizedContestBase": {
           "fields": {
             "unique_id": {
@@ -2405,6 +2481,10 @@
                 "level": {
                   "type": "AccountLevel",
                   "id": 7
+                },
+                "level3": {
+                  "type": "AccountLevel",
+                  "id": 8
                 }
               }
             }
@@ -2489,6 +2569,43 @@
             "count": {
               "type": "uint32",
               "id": 2
+            }
+          }
+        },
+        "ActivityAccumulatedPointData": {
+          "fields": {
+            "activity_id": {
+              "type": "uint32",
+              "id": 1
+            },
+            "point": {
+              "type": "int32",
+              "id": 2
+            },
+            "gained_reward_list": {
+              "rule": "repeated",
+              "type": "uint32",
+              "id": 3
+            }
+          }
+        },
+        "ActivityRankPointData": {
+          "fields": {
+            "leaderboard_id": {
+              "type": "uint32",
+              "id": 1
+            },
+            "point": {
+              "type": "int32",
+              "id": 2
+            },
+            "gained_reward": {
+              "type": "bool",
+              "id": 3
+            },
+            "gainable_time": {
+              "type": "uint32",
+              "id": 4
             }
           }
         },
@@ -2819,6 +2936,10 @@
               "requestType": "ReqLogin",
               "responseType": "ResLogin"
             },
+            "emailLogin": {
+              "requestType": "ReqEmailLogin",
+              "responseType": "ResLogin"
+            },
             "oauth2Auth": {
               "requestType": "ReqOauth2Auth",
               "responseType": "ResOauth2Auth"
@@ -2839,12 +2960,20 @@
               "requestType": "ReqCreatePhoneVerifyCode",
               "responseType": "ResCommon"
             },
+            "createEmailVerifyCode": {
+              "requestType": "ReqCreateEmailVerifyCode",
+              "responseType": "ResCommon"
+            },
             "verfifyCodeForSecure": {
               "requestType": "ReqVerifyCodeForSecure",
               "responseType": "ResVerfiyCodeForSecure"
             },
             "bindPhoneNumber": {
               "requestType": "ReqBindPhoneNumber",
+              "responseType": "ResCommon"
+            },
+            "bindEmail": {
+              "requestType": "ReqBindEmail",
               "responseType": "ResCommon"
             },
             "modifyPassword": {
@@ -2964,7 +3093,7 @@
               "responseType": "ResChangeCollectedGameRecordRemarks"
             },
             "fetchLevelLeaderboard": {
-              "requestType": "ReqCommon",
+              "requestType": "ReqLevelLeaderboard",
               "responseType": "ResLevelLeaderboard"
             },
             "fetchMultiAccountBrief": {
@@ -3010,6 +3139,14 @@
             "useBagItem": {
               "requestType": "ReqUseBagItem",
               "responseType": "ResCommon"
+            },
+            "openManualItem": {
+              "requestType": "ReqOpenManualItem",
+              "responseType": "ResCommon"
+            },
+            "openRandomRewardItem": {
+              "requestType": "ReqOpenRandomRewardItem",
+              "responseType": "ResOpenRandomRewardItem"
             },
             "composeShard": {
               "requestType": "ReqComposeShard",
@@ -3422,6 +3559,18 @@
             "completeActivityTask": {
               "requestType": "ReqCompleteActivityTask",
               "responseType": "ResCommon"
+            },
+            "gainAccumulatedPointActivityReward": {
+              "requestType": "ReqGainAccumulatedPointActivityReward",
+              "responseType": "ResCommon"
+            },
+            "fetchRankPointLeaderboard": {
+              "requestType": "ReqFetchRankPointLeaderboard",
+              "responseType": "ResFetchRankPointLeaderboard"
+            },
+            "gainRankPointReward": {
+              "requestType": "ReqGainRankPointReward",
+              "responseType": "ResCommon"
             }
           }
         },
@@ -3446,6 +3595,10 @@
             "password": {
               "type": "string",
               "id": 2
+            },
+            "code": {
+              "type": "string",
+              "id": 3
             }
           }
         },
@@ -3522,6 +3675,43 @@
             }
           }
         },
+        "ReqEmailLogin": {
+          "fields": {
+            "email": {
+              "type": "string",
+              "id": 1
+            },
+            "password": {
+              "type": "string",
+              "id": 2
+            },
+            "reconnect": {
+              "type": "bool",
+              "id": 3
+            },
+            "device": {
+              "type": "ClientDeviceInfo",
+              "id": 4
+            },
+            "random_key": {
+              "type": "string",
+              "id": 5
+            },
+            "client_version": {
+              "type": "string",
+              "id": 6
+            },
+            "gen_access_token": {
+              "type": "bool",
+              "id": 7
+            },
+            "currency_platforms": {
+              "rule": "repeated",
+              "type": "uint32",
+              "id": 8
+            }
+          }
+        },
         "ReqBindAccount": {
           "fields": {
             "account": {
@@ -3537,6 +3727,18 @@
         "ReqCreatePhoneVerifyCode": {
           "fields": {
             "phone": {
+              "type": "string",
+              "id": 1
+            },
+            "usage": {
+              "type": "uint32",
+              "id": 2
+            }
+          }
+        },
+        "ReqCreateEmailVerifyCode": {
+          "fields": {
+            "email": {
               "type": "string",
               "id": 1
             },
@@ -3579,6 +3781,22 @@
             "secure_token": {
               "type": "string",
               "id": 2
+            }
+          }
+        },
+        "ReqBindEmail": {
+          "fields": {
+            "email": {
+              "type": "string",
+              "id": 1
+            },
+            "code": {
+              "type": "string",
+              "id": 2
+            },
+            "password": {
+              "type": "string",
+              "id": 3
             }
           }
         },
@@ -4119,6 +4337,14 @@
             }
           }
         },
+        "ReqLevelLeaderboard": {
+          "fields": {
+            "type": {
+              "type": "uint32",
+              "id": 1
+            }
+          }
+        },
         "ResLevelLeaderboard": {
           "fields": {
             "error": {
@@ -4336,6 +4562,43 @@
             "item_id": {
               "type": "uint32",
               "id": 1
+            }
+          }
+        },
+        "ReqOpenManualItem": {
+          "fields": {
+            "item_id": {
+              "type": "uint32",
+              "id": 1
+            },
+            "count": {
+              "type": "uint32",
+              "id": 2
+            },
+            "select_id": {
+              "type": "uint32",
+              "id": 3
+            }
+          }
+        },
+        "ReqOpenRandomRewardItem": {
+          "fields": {
+            "item_id": {
+              "type": "uint32",
+              "id": 1
+            }
+          }
+        },
+        "ResOpenRandomRewardItem": {
+          "fields": {
+            "error": {
+              "type": "Error",
+              "id": 1
+            },
+            "results": {
+              "rule": "repeated",
+              "type": "OpenResult",
+              "id": 2
             }
           }
         },
@@ -5511,20 +5774,6 @@
               "type": "uint32",
               "id": 3
             }
-          },
-          "nested": {
-            "OpenResult": {
-              "fields": {
-                "reward": {
-                  "type": "RewardSlot",
-                  "id": 1
-                },
-                "replace": {
-                  "type": "RewardSlot",
-                  "id": 2
-                }
-              }
-            }
           }
         },
         "ReqBuyFromChestShop": {
@@ -5887,9 +6136,9 @@
               "type": "uint32",
               "id": 2
             },
-            "chests": {
+            "faiths": {
               "rule": "repeated",
-              "type": "ChestData",
+              "type": "FaithData",
               "id": 3
             }
           }
@@ -6194,6 +6443,16 @@
               "rule": "repeated",
               "type": "TaskProgress",
               "id": 3
+            },
+            "accumulated_point_list": {
+              "rule": "repeated",
+              "type": "ActivityAccumulatedPointData",
+              "id": 4
+            },
+            "rank_data_list": {
+              "rule": "repeated",
+              "type": "ActivityRankPointData",
+              "id": 5
             }
           }
         },
@@ -6223,6 +6482,77 @@
             "task_id": {
               "type": "uint32",
               "id": 1
+            }
+          }
+        },
+        "ReqGainAccumulatedPointActivityReward": {
+          "fields": {
+            "activity_id": {
+              "type": "uint32",
+              "id": 1
+            },
+            "reward_id": {
+              "type": "uint32",
+              "id": 2
+            }
+          }
+        },
+        "ReqFetchRankPointLeaderboard": {
+          "fields": {
+            "leaderboard_id": {
+              "type": "uint32",
+              "id": 1
+            }
+          }
+        },
+        "ResFetchRankPointLeaderboard": {
+          "fields": {
+            "error": {
+              "type": "Error",
+              "id": 1
+            },
+            "items": {
+              "rule": "repeated",
+              "type": "Item",
+              "id": 2
+            },
+            "last_refresh_time": {
+              "type": "uint32",
+              "id": 3
+            }
+          },
+          "nested": {
+            "Item": {
+              "fields": {
+                "account_id": {
+                  "type": "uint32",
+                  "id": 1
+                },
+                "rank": {
+                  "type": "uint32",
+                  "id": 2
+                },
+                "view": {
+                  "type": "PlayerBaseView",
+                  "id": 3
+                },
+                "point": {
+                  "type": "uint32",
+                  "id": 4
+                }
+              }
+            }
+          }
+        },
+        "ReqGainRankPointReward": {
+          "fields": {
+            "leaderboard_id": {
+              "type": "uint32",
+              "id": 1
+            },
+            "activity_id": {
+              "type": "uint32",
+              "id": 2
             }
           }
         },
@@ -6638,6 +6968,10 @@
             "title_id": {
               "type": "uint32",
               "id": 18
+            },
+            "point_sum": {
+              "type": "uint32",
+              "id": 19
             }
           }
         },
@@ -6662,6 +6996,10 @@
             "fu": {
               "type": "uint32",
               "id": 5
+            },
+            "biao_dora_count": {
+              "type": "uint32",
+              "id": 6
             }
           }
         },
@@ -7600,6 +7938,10 @@
             "final": {
               "type": "AccountLevel",
               "id": 2
+            },
+            "type": {
+              "type": "uint32",
+              "id": 3
             }
           }
         },
@@ -7636,6 +7978,10 @@
                 "final": {
                   "type": "AccountLevel",
                   "id": 2
+                },
+                "type": {
+                  "type": "uint32",
+                  "id": 3
                 }
               }
             },
@@ -7720,6 +8066,52 @@
                 "rewards": {
                   "rule": "repeated",
                   "type": "RewardSlot",
+                  "id": 2
+                }
+              }
+            }
+          }
+        },
+        "NotifyActivityPoint": {
+          "fields": {
+            "activity_points": {
+              "rule": "repeated",
+              "type": "ActivityPoint",
+              "id": 1
+            }
+          },
+          "nested": {
+            "ActivityPoint": {
+              "fields": {
+                "activity_id": {
+                  "type": "uint32",
+                  "id": 1
+                },
+                "point": {
+                  "type": "uint32",
+                  "id": 2
+                }
+              }
+            }
+          }
+        },
+        "NotifyLeaderboardPoint": {
+          "fields": {
+            "leaderboard_points": {
+              "rule": "repeated",
+              "type": "LeaderboardPoint",
+              "id": 1
+            }
+          },
+          "nested": {
+            "LeaderboardPoint": {
+              "fields": {
+                "leaderboard_id": {
+                  "type": "uint32",
+                  "id": 1
+                },
+                "point": {
+                  "type": "uint32",
                   "id": 2
                 }
               }
