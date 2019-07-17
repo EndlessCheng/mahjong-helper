@@ -129,7 +129,7 @@ func (c *converter) parseMethods(methods map[string]interface{}) error {
 	return nil
 }
 
-func (c *converter) parseValues(enums map[string]interface{}) error {
+func (c *converter) parseEnums(enums map[string]interface{}) error {
 	type kv struct {
 		k string
 		v int
@@ -197,7 +197,7 @@ func (c *converter) LiqiJsonToProto3(liqiJsonContent []byte) (protoContent []byt
 	for _, name := range names {
 		if values, ok := items[name]["values"]; ok {
 			c.startDefine("enum", name)
-			err = c.parseValues(values)
+			err = c.parseEnums(values)
 			c.endDefine()
 		}
 	}
