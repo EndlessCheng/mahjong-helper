@@ -55,9 +55,6 @@ func (i *majsoulRecordBaseInfo) getSelfSeat(accountID int) (int, error) {
 	if len(i.Accounts) == 0 {
 		return -1, fmt.Errorf("牌谱基本信息为空")
 	}
-	if len(i.Accounts) == 3 {
-		return -1, fmt.Errorf("暂不支持三人麻将")
-	}
 	for _, account := range i.Accounts {
 		if account.AccountID == accountID {
 			return account.Seat, nil
