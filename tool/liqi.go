@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"strings"
 	"bytes"
+	"sort"
+	"reflect"
 )
 
 func fetchLatestLiqiJson() (jsonContent []byte, err error) {
@@ -73,24 +75,52 @@ func (c *converter) endDefine() {
 	}
 }
 
-func (c *converter) parseFields(fields map[string]interface{}) error {
-	for fieldName, rawField := range fields {
-		field, ok := rawField.(map[string]interface{})
+func (*converter) sortedKeys(mp interface{}) (keys []string) {
+	rawKeys := reflect.ValueOf(mp).MapKeys()
+	for _, k := range rawKeys {
+		keys = append(keys, k.String())
+	}
+	sort.Strings(keys)
+	return
+}
+
+func (c *converter) parseFields(rawFields map[string]interface{}) error {
+	type field struct {
+		id    int
+		name  string
+		type_ interface{}
+		rule  interface{}
+	}
+	fields := []field{}
+	for k, v := range rawFields {
+		_v, ok := v.(map[string]interface{})
 		if !ok {
-			return fmt.Errorf("parseFields 解析 %s 失败", fieldName)
+			return fmt.Errorf("parseFields 解析 %s 失败", k)
 		}
-		if rule := field["rule"]; rule != nil {
-			c.addLine(fmt.Sprintf("%v %v %s = %v;", rule, field["type"], fieldName, field["id"]))
+		fields = append(fields, field{
+			id:    int(_v["id"].(float64)),
+			name:  k,
+			type_: _v["type"],
+			rule:  _v["rule"],
+		})
+	}
+	sort.Slice(fields, func(i, j int) bool {
+		return fields[i].id < fields[j].id
+	})
+	for _, field := range fields {
+		if field.rule != nil {
+			c.addLine(fmt.Sprintf("%v %v %s = %d;", field.rule, field.type_, field.name, field.id))
 		} else {
-			c.addLine(fmt.Sprintf("%v %s = %v;", field["type"], fieldName, field["id"]))
+			c.addLine(fmt.Sprintf("%v %s = %d;", field.type_, field.name, field.id))
 		}
 	}
 	return nil
 }
 
 func (c *converter) parseMethods(methods map[string]interface{}) error {
-	for methodName, rawMethod := range methods {
-		method, ok := rawMethod.(map[string]interface{})
+	methodNames := c.sortedKeys(methods)
+	for _, methodName := range methodNames {
+		method, ok := methods[methodName].(map[string]interface{})
 		if !ok {
 			return fmt.Errorf("parseMethods 解析 %s 失败", methodName)
 		}
@@ -99,9 +129,20 @@ func (c *converter) parseMethods(methods map[string]interface{}) error {
 	return nil
 }
 
-func (c *converter) parseValues(values map[string]interface{}) error {
-	for name, value := range values {
-		c.addLine(fmt.Sprintf("%s = %v;", name, value))
+func (c *converter) parseValues(enums map[string]interface{}) error {
+	type kv struct {
+		k string
+		v int
+	}
+	pairs := []kv{}
+	for k, v := range enums {
+		pairs = append(pairs, kv{k, int(v.(float64))})
+	}
+	sort.Slice(pairs, func(i, j int) bool {
+		return pairs[i].v < pairs[j].v
+	})
+	for _, pair := range pairs {
+		c.addLine(fmt.Sprintf("%s = %d;", pair.k, pair.v))
 	}
 	return nil
 }
@@ -125,8 +166,9 @@ func (c *converter) parseFieldsProtoItem(name string, item protoItem) (err error
 		if err = json.Unmarshal(data, &nested); err != nil {
 			return
 		}
-		for _name, _item := range nested {
-			if err = c.parseFieldsProtoItem(_name, _item); err != nil {
+		_names := c.sortedKeys(nested)
+		for _, _name := range _names {
+			if err = c.parseFieldsProtoItem(_name, nested[_name]); err != nil {
 				return
 			}
 		}
@@ -142,24 +184,25 @@ func (c *converter) LiqiJsonToProto3(liqiJsonContent []byte) (protoContent []byt
 		return
 	}
 	items := lq.Nested.LQ.Nested
+	names := c.sortedKeys(items)
+
 	// 先处理 service 和 enum
-	for name, item := range items {
-		if methods, ok := item["methods"]; ok {
+	for _, name := range names {
+		if methods, ok := items[name]["methods"]; ok {
 			c.startDefine("service", name)
 			err = c.parseMethods(methods)
 			c.endDefine()
 		}
 	}
-	for name, item := range items {
-		if values, ok := item["values"]; ok {
+	for _, name := range names {
+		if values, ok := items[name]["values"]; ok {
 			c.startDefine("enum", name)
 			err = c.parseValues(values)
 			c.endDefine()
 		}
 	}
-	// TODO: sort
-	for name, item := range items {
-		if err = c.parseFieldsProtoItem(name, item); err != nil {
+	for _, name := range names {
+		if err = c.parseFieldsProtoItem(name, items[name]); err != nil {
 			return
 		}
 	}
