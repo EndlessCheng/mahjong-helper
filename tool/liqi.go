@@ -63,6 +63,9 @@ func (c *converter) newLine() {
 }
 
 func (c *converter) startDefine(defineType string, name string) {
+	if c.indent == 0 {
+		c.newLine()
+	}
 	c.addLine(fmt.Sprintf("%s %s {", defineType, name))
 	c.indent++
 }
@@ -70,9 +73,6 @@ func (c *converter) startDefine(defineType string, name string) {
 func (c *converter) endDefine() {
 	c.indent--
 	c.addLine("}")
-	if c.indent == 0 {
-		c.newLine()
-	}
 }
 
 func (*converter) sortedKeys(mp interface{}) (keys []string) {
@@ -178,7 +178,7 @@ func (c *converter) parseFieldsProtoItem(name string, item protoItem) (err error
 }
 
 func (c *converter) LiqiJsonToProto3(liqiJsonContent []byte) (protoContent []byte, err error) {
-	c.addLine("syntax = \"proto3\";\n\npackage lq;\n")
+	c.addLine("syntax = \"proto3\";\n\npackage lq;")
 	lq := liqi{}
 	if err = json.Unmarshal(liqiJsonContent, &lq); err != nil {
 		return

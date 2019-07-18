@@ -520,7 +520,11 @@ func (r *analysisResult) printWaitsWithImproves13_oneRow() {
 		}
 	} else { // shanten == 0
 		// 前进后的和率
-		fmt.Printf("%5.2f%% 参考和率", result13.AvgAgariRate)
+		if result13.FuritenRate == 1 {
+			color.New(color.FgHiRed).Printf("%5.2f%% 参考和率", result13.AvgAgariRate)
+		} else {
+			fmt.Printf("%5.2f%% 参考和率", result13.AvgAgariRate)
+		}
 	}
 
 	// 手牌速度，用于快速过庄

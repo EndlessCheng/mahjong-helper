@@ -2802,4 +2802,3 @@ message ZHPShop {
 		uint32 limit = 2;
 	}
 }
-
