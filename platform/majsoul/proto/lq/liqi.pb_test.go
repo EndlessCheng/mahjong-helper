@@ -7,11 +7,34 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"github.com/satori/go.uuid"
-	//"golang.org/x/net/websocket"
 	"github.com/gorilla/websocket"
 	"github.com/golang/protobuf/proto"
 	"net/http"
 )
+
+const (
+	messageTypeNotify   = 1
+	messageTypeRequest  = 2
+	messageTypeResponse = 3
+)
+
+func parseMsg(msg []byte) (respData []byte, err error) {
+	msgType := msg[0]
+	switch msgType {
+	case messageTypeNotify:
+	case messageTypeRequest:
+	case messageTypeResponse:
+		fmt.Println(msg[1:3])
+		wrapper := Wrapper{}
+		if err = proto.Unmarshal(msg[3:], &wrapper); err != nil {
+			return
+		}
+		respData = wrapper.Data
+	default:
+		return nil, fmt.Errorf("[parseMsg] 收到了异常的数据，请检查 %v %s", msg, string(msg))
+	}
+	return
+}
 
 func TestReqLogin(t *testing.T) {
 	username, ok := os.LookupEnv("USERNAME")
@@ -37,7 +60,6 @@ func TestReqLogin(t *testing.T) {
 
 	const endPoint = "wss://mj-srv-7.majsoul.com:4131/"
 	const originZH = "https://majsoul.union-game.com" // 模拟来源
-	//ws, err := websocket.Dial(endPoint, "", originZH)
 	header := http.Header{}
 	header.Set("originZH", originZH)
 	ws, _, err := websocket.DefaultDialer.Dial(endPoint, header)
@@ -48,13 +70,19 @@ func TestReqLogin(t *testing.T) {
 
 	done := make(chan bool)
 	go func() {
-		//var msg string
 		_, message, err := ws.ReadMessage()
 		if err != nil {
 			t.Fatal(err)
 		}
-		fmt.Println(message)
-		fmt.Println(string(message))
+		respData, err := parseMsg(message)
+		if err != nil {
+			t.Fatal(err)
+		}
+		respLogin := ResLogin{}
+		if err := proto.Unmarshal(respData, &respLogin); err != nil {
+			t.Fatal(err)
+		}
+		fmt.Println(respLogin)
 		done <- true
 	}()
 
@@ -74,20 +102,15 @@ func TestReqLogin(t *testing.T) {
 		CurrencyPlatforms: []uint32{2}, // 1-inGooglePlay, 2-inChina
 	}
 	data, _ := proto.Marshal(&reqLogin)
-	fmt.Println(string(data))
-
 	wrap := Wrapper{
 		Name: ".lq.Lobby.login",
 		Data: data,
 	}
 	data, _ = proto.Marshal(&wrap)
-	fmt.Println(string(data))
 
 	msgHead := []byte{0x02, 0x01, 0x00}
-	err = ws.WriteMessage(websocket.BinaryMessage, append(msgHead, data...))
-	if err != nil {
+	if err := ws.WriteMessage(websocket.BinaryMessage, append(msgHead, data...)); err != nil {
 		t.Fatal(err)
 	}
-	//t.Logf("%#v", n)
 	<-done
 }
