@@ -260,7 +260,7 @@
 
 ### 雀魂 (majsoul)
 
-由于有 [liqi.json](https://github.com/EndlessCheng/mahjong-helper/blob/master/res/liqi.json) 文件，可以直接用它来解析雀魂的 protobuf 数据。
+由于有 [liqi.json](https://github.com/EndlessCheng/mahjong-helper/blob/master/platform/majsoul/proto/lq/liqi.json) 文件，可以直接用它来解析雀魂的 protobuf 数据。
 
 但是考虑到还有观看牌谱这种获取前端 UI 事件的情况，直接修改相关代码是最方便的。
 
