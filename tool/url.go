@@ -15,8 +15,8 @@ const (
 	apiGetVersionJP = majsoulJSURLPrefixJP + "version.json"
 
 	apiGetResVersionFormatZH = majsoulJSURLPrefixZH + "resversion%s.json"
-
-	apiGetLiqiJsonFormatZH = majsoulJSURLPrefixZH + "%s/res/proto/liqi.json"
+	apiGetConfigFormatZH     = majsoulJSURLPrefixZH + "%s/config.json"
+	apiGetLiqiJsonFormatZH   = majsoulJSURLPrefixZH + "%s/res/proto/liqi.json"
 )
 
 func appendRandv(apiGetVersionURL string) string {
