@@ -6,16 +6,18 @@ import (
 )
 
 const (
+	MajsoulOriginURL = "https://majsoul.union-game.com"
+)
+
+const (
 	majsoulJSURLPrefixZH = "https://majsoul.union-game.com/0/"
 	majsoulJSURLPrefixEN = "https://mahjongsoul.game.yo-star.com/"
 	majsoulJSURLPrefixJP = "https://game.mahjongsoul.com/"
 
-	apiGetVersionZH = majsoulJSURLPrefixZH + "version.json"
-	apiGetVersionEN = majsoulJSURLPrefixEN + "version.json"
-	apiGetVersionJP = majsoulJSURLPrefixJP + "version.json"
+	ApiGetVersionZH = majsoulJSURLPrefixZH + "version.json"
 
 	apiGetResVersionFormatZH = majsoulJSURLPrefixZH + "resversion%s.json"
-	apiGetConfigFormatZH     = majsoulJSURLPrefixZH + "%s/config.json"
+	apiGetConfigFormatZH     = majsoulJSURLPrefixZH + "v%s/config.json"
 	apiGetLiqiJsonFormatZH   = majsoulJSURLPrefixZH + "%s/res/proto/liqi.json"
 )
 

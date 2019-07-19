@@ -10,6 +10,8 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/golang/protobuf/proto"
 	"net/http"
+	"encoding/binary"
+	"github.com/EndlessCheng/mahjong-helper/tool"
 )
 
 const (
@@ -18,22 +20,39 @@ const (
 	messageTypeResponse = 3
 )
 
-func parseMsg(msg []byte) (respData []byte, err error) {
-	msgType := msg[0]
+func wrapMessage(name string, message proto.Message) (data []byte, err error) {
+	data, err = proto.Marshal(message)
+	if err != nil {
+		return
+	}
+	wrap := Wrapper{
+		Name: name,
+		Data: data,
+	}
+	return proto.Marshal(&wrap)
+}
+
+func unwrapData(data []byte, message proto.Message) error {
+	msgType := data[0]
 	switch msgType {
 	case messageTypeNotify:
 	case messageTypeRequest:
 	case messageTypeResponse:
-		fmt.Println(msg[1:3])
+		// 请求序号
+		reqOrder := binary.LittleEndian.Uint16(data[1:3])
+		fmt.Println("reqOrder:", reqOrder)
+
 		wrapper := Wrapper{}
-		if err = proto.Unmarshal(msg[3:], &wrapper); err != nil {
-			return
+		if err := proto.Unmarshal(data[3:], &wrapper); err != nil {
+			return err
 		}
-		respData = wrapper.Data
+		if err := proto.Unmarshal(wrapper.Data, message); err != nil {
+			return err
+		}
 	default:
-		return nil, fmt.Errorf("[parseMsg] 收到了异常的数据，请检查 %v %s", msg, string(msg))
+		return fmt.Errorf("[unwrapData] 收到了异常的数据，请检查 %v %s", data, string(data))
 	}
-	return
+	return nil
 }
 
 func TestReqLogin(t *testing.T) {
@@ -47,45 +66,51 @@ func TestReqLogin(t *testing.T) {
 		t.Log("未配置环境变量 PASSWORD，退出")
 		t.Skip()
 	}
-	const key = "lailai" // 提取于 code.js 源码
+	const key = "lailai" // from code.js
 	mac := hmac.New(sha256.New, []byte(key))
 	mac.Write([]byte(password))
 	password = fmt.Sprintf("%x", mac.Sum(nil))
 
-	// UUID 最好固定住，生成后保存到本地
+	// TODO: UUID 最好固定住，生成后保存到本地
 	rawRandomKey, err := uuid.NewV4()
 	randomKey := rawRandomKey.String()
 
-	const resVersion = "v0.5.163.w"
-
-	const endPoint = "wss://mj-srv-7.majsoul.com:4131/"
-	const originZH = "https://majsoul.union-game.com" // 模拟来源
+	// 获取并连接雀魂 WebSocket 服务器
+	endPoint, err := tool.GetMajsoulWebSocketURL() // wss://mj-srv-7.majsoul.com:4131/
+	if err != nil {
+		t.Fatal(err)
+	}
 	header := http.Header{}
-	header.Set("originZH", originZH)
+	header.Set("origin", tool.MajsoulOriginURL) // 模拟来源
 	ws, _, err := websocket.DefaultDialer.Dial(endPoint, header)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer ws.Close()
 
-	done := make(chan bool)
+	done := make(chan struct{})
 	go func() {
+		defer close(done)
+
+		// 读取雀魂 WebSocket 服务器返回的消息
 		_, message, err := ws.ReadMessage()
 		if err != nil {
 			t.Fatal(err)
 		}
-		respData, err := parseMsg(message)
-		if err != nil {
-			t.Fatal(err)
-		}
+
+		// 解析登录请求结果
 		respLogin := ResLogin{}
-		if err := proto.Unmarshal(respData, &respLogin); err != nil {
+		if err := unwrapData(message, &respLogin); err != nil {
 			t.Fatal(err)
 		}
-		fmt.Println(respLogin)
-		done <- true
+		t.Log(respLogin)
 	}()
 
+	// 生成登录请求参数
+	version, err := tool.GetMajsoulVersion(tool.ApiGetVersionZH)
+	if err != nil {
+		t.Fatal(err)
+	}
 	reqLogin := ReqLogin{
 		Account:   username,
 		Password:  password,
@@ -96,21 +121,23 @@ func TestReqLogin(t *testing.T) {
 			OsVersion:  "",
 			Browser:    "safari",
 		},
-		RandomKey:         randomKey,
-		ClientVersion:     resVersion,
+		RandomKey:         randomKey,          // 例如 e6b3fafb-aa11-11e9-8323-f45c89a43cff
+		ClientVersion:     version.ResVersion, // 0.5.162.w
 		GenAccessToken:    true,
 		CurrencyPlatforms: []uint32{2}, // 1-inGooglePlay, 2-inChina
 	}
-	data, _ := proto.Marshal(&reqLogin)
-	wrap := Wrapper{
-		Name: ".lq.Lobby.login",
-		Data: data,
+	data, err := wrapMessage(".lq.Lobby.login", &reqLogin)
+	if err != nil {
+		t.Fatal(err)
 	}
-	data, _ = proto.Marshal(&wrap)
 
-	msgHead := []byte{0x02, 0x01, 0x00}
+	// 填写消息序号后，发送登录请求给雀魂 WebSocket 服务器
+	reqOrderBytes := make([]byte, 2)
+	binary.LittleEndian.PutUint16(reqOrderBytes, 1) // [0,60007) 的一个数，from code.js
+	msgHead := append([]byte{messageTypeRequest}, reqOrderBytes...)
 	if err := ws.WriteMessage(websocket.BinaryMessage, append(msgHead, data...)); err != nil {
 		t.Fatal(err)
 	}
+
 	<-done
 }

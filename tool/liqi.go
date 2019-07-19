@@ -11,8 +11,8 @@ import (
 )
 
 func fetchLatestLiqiJson() (jsonContent []byte, err error) {
-	apiGetVersionURL := appendRandv(apiGetVersionZH)
-	version, err := getVersion(apiGetVersionURL)
+	apiGetVersionURL := appendRandv(ApiGetVersionZH)
+	version, err := GetMajsoulVersion(apiGetVersionURL)
 	if err != nil {
 		return
 	}
