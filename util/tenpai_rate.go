@@ -26,8 +26,9 @@ func CalcTenpaiRate(melds []*model.Meld, discardTiles []int, meldDiscardsAt []in
 	_tenpaiRateWithTurn := _tenpaiRate[turn]
 
 	// 计算上一次副露后的手切数
+	// 注意连续开杠时，副露数 len(melds) 是不等于副露时的切牌数 len(meldDiscardsAt) 的
 	countTedashi := 0
-	if len(meldDiscardsAt) > 0 { // FIXME 实际上这恒为 true，只不过天凤偶尔会有先收到自家摸牌再收到上家摸牌的问题
+	if len(meldDiscardsAt) > 0 {
 		latestDiscardAt := meldDiscardsAt[len(meldDiscardsAt)-1]
 		if len(discardTiles) > latestDiscardAt {
 			for _, disTile := range discardTiles[latestDiscardAt+1:] {
