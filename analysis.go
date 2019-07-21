@@ -137,10 +137,11 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool
 		color.HiRed("【已和牌】")
 	} else if shanten == 0 {
 		// 局收支相近时，提示：局收支相近，追求和率打xx，追求打点打xx
-	} else if shanten == 1 {
-		//if len(playerInfo.DiscardTiles) < 9 {
-		//	alertBackwardToShanten2(results14, incShantenResults14)
-		//}
+	} else if shanten <= 2 {
+		// 考虑型听
+		if len(results14) > 0 && results14[0].LeftDrawTilesCount <= 16 {
+			color.HiGreen("考虑型听？")
+		}
 	}
 
 	// 鸣牌何切分析结果

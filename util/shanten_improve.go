@@ -557,6 +557,9 @@ type Hand14AnalysisResult struct {
 
 	DiscardHonorTileRisk int
 
+	// 剩余可以摸的牌数
+	LeftDrawTilesCount int
+
 	// 副露信息（没有副露就是 nil）
 	// 比如用 23m 吃了牌，OpenTiles 就是 [1,2]
 	OpenTiles []int
@@ -744,8 +747,9 @@ func (n *shantenSearchNode14) analysis(playerInfo *model.PlayerInfo, considerImp
 
 		// 记录切牌后的分析结果
 		r14 := &Hand14AnalysisResult{
-			DiscardTile: discardTile,
-			Result13:    result13,
+			DiscardTile:        discardTile,
+			Result13:           result13,
+			LeftDrawTilesCount: playerInfo.LeftDrawTilesCount,
 		}
 		results = append(results, r14)
 

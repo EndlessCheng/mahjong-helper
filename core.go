@@ -424,6 +424,15 @@ func (d *roundData) isPlayerDaburii(who int) bool {
 
 // 自家的 PlayerInfo
 func (d *roundData) newModelPlayerInfo() *model.PlayerInfo {
+	const wannpaiTilesCount = 14
+	leftDrawTilesCount := util.CountOfTiles34(d.leftCounts) - (wannpaiTilesCount - len(d.doraIndicators))
+	for _, player := range d.players[1:] {
+		leftDrawTilesCount -= 13 - 3*len(player.melds)
+	}
+	if d.playerNumber == 3 {
+		leftDrawTilesCount += 13
+	}
+
 	melds := []model.Meld{}
 	for _, m := range d.players[0].melds {
 		melds = append(melds, *m)
@@ -446,6 +455,8 @@ func (d *roundData) newModelPlayerInfo() *model.PlayerInfo {
 
 		DiscardTiles: normalDiscardTiles(selfPlayer.discardTiles),
 		LeftTiles34:  d.leftCounts,
+
+		LeftDrawTilesCount: leftDrawTilesCount,
 
 		NukiDoraNum: selfPlayer.nukiDoraNum,
 	}

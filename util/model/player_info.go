@@ -19,6 +19,8 @@ type PlayerInfo struct {
 	DiscardTiles []int // 自家舍牌，用于判断和率，是否振听等  *注意创建 PlayerInfo 的时候把负数调整成正的！
 	LeftTiles34  []int // 剩余牌
 
+	LeftDrawTilesCount int // 剩余可以摸的牌数
+
 	//LeftRedFives []int // 剩余赤5个数，用于估算打点
 	//AvgUraDora float64 // 平均里宝牌个数，用于计算立直时的打点
 
