@@ -561,6 +561,7 @@ func (r *analysisResult) printWaitsWithImproves13_oneRow() {
 	}
 
 	if len(result13.YakuTypes) > 0 {
+		// 役种
 		if result13.Shanten <= 3 {
 			if !showAllYakuTypes && !debugMode {
 				shownYakuTypes := []int{}

@@ -57,6 +57,7 @@ func analysisPlayerWithRisk(playerInfo *model.PlayerInfo, mixedRiskTable riskTab
 		result := util.CalculateShantenWithImproves13(playerInfo)
 		fmt.Println("当前" + util.NumberToChineseShanten(result.Shanten) + "：")
 		r := &analysisResult{
+			discardTile34:  -1,
 			result13:       result,
 			mixedRiskTable: mixedRiskTable,
 		}
@@ -125,6 +126,7 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool
 	// 原始手牌分析结果
 	fmt.Println("当前" + util.NumberToChineseShanten(result.Shanten) + "：")
 	r := &analysisResult{
+		discardTile34:  -1,
 		result13:       result,
 		mixedRiskTable: mixedRiskTable,
 	}
