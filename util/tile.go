@@ -40,6 +40,7 @@ func (w Waits) AllCount() (count int) {
 	return count
 }
 
+// 剩余数不为零的进张
 func (w Waits) AvailableTiles() []int {
 	if len(w) == 0 {
 		return nil

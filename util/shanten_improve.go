@@ -67,6 +67,9 @@ type Hand13AnalysisResult struct {
 	// 役种
 	YakuTypes map[int]struct{}
 
+	// （鸣牌时）是否片听
+	IsPartWait bool
+
 	// 宝牌个数（手牌+副露）
 	DoraCount int
 
@@ -104,10 +107,11 @@ func (r *Hand13AnalysisResult) speedScore() float64 {
 }
 
 func (r *Hand13AnalysisResult) mixedRoundPoint() float64 {
+	const weight = -1500
 	if r.RiichiPoint > 0 {
-		return r.AvgAgariRate/100*(r.RiichiPoint+1500) - 1500
+		return r.AvgAgariRate/100*(r.RiichiPoint+1500) + weight
 	}
-	return r.AvgAgariRate/100*(r.DamaPoint+1500) - 1500
+	return r.AvgAgariRate/100*(r.DamaPoint+1500) + weight
 }
 
 // 调试用
@@ -341,6 +345,9 @@ func (n *shantenSearchNode13) analysis(playerInfo *model.PlayerInfo, considerImp
 					}
 				}
 				result13.AvgAgariRate = agariRate
+
+				// 是否片听
+				result13.IsPartWait = len(pointResults) < len(waits.AvailableTiles())
 			}
 		}
 	}

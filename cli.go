@@ -520,7 +520,8 @@ func (r *analysisResult) printWaitsWithImproves13_oneRow() {
 		}
 	} else { // shanten == 0
 		// 前进后的和率
-		if result13.FuritenRate == 1 {
+		// 若振听或片听，则标红
+		if result13.FuritenRate == 1 || result13.IsPartWait {
 			color.New(color.FgHiRed).Printf("%5.2f%% 参考和率", result13.AvgAgariRate)
 		} else {
 			fmt.Printf("%5.2f%% 参考和率", result13.AvgAgariRate)
@@ -559,27 +560,34 @@ func (r *analysisResult) printWaitsWithImproves13_oneRow() {
 		color.New(color.FgHiGreen).Printf("[立直%d]", int(math.Round(result13.RiichiPoint)))
 	}
 
-	if len(result13.YakuTypes) > 0 && result13.Shanten <= 3 {
-		if !showAllYakuTypes && !debugMode {
-			// 容易忽略的役种
-			shownYakuTypes := []int{}
-			for yakuType := range result13.YakuTypes {
-				for _, yt := range yakuTypesToAlert {
-					if yakuType == yt {
-						shownYakuTypes = append(shownYakuTypes, yakuType)
+	if len(result13.YakuTypes) > 0 {
+		if result13.Shanten <= 3 {
+			if !showAllYakuTypes && !debugMode {
+				shownYakuTypes := []int{}
+				for yakuType := range result13.YakuTypes {
+					for _, yt := range yakuTypesToAlert {
+						if yakuType == yt {
+							shownYakuTypes = append(shownYakuTypes, yakuType)
+						}
 					}
 				}
-			}
-			if len(shownYakuTypes) > 0 {
-				sort.Ints(shownYakuTypes)
+				if len(shownYakuTypes) > 0 {
+					sort.Ints(shownYakuTypes)
+					fmt.Print(" ")
+					color.New(color.FgHiGreen).Printf(util.YakuTypesToStr(shownYakuTypes))
+				}
+			} else {
+				// debug
 				fmt.Print(" ")
-				color.New(color.FgHiGreen).Printf(util.YakuTypesToStr(shownYakuTypes))
+				color.New(color.FgHiGreen).Printf(util.YakuTypesWithDoraToStr(result13.YakuTypes, result13.DoraCount))
 			}
-		} else {
-			fmt.Print(" ")
-			color.New(color.FgHiGreen).Printf(util.YakuTypesWithDoraToStr(result13.YakuTypes, result13.DoraCount))
+			// 片听
+			if result13.IsPartWait {
+				fmt.Print(" ")
+				color.New(color.FgHiRed).Printf("[片听]")
+			}
 		}
-	} else if shanten >= 0 && shanten <= 2 && result13.IsNaki {
+	} else if result13.IsNaki && shanten >= 0 && shanten <= 2 {
 		// 鸣牌时的无役提示（从听牌到两向听）
 		fmt.Print(" ")
 		color.New(color.FgHiRed).Printf("[无役]")
