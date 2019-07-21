@@ -139,7 +139,7 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool
 		// 局收支相近时，提示：局收支相近，追求和率打xx，追求打点打xx
 	} else if shanten <= 2 {
 		// 考虑型听
-		if len(results14) > 0 && results14[0].LeftDrawTilesCount <= 16 {
+		if len(results14) > 0 && results14[0].LeftDrawTilesCount > 0 && results14[0].LeftDrawTilesCount <= 16 {
 			color.HiGreen("考虑型听？")
 		}
 	}
