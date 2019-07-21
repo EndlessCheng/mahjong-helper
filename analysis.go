@@ -133,12 +133,11 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool
 	r.printWaitsWithImproves13_oneRow()
 
 	// 提示信息
+	// TODO: 局收支相近时，提示：局收支相近，追求和率打xx，追求打点打xx
 	if shanten == -1 {
 		color.HiRed("【已和牌】")
-	} else if shanten == 0 {
-		// 局收支相近时，提示：局收支相近，追求和率打xx，追求打点打xx
-	} else if shanten <= 2 {
-		// 考虑型听
+	} else if shanten <= 1 {
+		// 鸣牌后听牌或一向听，提示型听
 		if len(results14) > 0 && results14[0].LeftDrawTilesCount > 0 && results14[0].LeftDrawTilesCount <= 16 {
 			color.HiGreen("考虑型听？")
 		}
