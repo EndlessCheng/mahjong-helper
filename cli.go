@@ -652,6 +652,24 @@ func printResults14WithRisk(results14 util.Hand14AnalysisResultList, mixedRiskTa
 	}
 	fmt.Println(util.NumberToChineseShanten(results14[0].Result13.Shanten) + "：")
 
+	if results14[0].Result13.Shanten == 0 {
+		// 检查听牌是否一样，但是打点不一样
+		isDiffPoint := false
+		baseWaits := results14[0].Result13.Waits
+		baseDamaPoint := results14[0].Result13.DamaPoint
+		baseRiichiPoint := results14[0].Result13.RiichiPoint
+		for _, result14 := range results14[1:] {
+			if baseWaits.Equals(result14.Result13.Waits) && (baseDamaPoint != result14.Result13.DamaPoint || baseRiichiPoint != result14.Result13.RiichiPoint) {
+				isDiffPoint = true
+				break
+			}
+		}
+
+		if isDiffPoint {
+			color.HiGreen("注意切牌选择：打点")
+		}
+	}
+
 	// FIXME: 选择很多时如何精简何切选项？
 	//const maxShown = 10
 	//if len(results14) > maxShown { // 限制输出数量

@@ -112,6 +112,19 @@ func (w Waits) String() string {
 	return fmt.Sprintf("%d 进张 %s", w.AllCount(), TilesToStrWithBracket(w.indexes()))
 }
 
+func (w Waits) Equals(w1 Waits) bool {
+	tiles0, tiles1 := w.AvailableTiles(), w1.AvailableTiles()
+	if len(tiles0) != len(tiles1) {
+		return false
+	}
+	for i := range tiles0 {
+		if tiles0[i] != tiles1[i] {
+			return false
+		}
+	}
+	return true
+}
+
 func isMan(tile int) bool {
 	return tile < 9
 }
