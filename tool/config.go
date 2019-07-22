@@ -1,6 +1,14 @@
 package tool
 
-import "fmt"
+import (
+	"fmt"
+	"math/rand"
+	"time"
+)
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 type majsoulConfig struct {
 	IP []struct {
@@ -66,8 +74,8 @@ func GetMajsoulWebSocketURL() (url string, err error) {
 		return "", fmt.Errorf("没有可用的服务器地址")
 	}
 
-	// 也可以随机取一个
-	host := servers[0]
+	// 随机取一个
+	host := servers[rand.Intn(len(servers))]
 	url = "wss://" + host + "/"
 	return
 }
