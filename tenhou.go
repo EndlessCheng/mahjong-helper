@@ -273,8 +273,21 @@ CHI
         The lowest tile in the chi / 4.
     Called:
         Which tile out of the three was called.
+*/
+func (*tenhouRoundData) _parseChi(data int) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
+	// 吃
+	meldType = meldTypeChi
+	t0, t1, t2 := (data>>3)&0x3, (data>>5)&0x3, (data>>7)&0x3
+	baseAndCalled := data >> 10
+	base, called := baseAndCalled/3, baseAndCalled%3
+	base = (base/7)*9 + base%7
+	tenhouMeldTiles = []int{t0 + 4*base, t1 + 4*(base+1), t2 + 4*(base+2)}
+	tenhouCalledTile = tenhouMeldTiles[called]
+	return
+}
 
-PON or CHAKAN
+/*
+PON or KAKAN
 
  0                   1
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
@@ -300,7 +313,28 @@ PON or CHAKAN
         A tile in the pon / 4.
     Called:
         Which tile out of the three was called.
+*/
+func (*tenhouRoundData) _parsePonOrKakan(data int) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
+	t4 := (data >> 5) & 0x3
+	_t := [4][3]int{{1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}}[t4]
+	t0, t1, t2 := _t[0], _t[1], _t[2]
+	baseAndCalled := data >> 9
+	base, called := baseAndCalled/3, baseAndCalled%3
+	if data&0x8 > 0 {
+		// 碰
+		meldType = meldTypePon
+		tenhouMeldTiles = []int{t0 + 4*base, t1 + 4*base, t2 + 4*base}
+		tenhouCalledTile = tenhouMeldTiles[called]
+	} else { // data&0x16 > 0
+		// 加杠
+		meldType = meldTypeKakan
+		tenhouMeldTiles = []int{t0 + 4*base, t1 + 4*base, t2 + 4*base, t4 + 4*base}
+		tenhouCalledTile = tenhouMeldTiles[3]
+	}
+	return
+}
 
+/*
 KAN
 
  0                   1
@@ -320,52 +354,16 @@ KAN
     Called:
         Which tile out of the four was called.
 */
-func (d *tenhouRoundData) _parseChi(data int) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
-	// 吃
-	meldType = meldTypeChi
-	t0, t1, t2 := (data>>3)&0x3, (data>>5)&0x3, (data>>7)&0x3
-	baseAndCalled := data >> 10
-	base, called := baseAndCalled/3, baseAndCalled%3
-	base = (base/7)*9 + base%7
-	tenhouMeldTiles = []int{t0 + 4*base, t1 + 4*(base+1), t2 + 4*(base+2)}
-	tenhouCalledTile = tenhouMeldTiles[called]
-	return
-}
-
-func (d *tenhouRoundData) _parsePon(data int) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
-	t4 := (data >> 5) & 0x3
-	_t := [4][3]int{{1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}}[t4]
-	t0, t1, t2 := _t[0], _t[1], _t[2]
-	baseAndCalled := data >> 9
-	base, called := baseAndCalled/3, baseAndCalled%3
-	if data&0x8 > 0 {
-		// 碰
-		meldType = meldTypePon
-		tenhouMeldTiles = []int{t0 + 4*base, t1 + 4*base, t2 + 4*base}
-		tenhouCalledTile = tenhouMeldTiles[called]
-	} else {
-		// 加杠
-		meldType = meldTypeKakan
-		tenhouMeldTiles = []int{t0 + 4*base, t1 + 4*base, t2 + 4*base, t4 + 4*base}
-		tenhouCalledTile = tenhouMeldTiles[3]
-	}
-	return
-}
-
-func (d *tenhouRoundData) _parseKan(data int) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
+func (*tenhouRoundData) _parseKan(data int) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
 	baseAndCalled := data >> 8
 	base, called := baseAndCalled/4, baseAndCalled%4
 	tenhouMeldTiles = []int{4 * base, 1 + 4*base, 2 + 4*base, 3 + 4*base}
 	tenhouCalledTile = tenhouMeldTiles[called]
-
-	// 通过剩余枚数是 4 还是 3，来判断杠的类型
-	// 也可以通过比较 FromWho 来解决
-	tile := d._tenhouTileToTile34(tenhouCalledTile)
-	if d.leftCounts[tile] == 4 {
+	if offsetFromWho := data & 0x3; offsetFromWho == 0 {
 		// 暗杠
 		meldType = meldTypeAnkan
-	} else { // d.leftCounts[tile] == 3
-		// 大明杠
+	} else {
+		// 大明杠，offsetFromWho=1即为下家，=2为对家，=3为上家
 		meldType = meldTypeMinkan
 	}
 	return
@@ -381,7 +379,7 @@ func (d *tenhouRoundData) _parseTenhouMeld(data string) (meldType int, tenhouMel
 	case bits&0x4 > 0:
 		return d._parseChi(bits)
 	case bits&0x18 > 0:
-		return d._parsePon(bits) // 包含加杠
+		return d._parsePonOrKakan(bits) // 包含加杠
 	case bits&0x20 > 0:
 		// 拔北
 		panic("[_parseTenhouMeld] 代码有误")
