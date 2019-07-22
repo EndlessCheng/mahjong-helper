@@ -379,7 +379,7 @@ func (d *tenhouRoundData) _parseTenhouMeld(data string) (meldType int, tenhouMel
 	case bits&0x4 > 0:
 		return d._parseChi(bits)
 	case bits&0x18 > 0:
-		return d._parsePonOrKakan(bits) // 包含加杠
+		return d._parsePonOrKakan(bits)
 	case bits&0x20 > 0:
 		// 拔北
 		panic("[_parseTenhouMeld] 代码有误")
