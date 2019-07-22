@@ -61,6 +61,7 @@ func TestReqLogin(t *testing.T) {
 		t.Log("未配置环境变量 USERNAME，退出")
 		t.Skip()
 	}
+
 	password, ok := os.LookupEnv("PASSWORD")
 	if !ok {
 		t.Log("未配置环境变量 PASSWORD，退出")
@@ -71,9 +72,12 @@ func TestReqLogin(t *testing.T) {
 	mac.Write([]byte(password))
 	password = fmt.Sprintf("%x", mac.Sum(nil))
 
-	// TODO: UUID 最好固定住，生成后保存到本地
-	rawRandomKey, err := uuid.NewV4()
-	randomKey := rawRandomKey.String()
+	// randomKey 最好是个固定值
+	randomKey, ok := os.LookupEnv("RANDOM_KEY")
+	if !ok {
+		rawRandomKey, _ := uuid.NewV4()
+		randomKey = rawRandomKey.String()
+	}
 
 	// 获取并连接雀魂 WebSocket 服务器
 	endPoint, err := tool.GetMajsoulWebSocketURL() // wss://mj-srv-7.majsoul.com:4131/
@@ -121,7 +125,7 @@ func TestReqLogin(t *testing.T) {
 			OsVersion:  "",
 			Browser:    "safari",
 		},
-		RandomKey:         randomKey,          // 例如 e6b3fafb-aa11-11e9-8323-f45c89a43cff
+		RandomKey:         randomKey,          // 例如 aa566cfc-547e-4cc0-a36f-2ebe6269109b
 		ClientVersion:     version.ResVersion, // 0.5.162.w
 		GenAccessToken:    true,
 		CurrencyPlatforms: []uint32{2}, // 1-inGooglePlay, 2-inChina
