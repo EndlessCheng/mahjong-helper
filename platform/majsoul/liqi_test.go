@@ -9,6 +9,11 @@ import (
 	"github.com/satori/go.uuid"
 	"os"
 	"testing"
+	"time"
+	"reflect"
+	"github.com/golang/protobuf/proto"
+	"encoding/json"
+	"io/ioutil"
 )
 
 func genLoginReq(t *testing.T) *lq.ReqLogin {
@@ -59,7 +64,7 @@ func TestLogin(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log("endpoint: " + endpoint)
+	t.Log("连接 endpoint: " + endpoint)
 	rpcCh := newRpcChannel()
 	if err := rpcCh.connect(endpoint, tool.MajsoulOriginURL); err != nil {
 		t.Fatal(err)
@@ -72,11 +77,13 @@ func TestLogin(t *testing.T) {
 		t.Fatal(err)
 	}
 	respLogin := <-respLoginChan
-	if respLogin.GetAccountId() == 0 {
-		t.Skip("登录失败")
+	if respLogin.GetError() != nil {
+		t.Skip("登录失败:", respLogin.Error)
 	}
-	t.Log(respLogin)
+	t.Log("登录成功:", respLogin)
 	t.Log(respLogin.GetAccessToken())
+
+	time.Sleep(time.Second)
 
 	reqLogout := lq.ReqLogout{}
 	respLogoutChan := make(chan *lq.ResLogout)
@@ -84,7 +91,7 @@ func TestLogin(t *testing.T) {
 		t.Fatal(err)
 	}
 	respLogout := <-respLogoutChan
-	t.Log(respLogout)
+	t.Log("登出", respLogout)
 }
 
 func TestFetchGameRecordList(t *testing.T) {
@@ -98,17 +105,32 @@ func TestFetchGameRecordList(t *testing.T) {
 	}
 	defer rpcCh.close()
 
+	// 登录
 	reqLogin := genLoginReq(t)
 	respLoginChan := make(chan *lq.ResLogin)
 	if err := rpcCh.callLobby("login", reqLogin, respLoginChan); err != nil {
 		t.Fatal(err)
 	}
-	<-respLoginChan
+	respLogin := <-respLoginChan
+	if respLogin.GetError() != nil {
+		t.Skip("登录失败:", respLogin.Error)
+	}
+	defer func() {
+		reqLogout := lq.ReqLogout{}
+		respLogoutChan := make(chan *lq.ResLogout)
+		if err := rpcCh.callLobby("logout", &reqLogout, respLogoutChan); err != nil {
+			t.Fatal(err)
+		}
+		respLogout := <-respLogoutChan
+		t.Log("登出", respLogout)
+	}()
 
+	// 分页获取牌谱列表
+	// TODO: 若牌谱数量巨大，可以使用协程增加下载速度
 	reqGameRecordList := lq.ReqGameRecordList{
 		Start: 1,
 		Count: 10,
-		Type:  0, // ?
+		Type:  0, // 全部/友人/段位/比赛/收藏
 	}
 	respGameRecordListChan := make(chan *lq.ResGameRecordList)
 	if err := rpcCh.callLobby("fetchGameRecordList", &reqGameRecordList, respGameRecordListChan); err != nil {
@@ -116,42 +138,79 @@ func TestFetchGameRecordList(t *testing.T) {
 	}
 	respGameRecordList := <-respGameRecordListChan
 
-	//t.Log(respGameRecordList)
-	records := respGameRecordList.GetRecordList()
-	if len(records) == 0 {
-		t.Skip("没有牌谱")
-	}
-	for i, record := range records {
-		t.Log(i+1, record.Uuid)
-	}
+	for i, gameRecord := range respGameRecordList.GetRecordList() {
+		t.Log(i+1, gameRecord.Uuid)
 
-	reqGameRecord := lq.ReqGameRecord{
-		GameUuid: records[0].Uuid,
-	}
-	respGameRecordChan := make(chan *lq.ResGameRecord)
-	if err := rpcCh.callLobby("fetchGameRecord", &reqGameRecord, respGameRecordChan); err != nil {
-		t.Fatal(err)
-	}
-	respGameRecord := <-respGameRecordChan
-	//t.Log(respGameRecord)
+		// 获取具体牌谱内容
+		reqGameRecord := lq.ReqGameRecord{
+			GameUuid: gameRecord.Uuid,
+		}
+		respGameRecordChan := make(chan *lq.ResGameRecord)
+		if err := rpcCh.callLobby("fetchGameRecord", &reqGameRecord, respGameRecordChan); err != nil {
+			t.Fatal(err)
+		}
+		respGameRecord := <-respGameRecordChan
 
-	data := respGameRecord.GetData()
-	if len(data) == 0 {
-		// TODO: respGameRecord.DataUrl
-		t.Skip(respGameRecord.GetDataUrl())
-	}
-	detailRecords := lq.GameDetailRecords{}
-	if err := rpcCh.unwrapMessage(data, &detailRecords); err != nil {
-		t.Fatal(err)
-	}
+		// 解析
+		data := respGameRecord.GetData()
+		if len(data) == 0 {
+			dataURL := respGameRecord.GetDataUrl()
+			if dataURL == "" {
+				t.Error("数据异常: dataURL 为空")
+				continue
+			}
+			data, err = tool.Fetch(dataURL)
+			if err != nil {
+				t.Error(err)
+				continue
+			}
+		}
+		detailRecords := lq.GameDetailRecords{}
+		if err := rpcCh.unwrapMessage(data, &detailRecords); err != nil {
+			t.Fatal(err)
+		}
 
-	t.Log(detailRecords)
-	for _, detailRecord := range detailRecords.GetRecords() {
-		name, data, err := rpcCh.unwrapData(detailRecord)
+		type messageWithType struct {
+			Name string        `json:"name"`
+			Data proto.Message `json:"data"`
+		}
+		details := []messageWithType{}
+		for _, detailRecord := range detailRecords.GetRecords() {
+			name, data, err := rpcCh.unwrapData(detailRecord)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			name = name[1:] // 移除开头的 .
+			mt := proto.MessageType(name)
+			if mt == nil {
+				t.Fatalf("未找到 %s，请检查！", name)
+			}
+			messagePtr := reflect.New(mt.Elem())
+			if err := proto.Unmarshal(data, messagePtr.Interface().(proto.Message)); err != nil {
+				t.Fatal(err)
+			}
+
+			details = append(details, messageWithType{
+				Name: name[3:], // 移除开头的 lq.
+				Data: messagePtr.Interface().(proto.Message),
+			})
+		}
+
+		// 保存至本地（JSON 格式）
+		parseResult := struct {
+			Head    *lq.RecordGame    `json:"head"`
+			Details []messageWithType `json:"details"`
+		}{
+			Head:    gameRecord,
+			Details: details,
+		}
+		jsonData, err := json.MarshalIndent(&parseResult, "", "  ")
 		if err != nil {
 			t.Fatal(err)
 		}
-		t.Log(name, string(data))
-		return
+		if err := ioutil.WriteFile(gameRecord.Uuid+".json", jsonData, 0644); err != nil {
+			t.Fatal(err)
+		}
 	}
 }

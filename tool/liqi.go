@@ -24,7 +24,7 @@ func fetchLatestLiqiJson() (jsonContent []byte, err error) {
 	}
 
 	apiGetLiqiJsonURL := fmt.Sprintf(apiGetLiqiJsonFormatZH, resource.Res.LiqiJson.Prefix)
-	return fetch(apiGetLiqiJsonURL)
+	return Fetch(apiGetLiqiJsonURL)
 }
 
 func FetchLatestLiqiJson(filePath string) (err error) {

@@ -23,7 +23,7 @@ func get(url string, userStruct interface{}) (err error) {
 	return resp.JSON(userStruct)
 }
 
-func fetch(url string) (content []byte, err error) {
+func Fetch(url string) (content []byte, err error) {
 	resp, err := grequests.Get(url, newReqOpt())
 	if err != nil {
 		return

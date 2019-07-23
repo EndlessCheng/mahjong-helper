@@ -49,23 +49,21 @@ func (*rpcChannel) wrapMessage(name string, message proto.Message) (data []byte,
 
 func (*rpcChannel) unwrapData(rawData []byte) (methodName string, data []byte, err error) {
 	wrapper := lq.Wrapper{}
-	if err = proto.Unmarshal(data, &wrapper); err != nil {
+	if err = proto.Unmarshal(rawData, &wrapper); err != nil {
 		return
 	}
 	return wrapper.GetName(), wrapper.GetData(), nil
 }
 
-// TODO: unwrapMessage by wrapper.GetName()
+// TODO: auto unwrapMessage by methodName
 
 func (c *rpcChannel) unwrapMessage(rawData []byte, message proto.Message) error {
 	methodName, data, err := c.unwrapData(rawData)
-	if len(data) == 0 {
-		return fmt.Errorf("unwrapMessage: empty unwrapped data, method=%s", methodName)
-	}
-	// TODO: assert methodName
 	if err != nil {
 		return err
 	}
+	// TODO: assert methodName
+	_ = methodName
 	return proto.Unmarshal(data, message)
 }
 
