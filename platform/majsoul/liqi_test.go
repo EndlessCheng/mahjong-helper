@@ -36,12 +36,12 @@ func TestLogin(t *testing.T) {
 	}
 
 	// 获取并连接雀魂 WebSocket 服务器
-	endPoint, err := tool.GetMajsoulWebSocketURL() // wss://mj-srv-7.majsoul.com:4131/
+	endpoint, err := tool.GetMajsoulWebSocketURL() // wss://mj-srv-7.majsoul.com:4131/
 	if err != nil {
 		t.Fatal(err)
 	}
 	rpcCh := newRpcChannel()
-	if err := rpcCh.connect(endPoint, tool.MajsoulOriginURL); err != nil {
+	if err := rpcCh.connect(endpoint, tool.MajsoulOriginURL); err != nil {
 		t.Fatal(err)
 	}
 	defer rpcCh.close()

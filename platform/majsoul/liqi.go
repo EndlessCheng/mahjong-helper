@@ -2,7 +2,6 @@ package majsoul
 
 import (
 	"github.com/gorilla/websocket"
-	"github.com/EndlessCheng/mahjong-helper/tool"
 	"net/http"
 	"time"
 	"github.com/golang/protobuf/proto"
@@ -90,13 +89,9 @@ func (c *rpcChannel) run() {
 }
 
 func (c *rpcChannel) connect(endpoint string, origin string) error {
-	endPoint, err := tool.GetMajsoulWebSocketURL() // wss://mj-srv-7.majsoul.com:4131/
-	if err != nil {
-		return err
-	}
 	header := http.Header{}
 	header.Set("origin", origin) // 模拟来源
-	ws, _, err := websocket.DefaultDialer.Dial(endPoint, header)
+	ws, _, err := websocket.DefaultDialer.Dial(endpoint, header)
 	if err != nil {
 		return err
 	}
