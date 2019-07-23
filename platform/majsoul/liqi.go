@@ -25,13 +25,13 @@ type rpcChannel struct {
 	ws     *websocket.Conn
 	closed bool
 
-	messageIndex uint16
-	callMap      *sync.Map // messageIndex -> chan proto.Message
+	messageIndex       uint16
+	respMessageChanMap *sync.Map // messageIndex -> chan proto.Message
 }
 
 func newRpcChannel() *rpcChannel {
 	return &rpcChannel{
-		callMap: &sync.Map{},
+		respMessageChanMap: &sync.Map{},
 	}
 }
 
@@ -70,12 +70,12 @@ func (c *rpcChannel) run() {
 
 		if data[0] == messageTypeResponse {
 			messageIndex := binary.LittleEndian.Uint16(data[1:3])
-			rawRespMessageChan, ok := c.callMap.Load(messageIndex)
+			rawRespMessageChan, ok := c.respMessageChanMap.Load(messageIndex)
 			if !ok {
 				fmt.Fprintln(os.Stderr, "未找到消息", messageIndex)
 				continue
 			}
-			c.callMap.Delete(messageIndex)
+			c.respMessageChanMap.Delete(messageIndex)
 
 			respMessageType := reflect.TypeOf(rawRespMessageChan).Elem().Elem()
 			respMessage := reflect.New(respMessageType)
@@ -126,7 +126,7 @@ func (c *rpcChannel) send(name string, reqMessage proto.Message, respMessageChan
 		return err
 	}
 
-	c.callMap.Store(c.messageIndex, respMessageChan)
+	c.respMessageChanMap.Store(c.messageIndex, respMessageChan)
 	return nil
 }
 
