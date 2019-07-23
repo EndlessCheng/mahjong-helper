@@ -1,14 +1,14 @@
 package majsoul
 
 import (
-	"testing"
-	"os"
 	"crypto/hmac"
 	"crypto/sha256"
 	"fmt"
-	"github.com/satori/go.uuid"
-	"github.com/EndlessCheng/mahjong-helper/tool"
 	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
+	"github.com/EndlessCheng/mahjong-helper/tool"
+	"github.com/satori/go.uuid"
+	"os"
+	"testing"
 )
 
 func TestLogin(t *testing.T) {

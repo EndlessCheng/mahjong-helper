@@ -1,16 +1,16 @@
 package majsoul
 
 import (
+	"encoding/binary"
+	"fmt"
+	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
+	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
 	"net/http"
-	"time"
-	"github.com/golang/protobuf/proto"
-	"sync"
-	"fmt"
 	"os"
-	"encoding/binary"
-	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
 	"reflect"
+	"sync"
+	"time"
 )
 
 const (
