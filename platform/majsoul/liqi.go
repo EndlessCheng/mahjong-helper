@@ -134,11 +134,20 @@ func (c *rpcChannel) send(name string, reqMessage proto.Message, respMessageChan
 	return nil
 }
 
+func (c *rpcChannel) callFastTest(methodName string, reqMessage proto.Message, respMessageChan interface{}) error {
+	return c.send(".lq.FastTest."+methodName, reqMessage, respMessageChan)
+}
+
+func (c *rpcChannel) callLobby(methodName string, reqMessage proto.Message, respMessageChan interface{}) error {
+	return c.send(".lq.Lobby."+methodName, reqMessage, respMessageChan)
+}
+
 func (c *rpcChannel) heartbeat() {
 	for !c.closed {
-		reqHeatBeat := lq.ReqHeatBeat{}
+		// 吐槽：雀魂的开发把 heart 错写成了 heat
+		reqHeartBeat := lq.ReqHeatBeat{}
 		respCommonChan := make(chan *lq.ResCommon)
-		if err := c.send(".lq.Lobby.heatbeat", &reqHeatBeat, respCommonChan); err != nil {
+		if err := c.callLobby("heatbeat", &reqHeartBeat, respCommonChan); err != nil {
 			fmt.Fprintln(os.Stderr, "heartbeat", err)
 		} else if respCommon := <-respCommonChan; respCommon.GetError() != nil {
 			fmt.Fprintln(os.Stderr, "heartbeat", respCommon.Error)

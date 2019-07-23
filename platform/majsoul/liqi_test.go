@@ -65,7 +65,7 @@ func TestLogin(t *testing.T) {
 		CurrencyPlatforms: []uint32{2}, // 1-inGooglePlay, 2-inChina
 	}
 	respLoginChan := make(chan *lq.ResLogin)
-	if err := rpcCh.send(".lq.Lobby.login", &reqLogin, respLoginChan); err != nil {
+	if err := rpcCh.callLobby("login", &reqLogin, respLoginChan); err != nil {
 		t.Fatal(err)
 	}
 	respLogin := <-respLoginChan
