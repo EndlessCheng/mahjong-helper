@@ -14,14 +14,12 @@ import (
 func TestLogin(t *testing.T) {
 	username, ok := os.LookupEnv("USERNAME")
 	if !ok {
-		t.Log("未配置环境变量 USERNAME，退出")
-		t.Skip()
+		t.Skip("未配置环境变量 USERNAME，退出")
 	}
 
 	password, ok := os.LookupEnv("PASSWORD")
 	if !ok {
-		t.Log("未配置环境变量 PASSWORD，退出")
-		t.Skip()
+		t.Skip("未配置环境变量 PASSWORD，退出")
 	}
 	const key = "lailai" // from code.js
 	mac := hmac.New(sha256.New, []byte(key))
