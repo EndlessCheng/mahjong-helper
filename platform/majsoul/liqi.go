@@ -81,6 +81,7 @@ func (c *rpcChannel) run() {
 			respMessage := reflect.New(respMessageType)
 			if err := c.unwrapData(data[3:], respMessage.Interface().(proto.Message)); err != nil {
 				fmt.Fprintln(os.Stderr, err)
+				reflect.ValueOf(rawRespMessageChan).Close()
 				continue
 			}
 			reflect.ValueOf(rawRespMessageChan).Send(respMessage)
@@ -136,7 +137,7 @@ func (c *rpcChannel) heartbeat() {
 		respCommonChan := make(chan *lq.ResCommon)
 		if err := c.send(".lq.Lobby.heatbeat", &reqHeatBeat, respCommonChan); err != nil {
 			fmt.Fprintln(os.Stderr, err)
-		} else if respCommon := <-respCommonChan; respCommon.Error != nil {
+		} else if respCommon := <-respCommonChan; respCommon.GetError() != nil {
 			fmt.Fprintln(os.Stderr, respCommon.Error)
 		}
 		time.Sleep(6 * time.Second)
