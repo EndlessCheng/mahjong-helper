@@ -263,7 +263,7 @@
 
 由于有 [liqi.json](https://github.com/EndlessCheng/mahjong-helper/blob/master/platform/majsoul/proto/lq/liqi.json) 文件，可以直接用它来解析雀魂的 protobuf 数据。
 
-[liqi.pb_test.go](https://github.com/EndlessCheng/mahjong-helper/blob/master/platform/majsoul/proto/lq/liqi.pb_test.go) 提供了一个使用 WebSocket 登录的例子。
+[liqi_test.go](https://github.com/EndlessCheng/mahjong-helper/blob/master/platform/majsoul/proto/liqi_test.go) 提供了一个使用 WebSocket 登录的例子。
 
 但是考虑到还有观看牌谱这种获取前端 UI 事件的情况，直接修改相关代码是最方便的。
 
