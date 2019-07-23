@@ -11,6 +11,7 @@ import (
 	"os"
 	"encoding/binary"
 	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
+	"reflect"
 )
 
 const (
@@ -19,28 +20,14 @@ const (
 	messageTypeResponse = 3
 )
 
-type chanMessage struct {
-	message proto.Message
-	done    chan struct{}
-}
-
-func newChanMessage(message proto.Message) *chanMessage {
-	return &chanMessage{
-		message: message,
-		done:    make(chan struct{}),
-	}
-}
-
-func (m *chanMessage) _done() {
-	m.done <- struct{}{}
-}
-
 type rpcChannel struct {
+	sync.Mutex
+
 	ws     *websocket.Conn
 	closed bool
 
 	messageIndex uint16
-	callMap      *sync.Map // messageIndex -> *chanMessage
+	callMap      *sync.Map // messageIndex -> chan proto.Message
 }
 
 func newRpcChannel() *rpcChannel {
@@ -83,18 +70,21 @@ func (c *rpcChannel) run() {
 		}
 
 		if data[0] == messageTypeResponse {
-			reqOrder := binary.LittleEndian.Uint16(data[1:3])
-			rawMsg, ok := c.callMap.Load(reqOrder)
+			messageIndex := binary.LittleEndian.Uint16(data[1:3])
+			rawRespMessageChan, ok := c.callMap.Load(messageIndex)
 			if !ok {
-				fmt.Fprintln(os.Stderr, "未找到消息", reqOrder)
+				fmt.Fprintln(os.Stderr, "未找到消息", messageIndex)
 				continue
 			}
-			msg := rawMsg.(*chanMessage)
-			if err := c.unwrapData(data[3:], msg.message); err != nil {
+			c.callMap.Delete(messageIndex)
+
+			respMessageType := reflect.TypeOf(rawRespMessageChan).Elem().Elem()
+			respMessage := reflect.New(respMessageType)
+			if err := c.unwrapData(data[3:], respMessage.Interface().(proto.Message)); err != nil {
 				fmt.Fprintln(os.Stderr, err)
 				continue
 			}
-			msg._done()
+			reflect.ValueOf(rawRespMessageChan).Send(respMessage)
 		}
 	}
 }
@@ -113,6 +103,8 @@ func (c *rpcChannel) connect(endpoint string, origin string) error {
 	c.ws = ws
 
 	go c.run()
+	go c.heartbeat()
+
 	return nil
 }
 
@@ -121,9 +113,10 @@ func (c *rpcChannel) close() error {
 	return c.ws.Close()
 }
 
-func (c *rpcChannel) send(reqMessage proto.Message, respChanMessage *chanMessage) error {
-	// TODO: 反射 小写？
-	name := ".lq.Lobby." + "login"
+func (c *rpcChannel) send(name string, reqMessage proto.Message, respMessageChan interface{}) error {
+	c.Lock()
+	defer c.Unlock()
+
 	data, err := c.wrapMessage(name, reqMessage)
 	if err != nil {
 		return err
@@ -131,29 +124,26 @@ func (c *rpcChannel) send(reqMessage proto.Message, respChanMessage *chanMessage
 
 	c.messageIndex = (c.messageIndex + 1) % 60007 // from code.js
 
-	// 填写消息序号后，发送登录请求给雀魂 WebSocket 服务器
-	reqOrderBytes := make([]byte, 2)
-	binary.LittleEndian.PutUint16(reqOrderBytes, c.messageIndex)
-	msgHead := append([]byte{messageTypeRequest}, reqOrderBytes...)
-	if err := c.ws.WriteMessage(websocket.BinaryMessage, append(msgHead, data...)); err != nil {
+	messageIndexBytes := make([]byte, 2)
+	binary.LittleEndian.PutUint16(messageIndexBytes, c.messageIndex)
+	messageHead := append([]byte{messageTypeRequest}, messageIndexBytes...)
+	if err := c.ws.WriteMessage(websocket.BinaryMessage, append(messageHead, data...)); err != nil {
 		return err
 	}
 
-	c.callMap.Store(c.messageIndex, respChanMessage)
+	c.callMap.Store(c.messageIndex, respMessageChan)
 	return nil
 }
 
-func (c *rpcChannel) heartbeat() error {
+func (c *rpcChannel) heartbeat() {
 	for !c.closed {
-
+		reqHeatBeat := lq.ReqHeatBeat{}
+		respCommonChan := make(chan *lq.ResCommon)
+		if err := c.send(".lq.Lobby.heatbeat", &reqHeatBeat, respCommonChan); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		} else if respCommon := <-respCommonChan; respCommon.Error != nil {
+			fmt.Fprintln(os.Stderr, respCommon.Error)
+		}
 		time.Sleep(6 * time.Second)
 	}
-	return nil
-}
-
-type GameAPI struct {
-}
-
-func NewGameAPI() *GameAPI {
-	return &GameAPI{}
 }

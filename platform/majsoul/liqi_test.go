@@ -66,11 +66,10 @@ func TestLogin(t *testing.T) {
 		GenAccessToken:    true,
 		CurrencyPlatforms: []uint32{2}, // 1-inGooglePlay, 2-inChina
 	}
-	respLogin := lq.ResLogin{}
-	respMsg := newChanMessage(&respLogin)
-	if err := rpcCh.send(&reqLogin, respMsg); err != nil {
+	respLoginChan := make(chan *lq.ResLogin)
+	if err := rpcCh.send(".lq.Lobby.login", &reqLogin, respLoginChan); err != nil {
 		t.Fatal(err)
 	}
-	<-respMsg.done
+	respLogin := <-respLoginChan
 	t.Log(respLogin)
 }
