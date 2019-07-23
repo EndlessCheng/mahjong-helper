@@ -47,12 +47,26 @@ func (*rpcChannel) wrapMessage(name string, message proto.Message) (data []byte,
 	return proto.Marshal(&wrap)
 }
 
-func (*rpcChannel) unwrapData(data []byte, message proto.Message) error {
+func (*rpcChannel) unwrapData(rawData []byte) (methodName string, data []byte, err error) {
 	wrapper := lq.Wrapper{}
-	if err := proto.Unmarshal(data, &wrapper); err != nil {
+	if err = proto.Unmarshal(data, &wrapper); err != nil {
+		return
+	}
+	return wrapper.GetName(), wrapper.GetData(), nil
+}
+
+// TODO: unwrapMessage by wrapper.GetName()
+
+func (c *rpcChannel) unwrapMessage(rawData []byte, message proto.Message) error {
+	methodName, data, err := c.unwrapData(rawData)
+	if len(data) == 0 {
+		return fmt.Errorf("unwrapMessage: empty unwrapped data, method=%s", methodName)
+	}
+	// TODO: assert methodName
+	if err != nil {
 		return err
 	}
-	return proto.Unmarshal(wrapper.Data, message)
+	return proto.Unmarshal(data, message)
 }
 
 func (c *rpcChannel) run() {
@@ -62,7 +76,7 @@ func (c *rpcChannel) run() {
 			if c.closed {
 				return
 			}
-			fmt.Fprintln(os.Stderr, "ws.ReadMessage", err)
+			fmt.Fprintln(os.Stderr, "ws.ReadMessage:", err)
 			continue
 		}
 
@@ -82,8 +96,8 @@ func (c *rpcChannel) run() {
 
 			respMessageType := reflect.TypeOf(rawRespMessageChan).Elem().Elem()
 			respMessage := reflect.New(respMessageType)
-			if err := c.unwrapData(data[3:], respMessage.Interface().(proto.Message)); err != nil {
-				fmt.Fprintln(os.Stderr, "unwrapData", err)
+			if err := c.unwrapMessage(data[3:], respMessage.Interface().(proto.Message)); err != nil {
+				fmt.Fprintln(os.Stderr, "unwrapData:", err)
 				reflect.ValueOf(rawRespMessageChan).Close()
 				continue
 			}
@@ -148,9 +162,9 @@ func (c *rpcChannel) heartbeat() {
 		reqHeartBeat := lq.ReqHeatBeat{}
 		respCommonChan := make(chan *lq.ResCommon)
 		if err := c.callLobby("heatbeat", &reqHeartBeat, respCommonChan); err != nil {
-			fmt.Fprintln(os.Stderr, "heartbeat", err)
+			fmt.Fprintln(os.Stderr, "heartbeat:", err)
 		} else if respCommon := <-respCommonChan; respCommon.GetError() != nil {
-			fmt.Fprintln(os.Stderr, "heartbeat", respCommon.Error)
+			fmt.Fprintln(os.Stderr, "heartbeat:", respCommon.Error)
 		}
 		time.Sleep(6 * time.Second)
 	}
