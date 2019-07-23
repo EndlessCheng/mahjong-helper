@@ -3,17 +3,17 @@ package majsoul
 import (
 	"crypto/hmac"
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
-	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
-	"github.com/EndlessCheng/mahjong-helper/tool"
-	"github.com/satori/go.uuid"
+	"io/ioutil"
 	"os"
+	"reflect"
 	"testing"
 	"time"
-	"reflect"
+	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
+	"github.com/EndlessCheng/mahjong-helper/tool"
 	"github.com/golang/protobuf/proto"
-	"encoding/json"
-	"io/ioutil"
+	"github.com/satori/go.uuid"
 )
 
 func genLoginReq(t *testing.T) *lq.ReqLogin {
