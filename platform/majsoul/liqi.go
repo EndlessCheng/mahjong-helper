@@ -59,7 +59,10 @@ func (c *rpcChannel) run() {
 	for !c.closed {
 		_, data, err := c.ws.ReadMessage()
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			if c.closed {
+				return
+			}
+			fmt.Fprintln(os.Stderr, "ws.ReadMessage", err)
 			continue
 		}
 
@@ -80,7 +83,7 @@ func (c *rpcChannel) run() {
 			respMessageType := reflect.TypeOf(rawRespMessageChan).Elem().Elem()
 			respMessage := reflect.New(respMessageType)
 			if err := c.unwrapData(data[3:], respMessage.Interface().(proto.Message)); err != nil {
-				fmt.Fprintln(os.Stderr, err)
+				fmt.Fprintln(os.Stderr, "unwrapData", err)
 				reflect.ValueOf(rawRespMessageChan).Close()
 				continue
 			}
@@ -136,9 +139,9 @@ func (c *rpcChannel) heartbeat() {
 		reqHeatBeat := lq.ReqHeatBeat{}
 		respCommonChan := make(chan *lq.ResCommon)
 		if err := c.send(".lq.Lobby.heatbeat", &reqHeatBeat, respCommonChan); err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			fmt.Fprintln(os.Stderr, "heartbeat", err)
 		} else if respCommon := <-respCommonChan; respCommon.GetError() != nil {
-			fmt.Fprintln(os.Stderr, respCommon.Error)
+			fmt.Fprintln(os.Stderr, "heartbeat", respCommon.Error)
 		}
 		time.Sleep(6 * time.Second)
 	}
