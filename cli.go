@@ -425,9 +425,10 @@ func printWaitsWithImproves13_twoRows(result13 *util.Hand13AnalysisResult, disca
 }
 
 type analysisResult struct {
-	discardTile34 int
-	openTiles34   []int
-	result13      *util.Hand13AnalysisResult
+	discardTile34     int
+	isDiscardTileDora bool
+	openTiles34       []int
+	result13          *util.Hand13AnalysisResult
 
 	mixedRiskTable riskTable
 
@@ -484,7 +485,11 @@ func (r *analysisResult) printWaitsWithImproves13_oneRow() {
 			fmt.Printf("%s,", meldType)
 		}
 		// 舍牌
-		fmt.Print("切")
+		if r.isDiscardTileDora {
+			color.New(color.FgHiWhite).Print("ド")
+		} else {
+			fmt.Print("切")
+		}
 		tileZH := util.MahjongZH[discardTile34]
 		if discardTile34 >= 27 {
 			tileZH = " " + tileZH
@@ -678,6 +683,7 @@ func printResults14WithRisk(results14 util.Hand14AnalysisResultList, mixedRiskTa
 	for _, result := range results14 {
 		r := &analysisResult{
 			result.DiscardTile,
+			result.IsDiscardDoraTile,
 			result.OpenTiles,
 			result.Result13,
 			mixedRiskTable,

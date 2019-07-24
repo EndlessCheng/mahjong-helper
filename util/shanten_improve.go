@@ -546,6 +546,9 @@ type Hand14AnalysisResult struct {
 	// 需要切的牌
 	DiscardTile int
 
+	// 切的是否为宝牌
+	IsDiscardDoraTile bool
+
 	// 切的牌的价值（宝牌或宝牌周边）
 	DiscardTileValue tileValue
 
@@ -748,6 +751,7 @@ func (n *shantenSearchNode14) analysis(playerInfo *model.PlayerInfo, considerImp
 		// 记录切牌后的分析结果
 		r14 := &Hand14AnalysisResult{
 			DiscardTile:        discardTile,
+			IsDiscardDoraTile:  InInts(discardTile, playerInfo.DoraTiles),
 			Result13:           result13,
 			LeftDrawTilesCount: playerInfo.LeftDrawTilesCount,
 		}
