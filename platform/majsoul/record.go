@@ -58,16 +58,16 @@ func DownloadRecords(username string, password string, recordType uint32) error 
 	if err != nil {
 		return err
 	}
-	rpcCh := newRpcChannel()
-	if err := rpcCh.connect(endpoint, tool.MajsoulOriginURL); err != nil {
+	c := NewWebSocketClient()
+	if err := c.Connect(endpoint, tool.MajsoulOriginURL); err != nil {
 		return err
 	}
-	defer rpcCh.close()
+	defer c.Close()
 
 	// 登录
 	reqLogin, err := genLoginReq(username, password)
 	respLoginChan := make(chan *lq.ResLogin)
-	if err := rpcCh.callLobby("login", reqLogin, respLoginChan); err != nil {
+	if err := c.callLobby("login", reqLogin, respLoginChan); err != nil {
 		return err
 	}
 	respLogin := <-respLoginChan
@@ -77,7 +77,7 @@ func DownloadRecords(username string, password string, recordType uint32) error 
 	defer func() {
 		reqLogout := lq.ReqLogout{}
 		respLogoutChan := make(chan *lq.ResLogout)
-		rpcCh.callLobby("logout", &reqLogout, respLogoutChan)
+		c.callLobby("logout", &reqLogout, respLogoutChan)
 		<-respLogoutChan
 	}()
 
@@ -91,7 +91,7 @@ func DownloadRecords(username string, password string, recordType uint32) error 
 			Type:  recordType, // 全部/友人/段位/比赛/收藏
 		}
 		respGameRecordListChan := make(chan *lq.ResGameRecordList)
-		if err := rpcCh.callLobby("fetchGameRecordList", &reqGameRecordList, respGameRecordListChan); err != nil {
+		if err := c.callLobby("fetchGameRecordList", &reqGameRecordList, respGameRecordListChan); err != nil {
 			return err
 		}
 		respGameRecordList := <-respGameRecordListChan
@@ -111,7 +111,7 @@ func DownloadRecords(username string, password string, recordType uint32) error 
 			GameUuid: gameRecord.Uuid,
 		}
 		respGameRecordChan := make(chan *lq.ResGameRecord)
-		if err := rpcCh.callLobby("fetchGameRecord", &reqGameRecord, respGameRecordChan); err != nil {
+		if err := c.callLobby("fetchGameRecord", &reqGameRecord, respGameRecordChan); err != nil {
 			return err
 		}
 		respGameRecord := <-respGameRecordChan
@@ -131,7 +131,7 @@ func DownloadRecords(username string, password string, recordType uint32) error 
 			}
 		}
 		detailRecords := lq.GameDetailRecords{}
-		if err := rpcCh.unwrapMessage(data, &detailRecords); err != nil {
+		if err := c.unwrapMessage(data, &detailRecords); err != nil {
 			return err
 		}
 
@@ -141,7 +141,7 @@ func DownloadRecords(username string, password string, recordType uint32) error 
 		}
 		details := []messageWithType{}
 		for _, detailRecord := range detailRecords.GetRecords() {
-			name, data, err := rpcCh.unwrapData(detailRecord)
+			name, data, err := c.unwrapData(detailRecord)
 			if err != nil {
 				return err
 			}

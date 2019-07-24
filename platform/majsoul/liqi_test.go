@@ -92,15 +92,15 @@ func TestLogin(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Log("连接 endpoint: " + endpoint)
-	rpcCh := newRpcChannel()
-	if err := rpcCh.connect(endpoint, tool.MajsoulOriginURL); err != nil {
+	c := NewWebSocketClient()
+	if err := c.Connect(endpoint, tool.MajsoulOriginURL); err != nil {
 		t.Fatal(err)
 	}
-	defer rpcCh.close()
+	defer c.Close()
 
 	reqLogin := _genReqLogin(t)
 	respLoginChan := make(chan *lq.ResLogin)
-	if err := rpcCh.callLobby("login", reqLogin, respLoginChan); err != nil {
+	if err := c.callLobby("login", reqLogin, respLoginChan); err != nil {
 		t.Fatal(err)
 	}
 	respLogin := <-respLoginChan
@@ -114,7 +114,7 @@ func TestLogin(t *testing.T) {
 
 	reqLogout := lq.ReqLogout{}
 	respLogoutChan := make(chan *lq.ResLogout)
-	if err := rpcCh.callLobby("logout", &reqLogout, respLogoutChan); err != nil {
+	if err := c.callLobby("logout", &reqLogout, respLogoutChan); err != nil {
 		t.Fatal(err)
 	}
 	respLogout := <-respLogoutChan
@@ -127,11 +127,11 @@ func TestReLogin(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Log("连接 endpoint: " + endpoint)
-	rpcCh := newRpcChannel()
-	if err := rpcCh.connect(endpoint, tool.MajsoulOriginURL); err != nil {
+	c := NewWebSocketClient()
+	if err := c.Connect(endpoint, tool.MajsoulOriginURL); err != nil {
 		t.Fatal(err)
 	}
-	defer rpcCh.close()
+	defer c.Close()
 
 	accessToken, ok := os.LookupEnv("TOKEN")
 	if !ok {
@@ -142,7 +142,7 @@ func TestReLogin(t *testing.T) {
 		AccessToken: accessToken,
 	}
 	respOauth2CheckChan := make(chan *lq.ResOauth2Check)
-	if err := rpcCh.callLobby("oauth2Check", &reqOauth2Check, respOauth2CheckChan); err != nil {
+	if err := c.callLobby("oauth2Check", &reqOauth2Check, respOauth2CheckChan); err != nil {
 		t.Fatal(err)
 	}
 	respOauth2Check := <-respOauth2CheckChan
@@ -157,7 +157,7 @@ func TestReLogin(t *testing.T) {
 
 	reqOauth2Login := _genReqOauth2Login(t, accessToken)
 	respLoginChan := make(chan *lq.ResLogin)
-	if err := rpcCh.callLobby("oauth2Login", reqOauth2Login, respLoginChan); err != nil {
+	if err := c.callLobby("oauth2Login", reqOauth2Login, respLoginChan); err != nil {
 		t.Fatal(err)
 	}
 	respLogin := <-respLoginChan
@@ -171,7 +171,7 @@ func TestReLogin(t *testing.T) {
 
 	reqLogout := lq.ReqLogout{}
 	respLogoutChan := make(chan *lq.ResLogout)
-	if err := rpcCh.callLobby("logout", &reqLogout, respLogoutChan); err != nil {
+	if err := c.callLobby("logout", &reqLogout, respLogoutChan); err != nil {
 		t.Fatal(err)
 	}
 	respLogout := <-respLogoutChan
@@ -191,16 +191,16 @@ func TestFetchGameRecordList(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	rpcCh := newRpcChannel()
-	if err := rpcCh.connect(endpoint, tool.MajsoulOriginURL); err != nil {
+	c := NewWebSocketClient()
+	if err := c.Connect(endpoint, tool.MajsoulOriginURL); err != nil {
 		t.Fatal(err)
 	}
-	defer rpcCh.close()
+	defer c.Close()
 
 	// 登录
 	reqLogin := _genReqLogin(t)
 	respLoginChan := make(chan *lq.ResLogin)
-	if err := rpcCh.callLobby("login", reqLogin, respLoginChan); err != nil {
+	if err := c.callLobby("login", reqLogin, respLoginChan); err != nil {
 		t.Fatal(err)
 	}
 	respLogin := <-respLoginChan
@@ -210,7 +210,7 @@ func TestFetchGameRecordList(t *testing.T) {
 	defer func() {
 		reqLogout := lq.ReqLogout{}
 		respLogoutChan := make(chan *lq.ResLogout)
-		if err := rpcCh.callLobby("logout", &reqLogout, respLogoutChan); err != nil {
+		if err := c.callLobby("logout", &reqLogout, respLogoutChan); err != nil {
 			t.Fatal(err)
 		}
 		respLogout := <-respLogoutChan
@@ -225,7 +225,7 @@ func TestFetchGameRecordList(t *testing.T) {
 		Type:  0, // 全部/友人/段位/比赛/收藏
 	}
 	respGameRecordListChan := make(chan *lq.ResGameRecordList)
-	if err := rpcCh.callLobby("fetchGameRecordList", &reqGameRecordList, respGameRecordListChan); err != nil {
+	if err := c.callLobby("fetchGameRecordList", &reqGameRecordList, respGameRecordListChan); err != nil {
 		t.Fatal(err)
 	}
 	respGameRecordList := <-respGameRecordListChan
@@ -238,7 +238,7 @@ func TestFetchGameRecordList(t *testing.T) {
 			GameUuid: gameRecord.Uuid,
 		}
 		respGameRecordChan := make(chan *lq.ResGameRecord)
-		if err := rpcCh.callLobby("fetchGameRecord", &reqGameRecord, respGameRecordChan); err != nil {
+		if err := c.callLobby("fetchGameRecord", &reqGameRecord, respGameRecordChan); err != nil {
 			t.Fatal(err)
 		}
 		respGameRecord := <-respGameRecordChan
@@ -258,7 +258,7 @@ func TestFetchGameRecordList(t *testing.T) {
 			}
 		}
 		detailRecords := lq.GameDetailRecords{}
-		if err := rpcCh.unwrapMessage(data, &detailRecords); err != nil {
+		if err := c.unwrapMessage(data, &detailRecords); err != nil {
 			t.Fatal(err)
 		}
 
@@ -268,7 +268,7 @@ func TestFetchGameRecordList(t *testing.T) {
 		}
 		details := []messageWithType{}
 		for _, detailRecord := range detailRecords.GetRecords() {
-			name, data, err := rpcCh.unwrapData(detailRecord)
+			name, data, err := c.unwrapData(detailRecord)
 			if err != nil {
 				t.Fatal(err)
 			}

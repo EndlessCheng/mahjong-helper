@@ -19,7 +19,7 @@ const (
 	messageTypeResponse = 3
 )
 
-type rpcChannel struct {
+type WebSocketClient struct {
 	sync.Mutex
 
 	ws     *websocket.Conn
@@ -29,13 +29,13 @@ type rpcChannel struct {
 	respMessageChanMap *sync.Map // messageIndex -> chan proto.Message
 }
 
-func newRpcChannel() *rpcChannel {
-	return &rpcChannel{
+func NewWebSocketClient() *WebSocketClient {
+	return &WebSocketClient{
 		respMessageChanMap: &sync.Map{},
 	}
 }
 
-func (*rpcChannel) wrapMessage(name string, message proto.Message) (data []byte, err error) {
+func (*WebSocketClient) wrapMessage(name string, message proto.Message) (data []byte, err error) {
 	data, err = proto.Marshal(message)
 	if err != nil {
 		return
@@ -47,7 +47,7 @@ func (*rpcChannel) wrapMessage(name string, message proto.Message) (data []byte,
 	return proto.Marshal(&wrap)
 }
 
-func (*rpcChannel) unwrapData(rawData []byte) (methodName string, data []byte, err error) {
+func (*WebSocketClient) unwrapData(rawData []byte) (methodName string, data []byte, err error) {
 	wrapper := lq.Wrapper{}
 	if err = proto.Unmarshal(rawData, &wrapper); err != nil {
 		return
@@ -57,7 +57,7 @@ func (*rpcChannel) unwrapData(rawData []byte) (methodName string, data []byte, e
 
 // TODO: auto unwrapMessage by methodName
 
-func (c *rpcChannel) unwrapMessage(rawData []byte, message proto.Message) error {
+func (c *WebSocketClient) unwrapMessage(rawData []byte, message proto.Message) error {
 	methodName, data, err := c.unwrapData(rawData)
 	if err != nil {
 		return err
@@ -67,7 +67,7 @@ func (c *rpcChannel) unwrapMessage(rawData []byte, message proto.Message) error 
 	return proto.Unmarshal(data, message)
 }
 
-func (c *rpcChannel) run() {
+func (c *WebSocketClient) run() {
 	for !c.closed {
 		_, data, err := c.ws.ReadMessage()
 		if err != nil {
@@ -104,7 +104,7 @@ func (c *rpcChannel) run() {
 	}
 }
 
-func (c *rpcChannel) connect(endpoint string, origin string) error {
+func (c *WebSocketClient) Connect(endpoint string, origin string) error {
 	header := http.Header{}
 	header.Set("origin", origin) // 模拟来源
 	ws, _, err := websocket.DefaultDialer.Dial(endpoint, header)
@@ -119,12 +119,12 @@ func (c *rpcChannel) connect(endpoint string, origin string) error {
 	return nil
 }
 
-func (c *rpcChannel) close() error {
+func (c *WebSocketClient) Close() error {
 	c.closed = true
 	return c.ws.Close()
 }
 
-func (c *rpcChannel) send(name string, reqMessage proto.Message, respMessageChan interface{}) error {
+func (c *WebSocketClient) send(name string, reqMessage proto.Message, respMessageChan interface{}) error {
 	c.Lock()
 	defer c.Unlock()
 
@@ -146,15 +146,15 @@ func (c *rpcChannel) send(name string, reqMessage proto.Message, respMessageChan
 	return nil
 }
 
-func (c *rpcChannel) callFastTest(methodName string, reqMessage proto.Message, respMessageChan interface{}) error {
+func (c *WebSocketClient) callFastTest(methodName string, reqMessage proto.Message, respMessageChan interface{}) error {
 	return c.send(".lq.FastTest."+methodName, reqMessage, respMessageChan)
 }
 
-func (c *rpcChannel) callLobby(methodName string, reqMessage proto.Message, respMessageChan interface{}) error {
+func (c *WebSocketClient) callLobby(methodName string, reqMessage proto.Message, respMessageChan interface{}) error {
 	return c.send(".lq.Lobby."+methodName, reqMessage, respMessageChan)
 }
 
-func (c *rpcChannel) heartbeat() {
+func (c *WebSocketClient) heartbeat() {
 	for !c.closed {
 		// 吐槽：雀魂的开发把 heart 错写成了 heat
 		reqHeartBeat := lq.ReqHeatBeat{}
