@@ -16,7 +16,7 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-func _genLoginReq(t *testing.T) *lq.ReqLogin {
+func _genReqLogin(t *testing.T) *lq.ReqLogin {
 	username, ok := os.LookupEnv("USERNAME")
 	if !ok {
 		t.Skip("未配置环境变量 USERNAME，退出")
@@ -59,6 +59,33 @@ func _genLoginReq(t *testing.T) *lq.ReqLogin {
 	}
 }
 
+func _genReqOauth2Login(t *testing.T, accessToken string) *lq.ReqOauth2Login {
+	randomKey, ok := os.LookupEnv("RANDOM_KEY")
+	if !ok {
+		rawRandomKey, _ := uuid.NewV4()
+		randomKey = rawRandomKey.String()
+	}
+
+	version, err := tool.GetMajsoulVersion(tool.ApiGetVersionZH)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return &lq.ReqOauth2Login{
+		Type:        0, // ? 怀疑是账号/QQ/微信/微博
+		AccessToken: accessToken,
+		Reconnect:   false,
+		Device: &lq.ClientDeviceInfo{
+			DeviceType: "pc",
+			Os:         "",
+			OsVersion:  "",
+			Browser:    "safari",
+		},
+		RandomKey:         randomKey,
+		ClientVersion:     version.ResVersion,
+		CurrencyPlatforms: []uint32{2}, // 1-inGooglePlay, 2-inChina
+	}
+}
+
 func TestLogin(t *testing.T) {
 	endpoint, err := tool.GetMajsoulWebSocketURL() // wss://mj-srv-7.majsoul.com:4131/
 	if err != nil {
@@ -71,7 +98,7 @@ func TestLogin(t *testing.T) {
 	}
 	defer rpcCh.close()
 
-	reqLogin := _genLoginReq(t)
+	reqLogin := _genReqLogin(t)
 	respLoginChan := make(chan *lq.ResLogin)
 	if err := rpcCh.callLobby("login", reqLogin, respLoginChan); err != nil {
 		t.Fatal(err)
@@ -94,6 +121,71 @@ func TestLogin(t *testing.T) {
 	t.Log("登出", respLogout)
 }
 
+func TestReLogin(t *testing.T) {
+	endpoint, err := tool.GetMajsoulWebSocketURL() // wss://mj-srv-7.majsoul.com:4131/
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log("连接 endpoint: " + endpoint)
+	rpcCh := newRpcChannel()
+	if err := rpcCh.connect(endpoint, tool.MajsoulOriginURL); err != nil {
+		t.Fatal(err)
+	}
+	defer rpcCh.close()
+
+	accessToken, ok := os.LookupEnv("TOKEN")
+	if !ok {
+		t.Skip("未配置环境变量 TOKEN，退出")
+	}
+	reqOauth2Check := lq.ReqOauth2Check{
+		Type:        0, // ? 怀疑是账号/QQ/微信/微博
+		AccessToken: accessToken,
+	}
+	respOauth2CheckChan := make(chan *lq.ResOauth2Check)
+	if err := rpcCh.callLobby("oauth2Check", &reqOauth2Check, respOauth2CheckChan); err != nil {
+		t.Fatal(err)
+	}
+	respOauth2Check := <-respOauth2CheckChan
+	if respOauth2Check.GetError() != nil {
+		t.Skip("oauth2Check 失败:", respOauth2Check.Error)
+	}
+	t.Log(respOauth2Check)
+
+	if !respOauth2Check.GetHasAccount() {
+		t.Skip("无效的 token")
+	}
+
+	reqOauth2Login := _genReqOauth2Login(t, accessToken)
+	respLoginChan := make(chan *lq.ResLogin)
+	if err := rpcCh.callLobby("oauth2Login", reqOauth2Login, respLoginChan); err != nil {
+		t.Fatal(err)
+	}
+	respLogin := <-respLoginChan
+	if respLogin.GetError() != nil {
+		t.Skip("登录失败:", respLogin.Error)
+	}
+	t.Log("登录成功:", respLogin)
+	t.Log(respLogin.GetAccessToken())
+
+	time.Sleep(time.Second)
+
+	reqLogout := lq.ReqLogout{}
+	respLogoutChan := make(chan *lq.ResLogout)
+	if err := rpcCh.callLobby("logout", &reqLogout, respLogoutChan); err != nil {
+		t.Fatal(err)
+	}
+	respLogout := <-respLogoutChan
+	t.Log("登出", respLogout)
+}
+
+const (
+	recordListTypeAll    = 0
+	recordListTypeFriend = 1
+	recordListTypeMatch  = 2
+	recordListTypeCompte = 3
+	recordListTypeFav    = 4
+)
+
 func TestFetchGameRecordList(t *testing.T) {
 	endpoint, err := tool.GetMajsoulWebSocketURL()
 	if err != nil {
@@ -106,7 +198,7 @@ func TestFetchGameRecordList(t *testing.T) {
 	defer rpcCh.close()
 
 	// 登录
-	reqLogin := _genLoginReq(t)
+	reqLogin := _genReqLogin(t)
 	respLoginChan := make(chan *lq.ResLogin)
 	if err := rpcCh.callLobby("login", reqLogin, respLoginChan); err != nil {
 		t.Fatal(err)
