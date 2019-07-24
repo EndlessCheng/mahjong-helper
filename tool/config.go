@@ -71,7 +71,7 @@ func GetMajsoulWebSocketURL() (url string, err error) {
 		return
 	}
 	if len(servers) == 0 {
-		return "", fmt.Errorf("没有可用的服务器地址")
+		return "", fmt.Errorf("维护中，没有可用的服务器地址")
 	}
 
 	// 随机取一个
