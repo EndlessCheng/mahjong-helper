@@ -49,9 +49,29 @@ type liqi struct {
 	} `json:"nested"`
 }
 
+type rpcMethod struct {
+	name         string
+	requestType  string
+	responseType string
+}
+
+type rpcService struct {
+	name    string
+	methods []*rpcMethod
+}
+
 type converter struct {
 	protoBB bytes.Buffer
 	indent  int
+
+	rpcServiceList      []*rpcService
+	messageContainError map[string]struct{}
+}
+
+func newConverter() *converter {
+	return &converter{
+		messageContainError: map[string]struct{}{},
+	}
 }
 
 func (c *converter) addLine(line string) {
@@ -117,16 +137,22 @@ func (c *converter) parseFields(rawFields map[string]interface{}) error {
 	return nil
 }
 
-func (c *converter) parseMethods(methods map[string]interface{}) error {
+func (c *converter) parseMethods(methods map[string]interface{}) (rpcMethods []*rpcMethod, err error) {
 	methodNames := c.sortedKeys(methods)
 	for _, methodName := range methodNames {
 		method, ok := methods[methodName].(map[string]interface{})
 		if !ok {
-			return fmt.Errorf("parseMethods 解析 %s 失败", methodName)
+			return nil, fmt.Errorf("parseMethods 解析 %s 失败", methodName)
 		}
-		c.addLine(fmt.Sprintf("rpc %s (%v) returns (%v);", methodName, method["requestType"], method["responseType"]))
+		m := rpcMethod{
+			name:         methodName,
+			requestType:  method["requestType"].(string),
+			responseType: method["responseType"].(string),
+		}
+		rpcMethods = append(rpcMethods, &m)
+		c.addLine(fmt.Sprintf("rpc %s (%s) returns (%s);", m.name, m.requestType, m.responseType))
 	}
-	return nil
+	return
 }
 
 func (c *converter) parseEnums(enums map[string]interface{}) error {
@@ -152,6 +178,11 @@ func (c *converter) parseFieldsProtoItem(name string, item protoItem) (err error
 	if !ok {
 		return
 	}
+
+	if _, ok := fields["error"]; ok {
+		c.messageContainError[name] = struct{}{}
+	}
+
 	c.startDefine("message", name)
 	if err = c.parseFields(fields); err != nil {
 		return
@@ -190,14 +221,23 @@ func (c *converter) LiqiJsonToProto3(liqiJsonContent []byte) (protoContent []byt
 	for _, name := range names {
 		if methods, ok := items[name]["methods"]; ok {
 			c.startDefine("service", name)
-			err = c.parseMethods(methods)
+			rpcMethods, er := c.parseMethods(methods)
+			if er != nil {
+				return nil, er
+			}
+			c.rpcServiceList = append(c.rpcServiceList, &rpcService{
+				name:    name,
+				methods: rpcMethods,
+			})
 			c.endDefine()
 		}
 	}
 	for _, name := range names {
 		if values, ok := items[name]["values"]; ok {
 			c.startDefine("enum", name)
-			err = c.parseEnums(values)
+			if err = c.parseEnums(values); err != nil {
+				return
+			}
 			c.endDefine()
 		}
 	}
@@ -210,7 +250,8 @@ func (c *converter) LiqiJsonToProto3(liqiJsonContent []byte) (protoContent []byt
 }
 
 func liqiJsonToProto3(liqiJsonContent []byte) (protoContent []byte, err error) {
-	return (&converter{}).LiqiJsonToProto3(liqiJsonContent)
+	c := newConverter()
+	return c.LiqiJsonToProto3(liqiJsonContent)
 }
 
 func LiqiJsonToProto3(liqiJsonContent []byte, protoFilePath string) (err error) {

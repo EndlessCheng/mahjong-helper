@@ -35,7 +35,7 @@ func NewWebSocketClient() *WebSocketClient {
 	}
 }
 
-func (*WebSocketClient) wrapMessage(name string, message proto.Message) (data []byte, err error) {
+func (*WebSocketClient) WrapMessage(name string, message proto.Message) (data []byte, err error) {
 	data, err = proto.Marshal(message)
 	if err != nil {
 		return
@@ -47,7 +47,7 @@ func (*WebSocketClient) wrapMessage(name string, message proto.Message) (data []
 	return proto.Marshal(&wrap)
 }
 
-func (*WebSocketClient) unwrapData(rawData []byte) (methodName string, data []byte, err error) {
+func (*WebSocketClient) UnwrapData(rawData []byte) (methodName string, data []byte, err error) {
 	wrapper := lq.Wrapper{}
 	if err = proto.Unmarshal(rawData, &wrapper); err != nil {
 		return
@@ -55,10 +55,10 @@ func (*WebSocketClient) unwrapData(rawData []byte) (methodName string, data []by
 	return wrapper.GetName(), wrapper.GetData(), nil
 }
 
-// TODO: auto unwrapMessage by methodName
+// TODO: auto UnwrapMessage by methodName
 
-func (c *WebSocketClient) unwrapMessage(rawData []byte, message proto.Message) error {
-	methodName, data, err := c.unwrapData(rawData)
+func (c *WebSocketClient) UnwrapMessage(rawData []byte, message proto.Message) error {
+	methodName, data, err := c.UnwrapData(rawData)
 	if err != nil {
 		return err
 	}
@@ -94,8 +94,8 @@ func (c *WebSocketClient) run() {
 
 			respMessageType := reflect.TypeOf(rawRespMessageChan).Elem().Elem()
 			respMessage := reflect.New(respMessageType)
-			if err := c.unwrapMessage(data[3:], respMessage.Interface().(proto.Message)); err != nil {
-				fmt.Fprintln(os.Stderr, "unwrapData:", err)
+			if err := c.UnwrapMessage(data[3:], respMessage.Interface().(proto.Message)); err != nil {
+				fmt.Fprintln(os.Stderr, "UnwrapData:", err)
 				reflect.ValueOf(rawRespMessageChan).Close()
 				continue
 			}
@@ -128,7 +128,7 @@ func (c *WebSocketClient) send(name string, reqMessage proto.Message, respMessag
 	c.Lock()
 	defer c.Unlock()
 
-	data, err := c.wrapMessage(name, reqMessage)
+	data, err := c.WrapMessage(name, reqMessage)
 	if err != nil {
 		return err
 	}
@@ -157,12 +157,8 @@ func (c *WebSocketClient) callLobby(methodName string, reqMessage proto.Message,
 func (c *WebSocketClient) heartbeat() {
 	for !c.closed {
 		// 吐槽：雀魂的开发把 heart 错写成了 heat
-		reqHeartBeat := lq.ReqHeatBeat{}
-		respCommonChan := make(chan *lq.ResCommon)
-		if err := c.callLobby("heatbeat", &reqHeartBeat, respCommonChan); err != nil {
+		if _, err := c.Heatbeat(&lq.ReqHeatBeat{}); err != nil {
 			fmt.Fprintln(os.Stderr, "heartbeat:", err)
-		} else if respCommon := <-respCommonChan; respCommon.GetError() != nil {
-			fmt.Fprintln(os.Stderr, "heartbeat:", respCommon.Error)
 		}
 		time.Sleep(6 * time.Second)
 	}

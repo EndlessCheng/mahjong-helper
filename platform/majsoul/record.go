@@ -1,17 +1,17 @@
 package majsoul
 
 import (
-	"github.com/EndlessCheng/mahjong-helper/tool"
-	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
-	"github.com/golang/protobuf/proto"
-	"reflect"
-	"encoding/json"
-	"io/ioutil"
-	"os"
 	"crypto/hmac"
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"reflect"
+	"github.com/golang/protobuf/proto"
 	"github.com/satori/go.uuid"
+	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
+	"github.com/EndlessCheng/mahjong-helper/tool"
 )
 
 const (
@@ -19,7 +19,7 @@ const (
 	RecordTypeMatch = 4
 )
 
-func genLoginReq(username string, password string) (*lq.ReqLogin, error) {
+func genReqLogin(username string, password string) (*lq.ReqLogin, error) {
 	const key = "lailai" // from code.js
 	mac := hmac.New(sha256.New, []byte(key))
 	mac.Write([]byte(password))
@@ -53,6 +53,7 @@ func genLoginReq(username string, password string) (*lq.ReqLogin, error) {
 	}, nil
 }
 
+// TODO: add token
 func DownloadRecords(username string, password string, recordType uint32) error {
 	endpoint, err := tool.GetMajsoulWebSocketURL()
 	if err != nil {
@@ -65,21 +66,14 @@ func DownloadRecords(username string, password string, recordType uint32) error 
 	defer c.Close()
 
 	// 登录
-	reqLogin, err := genLoginReq(username, password)
-	respLoginChan := make(chan *lq.ResLogin)
-	if err := c.callLobby("login", reqLogin, respLoginChan); err != nil {
+	reqLogin, err := genReqLogin(username, password)
+	if err != nil {
 		return err
 	}
-	respLogin := <-respLoginChan
-	if respLogin.GetError() != nil {
-		return fmt.Errorf("登录失败: %v", respLogin.Error)
+	if _, err := c.Login(reqLogin); err != nil {
+		return err
 	}
-	defer func() {
-		reqLogout := lq.ReqLogout{}
-		respLogoutChan := make(chan *lq.ResLogout)
-		c.callLobby("logout", &reqLogout, respLogoutChan)
-		<-respLogoutChan
-	}()
+	defer c.Logout(&lq.ReqLogout{})
 
 	// 分页获取牌谱列表
 	recordList := []*lq.RecordGame{}
@@ -90,16 +84,14 @@ func DownloadRecords(username string, password string, recordType uint32) error 
 			Count: pageSize,
 			Type:  recordType, // 全部/友人/段位/比赛/收藏
 		}
-		respGameRecordListChan := make(chan *lq.ResGameRecordList)
-		if err := c.callLobby("fetchGameRecordList", &reqGameRecordList, respGameRecordListChan); err != nil {
+		respGameRecordList, err := c.FetchGameRecordList(&reqGameRecordList)
+		if err != nil {
 			return err
 		}
-		respGameRecordList := <-respGameRecordListChan
-		l := respGameRecordList.GetRecordList()
-		if len(l) < pageSize {
+		recordList = append(recordList, respGameRecordList.RecordList...)
+		if len(respGameRecordList.RecordList) < pageSize {
 			break
 		}
-		recordList = append(recordList, l...)
 	}
 
 	// TODO: 若牌谱数量巨大，可以使用协程增加下载速度
@@ -110,16 +102,15 @@ func DownloadRecords(username string, password string, recordType uint32) error 
 		reqGameRecord := lq.ReqGameRecord{
 			GameUuid: gameRecord.Uuid,
 		}
-		respGameRecordChan := make(chan *lq.ResGameRecord)
-		if err := c.callLobby("fetchGameRecord", &reqGameRecord, respGameRecordChan); err != nil {
+		respGameRecord, err := c.FetchGameRecord(&reqGameRecord)
+		if err != nil {
 			return err
 		}
-		respGameRecord := <-respGameRecordChan
 
 		// 解析
-		data := respGameRecord.GetData()
+		data := respGameRecord.Data
 		if len(data) == 0 {
-			dataURL := respGameRecord.GetDataUrl()
+			dataURL := respGameRecord.DataUrl
 			if dataURL == "" {
 				fmt.Fprintln(os.Stderr, "数据异常: dataURL 为空")
 				continue
@@ -131,7 +122,7 @@ func DownloadRecords(username string, password string, recordType uint32) error 
 			}
 		}
 		detailRecords := lq.GameDetailRecords{}
-		if err := c.unwrapMessage(data, &detailRecords); err != nil {
+		if err := c.UnwrapMessage(data, &detailRecords); err != nil {
 			return err
 		}
 
@@ -141,7 +132,7 @@ func DownloadRecords(username string, password string, recordType uint32) error 
 		}
 		details := []messageWithType{}
 		for _, detailRecord := range detailRecords.GetRecords() {
-			name, data, err := c.unwrapData(detailRecord)
+			name, data, err := c.UnwrapData(detailRecord)
 			if err != nil {
 				return err
 			}

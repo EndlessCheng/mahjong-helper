@@ -3,17 +3,13 @@ package majsoul
 import (
 	"crypto/hmac"
 	"crypto/sha256"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"reflect"
-	"testing"
-	"time"
 	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
 	"github.com/EndlessCheng/mahjong-helper/tool"
-	"github.com/golang/protobuf/proto"
 	"github.com/satori/go.uuid"
+	"os"
+	"testing"
+	"time"
 )
 
 func _genReqLogin(t *testing.T) *lq.ReqLogin {
@@ -99,25 +95,19 @@ func TestLogin(t *testing.T) {
 	defer c.Close()
 
 	reqLogin := _genReqLogin(t)
-	respLoginChan := make(chan *lq.ResLogin)
-	if err := c.callLobby("login", reqLogin, respLoginChan); err != nil {
-		t.Fatal(err)
-	}
-	respLogin := <-respLoginChan
-	if respLogin.GetError() != nil {
-		t.Skip("登录失败:", respLogin.Error)
+	respLogin, err := c.Login(reqLogin)
+	if err != nil {
+		t.Skip("登录失败:", err)
 	}
 	t.Log("登录成功:", respLogin)
-	t.Log(respLogin.GetAccessToken())
+	t.Log(respLogin.AccessToken)
 
 	time.Sleep(time.Second)
 
-	reqLogout := lq.ReqLogout{}
-	respLogoutChan := make(chan *lq.ResLogout)
-	if err := c.callLobby("logout", &reqLogout, respLogoutChan); err != nil {
+	respLogout, err := c.Logout(&lq.ReqLogout{})
+	if err != nil {
 		t.Fatal(err)
 	}
-	respLogout := <-respLogoutChan
 	t.Log("登出", respLogout)
 }
 
@@ -141,168 +131,29 @@ func TestReLogin(t *testing.T) {
 		Type:        0, // ? 怀疑是账号/QQ/微信/微博
 		AccessToken: accessToken,
 	}
-	respOauth2CheckChan := make(chan *lq.ResOauth2Check)
-	if err := c.callLobby("oauth2Check", &reqOauth2Check, respOauth2CheckChan); err != nil {
-		t.Fatal(err)
-	}
-	respOauth2Check := <-respOauth2CheckChan
-	if respOauth2Check.GetError() != nil {
-		t.Skip("oauth2Check 失败:", respOauth2Check.Error)
+	respOauth2Check, err := c.Oauth2Check(&reqOauth2Check)
+	if err != nil {
+		t.Skip("token 验证失败:", err)
 	}
 	t.Log(respOauth2Check)
 
-	if !respOauth2Check.GetHasAccount() {
+	if !respOauth2Check.HasAccount {
 		t.Skip("无效的 token")
 	}
 
 	reqOauth2Login := _genReqOauth2Login(t, accessToken)
-	respLoginChan := make(chan *lq.ResLogin)
-	if err := c.callLobby("oauth2Login", reqOauth2Login, respLoginChan); err != nil {
-		t.Fatal(err)
-	}
-	respLogin := <-respLoginChan
-	if respLogin.GetError() != nil {
-		t.Skip("登录失败:", respLogin.Error)
+	respLogin, err := c.Oauth2Login(reqOauth2Login)
+	if err != nil {
+		t.Skip("登录失败:", err)
 	}
 	t.Log("登录成功:", respLogin)
-	t.Log(respLogin.GetAccessToken())
+	t.Log(respLogin.AccessToken)
 
 	time.Sleep(time.Second)
 
-	reqLogout := lq.ReqLogout{}
-	respLogoutChan := make(chan *lq.ResLogout)
-	if err := c.callLobby("logout", &reqLogout, respLogoutChan); err != nil {
-		t.Fatal(err)
-	}
-	respLogout := <-respLogoutChan
-	t.Log("登出", respLogout)
-}
-
-const (
-	recordListTypeAll    = 0
-	recordListTypeFriend = 1
-	recordListTypeMatch  = 2
-	recordListTypeCompte = 3
-	recordListTypeFav    = 4
-)
-
-func TestFetchGameRecordList(t *testing.T) {
-	endpoint, err := tool.GetMajsoulWebSocketURL()
+	respLogout, err := c.Logout(&lq.ReqLogout{})
 	if err != nil {
 		t.Fatal(err)
 	}
-	c := NewWebSocketClient()
-	if err := c.Connect(endpoint, tool.MajsoulOriginURL); err != nil {
-		t.Fatal(err)
-	}
-	defer c.Close()
-
-	// 登录
-	reqLogin := _genReqLogin(t)
-	respLoginChan := make(chan *lq.ResLogin)
-	if err := c.callLobby("login", reqLogin, respLoginChan); err != nil {
-		t.Fatal(err)
-	}
-	respLogin := <-respLoginChan
-	if respLogin.GetError() != nil {
-		t.Skip("登录失败:", respLogin.Error)
-	}
-	defer func() {
-		reqLogout := lq.ReqLogout{}
-		respLogoutChan := make(chan *lq.ResLogout)
-		if err := c.callLobby("logout", &reqLogout, respLogoutChan); err != nil {
-			t.Fatal(err)
-		}
-		respLogout := <-respLogoutChan
-		t.Log("登出", respLogout)
-	}()
-
-	// 分页获取牌谱列表
-	// TODO: 若牌谱数量巨大，可以使用协程增加下载速度
-	reqGameRecordList := lq.ReqGameRecordList{
-		Start: 1,
-		Count: 10,
-		Type:  0, // 全部/友人/段位/比赛/收藏
-	}
-	respGameRecordListChan := make(chan *lq.ResGameRecordList)
-	if err := c.callLobby("fetchGameRecordList", &reqGameRecordList, respGameRecordListChan); err != nil {
-		t.Fatal(err)
-	}
-	respGameRecordList := <-respGameRecordListChan
-
-	for i, gameRecord := range respGameRecordList.GetRecordList() {
-		t.Log(i+1, gameRecord.Uuid)
-
-		// 获取具体牌谱内容
-		reqGameRecord := lq.ReqGameRecord{
-			GameUuid: gameRecord.Uuid,
-		}
-		respGameRecordChan := make(chan *lq.ResGameRecord)
-		if err := c.callLobby("fetchGameRecord", &reqGameRecord, respGameRecordChan); err != nil {
-			t.Fatal(err)
-		}
-		respGameRecord := <-respGameRecordChan
-
-		// 解析
-		data := respGameRecord.GetData()
-		if len(data) == 0 {
-			dataURL := respGameRecord.GetDataUrl()
-			if dataURL == "" {
-				t.Error("数据异常: dataURL 为空")
-				continue
-			}
-			data, err = tool.Fetch(dataURL)
-			if err != nil {
-				t.Error(err)
-				continue
-			}
-		}
-		detailRecords := lq.GameDetailRecords{}
-		if err := c.unwrapMessage(data, &detailRecords); err != nil {
-			t.Fatal(err)
-		}
-
-		type messageWithType struct {
-			Name string        `json:"name"`
-			Data proto.Message `json:"data"`
-		}
-		details := []messageWithType{}
-		for _, detailRecord := range detailRecords.GetRecords() {
-			name, data, err := c.unwrapData(detailRecord)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			name = name[1:] // 移除开头的 .
-			mt := proto.MessageType(name)
-			if mt == nil {
-				t.Fatalf("未找到 %s，请检查！", name)
-			}
-			messagePtr := reflect.New(mt.Elem())
-			if err := proto.Unmarshal(data, messagePtr.Interface().(proto.Message)); err != nil {
-				t.Fatal(err)
-			}
-
-			details = append(details, messageWithType{
-				Name: name[3:], // 移除开头的 lq.
-				Data: messagePtr.Interface().(proto.Message),
-			})
-		}
-
-		// 保存至本地（JSON 格式）
-		parseResult := struct {
-			Head    *lq.RecordGame    `json:"head"`
-			Details []messageWithType `json:"details"`
-		}{
-			Head:    gameRecord,
-			Details: details,
-		}
-		jsonData, err := json.MarshalIndent(&parseResult, "", "  ")
-		if err != nil {
-			t.Fatal(err)
-		}
-		if err := ioutil.WriteFile(gameRecord.Uuid+".json", jsonData, 0644); err != nil {
-			t.Fatal(err)
-		}
-	}
+	t.Log("登出", respLogout)
 }
