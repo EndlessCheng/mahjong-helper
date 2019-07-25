@@ -76,6 +76,7 @@ func DownloadRecords(username string, password string, recordType uint32) error 
 	defer c.Logout(&lq.ReqLogout{})
 
 	// 分页获取牌谱列表
+	// TODO: 若之前下载过，可以判断：上次是否下载完成->只下载本地最新文件之后的牌谱
 	recordList := []*lq.RecordGame{}
 	const pageSize = 10
 	for i := uint32(1); ; i += pageSize {
