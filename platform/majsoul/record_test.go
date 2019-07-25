@@ -1,8 +1,8 @@
 package majsoul
 
 import (
-	"testing"
 	"os"
+	"testing"
 )
 
 func TestDownloadRecords(t *testing.T) {
