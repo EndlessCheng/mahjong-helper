@@ -59,8 +59,8 @@ func (c *WebSocketClient) %s(req *lq.%s) (resp *lq.%s, err error) {
 	}`
 			if _, ok := c.messageContainError[method.responseType]; ok {
 				format += `
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %%s", resp.Error.String())
 	}`
 			}
 			format += `

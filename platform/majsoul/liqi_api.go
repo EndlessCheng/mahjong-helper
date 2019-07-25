@@ -15,8 +15,8 @@ func (c *WebSocketClient) AuthGame(req *lq.ReqAuthGame) (resp *lq.ResAuthGame, e
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -30,8 +30,8 @@ func (c *WebSocketClient) BroadcastInGame(req *lq.ReqBroadcastInGame) (resp *lq.
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -45,8 +45,8 @@ func (c *WebSocketClient) CheckNetworkDelay(req *lq.ReqCommon) (resp *lq.ResComm
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -60,8 +60,8 @@ func (c *WebSocketClient) ConfirmNewRound(req *lq.ReqCommon) (resp *lq.ResCommon
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -75,8 +75,8 @@ func (c *WebSocketClient) EnterGame(req *lq.ReqCommon) (resp *lq.ResEnterGame, e
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -90,8 +90,8 @@ func (c *WebSocketClient) FetchGamePlayerState(req *lq.ReqCommon) (resp *lq.ResG
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -105,8 +105,8 @@ func (c *WebSocketClient) FinishSyncGame(req *lq.ReqCommon) (resp *lq.ResCommon,
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -120,8 +120,8 @@ func (c *WebSocketClient) InputChiPengGang(req *lq.ReqChiPengGang) (resp *lq.Res
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -135,8 +135,8 @@ func (c *WebSocketClient) InputGameGMCommand(req *lq.ReqGMCommandInGaming) (resp
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -150,8 +150,8 @@ func (c *WebSocketClient) InputOperation(req *lq.ReqSelfOperation) (resp *lq.Res
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -165,8 +165,8 @@ func (c *WebSocketClient) SyncGame(req *lq.ReqSyncGame) (resp *lq.ResSyncGame, e
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -180,8 +180,8 @@ func (c *WebSocketClient) TerminateGame(req *lq.ReqCommon) (resp *lq.ResCommon, 
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -195,8 +195,8 @@ func (c *WebSocketClient) AddCollectedGameRecord(req *lq.ReqAddCollectedGameReco
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -210,8 +210,8 @@ func (c *WebSocketClient) ApplyFriend(req *lq.ReqApplyFriend) (resp *lq.ResCommo
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -225,8 +225,8 @@ func (c *WebSocketClient) BindAccount(req *lq.ReqBindAccount) (resp *lq.ResCommo
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -240,8 +240,8 @@ func (c *WebSocketClient) BindEmail(req *lq.ReqBindEmail) (resp *lq.ResCommon, e
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -255,8 +255,8 @@ func (c *WebSocketClient) BindPhoneNumber(req *lq.ReqBindPhoneNumber) (resp *lq.
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -270,8 +270,8 @@ func (c *WebSocketClient) BuyFromChestShop(req *lq.ReqBuyFromChestShop) (resp *l
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -285,8 +285,8 @@ func (c *WebSocketClient) BuyFromShop(req *lq.ReqBuyFromShop) (resp *lq.ResBuyFr
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -300,8 +300,8 @@ func (c *WebSocketClient) BuyFromZHP(req *lq.ReqBuyFromZHP) (resp *lq.ResCommon,
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -315,8 +315,8 @@ func (c *WebSocketClient) BuyShiLian(req *lq.ReqBuyShiLian) (resp *lq.ResCommon,
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -330,8 +330,8 @@ func (c *WebSocketClient) CancelGooglePlayOrder(req *lq.ReqCancelGooglePlayOrder
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -345,8 +345,8 @@ func (c *WebSocketClient) CancelMatch(req *lq.ReqCancelMatchQueue) (resp *lq.Res
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -360,8 +360,8 @@ func (c *WebSocketClient) ChangeAvatar(req *lq.ReqChangeAvatar) (resp *lq.ResCom
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -375,8 +375,8 @@ func (c *WebSocketClient) ChangeCharacterSkin(req *lq.ReqChangeCharacterSkin) (r
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -390,8 +390,8 @@ func (c *WebSocketClient) ChangeCharacterView(req *lq.ReqChangeCharacterView) (r
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -405,8 +405,8 @@ func (c *WebSocketClient) ChangeCollectedGameRecordRemarks(req *lq.ReqChangeColl
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -420,8 +420,8 @@ func (c *WebSocketClient) ChangeCommonView(req *lq.ReqChangeCommonView) (resp *l
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -435,8 +435,8 @@ func (c *WebSocketClient) ChangeMainCharacter(req *lq.ReqChangeMainCharacter) (r
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -450,8 +450,8 @@ func (c *WebSocketClient) ClientMessage(req *lq.ReqClientMessage) (resp *lq.ResC
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -465,8 +465,8 @@ func (c *WebSocketClient) CompleteActivityTask(req *lq.ReqCompleteActivityTask) 
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -480,8 +480,8 @@ func (c *WebSocketClient) ComposeShard(req *lq.ReqComposeShard) (resp *lq.ResCom
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -495,8 +495,8 @@ func (c *WebSocketClient) CreateAlipayAppOrder(req *lq.ReqCreateAlipayAppOrder) 
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -510,8 +510,8 @@ func (c *WebSocketClient) CreateAlipayOrder(req *lq.ReqCreateAlipayOrder) (resp 
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -525,8 +525,8 @@ func (c *WebSocketClient) CreateAlipayScanOrder(req *lq.ReqCreateAlipayScanOrder
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -540,8 +540,8 @@ func (c *WebSocketClient) CreateBillingOrder(req *lq.ReqCreateBillingOrder) (res
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -555,8 +555,8 @@ func (c *WebSocketClient) CreateENAlipayOrder(req *lq.ReqCreateENAlipayOrder) (r
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -570,8 +570,8 @@ func (c *WebSocketClient) CreateENJCBOrder(req *lq.ReqCreateENJCBOrder) (resp *l
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -585,8 +585,8 @@ func (c *WebSocketClient) CreateENMasterCardOrder(req *lq.ReqCreateENMasterCardO
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -600,8 +600,8 @@ func (c *WebSocketClient) CreateENPaypalOrder(req *lq.ReqCreateENPaypalOrder) (r
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -615,8 +615,8 @@ func (c *WebSocketClient) CreateENVisaOrder(req *lq.ReqCreateENVisaOrder) (resp 
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -630,8 +630,8 @@ func (c *WebSocketClient) CreateEmailVerifyCode(req *lq.ReqCreateEmailVerifyCode
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -645,8 +645,8 @@ func (c *WebSocketClient) CreateJPAuOrder(req *lq.ReqCreateJPAuOrder) (resp *lq.
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -660,8 +660,8 @@ func (c *WebSocketClient) CreateJPCreditCardOrder(req *lq.ReqCreateJPCreditCardO
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -675,8 +675,8 @@ func (c *WebSocketClient) CreateJPDocomoOrder(req *lq.ReqCreateJPDocomoOrder) (r
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -690,8 +690,8 @@ func (c *WebSocketClient) CreateJPPaypalOrder(req *lq.ReqCreateJPPaypalOrder) (r
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -705,8 +705,8 @@ func (c *WebSocketClient) CreateJPSoftbankOrder(req *lq.ReqCreateJPSoftbankOrder
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -720,8 +720,8 @@ func (c *WebSocketClient) CreateNickname(req *lq.ReqCreateNickname) (resp *lq.Re
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -735,8 +735,8 @@ func (c *WebSocketClient) CreatePhoneVerifyCode(req *lq.ReqCreatePhoneVerifyCode
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -750,8 +750,8 @@ func (c *WebSocketClient) CreateRoom(req *lq.ReqCreateRoom) (resp *lq.ResCreateR
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -765,8 +765,8 @@ func (c *WebSocketClient) CreateWechatAppOrder(req *lq.ReqCreateWechatAppOrder) 
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -780,8 +780,8 @@ func (c *WebSocketClient) CreateWechatNativeOrder(req *lq.ReqCreateWechatNativeO
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -795,8 +795,8 @@ func (c *WebSocketClient) DeleteComment(req *lq.ReqDeleteComment) (resp *lq.ResC
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -810,8 +810,8 @@ func (c *WebSocketClient) DeleteMail(req *lq.ReqDeleteMail) (resp *lq.ResCommon,
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -825,8 +825,8 @@ func (c *WebSocketClient) DoDailySignIn(req *lq.ReqCommon) (resp *lq.ResCommon, 
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -840,8 +840,8 @@ func (c *WebSocketClient) EmailLogin(req *lq.ReqEmailLogin) (resp *lq.ResLogin, 
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -855,8 +855,8 @@ func (c *WebSocketClient) EnterCustomizedContest(req *lq.ReqEnterCustomizedConte
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -870,8 +870,8 @@ func (c *WebSocketClient) ExchangeActivityItem(req *lq.ReqExchangeActivityItem) 
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -885,8 +885,8 @@ func (c *WebSocketClient) ExchangeChestStone(req *lq.ReqExchangeCurrency) (resp 
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -900,8 +900,8 @@ func (c *WebSocketClient) ExchangeCurrency(req *lq.ReqExchangeCurrency) (resp *l
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -915,8 +915,8 @@ func (c *WebSocketClient) FetchAccountActivityData(req *lq.ReqCommon) (resp *lq.
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -942,8 +942,8 @@ func (c *WebSocketClient) FetchAccountInfo(req *lq.ReqAccountInfo) (resp *lq.Res
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -957,8 +957,8 @@ func (c *WebSocketClient) FetchAccountSettings(req *lq.ReqCommon) (resp *lq.ResA
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -972,8 +972,8 @@ func (c *WebSocketClient) FetchAccountState(req *lq.ReqAccountList) (resp *lq.Re
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -987,8 +987,8 @@ func (c *WebSocketClient) FetchAccountStatisticInfo(req *lq.ReqAccountStatisticI
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1002,8 +1002,8 @@ func (c *WebSocketClient) FetchAchievement(req *lq.ReqCommon) (resp *lq.ResAchie
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1017,8 +1017,8 @@ func (c *WebSocketClient) FetchActivityList(req *lq.ReqCommon) (resp *lq.ResActi
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1032,8 +1032,8 @@ func (c *WebSocketClient) FetchAnnouncement(req *lq.ReqCommon) (resp *lq.ResAnno
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1047,8 +1047,8 @@ func (c *WebSocketClient) FetchBagInfo(req *lq.ReqCommon) (resp *lq.ResBagInfo, 
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1062,8 +1062,8 @@ func (c *WebSocketClient) FetchCharacterInfo(req *lq.ReqCommon) (resp *lq.ResCha
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1089,8 +1089,8 @@ func (c *WebSocketClient) FetchCollectedGameRecordList(req *lq.ReqCommon) (resp 
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1104,8 +1104,8 @@ func (c *WebSocketClient) FetchCommentContent(req *lq.ReqFetchCommentContent) (r
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1119,8 +1119,8 @@ func (c *WebSocketClient) FetchCommentList(req *lq.ReqFetchCommentList) (resp *l
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1134,8 +1134,8 @@ func (c *WebSocketClient) FetchCommentSetting(req *lq.ReqCommon) (resp *lq.ResCo
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1149,8 +1149,8 @@ func (c *WebSocketClient) FetchCommonView(req *lq.ReqCommon) (resp *lq.ResCommon
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1164,8 +1164,8 @@ func (c *WebSocketClient) FetchConnectionInfo(req *lq.ReqCommon) (resp *lq.ResCo
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1179,8 +1179,8 @@ func (c *WebSocketClient) FetchCurrentMatchInfo(req *lq.ReqCurrentMatchInfo) (re
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1194,8 +1194,8 @@ func (c *WebSocketClient) FetchCustomizedContestByContestId(req *lq.ReqFetchCust
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1209,8 +1209,8 @@ func (c *WebSocketClient) FetchCustomizedContestExtendInfo(req *lq.ReqFetchCusto
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1224,8 +1224,8 @@ func (c *WebSocketClient) FetchCustomizedContestGameLiveList(req *lq.ReqFetchCus
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1239,8 +1239,8 @@ func (c *WebSocketClient) FetchCustomizedContestGameRecords(req *lq.ReqFetchCust
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1254,8 +1254,8 @@ func (c *WebSocketClient) FetchCustomizedContestList(req *lq.ReqFetchCustomizedC
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1269,8 +1269,8 @@ func (c *WebSocketClient) FetchCustomizedContestOnlineInfo(req *lq.ReqFetchCusto
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1284,8 +1284,8 @@ func (c *WebSocketClient) FetchDailySignInInfo(req *lq.ReqCommon) (resp *lq.ResD
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1299,8 +1299,8 @@ func (c *WebSocketClient) FetchDailyTask(req *lq.ReqCommon) (resp *lq.ResDailyTa
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1314,8 +1314,8 @@ func (c *WebSocketClient) FetchFriendApplyList(req *lq.ReqCommon) (resp *lq.ResF
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1329,8 +1329,8 @@ func (c *WebSocketClient) FetchFriendList(req *lq.ReqCommon) (resp *lq.ResFriend
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1344,8 +1344,8 @@ func (c *WebSocketClient) FetchGameLiveInfo(req *lq.ReqGameLiveInfo) (resp *lq.R
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1359,8 +1359,8 @@ func (c *WebSocketClient) FetchGameLiveLeftSegment(req *lq.ReqGameLiveLeftSegmen
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1374,8 +1374,8 @@ func (c *WebSocketClient) FetchGameLiveList(req *lq.ReqGameLiveList) (resp *lq.R
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1389,8 +1389,8 @@ func (c *WebSocketClient) FetchGameRecord(req *lq.ReqGameRecord) (resp *lq.ResGa
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1404,8 +1404,8 @@ func (c *WebSocketClient) FetchGameRecordList(req *lq.ReqGameRecordList) (resp *
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1419,8 +1419,8 @@ func (c *WebSocketClient) FetchGameRecordsDetail(req *lq.ReqGameRecordsDetail) (
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1434,8 +1434,8 @@ func (c *WebSocketClient) FetchIDCardInfo(req *lq.ReqCommon) (resp *lq.ResIDCard
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1449,8 +1449,8 @@ func (c *WebSocketClient) FetchLevelLeaderboard(req *lq.ReqLevelLeaderboard) (re
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1464,8 +1464,8 @@ func (c *WebSocketClient) FetchMailInfo(req *lq.ReqCommon) (resp *lq.ResMailInfo
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1479,8 +1479,8 @@ func (c *WebSocketClient) FetchMisc(req *lq.ReqCommon) (resp *lq.ResMisc, err er
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1506,8 +1506,8 @@ func (c *WebSocketClient) FetchMultiAccountBrief(req *lq.ReqMultiAccountId) (res
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1521,8 +1521,8 @@ func (c *WebSocketClient) FetchPlatformProducts(req *lq.ReqPlatformBillingProduc
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1536,8 +1536,8 @@ func (c *WebSocketClient) FetchRankPointLeaderboard(req *lq.ReqFetchRankPointLea
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1551,8 +1551,8 @@ func (c *WebSocketClient) FetchReviveCoinInfo(req *lq.ReqCommon) (resp *lq.ResRe
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1578,8 +1578,8 @@ func (c *WebSocketClient) FetchRoom(req *lq.ReqCommon) (resp *lq.ResSelfRoom, er
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1617,8 +1617,8 @@ func (c *WebSocketClient) FetchShopInfo(req *lq.ReqCommon) (resp *lq.ResShopInfo
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1632,8 +1632,8 @@ func (c *WebSocketClient) FetchTitleList(req *lq.ReqCommon) (resp *lq.ResTitleLi
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1647,8 +1647,8 @@ func (c *WebSocketClient) FetchVipReward(req *lq.ReqCommon) (resp *lq.ResVipRewa
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1662,8 +1662,8 @@ func (c *WebSocketClient) FollowCustomizedContest(req *lq.ReqTargetCustomizedCon
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1677,8 +1677,8 @@ func (c *WebSocketClient) GainAccumulatedPointActivityReward(req *lq.ReqGainAccu
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1692,8 +1692,8 @@ func (c *WebSocketClient) GainRankPointReward(req *lq.ReqGainRankPointReward) (r
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1707,8 +1707,8 @@ func (c *WebSocketClient) GainReviveCoin(req *lq.ReqCommon) (resp *lq.ResCommon,
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1722,8 +1722,8 @@ func (c *WebSocketClient) GainVipReward(req *lq.ReqGainVipReward) (resp *lq.ResC
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1737,8 +1737,8 @@ func (c *WebSocketClient) GameMasterCommand(req *lq.ReqGMCommand) (resp *lq.ResC
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1752,8 +1752,8 @@ func (c *WebSocketClient) GoNextShiLian(req *lq.ReqCommon) (resp *lq.ResCommon, 
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1767,8 +1767,8 @@ func (c *WebSocketClient) HandleFriendApply(req *lq.ReqHandleFriendApply) (resp 
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1782,8 +1782,8 @@ func (c *WebSocketClient) Heatbeat(req *lq.ReqHeatBeat) (resp *lq.ResCommon, err
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1797,8 +1797,8 @@ func (c *WebSocketClient) JoinCustomizedContestChatRoom(req *lq.ReqJoinCustomize
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1812,8 +1812,8 @@ func (c *WebSocketClient) JoinRoom(req *lq.ReqJoinRoom) (resp *lq.ResJoinRoom, e
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1827,8 +1827,8 @@ func (c *WebSocketClient) KickPlayer(req *lq.ReqRoomKick) (resp *lq.ResCommon, e
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1842,8 +1842,8 @@ func (c *WebSocketClient) LeaveComment(req *lq.ReqLeaveComment) (resp *lq.ResCom
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1857,8 +1857,8 @@ func (c *WebSocketClient) LeaveCustomizedContest(req *lq.ReqCommon) (resp *lq.Re
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1872,8 +1872,8 @@ func (c *WebSocketClient) LeaveCustomizedContestChatRoom(req *lq.ReqCommon) (res
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1887,8 +1887,8 @@ func (c *WebSocketClient) LeaveRoom(req *lq.ReqCommon) (resp *lq.ResCommon, err 
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1902,8 +1902,8 @@ func (c *WebSocketClient) Login(req *lq.ReqLogin) (resp *lq.ResLogin, err error)
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1917,8 +1917,8 @@ func (c *WebSocketClient) Logout(req *lq.ReqLogout) (resp *lq.ResLogout, err err
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1932,8 +1932,8 @@ func (c *WebSocketClient) MatchGame(req *lq.ReqJoinMatchQueue) (resp *lq.ResComm
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1947,8 +1947,8 @@ func (c *WebSocketClient) MatchShiLian(req *lq.ReqCommon) (resp *lq.ResCommon, e
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1962,8 +1962,8 @@ func (c *WebSocketClient) ModifyBirthday(req *lq.ReqModifyBirthday) (resp *lq.Re
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1977,8 +1977,8 @@ func (c *WebSocketClient) ModifyNickname(req *lq.ReqModifyNickname) (resp *lq.Re
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -1992,8 +1992,8 @@ func (c *WebSocketClient) ModifyPassword(req *lq.ReqModifyPassword) (resp *lq.Re
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2007,8 +2007,8 @@ func (c *WebSocketClient) ModifyRoom(req *lq.ReqModifyRoom) (resp *lq.ResCommon,
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2022,8 +2022,8 @@ func (c *WebSocketClient) ModifySignature(req *lq.ReqModifySignature) (resp *lq.
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2037,8 +2037,8 @@ func (c *WebSocketClient) Oauth2Auth(req *lq.ReqOauth2Auth) (resp *lq.ResOauth2A
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2052,8 +2052,8 @@ func (c *WebSocketClient) Oauth2Check(req *lq.ReqOauth2Check) (resp *lq.ResOauth
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2067,8 +2067,8 @@ func (c *WebSocketClient) Oauth2Login(req *lq.ReqOauth2Login) (resp *lq.ResLogin
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2082,8 +2082,8 @@ func (c *WebSocketClient) Oauth2Signup(req *lq.ReqOauth2Signup) (resp *lq.ResOau
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2097,8 +2097,8 @@ func (c *WebSocketClient) OpenChest(req *lq.ReqOpenChest) (resp *lq.ResOpenChest
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2112,8 +2112,8 @@ func (c *WebSocketClient) OpenManualItem(req *lq.ReqOpenManualItem) (resp *lq.Re
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2127,8 +2127,8 @@ func (c *WebSocketClient) OpenRandomRewardItem(req *lq.ReqOpenRandomRewardItem) 
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2142,8 +2142,8 @@ func (c *WebSocketClient) ReadAnnouncement(req *lq.ReqReadAnnouncement) (resp *l
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2157,8 +2157,8 @@ func (c *WebSocketClient) ReadMail(req *lq.ReqReadMail) (resp *lq.ResCommon, err
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2172,8 +2172,8 @@ func (c *WebSocketClient) ReadyPlay(req *lq.ReqRoomReady) (resp *lq.ResCommon, e
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2187,8 +2187,8 @@ func (c *WebSocketClient) RefreshDailyTask(req *lq.ReqRefreshDailyTask) (resp *l
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2202,8 +2202,8 @@ func (c *WebSocketClient) RefreshZHPShop(req *lq.ReqCommon) (resp *lq.ResRefresh
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2217,8 +2217,8 @@ func (c *WebSocketClient) RemoveCollectedGameRecord(req *lq.ReqRemoveCollectedGa
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2232,8 +2232,8 @@ func (c *WebSocketClient) RemoveFriend(req *lq.ReqRemoveFriend) (resp *lq.ResCom
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2247,8 +2247,8 @@ func (c *WebSocketClient) SayChatMessage(req *lq.ReqSayChatMessage) (resp *lq.Re
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2262,8 +2262,8 @@ func (c *WebSocketClient) SearchAccountById(req *lq.ReqSearchAccountById) (resp 
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2277,8 +2277,8 @@ func (c *WebSocketClient) SearchAccountByPattern(req *lq.ReqSearchAccountByPatte
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2292,8 +2292,8 @@ func (c *WebSocketClient) SellItem(req *lq.ReqSellItem) (resp *lq.ResCommon, err
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2307,8 +2307,8 @@ func (c *WebSocketClient) SendClientMessage(req *lq.ReqSendClientMessage) (resp 
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2322,8 +2322,8 @@ func (c *WebSocketClient) SendGiftToCharacter(req *lq.ReqSendGiftToCharacter) (r
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2337,8 +2337,8 @@ func (c *WebSocketClient) ShopPurchase(req *lq.ReqShopPurchase) (resp *lq.ResSho
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2352,8 +2352,8 @@ func (c *WebSocketClient) Signup(req *lq.ReqSignupAccount) (resp *lq.ResSignupAc
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2367,8 +2367,8 @@ func (c *WebSocketClient) SolveGooglePlayOrder(req *lq.ReqSolveGooglePlayOrder) 
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2382,8 +2382,8 @@ func (c *WebSocketClient) StartCustomizedContest(req *lq.ReqStartCustomizedConte
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2397,8 +2397,8 @@ func (c *WebSocketClient) StartRoom(req *lq.ReqRoomStart) (resp *lq.ResCommon, e
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2412,8 +2412,8 @@ func (c *WebSocketClient) StopCustomizedContest(req *lq.ReqCommon) (resp *lq.Res
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2427,8 +2427,8 @@ func (c *WebSocketClient) TakeAttachmentFromMail(req *lq.ReqTakeAttachment) (res
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2442,8 +2442,8 @@ func (c *WebSocketClient) UnfollowCustomizedContest(req *lq.ReqTargetCustomizedC
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2457,8 +2457,8 @@ func (c *WebSocketClient) UpdateAccountSettings(req *lq.ReqUpdateAccountSettings
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2472,8 +2472,8 @@ func (c *WebSocketClient) UpdateClientValue(req *lq.ReqUpdateClientValue) (resp 
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2487,8 +2487,8 @@ func (c *WebSocketClient) UpdateCommentSetting(req *lq.ReqUpdateCommentSetting) 
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2502,8 +2502,8 @@ func (c *WebSocketClient) UpdateIDCardInfo(req *lq.ReqUpdateIDCardInfo) (resp *l
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2517,8 +2517,8 @@ func (c *WebSocketClient) UpdateReadComment(req *lq.ReqUpdateReadComment) (resp 
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2532,8 +2532,8 @@ func (c *WebSocketClient) UpgradeCharacter(req *lq.ReqUpgradeCharacter) (resp *l
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2547,8 +2547,8 @@ func (c *WebSocketClient) UseBagItem(req *lq.ReqUseBagItem) (resp *lq.ResCommon,
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2562,8 +2562,8 @@ func (c *WebSocketClient) UseGiftCode(req *lq.ReqUseGiftCode) (resp *lq.ResUseGi
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2577,8 +2577,8 @@ func (c *WebSocketClient) UseTitle(req *lq.ReqUseTitle) (resp *lq.ResCommon, err
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
@@ -2592,8 +2592,8 @@ func (c *WebSocketClient) VerfifyCodeForSecure(req *lq.ReqVerifyCodeForSecure) (
 	if resp == nil {
 		return nil, fmt.Errorf("empty response")
 	}
-	if resp.GetError() != nil {
-		err = fmt.Errorf("%s", resp.Error.String())
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
 	}
 	return
 }
