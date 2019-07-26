@@ -11,7 +11,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/satori/go.uuid"
 	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
-	"github.com/EndlessCheng/mahjong-helper/tool"
+	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/tool"
 )
 
 const (

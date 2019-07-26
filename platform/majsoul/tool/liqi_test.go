@@ -9,7 +9,7 @@ import (
 )
 
 func TestFetchLatestLiqiJson(t *testing.T) {
-	if err := FetchLatestLiqiJson("../platform/majsoul/proto/lq/liqi.json"); err != nil {
+	if err := FetchLatestLiqiJson("../proto/lq/liqi.json"); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -19,7 +19,7 @@ func TestLiqiJsonToProto3(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := LiqiJsonToProto3(content, "../platform/majsoul/proto/lq/liqi.proto"); err != nil {
+	if err := LiqiJsonToProto3(content, "../proto/lq/liqi.proto"); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -73,7 +73,7 @@ func (c *WebSocketClient) %s(req *lq.%s) (resp *lq.%s, err error) {
 		}
 	}
 
-	if err := ioutil.WriteFile("../platform/majsoul/liqi_api.go", protoBB.Bytes(), 0644); err != nil {
+	if err := ioutil.WriteFile("../liqi_api.go", protoBB.Bytes(), 0644); err != nil {
 		t.Fatal(err)
 	}
 }
