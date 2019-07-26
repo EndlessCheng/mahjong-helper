@@ -8,15 +8,22 @@ import (
 	"github.com/fatih/color"
 )
 
+const versionDev = "dev"
+
+// 编译时自动写入版本号
+// go build -ldflags "-X main.version=$(git describe --abbrev=0 --tags)" -o mahjong-helper
+var version = versionDev
+
 func fetchLatestVersionTag() (latestVersionTag string, err error) {
-	const getLatestReleaseAPI = "https://api.github.com/repos/EndlessCheng/mahjong-helper/releases/latest"
+	const apiGetLatestRelease = "https://api.github.com/repos/EndlessCheng/mahjong-helper/releases/latest"
 	const timeout = 10 * time.Second
 
 	c := &http.Client{Timeout: timeout}
-	resp, err := c.Get(getLatestReleaseAPI)
+	resp, err := c.Get(apiGetLatestRelease)
 	if err != nil {
 		return
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("[fetchLatestVersionTag] 返回 %s", resp.Status)
@@ -32,7 +39,7 @@ func fetchLatestVersionTag() (latestVersionTag string, err error) {
 	return d.TagName, nil
 }
 
-func alertNewVersion(currentVersionTag string) {
+func checkNewVersion(currentVersionTag string) {
 	const latestReleasePage = "https://github.com/EndlessCheng/mahjong-helper/releases/latest"
 
 	latestVersionTag, err := fetchLatestVersionTag()
