@@ -596,7 +596,8 @@ func (d *tenhouRoundData) IsNukiDora() bool {
 	return d.isNukiOperator(d.msg.Meld)
 }
 
-func (d *tenhouRoundData) ParseNukiDora() (who int) {
+func (d *tenhouRoundData) ParseNukiDora() (who int, isTsumogiri bool) {
+	// TODO: isTsumogiri
 	who, _ = strconv.Atoi(d.msg.Who)
 	return
 }

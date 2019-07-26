@@ -75,7 +75,7 @@ type DataParser interface {
 
 	// 拔北宝牌
 	IsNukiDora() bool
-	ParseNukiDora() (who int)
+	ParseNukiDora() (who int, isTsumogiri bool)
 
 	// 这一项放在末尾处理
 	// 杠宝牌（雀魂在暗杠后的摸牌时出现）
@@ -916,12 +916,14 @@ func (d *roundData) analysis() error {
 		// TODO
 		d.parser.ParseRyuukyoku()
 	case d.parser.IsNukiDora():
-		who := d.parser.ParseNukiDora()
+		who, isTsumogiri := d.parser.ParseNukiDora()
 		player := d.players[who]
 		player.nukiDoraNum++
 		if who != 0 {
 			// 减少北的数量
 			d.descLeftCounts(30)
+			// TODO
+			_ = isTsumogiri
 		} else {
 			// 减少自己手牌中北的数量
 			d.counts[30]--

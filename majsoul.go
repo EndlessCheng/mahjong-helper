@@ -514,8 +514,9 @@ func (d *majsoulRoundData) IsNukiDora() bool {
 	return msg.Seat != nil && msg.Moqie != nil && msg.Tile == ""
 }
 
-func (d *majsoulRoundData) ParseNukiDora() (who int) {
-	return d.parseWho(*d.msg.Seat)
+func (d *majsoulRoundData) ParseNukiDora() (who int, isTsumogiri bool) {
+	msg := d.msg
+	return d.parseWho(*msg.Seat), *msg.Moqie
 }
 
 // 在最后处理该项
