@@ -84,6 +84,8 @@ func analysisPlayerWithRisk(playerInfo *model.PlayerInfo, mixedRiskTable riskTab
 			}
 		}
 
+		// TODO: 接近流局时提示河底是哪家
+
 		// 何切分析结果
 		printResults14WithRisk(results14, mixedRiskTable)
 		printResults14WithRisk(incShantenResults14, mixedRiskTable)
@@ -142,6 +144,8 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool
 			color.HiGreen("考虑型听？")
 		}
 	}
+
+	// TODO: 接近流局时提示河底是哪家
 
 	// 鸣牌何切分析结果
 	printResults14WithRisk(results14, mixedRiskTable)
