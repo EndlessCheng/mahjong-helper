@@ -17,6 +17,7 @@ func get(url string, userStruct interface{}) (err error) {
 	if err != nil {
 		return
 	}
+	defer resp.Close()
 	if !resp.Ok {
 		return fmt.Errorf("%s", resp.RawResponse.Status)
 	}
