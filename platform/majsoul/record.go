@@ -123,7 +123,7 @@ func DownloadRecords(username string, password string, recordType uint32) error 
 			}
 		}
 		detailRecords := lq.GameDetailRecords{}
-		if err := c.UnwrapMessage(data, &detailRecords); err != nil {
+		if err := UnwrapMessage(data, &detailRecords); err != nil {
 			return err
 		}
 
@@ -133,7 +133,7 @@ func DownloadRecords(username string, password string, recordType uint32) error 
 		}
 		details := []messageWithType{}
 		for _, detailRecord := range detailRecords.GetRecords() {
-			name, data, err := c.UnwrapData(detailRecord)
+			name, data, err := UnwrapData(detailRecord)
 			if err != nil {
 				return err
 			}

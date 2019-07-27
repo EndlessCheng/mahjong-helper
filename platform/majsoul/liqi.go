@@ -35,38 +35,6 @@ func NewWebSocketClient() *WebSocketClient {
 	}
 }
 
-func (*WebSocketClient) WrapMessage(name string, message proto.Message) (data []byte, err error) {
-	data, err = proto.Marshal(message)
-	if err != nil {
-		return
-	}
-	wrap := lq.Wrapper{
-		Name: name,
-		Data: data,
-	}
-	return proto.Marshal(&wrap)
-}
-
-func (*WebSocketClient) UnwrapData(rawData []byte) (methodName string, data []byte, err error) {
-	wrapper := lq.Wrapper{}
-	if err = proto.Unmarshal(rawData, &wrapper); err != nil {
-		return
-	}
-	return wrapper.GetName(), wrapper.GetData(), nil
-}
-
-// TODO: auto UnwrapMessage by methodName
-
-func (c *WebSocketClient) UnwrapMessage(rawData []byte, message proto.Message) error {
-	methodName, data, err := c.UnwrapData(rawData)
-	if err != nil {
-		return err
-	}
-	// TODO: assert methodName
-	_ = methodName
-	return proto.Unmarshal(data, message)
-}
-
 func (c *WebSocketClient) run() {
 	for !c.closed {
 		_, data, err := c.ws.ReadMessage()
@@ -94,7 +62,7 @@ func (c *WebSocketClient) run() {
 
 			respMessageType := reflect.TypeOf(rawRespMessageChan).Elem().Elem()
 			respMessage := reflect.New(respMessageType)
-			if err := c.UnwrapMessage(data[3:], respMessage.Interface().(proto.Message)); err != nil {
+			if err := UnwrapMessage(data[3:], respMessage.Interface().(proto.Message)); err != nil {
 				fmt.Fprintln(os.Stderr, "UnwrapData:", err)
 				reflect.ValueOf(rawRespMessageChan).Close()
 				continue
@@ -128,7 +96,7 @@ func (c *WebSocketClient) send(name string, reqMessage proto.Message, respMessag
 	c.Lock()
 	defer c.Unlock()
 
-	data, err := c.WrapMessage(name, reqMessage)
+	data, err := WrapMessage(name, reqMessage)
 	if err != nil {
 		return err
 	}
