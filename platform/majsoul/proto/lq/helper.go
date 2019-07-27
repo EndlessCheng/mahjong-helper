@@ -3,7 +3,39 @@ package lq
 import (
 	"fmt"
 	"time"
+	"reflect"
+	"strings"
 )
+
+var (
+	lobbyClientMethodMap    = map[string]reflect.Type{}
+	fastTestClientMethodMap = map[string]reflect.Type{}
+)
+
+func init() {
+	t := reflect.TypeOf((*LobbyClient)(nil)).Elem()
+	for i := 0; i < t.NumMethod(); i++ {
+		method := t.Method(i)
+		lobbyClientMethodMap[method.Name] = method.Type
+	}
+
+	t = reflect.TypeOf((*FastTestClient)(nil)).Elem()
+	for i := 0; i < t.NumMethod(); i++ {
+		method := t.Method(i)
+		fastTestClientMethodMap[method.Name] = method.Type
+	}
+}
+
+func FindMethod(clientName string, methodName string) reflect.Type {
+	methodName = strings.Title(methodName)
+	if clientName == "Lobby" {
+		return lobbyClientMethodMap[methodName]
+	} else { // clientName == "FastTest"
+		return fastTestClientMethodMap[methodName]
+	}
+}
+
+//
 
 func (m *Friend) CLIString() string {
 	return fmt.Sprintf("%9d   %s   %s   %s",

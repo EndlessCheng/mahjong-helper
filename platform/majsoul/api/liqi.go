@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	messageTypeNotify   = 1
-	messageTypeRequest  = 2
-	messageTypeResponse = 3
+	MessageTypeNotify   = 1
+	MessageTypeRequest  = 2
+	MessageTypeResponse = 3
 )
 
 type WebSocketClient struct {
@@ -51,7 +51,7 @@ func (c *WebSocketClient) run() {
 			continue
 		}
 
-		if data[0] == messageTypeResponse {
+		if data[0] == MessageTypeResponse {
 			messageIndex := binary.LittleEndian.Uint16(data[1:3])
 			rawRespMessageChan, ok := c.respMessageChanMap.Load(messageIndex)
 			if !ok {
@@ -105,7 +105,7 @@ func (c *WebSocketClient) send(name string, reqMessage proto.Message, respMessag
 
 	messageIndexBytes := make([]byte, 2)
 	binary.LittleEndian.PutUint16(messageIndexBytes, c.messageIndex)
-	messageHead := append([]byte{messageTypeRequest}, messageIndexBytes...)
+	messageHead := append([]byte{MessageTypeRequest}, messageIndexBytes...)
 	if err := c.ws.WriteMessage(websocket.BinaryMessage, append(messageHead, data...)); err != nil {
 		return err
 	}

@@ -143,7 +143,7 @@ func DownloadRecords(username string, password string, recordType uint32) error 
 			name = name[1:] // 移除开头的 .
 			mt := proto.MessageType(name)
 			if mt == nil {
-				fmt.Fprintf(os.Stderr, "未找到 %s，请检查！", name)
+				fmt.Fprintf(os.Stderr, "未找到 %s，请检查！\n", name)
 			}
 			messagePtr := reflect.New(mt.Elem())
 			if err := proto.Unmarshal(data, messagePtr.Interface().(proto.Message)); err != nil {
