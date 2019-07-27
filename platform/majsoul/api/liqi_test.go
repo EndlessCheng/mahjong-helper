@@ -128,7 +128,8 @@ func TestReLogin(t *testing.T) {
 		t.Skip("未配置环境变量 TOKEN，退出")
 	}
 	reqOauth2Check := lq.ReqOauth2Check{
-		Type:        0, // ? 怀疑是账号/QQ/微信/微博
+		// Type = 3 为 QQ
+		Type:        0, // 账号/QQ/微信/微博/ 海外的……?
 		AccessToken: accessToken,
 	}
 	respOauth2Check, err := c.Oauth2Check(&reqOauth2Check)

@@ -16,9 +16,12 @@ import (
 )
 
 const (
-	// TODO
-	RecordTypeAll   = 0
-	RecordTypeMatch = 4
+	RecordTypeAll         uint32 = 0
+	RecordTypeFriend      uint32 = 1
+	RecordTypeLevel       uint32 = 2
+	RecordTypeCompetition uint32 = 4
+	// 收藏的牌谱用 FetchGameRecordsDetail 接口获取
+	// 该接口传入的 UUID 在登录后调用 FetchCollectedGameRecordList 获得
 )
 
 func genReqLogin(username string, password string) (*lq.ReqLogin, error) {
@@ -85,7 +88,7 @@ func DownloadRecords(username string, password string, recordType uint32) error 
 		reqGameRecordList := lq.ReqGameRecordList{
 			Start: i,
 			Count: pageSize,
-			Type:  recordType, // TODO 全部/友人/段位/比赛/收藏
+			Type:  recordType,
 		}
 		respGameRecordList, err := c.FetchGameRecordList(&reqGameRecordList)
 		if err != nil {
