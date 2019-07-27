@@ -7,6 +7,7 @@ import (
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 	"sort"
 	"time"
+	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
 )
 
 type majsoulMessage struct {
@@ -14,7 +15,7 @@ type majsoulMessage struct {
 	AccountID int `json:"account_id"`
 
 	// 友人列表
-	Friends []*majsoulFriend `json:"friends"`
+	Friends lq.FriendList `json:"friends"`
 
 	// 新获取到的牌谱基本信息列表
 	RecordBaseInfoList []*majsoulRecordBaseInfo `json:"record_list"`

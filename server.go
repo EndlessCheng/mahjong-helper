@@ -179,13 +179,10 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 
 		switch {
 		case len(d.Friends) > 0:
-			// 处理好友列表
-			fmt.Println("好友账号ID   好友上次登录时间        好友上次登出时间       好友昵称")
-			for _, friend := range d.Friends {
-				fmt.Println(friend)
-			}
+			// 好友列表
+			fmt.Println(d.Friends)
 		case len(d.RecordBaseInfoList) > 0:
-			// 处理牌谱基本信息列表
+			// 牌谱基本信息列表
 			for _, record := range d.RecordBaseInfoList {
 				h.majsoulRecordMap[record.UUID] = record
 			}
