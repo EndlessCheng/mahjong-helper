@@ -11,7 +11,7 @@ import (
 	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
 )
 
-// 若 NotifyMessage 不为空，这改消息为通知，仅包含 NotifyMessage，其余字段为空
+// 若 NotifyMessage 不为空，这该消息为通知，仅包含 NotifyMessage，其余字段为空
 type Message struct {
 	MethodName      string
 	RequestMessage  proto.Message
