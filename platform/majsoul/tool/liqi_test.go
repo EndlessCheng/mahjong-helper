@@ -73,7 +73,7 @@ func (c *WebSocketClient) %s(req *lq.%s) (resp *lq.%s, err error) {
 		}
 	}
 
-	if err := ioutil.WriteFile("../liqi_api.go", protoBB.Bytes(), 0644); err != nil {
+	if err := ioutil.WriteFile("../api/liqi_api.go", protoBB.Bytes(), 0644); err != nil {
 		t.Fatal(err)
 	}
 }
