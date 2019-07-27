@@ -5,6 +5,7 @@ import (
 	"time"
 	"reflect"
 	"strings"
+	"github.com/golang/protobuf/proto"
 )
 
 var (
@@ -35,7 +36,7 @@ func FindMethod(clientName string, methodName string) reflect.Type {
 	}
 }
 
-//
+// 下面补充一些功能
 
 func (m *Friend) CLIString() string {
 	return fmt.Sprintf("%9d   %s   %s   %s",
@@ -54,4 +55,17 @@ func (l FriendList) String() string {
 		out += friend.CLIString() + "\n"
 	}
 	return out
+}
+
+func (m *ActionPrototype) ParseData() (proto.Message, error) {
+	name := "lq." + m.Name
+	mt := proto.MessageType(name)
+	if mt == nil {
+		return nil, fmt.Errorf("ActionPrototype.ParseData 未找到 %s，请检查！", name)
+	}
+	messagePtr := reflect.New(mt.Elem())
+	if err := proto.Unmarshal(m.Data, messagePtr.Interface().(proto.Message)); err != nil {
+		return nil, err
+	}
+	return messagePtr.Interface().(proto.Message), nil
 }
