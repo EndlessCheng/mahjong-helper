@@ -1,4 +1,4 @@
-package majsoul
+package api
 
 import (
 	"github.com/golang/protobuf/proto"
@@ -32,7 +32,7 @@ func UnwrapMessage(rawData []byte, message proto.Message) error {
 	if err != nil {
 		return err
 	}
-	// TODO: assert methodName
+	// TODO: assert methodName when its not empty
 	_ = methodName
 	return proto.Unmarshal(data, message)
 }

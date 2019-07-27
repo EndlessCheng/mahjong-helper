@@ -1,4 +1,4 @@
-package majsoul
+package api
 
 import (
 	"encoding/binary"

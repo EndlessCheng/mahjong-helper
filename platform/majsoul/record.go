@@ -12,9 +12,11 @@ import (
 	"github.com/satori/go.uuid"
 	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
 	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/tool"
+	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/api"
 )
 
 const (
+	// TODO
 	RecordTypeAll   = 0
 	RecordTypeMatch = 4
 )
@@ -59,7 +61,7 @@ func DownloadRecords(username string, password string, recordType uint32) error 
 	if err != nil {
 		return err
 	}
-	c := NewWebSocketClient()
+	c := api.NewWebSocketClient()
 	if err := c.Connect(endpoint, tool.MajsoulOriginURL); err != nil {
 		return err
 	}
@@ -83,7 +85,7 @@ func DownloadRecords(username string, password string, recordType uint32) error 
 		reqGameRecordList := lq.ReqGameRecordList{
 			Start: i,
 			Count: pageSize,
-			Type:  recordType, // 全部/友人/段位/比赛/收藏
+			Type:  recordType, // TODO 全部/友人/段位/比赛/收藏
 		}
 		respGameRecordList, err := c.FetchGameRecordList(&reqGameRecordList)
 		if err != nil {
@@ -123,7 +125,7 @@ func DownloadRecords(username string, password string, recordType uint32) error 
 			}
 		}
 		detailRecords := lq.GameDetailRecords{}
-		if err := UnwrapMessage(data, &detailRecords); err != nil {
+		if err := api.UnwrapMessage(data, &detailRecords); err != nil {
 			return err
 		}
 
@@ -133,7 +135,7 @@ func DownloadRecords(username string, password string, recordType uint32) error 
 		}
 		details := []messageWithType{}
 		for _, detailRecord := range detailRecords.GetRecords() {
-			name, data, err := UnwrapData(detailRecord)
+			name, data, err := api.UnwrapData(detailRecord)
 			if err != nil {
 				return err
 			}
