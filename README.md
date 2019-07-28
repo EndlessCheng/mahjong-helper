@@ -232,7 +232,7 @@
 ## 如何获取 WebSocket 收发的消息
 
 1. 打开开发者工具，找到相关 JS 文件，保存到本地。
-2. 搜索 `WebSocket`, `socket`，找到 `message`, `onmessage` 等函数。
+2. 搜索 `WebSocket`, `socket`，找到 `message`, `onmessage`, `send` 等函数。
 3. 修改代码，使用 `XMLHttpRequest` 将收发的消息发送到（在 localhost 开启的）mahjong-helper 服务器，服务器收到消息后会自动进行相关分析。（这一步也可以用油猴脚本来完成）
 4. 上传 JS 代码到一个可以公网访问的地方，最简单的方法是传至 GitHub Pages，即个人的 github.io 项目。拿到该 JS 文件地址。
 5. 安装浏览器扩展 Header Editor，重定向原 JS 文件地址到上一步中拿到的地址。
@@ -250,8 +250,8 @@
 
 ### 天凤 (tenhou)
 
-1. 搜索 `new WebSocket`，找到下方的 `message` 函数，该函数中的 `a.data` 就是 WebSocket 收到的 JSON 数据。
-2. 在该函数末尾添加如下代码：
+1. 搜索 `WebSocket`，找到下方 `message` 对应的函数，该函数中的 `a.data` 就是 WebSocket 收到的 JSON 数据。
+2. 在该函数开头（或末尾）添加如下代码：
 
     ```javascript
     var req = new XMLHttpRequest();
@@ -261,17 +261,15 @@
 
 ### 雀魂 (majsoul)
 
-由于有 [liqi.json](https://github.com/EndlessCheng/mahjong-helper/blob/master/platform/majsoul/proto/lq/liqi.json) 文件，可以直接用它来解析雀魂的 protobuf 数据。
+由于雀魂接发的消息是以 protobuf 的形式，且接收的消息不含有方法名，所以需要将发送的消息也发给 mahjong-helper 服务器。
+
+类似天凤，搜索 `WebSocket` 找到下方的 `_socket.onmessage` 和 `_socket.send`，添加代码。
+
+服务器收到消息后，可以基于 [liqi.json](https://github.com/EndlessCheng/mahjong-helper/blob/master/platform/majsoul/proto/lq/liqi.json) 文件解析雀魂的 protobuf 数据。
 
 [record.go](https://github.com/EndlessCheng/mahjong-helper/blob/master/platform/majsoul/record.go) 展示了使用 WebSocket 登录和下载牌谱的例子。
 
-但是考虑到还有观看牌谱这种获取前端 UI 事件的情况，直接修改相关代码是最方便的。
-
-大致思路是根据 liqi.json 提供的对分析玩家操作有用的字段查找相关关键字，如 `ActionDealTile` `ActionDiscardTile` `ActionChiPengGang` 等。
-
-前端 UI 事件可以在网页控制台输入 `GameMgr._inRelease = 0`，开启调试模式，通过雀魂已有的日志看到相关代码在哪。
-
-具体修改了哪些内容可以对比雀魂的 code.js 和我修改后的 [code.js](https://jianyan.me/majsoul/code-v0.1.4.js)。
+考虑到还有观看牌谱这种获取前端 UI 事件的情况，还需修改额外的代码。在网页控制台输入 `GameMgr._inRelease = 0`，开启调试模式，通过雀魂已有的日志可以看到相关代码在哪。具体修改了哪些内容可以对比雀魂的 code.js 和我修改后的 [code.js](https://jianyan.me/majsoul/code-v0.1.4.js)。
 
 
 ## License
