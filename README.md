@@ -261,7 +261,7 @@
 
 ### 雀魂 (majsoul)
 
-由于雀魂接发的消息是以 protobuf 的形式，且接收的消息不含有方法名，所以需要将发送的消息也发给 mahjong-helper 服务器。
+由于雀魂收发的消息是以 protobuf 的形式，且接收的消息不含有方法名，所以需要将雀魂发送的消息也发给 mahjong-helper 服务器，以此来解析接收的消息。
 
 类似天凤，搜索 `WebSocket` 找到下方的 `_socket.onmessage` 和 `_socket.send`，添加代码。
 
