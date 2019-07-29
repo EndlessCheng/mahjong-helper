@@ -8,6 +8,7 @@ import (
 	"strings"
 	"io/ioutil"
 	"github.com/EndlessCheng/mahjong-helper/util/debug"
+	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
 )
 
 func Test_mjHandler_runAnalysisMajsoulMessageTask(t *testing.T) {
@@ -18,9 +19,9 @@ func Test_mjHandler_runAnalysisMajsoulMessageTask(t *testing.T) {
 	endLo := 33369
 
 	h := &mjHandler{
-		majsoulMessageQueue: make(chan []byte, 10000),
-		majsoulRoundData:    &majsoulRoundData{},
-		majsoulRecordMap:    map[string]*majsoulRecordBaseInfo{},
+		majsoulMessageQueue:  make(chan []byte, 10000),
+		majsoulRoundData:     &majsoulRoundData{},
+		majsoulRecordGameMap: map[string]*lq.RecordGame{},
 	}
 	h.majsoulRoundData.roundData = newGame(h.majsoulRoundData)
 

@@ -95,7 +95,7 @@ func Test_tenhou_analysis(t *testing.T) {
 	startLo := -1
 	endLo := -1
 
-	tenhouRoundData := &tenhouRoundData{isRoundEnd: true}
+	tenhouRoundData := &tenhouRoundData{}
 	tenhouRoundData.roundData = newGame(tenhouRoundData)
 
 	lines := strings.Split(string(logData), "\n")

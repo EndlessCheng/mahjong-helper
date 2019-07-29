@@ -14,15 +14,6 @@ type majsoulMessage struct {
 	// 对应到服务器用户数据库中的ID，该值越小表示您的注册时间越早
 	AccountID int `json:"account_id"`
 
-	// 友人列表
-	Friends lq.FriendList `json:"friends"`
-
-	// 新获取到的牌谱基本信息列表
-	RecordBaseInfoList []*majsoulRecordBaseInfo `json:"record_list"`
-
-	// 分享的牌谱基本信息
-	SharedRecordBaseInfo *majsoulRecordBaseInfo `json:"shared_record_base_info"`
-
 	// 当前正在观看的牌谱的 UUID
 	CurrentRecordUUID string `json:"current_record_uuid"`
 
@@ -47,10 +38,10 @@ type majsoulMessage struct {
 
 	// ResAuthGame
 	// {"seat_list":[x,x,x,x],"is_game_start":false,"game_config":{"category":1,"mode":{"mode":1,"ai":true,"detail_rule":{"time_fixed":60,"time_add":0,"dora_count":3,"shiduan":1,"init_point":25000,"fandian":30000,"bianjietishi":true,"ai_level":1,"fanfu":1}},"meta":{"room_id":18269}},"ready_id_list":[0,0,0]}
-	IsGameStart *bool              `json:"is_game_start"` // false=新游戏，true=重连
-	SeatList    []int              `json:"seat_list"`
-	ReadyIDList []int              `json:"ready_id_list"`
-	GameConfig  *majsoulGameConfig `json:"game_config"`
+	IsGameStart *bool          `json:"is_game_start"` // false=新游戏，true=重连
+	SeatList    []int          `json:"seat_list"`
+	ReadyIDList []int          `json:"ready_id_list"`
+	GameConfig  *lq.GameConfig `json:"game_config"`
 
 	// NotifyPlayerLoadGameReady
 	//ReadyIDList []int `json:"ready_id_list"`
@@ -213,7 +204,7 @@ func (d *majsoulRoundData) SkipMessage() bool {
 	// TODO: 重构
 	if msg.SeatList != nil {
 		// 特判古役模式
-		isGuyiMode := msg.GameConfig.isGuyiMode()
+		isGuyiMode := msg.GameConfig.IsGuyiMode()
 		util.SetConsiderOldYaku(isGuyiMode)
 		if isGuyiMode {
 			color.HiGreen("古役模式已开启")

@@ -47,8 +47,8 @@ func init() {
 	flag.BoolVar(&showAllYakuTypes, "y", false, "同 -yaku")
 	flag.StringVar(&humanDoraTiles, "dora", "", "指定哪些牌是宝牌")
 	flag.StringVar(&humanDoraTiles, "d", "", "同 -dora")
-	flag.IntVar(&port, "port", 12121, "指定服务端口")
-	flag.IntVar(&port, "p", 12121, "同 -port")
+	flag.IntVar(&port, "port", defaultPort, "指定服务端口")
+	flag.IntVar(&port, "p", defaultPort, "同 -port")
 }
 
 const (
@@ -63,9 +63,9 @@ var platforms = map[int]string{
 	platformMajsoul: "雀魂",
 }
 
-const readmeURL = "https://github.com/EndlessCheng/mahjong-helper/blob/master/README.md"
-
 func welcome() int {
+	const readmeURL = "https://github.com/EndlessCheng/mahjong-helper/blob/master/README.md"
+
 	fmt.Println("使用说明：" + readmeURL)
 	fmt.Println("问题反馈：https://github.com/EndlessCheng/mahjong-helper/issues")
 	fmt.Println("吐槽群：375865038")

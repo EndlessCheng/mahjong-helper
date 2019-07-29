@@ -230,8 +230,6 @@ type tenhouRoundData struct {
 
 	originJSON string
 	msg        *tenhouMessage
-
-	isRoundEnd bool // 某人和牌或流局。初始值为 true
 }
 
 func (*tenhouRoundData) _tenhouTileToTile34(tenhouTile int) int {
@@ -439,8 +437,6 @@ func (d *tenhouRoundData) IsInit() bool {
 }
 
 func (d *tenhouRoundData) ParseInit() (roundNumber int, benNumber int, dealer int, doraIndicator int, handTiles []int, numRedFives []int) {
-	d.isRoundEnd = false
-
 	seedSplits := strings.Split(d.msg.Seed, ",")
 	if len(seedSplits) != 6 {
 		panic(fmt.Sprintln("seed 解析失败", d.msg.Seed))
@@ -565,8 +561,6 @@ func (d *tenhouRoundData) IsRoundWin() bool {
 }
 
 func (d *tenhouRoundData) ParseRoundWin() (whos []int, points []int) {
-	d.isRoundEnd = true
-
 	who, _ := strconv.Atoi(d.msg.Who)
 	splits := strings.Split(d.msg.Ten, ",")
 	if len(splits) < 2 {
@@ -582,8 +576,6 @@ func (d *tenhouRoundData) IsRyuukyoku() bool {
 
 // "{\"tag\":\"RYUUKYOKU\",\"type\":\"ron3\",\"ba\":\"1,1\",\"sc\":\"290,0,228,0,216,0,256,0\",\"hai0\":\"18,19,30,32,33,41,43,94,95,114,115,117,119\",\"hai2\":\"29,31,74,75\",\"hai3\":\"8,13,17,25,35,46,48,53,78,79\"}"
 func (d *tenhouRoundData) ParseRyuukyoku() (type_ int, whos []int, points []int) {
-	d.isRoundEnd = true
-
 	// TODO
 	return
 }

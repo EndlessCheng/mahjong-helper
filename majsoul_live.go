@@ -5,14 +5,12 @@ import (
 	"time"
 	"github.com/EndlessCheng/mahjong-helper/util"
 	"strconv"
-)
+	)
 
 // 观战基本信息
 type majsoulLiveRecordBaseInfo struct {
 	UUID      string `json:"uuid"`
 	StartTime int64  `json:"start_time"`
-
-	GameConfig *majsoulGameConfig `json:"game_config"`
 
 	Players  []_majsoulRecordAccount `json:"players"`
 	SeatList []int                   `json:"seat_list"`

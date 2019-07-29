@@ -14,11 +14,12 @@ import (
 	"net"
 	"github.com/fatih/color"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
-	"github.com/EndlessCheng/mahjong-helper/util/debug"
 	"github.com/EndlessCheng/mahjong-helper/util"
 	"path/filepath"
 	"strconv"
 	"github.com/EndlessCheng/mahjong-helper/platform/tenhou"
+	"github.com/EndlessCheng/mahjong-helper/platform/majsoul"
+	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
 )
 
 const defaultPort = 12121
@@ -41,10 +42,11 @@ type mjHandler struct {
 	tenhouMessageReceiver *tenhou.MessageReceiver
 	tenhouRoundData       *tenhouRoundData
 
-	majsoulMessageQueue chan []byte
-	majsoulRoundData    *majsoulRoundData
+	majsoulMessageReceiver *majsoul.MessageReceiver
+	majsoulMessageQueue    chan []byte
+	majsoulRoundData       *majsoulRoundData
 
-	majsoulRecordMap                map[string]*majsoulRecordBaseInfo
+	majsoulRecordGameMap            map[string]*lq.RecordGame
 	majsoulCurrentRecordUUID        string
 	majsoulCurrentRecordActionsList []majsoulRoundActions
 	majsoulCurrentRoundIndex        int
@@ -99,8 +101,8 @@ func (h *mjHandler) analysis(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-// 分析天凤 WebSocket 数据
-func (h *mjHandler) analysisTenhou(c echo.Context) error {
+// 接收天凤 WebSocket 数据
+func (h *mjHandler) saveTenhouWebSocketMessage(c echo.Context) error {
 	data, err := ioutil.ReadAll(c.Request().Body)
 	if err != nil {
 		h.logError(err)
@@ -110,6 +112,8 @@ func (h *mjHandler) analysisTenhou(c echo.Context) error {
 	h.tenhouMessageReceiver.Put(data)
 	return c.NoContent(http.StatusOK)
 }
+
+// 处理天凤数据
 func (h *mjHandler) runAnalysisTenhouMessageTask() {
 	if !debugMode {
 		defer func() {
@@ -140,8 +144,20 @@ func (h *mjHandler) runAnalysisTenhouMessageTask() {
 	}
 }
 
-// 分析雀魂 WebSocket 数据
-func (h *mjHandler) analysisMajsoul(c echo.Context) error {
+// 接收雀魂 WebSocket 数据
+func (h *mjHandler) saveMajsoulWebSocketMessage(c echo.Context) error {
+	data, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		h.logError(err)
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+
+	h.majsoulMessageReceiver.Put(data)
+	return c.NoContent(http.StatusOK)
+}
+
+// 接收雀魂数据：牌谱点击事件等
+func (h *mjHandler) saveMajsoulMessage(c echo.Context) error {
 	data, err := ioutil.ReadAll(c.Request().Body)
 	if err != nil {
 		h.logError(err)
@@ -151,6 +167,8 @@ func (h *mjHandler) analysisMajsoul(c echo.Context) error {
 	h.majsoulMessageQueue <- data
 	return c.NoContent(http.StatusOK)
 }
+
+// 处理雀魂数据
 func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 	if !debugMode {
 		defer func() {
@@ -160,6 +178,60 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 		}()
 	}
 
+	go func() {
+		for {
+			message := h.majsoulMessageReceiver.Get()
+			fmt.Printf("%#v\n", message)
+			data, err := json.Marshal(message)
+			if err != nil {
+				h.logError(err)
+				continue
+			}
+			if h.log != nil {
+				h.log.Info(string(data))
+			}
+
+			if message.ResponseMessage != nil {
+				switch msg := message.ResponseMessage.(type) {
+				case *lq.ResLogin:
+					// 登录
+					accountID := int(msg.AccountId)
+					gameConf.addMajsoulAccountID(accountID)
+					if accountID != gameConf.currentActiveMajsoulAccountID {
+						gameConf.setMajsoulAccountID(accountID)
+						printAccountInfo(accountID)
+					}
+				case *lq.ResFriendList:
+					// 好友列表
+					fmt.Println(lq.FriendList(msg.Friends))
+				case *lq.ResGameRecordList:
+					// 牌谱基本信息列表
+					for _, record := range msg.RecordList {
+						h.majsoulRecordGameMap[record.Uuid] = record
+					}
+					color.HiGreen("收到 %2d 个雀魂牌谱（已收集 %d 个），请在网页上点击「查看」", len(msg.RecordList), len(h.majsoulRecordGameMap))
+				case *lq.ResGameRecord:
+					// 载入某个牌谱（含分享）
+					// 处理基础信息
+					record := msg.Head
+					h.majsoulRecordGameMap[record.Uuid] = record
+					if err := h._loadMajsoulRecordBaseInfo(record.Uuid); err != nil {
+						h.logError(err)
+						break
+					}
+					// 处理东一局
+				}
+				continue
+			}
+
+			switch msg := message.ResponseMessage.(type) {
+			case *lq.ActionPrototype:
+				// 这里注入 majsoulData
+				fmt.Println(msg.ParseData())
+			}
+		}
+	}()
+
 	for msg := range h.majsoulMessageQueue {
 		d := &majsoulMessage{}
 		if err := json.Unmarshal(msg, d); err != nil {
@@ -168,34 +240,11 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 		}
 
 		originJSON := string(msg)
-		if h.log != nil && debug.Lo == 0 {
+		if h.log != nil {
 			h.log.Info(originJSON)
-		} else {
-			if len(originJSON) > 500 {
-				originJSON = originJSON[:500]
-			}
-			fmt.Println(originJSON)
 		}
 
 		switch {
-		case len(d.Friends) > 0:
-			// 好友列表
-			fmt.Println(d.Friends)
-		case len(d.RecordBaseInfoList) > 0:
-			// 牌谱基本信息列表
-			for _, record := range d.RecordBaseInfoList {
-				h.majsoulRecordMap[record.UUID] = record
-			}
-			color.HiGreen("收到 %2d 个雀魂牌谱（已收集 %d 个），请在网页上点击「查看」", len(d.RecordBaseInfoList), len(h.majsoulRecordMap))
-		case d.SharedRecordBaseInfo != nil:
-			// 处理分享的牌谱基本信息
-			// FIXME: 观看自己的牌谱也会有 d.SharedRecordBaseInfo
-			record := d.SharedRecordBaseInfo
-			h.majsoulRecordMap[record.UUID] = record
-			if err := h._loadMajsoulRecordBaseInfo(record.UUID); err != nil {
-				h.logError(err)
-				break
-			}
 		case d.CurrentRecordUUID != "":
 			// 载入某个牌谱
 			resetAnalysisCache()
@@ -228,7 +277,7 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 				break
 			}
 
-			baseInfo, ok := h.majsoulRecordMap[h.majsoulCurrentRecordUUID]
+			baseInfo, ok := h.majsoulRecordGameMap[h.majsoulCurrentRecordUUID]
 			if !ok {
 				h.logError(fmt.Errorf("错误：找不到雀魂牌谱 %s", h.majsoulCurrentRecordUUID))
 				break
@@ -244,7 +293,7 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			h.majsoulRoundData.gameMode = gameModeRecord
 
 			// 获取并设置主视角初始座位
-			selfSeat, err := baseInfo.getSelfSeat(selfAccountID)
+			selfSeat, err := baseInfo.GetSelfSeat(selfAccountID)
 			if err != nil {
 				h.logError(err)
 				break
@@ -327,7 +376,7 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 }
 
 func (h *mjHandler) _loadMajsoulRecordBaseInfo(majsoulRecordUUID string) error {
-	baseInfo, ok := h.majsoulRecordMap[majsoulRecordUUID]
+	baseInfo, ok := h.majsoulRecordGameMap[majsoulRecordUUID]
 	if !ok {
 		return fmt.Errorf("错误：找不到雀魂牌谱 %s", majsoulRecordUUID)
 	}
@@ -335,10 +384,10 @@ func (h *mjHandler) _loadMajsoulRecordBaseInfo(majsoulRecordUUID string) error {
 	// 标记当前正在观看的牌谱
 	h.majsoulCurrentRecordUUID = majsoulRecordUUID
 	clearConsole()
-	fmt.Printf("正在解析雀魂牌谱：%s", baseInfo.String())
+	fmt.Printf("正在解析雀魂牌谱：%s", baseInfo.CLIString())
 
 	// 标记古役模式
-	isGuyiMode := baseInfo.Config.isGuyiMode()
+	isGuyiMode := baseInfo.Config.IsGuyiMode()
 	util.SetConsiderOldYaku(isGuyiMode)
 	if isGuyiMode {
 		fmt.Println()
@@ -503,10 +552,12 @@ func runServer(isHTTPS bool, port int) (err error) {
 		log: e.Logger,
 
 		tenhouMessageReceiver: tenhou.NewMessageReceiver(),
-		tenhouRoundData:       &tenhouRoundData{isRoundEnd: true},
-		majsoulMessageQueue:   make(chan []byte, 100),
-		majsoulRoundData:      &majsoulRoundData{selfSeat: -1},
-		majsoulRecordMap:      map[string]*majsoulRecordBaseInfo{},
+		tenhouRoundData:       &tenhouRoundData{},
+
+		majsoulMessageReceiver: majsoul.NewMessageReceiver(),
+		majsoulMessageQueue:    make(chan []byte, 100),
+		majsoulRoundData:       &majsoulRoundData{selfSeat: -1},
+		majsoulRecordGameMap:   map[string]*lq.RecordGame{},
 	}
 	h.tenhouRoundData.roundData = newGame(h.tenhouRoundData)
 	h.majsoulRoundData.roundData = newGame(h.majsoulRoundData)
@@ -519,8 +570,8 @@ func runServer(isHTTPS bool, port int) (err error) {
 	e.GET("/", h.index)
 	e.POST("/debug", h.index)
 	e.POST("/analysis", h.analysis)
-	e.POST("/tenhou", h.analysisTenhou)
-	e.POST("/majsoul", h.analysisMajsoul)
+	e.POST("/tenhou/ws", h.saveTenhouWebSocketMessage)
+	e.POST("/majsoul/ws", h.saveMajsoulWebSocketMessage)
 
 	// code.js 也用的该端口
 	if port == 0 {
@@ -528,10 +579,10 @@ func runServer(isHTTPS bool, port int) (err error) {
 	}
 	addr := ":" + strconv.Itoa(port)
 	if !isHTTPS {
-		e.POST("/", h.analysisTenhou)
+		e.POST("/", h.saveTenhouWebSocketMessage)
 		err = e.Start(addr)
 	} else {
-		e.POST("/", h.analysisMajsoul)
+		e.POST("/", h.saveMajsoulMessage)
 		err = startTLS(e, addr)
 	}
 	if err != nil {

@@ -6,6 +6,9 @@ import (
 	"reflect"
 	"strings"
 	"github.com/golang/protobuf/proto"
+	"sort"
+	"github.com/EndlessCheng/mahjong-helper/util"
+	"strconv"
 )
 
 var (
@@ -68,4 +71,46 @@ func (m *ActionPrototype) ParseData() (proto.Message, error) {
 		return nil, err
 	}
 	return messagePtr.Interface().(proto.Message), nil
+}
+
+func (m *GameConfig) IsGuyiMode() bool {
+	return m != nil && m.Mode != nil && m.Mode.DetailRule != nil && m.Mode.DetailRule.GuyiMode == 1
+}
+
+func (m *RecordGame) GetSelfSeat(accountID int) (int, error) {
+	if len(m.Accounts) == 0 {
+		return -1, fmt.Errorf("牌谱基本信息为空")
+	}
+	for _, account := range m.Accounts {
+		if int(account.AccountId) == accountID {
+			return int(account.Seat), nil
+		}
+	}
+	// 若没有，则以东家为主视角
+	return 0, nil
+}
+
+func (m *RecordGame) sort() {
+	sort.Slice(m.Accounts, func(i_, j int) bool {
+		return m.Accounts[i_].Seat < m.Accounts[j].Seat
+	})
+}
+
+var seatNameZH = []string{"东", "南", "西", "北"}
+
+func (m *RecordGame) CLIString() string {
+	m.sort()
+
+	const timeFormat = "2006-01-02 15:04:05"
+	output := fmt.Sprintf("%s\n从 %s\n到 %s\n\n", m.Uuid, time.Unix(int64(m.StartTime), 0).Format(timeFormat), time.Unix(int64(m.EndTime), 0).Format(timeFormat))
+
+	maxAccountID := 0
+	for _, account := range m.Accounts {
+		maxAccountID = util.MaxInt(maxAccountID, int(account.AccountId))
+	}
+	accountShownWidth := len(strconv.Itoa(maxAccountID))
+	for _, account := range m.Accounts {
+		output += fmt.Sprintf("%s %*d %s\n", seatNameZH[account.Seat], accountShownWidth, account.AccountId, account.Nickname)
+	}
+	return output
 }
