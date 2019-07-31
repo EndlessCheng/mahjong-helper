@@ -45,7 +45,7 @@ type DataParser interface {
 	// 舍牌
 	// who: 0=自家, 1=下家, 2=对家, 3=上家
 	// isTsumogiri: 是否为摸切（who=0 时忽略该值）
-	// isReach: 是否为立直宣言（isReach 对于天凤来说恒为 false，见 IsReach）
+	// isReach: 是否为立直宣言（isReach 对于天凤来说恒为 false，见 IsRiichi）
 	// canBeMeld: 是否可以鸣牌（who=0 时忽略该值）
 	// kanDoraIndicator: 大明杠/加杠的杠宝牌指示牌，在切牌后出现，没有则返回 -1（天凤恒为-1，见 IsNewDora）
 	IsDiscard() bool
@@ -56,12 +56,9 @@ type DataParser interface {
 	IsOpen() bool
 	ParseOpen() (who int, meld *model.Meld, kanDoraIndicator int)
 
-	// 立直声明（IsReach 对于雀魂来说恒为 false，见 ParseDiscard）
-	IsReach() bool
-	ParseReach() (who int)
-
-	// 振听
-	IsFuriten() bool
+	// 立直声明（IsRiichi 对于雀魂来说恒为 false，见 ParseDiscard）
+	IsRiichi() bool
+	ParseRiichi() (who int)
 
 	// 本局是否和牌
 	IsRoundWin() bool
@@ -682,10 +679,10 @@ func (d *roundData) analysis() error {
 				}
 			}
 		}
-	case d.parser.IsReach():
+	case d.parser.IsRiichi():
 		// 立直宣告
 		// 如果是他家立直，进入攻守判断模式
-		who := d.parser.ParseReach()
+		who := d.parser.ParseRiichi()
 		d.players[who].isReached = true
 		d.players[who].canIppatsu = true
 		//case "AGARI", "RYUUKYOKU":
@@ -696,14 +693,6 @@ func (d *roundData) analysis() error {
 		//	// 某人退出
 		//case "REJOIN", "GO":
 		//	// 重连
-	case d.parser.IsFuriten():
-		// 振听
-		if d.skipOutput {
-			return nil
-		}
-		color.HiYellow("振听")
-		//case "U", "V", "W":
-		//	//（下家,对家,上家 不要其上家的牌）摸牌
 		//case "HELO", "RANKING", "TAIKYOKU", "UN", "LN", "SAIKAI":
 		//	// 其他
 	case d.parser.IsSelfDraw():

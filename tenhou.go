@@ -541,19 +541,15 @@ func (d *tenhouRoundData) ParseOpen() (who int, meld *model.Meld, kanDoraIndicat
 	return
 }
 
-func (d *tenhouRoundData) IsReach() bool {
+func (d *tenhouRoundData) IsRiichi() bool {
 	// Step == "1" 立直宣告
 	// Step == "2" 立直成功，扣1000点
 	return d.msg.Tag == "REACH" && d.msg.Step == "1"
 }
 
-func (d *tenhouRoundData) ParseReach() (who int) {
+func (d *tenhouRoundData) ParseRiichi() (who int) {
 	who, _ = strconv.Atoi(d.msg.Who)
 	return
-}
-
-func (d *tenhouRoundData) IsFuriten() bool {
-	return d.msg.Tag == "FURITEN"
 }
 
 func (d *tenhouRoundData) IsRoundWin() bool {

@@ -3,21 +3,34 @@ package tenhou
 import (
 	"testing"
 	"time"
-	"fmt"
+	"github.com/EndlessCheng/mahjong-helper/platform/tenhou/ws"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMessageReceiver(t *testing.T) {
 	mr := NewMessageReceiver()
 
+	done := make(chan struct{})
 	go func() {
-		for {
-			fmt.Println(string(mr.Get()))
+		indexes := []int{}
+		for i := 0; ; i++ {
+			select {
+			case <-done:
+				assert.EqualValues(t, []int{3, 6, 8}, indexes)
+				t.Log("DONE")
+				return
+			default:
+				msg, _ := mr.Get()
+				if _, ok := msg.(*ws.Draw); ok {
+					indexes = append(indexes, i)
+				}
+			}
 		}
 	}()
 
-	mr.Put([]byte(`{"Tag":"a"}`))
+	mr.Put([]byte(`{"Tag":"INIT"}`))
 	mr.Put([]byte(`{"Tag":"T1"}`))
-	mr.Put([]byte(`{"Tag":"b"}`))
+	mr.Put([]byte(`{"Tag":"N"}`))
 	mr.Put([]byte(`{"Tag":"c"}`))
 	time.Sleep(time.Second)
 
@@ -28,5 +41,9 @@ func TestMessageReceiver(t *testing.T) {
 
 	mr.Put([]byte(`{"Tag":"T3"}`))
 	mr.Put([]byte(`{"Tag":"f"}`))
+	time.Sleep(time.Second)
+
+	mr.Put([]byte(`{"Tag":"a"}`))
+	done <- struct{}{}
 	time.Sleep(time.Second)
 }

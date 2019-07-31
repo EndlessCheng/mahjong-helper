@@ -447,16 +447,12 @@ func (d *majsoulRoundData) ParseOpen() (who int, meld *model.Meld, kanDoraIndica
 	return
 }
 
-func (d *majsoulRoundData) IsReach() bool {
+func (d *majsoulRoundData) IsRiichi() bool {
 	return false
 }
 
-func (d *majsoulRoundData) ParseReach() (who int) {
+func (d *majsoulRoundData) ParseRiichi() (who int) {
 	return 0
-}
-
-func (d *majsoulRoundData) IsFuriten() bool {
-	return false
 }
 
 func (d *majsoulRoundData) IsRoundWin() bool {

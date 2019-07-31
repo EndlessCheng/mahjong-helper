@@ -2,42 +2,40 @@ package tenhou
 
 import (
 	"time"
-	"encoding/json"
-	"regexp"
+	"fmt"
+	"os"
+	"github.com/EndlessCheng/mahjong-helper/platform/tenhou/ws"
 )
 
 type MessageReceiver struct {
 	originMessageQueue  chan []byte
-	orderedMessageQueue chan []byte
+	orderedMessageQueue chan *message
 }
 
 func NewMessageReceiver() *MessageReceiver {
 	const maxQueueSize = 100
 	mr := &MessageReceiver{
 		originMessageQueue:  make(chan []byte, maxQueueSize),
-		orderedMessageQueue: make(chan []byte, maxQueueSize),
+		orderedMessageQueue: make(chan *message, maxQueueSize),
 	}
 	go mr.run()
 	return mr
 }
 
-var isSelfDraw = regexp.MustCompile("^T[0-9]{1,3}$").MatchString
-
-// TODO: 后续使用 parser 中提供的方法
-func (mr *MessageReceiver) isSelfDraw(data []byte) bool {
-	d := struct {
-		Tag string `json:"tag"`
-	}{}
-	if err := json.Unmarshal(data, &d); err != nil {
-		return false
-	}
-	return isSelfDraw(d.Tag)
-}
-
+// TODO: 合并短时间内的 AGARI 消息？（双响）
 func (mr *MessageReceiver) run() {
 	for data := range mr.originMessageQueue {
-		if !mr.isSelfDraw(data) {
-			mr.orderedMessageQueue <- data
+		msg, err := parse(data)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			continue
+		}
+		if msg == nil {
+			continue
+		}
+
+		if !isSelfDraw(msg.tag) {
+			mr.orderedMessageQueue <- msg
 			continue
 		}
 
@@ -46,7 +44,7 @@ func (mr *MessageReceiver) run() {
 
 		// 未收到新数据
 		if len(mr.originMessageQueue) == 0 {
-			mr.orderedMessageQueue <- data
+			mr.orderedMessageQueue <- msg
 			continue
 		}
 
@@ -61,8 +59,9 @@ func (mr *MessageReceiver) Put(data []byte) {
 	mr.originMessageQueue <- data
 }
 
-func (mr *MessageReceiver) Get() []byte {
-	return <-mr.orderedMessageQueue
+func (mr *MessageReceiver) Get() (message ws.Message, originJSON string) {
+	m := <-mr.orderedMessageQueue
+	return m.metadata, m.originJSON
 }
 
 func (mr *MessageReceiver) IsEmpty() bool {
