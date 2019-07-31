@@ -20,8 +20,8 @@ func TestMessageReceiver(t *testing.T) {
 				t.Log("DONE")
 				return
 			default:
-				msg, _ := mr.Get()
-				if _, ok := msg.(*ws.Draw); ok {
+				msg := mr.Get()
+				if _, ok := msg.Metadata.(*ws.Draw); ok {
 					indexes = append(indexes, i)
 				}
 			}

@@ -13,11 +13,6 @@ const (
 )
 
 const (
-	dataSourceTypeTenhou = iota
-	dataSourceTypeMajsoul
-)
-
-const (
 	meldTypeChi    = iota // 吃
 	meldTypePon           // 碰
 	meldTypeAnkan         // 暗杠

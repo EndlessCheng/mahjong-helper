@@ -40,7 +40,7 @@ type mjHandler struct {
 	analysing bool
 
 	tenhouMessageReceiver *tenhou.MessageReceiver
-	tenhouRoundData       *tenhouRoundData
+	tenhouRoundData       *roundData
 
 	majsoulMessageReceiver *majsoul.MessageReceiver
 	majsoulMessageQueue    chan []byte
@@ -125,19 +125,11 @@ func (h *mjHandler) runAnalysisTenhouMessageTask() {
 
 	for {
 		msg := h.tenhouMessageReceiver.Get()
-		d := tenhouMessage{}
-		if err := json.Unmarshal(msg, &d); err != nil {
-			h.logError(err)
-			continue
-		}
-
-		originJSON := string(msg)
 		if h.log != nil {
-			h.log.Info(originJSON)
+			h.log.Info(msg.OriginJSON)
 		}
 
-		h.tenhouRoundData.msg = &d
-		h.tenhouRoundData.originJSON = originJSON
+		h.tenhouRoundData.parser = msg
 		if err := h.tenhouRoundData.analysis(); err != nil {
 			h.logError(err)
 		}
@@ -552,14 +544,13 @@ func runServer(isHTTPS bool, port int) (err error) {
 		log: e.Logger,
 
 		tenhouMessageReceiver: tenhou.NewMessageReceiver(),
-		tenhouRoundData:       &tenhouRoundData{},
+		tenhouRoundData:       newGame(nil),
 
 		majsoulMessageReceiver: majsoul.NewMessageReceiver(),
 		majsoulMessageQueue:    make(chan []byte, 100),
 		majsoulRoundData:       &majsoulRoundData{selfSeat: -1},
 		majsoulRecordGameMap:   map[string]*lq.RecordGame{},
 	}
-	h.tenhouRoundData.roundData = newGame(h.tenhouRoundData)
 	h.majsoulRoundData.roundData = newGame(h.majsoulRoundData)
 
 	go h.runAnalysisTenhouMessageTask()

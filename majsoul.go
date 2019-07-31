@@ -8,6 +8,7 @@ import (
 	"sort"
 	"time"
 	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
+	"github.com/EndlessCheng/mahjong-helper/platform/common"
 )
 
 type majsoulMessage struct {
@@ -182,7 +183,7 @@ func (d *majsoulRoundData) isNewDora(doras []string) bool {
 }
 
 func (d *majsoulRoundData) GetDataSourceType() int {
-	return dataSourceTypeMajsoul
+	return common.DataSourceTypeMajsoul
 }
 
 func (d *majsoulRoundData) GetSelfSeat() int {

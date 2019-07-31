@@ -4,19 +4,18 @@ import (
 	"time"
 	"fmt"
 	"os"
-	"github.com/EndlessCheng/mahjong-helper/platform/tenhou/ws"
 )
 
 type MessageReceiver struct {
 	originMessageQueue  chan []byte
-	orderedMessageQueue chan *message
+	orderedMessageQueue chan *Message
 }
 
 func NewMessageReceiver() *MessageReceiver {
 	const maxQueueSize = 100
 	mr := &MessageReceiver{
 		originMessageQueue:  make(chan []byte, maxQueueSize),
-		orderedMessageQueue: make(chan *message, maxQueueSize),
+		orderedMessageQueue: make(chan *Message, maxQueueSize),
 	}
 	go mr.run()
 	return mr
@@ -34,7 +33,7 @@ func (mr *MessageReceiver) run() {
 			continue
 		}
 
-		if !isSelfDraw(msg.tag) {
+		if !isSelfDraw(msg.Tag) {
 			mr.orderedMessageQueue <- msg
 			continue
 		}
@@ -59,9 +58,8 @@ func (mr *MessageReceiver) Put(data []byte) {
 	mr.originMessageQueue <- data
 }
 
-func (mr *MessageReceiver) Get() (message ws.Message, originJSON string) {
-	m := <-mr.orderedMessageQueue
-	return m.metadata, m.originJSON
+func (mr *MessageReceiver) Get() *Message {
+	return <-mr.orderedMessageQueue
 }
 
 func (mr *MessageReceiver) IsEmpty() bool {

@@ -11,10 +11,10 @@ import (
 	"sort"
 )
 
-type message struct {
-	originJSON string
-	tag        string
-	metadata   ws.Message
+type Message struct {
+	OriginJSON string
+	Tag        string
+	Metadata   ws.Message
 }
 
 // T=自家, U=下家, V=对家, W=上家
@@ -29,7 +29,7 @@ func isSelfDraw(tag string) bool {
 // 对战模式下自家一律为 D
 var isDiscard = regexp.MustCompile("^[DEFGdefg][0-9]{1,3}$").MatchString
 
-func parse(data []byte) (msg *message, err error) {
+func parse(data []byte) (msg *Message, err error) {
 	d := struct {
 		Tag string `json:"tag"`
 		Op  *int   `json:"t,string"`
@@ -38,9 +38,9 @@ func parse(data []byte) (msg *message, err error) {
 		return
 	}
 	tag := d.Tag
-	msg = &message{
-		originJSON: string(data),
-		tag:        tag,
+	msg = &Message{
+		OriginJSON: string(data),
+		Tag:        tag,
 	}
 
 	if isDraw(tag) {
@@ -51,7 +51,7 @@ func parse(data []byte) (msg *message, err error) {
 				return
 			}
 		}
-		msg.metadata = &ws.Draw{
+		msg.Metadata = &ws.Draw{
 			Who:  int(tag[0] - 'T'),
 			Tile: tile,
 			Op:   d.Op,
@@ -69,7 +69,7 @@ func parse(data []byte) (msg *message, err error) {
 		if isTsumogiri {
 			who = int(tag[0] - 'd')
 		}
-		msg.metadata = &ws.Discard{
+		msg.Metadata = &ws.Discard{
 			Who:         who,
 			Tile:        tile,
 			IsTsumogiri: isTsumogiri,
@@ -86,7 +86,7 @@ func parse(data []byte) (msg *message, err error) {
 	if err = json.Unmarshal(data, messagePtr.Interface().(ws.Message)); err != nil {
 		return
 	}
-	msg.metadata = messagePtr.Interface().(ws.Message)
+	msg.Metadata = messagePtr.Interface().(ws.Message)
 
 	return
 }
@@ -101,11 +101,11 @@ const (
 	redFiveSou = 88
 )
 
-func (*message) isRedFive(tenhouTile int) bool {
+func (*Message) isRedFive(tenhouTile int) bool {
 	return tenhouTile == redFiveMan || tenhouTile == redFivePin || tenhouTile == redFiveSou
 }
 
-func (m *message) containRedFive(tenhouTiles []int) bool {
+func (m *Message) containRedFive(tenhouTiles []int) bool {
 	for _, tenhouTile := range tenhouTiles {
 		if m.isRedFive(tenhouTile) {
 			return true
@@ -114,11 +114,11 @@ func (m *message) containRedFive(tenhouTiles []int) bool {
 	return false
 }
 
-func (*message) tenhouTileToTile34(tenhouTile int) int {
+func (*Message) tenhouTileToTile34(tenhouTile int) int {
 	return tenhouTile / 4
 }
 
-func (m *message) parseTenhouTile(tenhouTile int) (tile int, isRedFive bool) {
+func (m *Message) parseTenhouTile(tenhouTile int) (tile int, isRedFive bool) {
 	return m.tenhouTileToTile34(tenhouTile), m.isRedFive(tenhouTile)
 }
 
@@ -146,7 +146,7 @@ CHI
     Called:
         Which tile out of the three was called.
 */
-func (*message) parseChi(bits int) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
+func (*Message) parseChi(bits int) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
 	// 吃
 	meldType = common.MeldTypeChi
 	t0, t1, t2 := (bits>>3)&0x3, (bits>>5)&0x3, (bits>>7)&0x3
@@ -186,7 +186,7 @@ PON or KAKAN
     Called:
         Which tile out of the three was called.
 */
-func (*message) parsePonOrKakan(bits int) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
+func (*Message) parsePonOrKakan(bits int) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
 	t4 := (bits >> 5) & 0x3
 	_t := [4][3]int{{1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}}[t4]
 	t0, t1, t2 := _t[0], _t[1], _t[2]
@@ -226,7 +226,7 @@ KAN
     Called:
         Which tile out of the four was called.
 */
-func (*message) parseKan(bits int) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
+func (*Message) parseKan(bits int) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
 	baseAndCalled := bits >> 8
 	base, called := baseAndCalled/4, baseAndCalled%4
 	tenhouMeldTiles = []int{4 * base, 1 + 4*base, 2 + 4*base, 3 + 4*base}
@@ -241,11 +241,11 @@ func (*message) parseKan(bits int) (meldType int, tenhouMeldTiles []int, tenhouC
 	return
 }
 
-func (*message) isNukiOperator(bits int) bool {
+func (*Message) isNukiOperator(bits int) bool {
 	return bits&0x4 == 0 && bits&0x18 == 0 && bits&0x20 > 0
 }
 
-func (m *message) parseTenhouMeld(bits int) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
+func (m *Message) parseTenhouMeld(bits int) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
 	switch {
 	case bits&0x4 > 0:
 		return m.parseChi(bits)
@@ -259,34 +259,33 @@ func (m *message) parseTenhouMeld(bits int) (meldType int, tenhouMeldTiles []int
 	}
 }
 
-// TODO: 重构
-func (m *message) GetDataSourceType() int {
-	return 0
+func (m *Message) GetDataSourceType() int {
+	return common.DataSourceTypeTenhou
 }
 
-func (m *message) GetSelfSeat() int {
+func (m *Message) GetSelfSeat() int {
 	return -1
 }
 
-func (m *message) GetMessage() string {
-	return m.originJSON
+func (m *Message) GetMessage() string {
+	return m.OriginJSON
 }
 
-func (m *message) SkipMessage() bool {
+func (m *Message) SkipMessage() bool {
 	return false
 }
 
 // TODO: remove this
-func (m *message) IsLogin() bool {
+func (m *Message) IsLogin() bool {
 	return false
 }
 
 // TODO: remove this
-func (m *message) HandleLogin() {
+func (m *Message) HandleLogin() {
 }
 
-func (m *message) IsInit() bool {
-	_, ok := m.metadata.(*ws.Init)
+func (m *Message) IsInit() bool {
+	_, ok := m.Metadata.(*ws.Init)
 	return ok
 }
 
@@ -298,8 +297,8 @@ func (m *message) IsInit() bool {
 //		d.playerNumber = 4
 //	}
 //}
-func (m *message) ParseInit() (roundNumber int, benNumber int, dealer int, doraIndicator int, handTiles []int, numRedFives []int) {
-	meta := m.metadata.(*ws.Init)
+func (m *Message) ParseInit() (roundNumber int, benNumber int, dealer int, doraIndicator int, handTiles []int, numRedFives []int) {
+	meta := m.Metadata.(*ws.Init)
 	roundNumber = meta.Seed[0]
 	benNumber = meta.Seed[1]
 	dealer = meta.Dealer
@@ -315,25 +314,25 @@ func (m *message) ParseInit() (roundNumber int, benNumber int, dealer int, doraI
 	return
 }
 
-func (m *message) IsSelfDraw() bool {
-	meta, ok := m.metadata.(*ws.Draw)
+func (m *Message) IsSelfDraw() bool {
+	meta, ok := m.Metadata.(*ws.Draw)
 	return ok && meta.Who == 0
 }
 
-func (m *message) ParseSelfDraw() (tile int, isRedFive bool, kanDoraIndicator int) {
-	meta := m.metadata.(*ws.Draw)
+func (m *Message) ParseSelfDraw() (tile int, isRedFive bool, kanDoraIndicator int) {
+	meta := m.Metadata.(*ws.Draw)
 	tile, isRedFive = m.parseTenhouTile(meta.Tile)
 	kanDoraIndicator = -1
 	return
 }
 
-func (m *message) IsDiscard() bool {
-	_, ok := m.metadata.(*ws.Discard)
+func (m *Message) IsDiscard() bool {
+	_, ok := m.Metadata.(*ws.Discard)
 	return ok
 }
 
-func (m *message) ParseDiscard() (who int, discardTile int, isRedFive bool, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int) {
-	meta := m.metadata.(*ws.Discard)
+func (m *Message) ParseDiscard() (who int, discardTile int, isRedFive bool, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int) {
+	meta := m.Metadata.(*ws.Discard)
 	who = meta.Who
 	discardTile, isRedFive = m.parseTenhouTile(meta.Tile)
 	isTsumogiri = meta.IsTsumogiri
@@ -342,14 +341,14 @@ func (m *message) ParseDiscard() (who int, discardTile int, isRedFive bool, isTs
 	return
 }
 
-func (m *message) IsOpen() bool {
-	meta, ok := m.metadata.(*ws.Meld)
+func (m *Message) IsOpen() bool {
+	meta, ok := m.Metadata.(*ws.Meld)
 	// 除去拔北
 	return ok && !m.isNukiOperator(meta.Bits)
 }
 
-func (m *message) ParseOpen() (who int, meld *model.Meld, kanDoraIndicator int) {
-	meta := m.metadata.(*ws.Meld)
+func (m *Message) ParseOpen() (who int, meld *model.Meld, kanDoraIndicator int) {
+	meta := m.Metadata.(*ws.Meld)
 	who = meta.Who
 	meldType, tenhouMeldTiles, tenhouCalledTile := m.parseTenhouMeld(meta.Bits)
 	meldTiles := make([]int, len(tenhouMeldTiles))
@@ -369,53 +368,53 @@ func (m *message) ParseOpen() (who int, meld *model.Meld, kanDoraIndicator int) 
 	return
 }
 
-func (m *message) IsRiichi() bool {
-	meta, ok := m.metadata.(*ws.Riichi)
+func (m *Message) IsRiichi() bool {
+	meta, ok := m.Metadata.(*ws.Riichi)
 	return ok && meta.Step == 1
 }
 
-func (m *message) ParseRiichi() (who int) {
-	meta := m.metadata.(*ws.Riichi)
+func (m *Message) ParseRiichi() (who int) {
+	meta := m.Metadata.(*ws.Riichi)
 	return meta.Who
 }
 
-func (m *message) IsRoundWin() bool {
-	_, ok := m.metadata.(*ws.Agari)
+func (m *Message) IsRoundWin() bool {
+	_, ok := m.Metadata.(*ws.Agari)
 	return ok
 }
 
-func (m *message) ParseRoundWin() (whos []int, points []int) {
-	meta := m.metadata.(*ws.Agari)
+func (m *Message) ParseRoundWin() (whos []int, points []int) {
+	meta := m.Metadata.(*ws.Agari)
 	return []int{meta.Who}, []int{meta.Ten[1]}
 }
 
-func (m *message) IsRyuukyoku() bool {
-	_, ok := m.metadata.(*ws.Ryuukyoku)
+func (m *Message) IsRyuukyoku() bool {
+	_, ok := m.Metadata.(*ws.Ryuukyoku)
 	return ok
 }
 
-func (m *message) ParseRyuukyoku() (type_ int, whos []int, points []int) {
+func (m *Message) ParseRyuukyoku() (type_ int, whos []int, points []int) {
 	// TODO
 	return
 }
 
-func (m *message) IsNukiDora() bool {
-	meta, ok := m.metadata.(*ws.Meld)
+func (m *Message) IsNukiDora() bool {
+	meta, ok := m.Metadata.(*ws.Meld)
 	return ok && m.isNukiOperator(meta.Bits)
 }
 
-func (m *message) ParseNukiDora() (who int, isTsumogiri bool) {
+func (m *Message) ParseNukiDora() (who int, isTsumogiri bool) {
 	// TODO: isTsumogiri
-	meta := m.metadata.(*ws.Meld)
+	meta := m.Metadata.(*ws.Meld)
 	return meta.Who, true
 }
 
-func (m *message) IsNewDora() bool {
-	_, ok := m.metadata.(*ws.Dora)
+func (m *Message) IsNewDora() bool {
+	_, ok := m.Metadata.(*ws.Dora)
 	return ok
 }
 
-func (m *message) ParseNewDora() (kanDoraIndicator int) {
-	meta := m.metadata.(*ws.Dora)
+func (m *Message) ParseNewDora() (kanDoraIndicator int) {
+	meta := m.Metadata.(*ws.Dora)
 	return m.tenhouTileToTile34(meta.Tile)
 }

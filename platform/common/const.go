@@ -8,3 +8,8 @@ const (
 	MeldTypeMinkan        // 大明杠
 	MeldTypeKakan         // 加杠
 )
+
+const (
+	DataSourceTypeTenhou = iota
+	DataSourceTypeMajsoul
+)

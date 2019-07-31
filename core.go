@@ -5,6 +5,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/EndlessCheng/mahjong-helper/util"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
+	"github.com/EndlessCheng/mahjong-helper/platform/common"
 )
 
 type DataParser interface {
@@ -511,10 +512,10 @@ func (d *roundData) analysis() error {
 
 		roundNumber, benNumber, dealer, doraIndicator, hands, numRedFives := d.parser.ParseInit()
 		switch d.parser.GetDataSourceType() {
-		case dataSourceTypeTenhou:
+		case common.DataSourceTypeTenhou:
 			d.reset(roundNumber, benNumber, dealer)
 			d.gameMode = gameModeMatch // TODO: 牌谱模式？
-		case dataSourceTypeMajsoul:
+		case common.DataSourceTypeMajsoul:
 			if dealer != -1 { // 先就坐，还没洗牌呢~
 				// 设置第一局的 dealer
 				d.reset(0, 0, dealer)
@@ -894,7 +895,7 @@ func (d *roundData) analysis() error {
 		whos, points := d.parser.ParseRoundWin()
 		if len(whos) == 3 {
 			color.HiYellow("凤 凰 级 避 铳")
-			if d.parser.GetDataSourceType() == dataSourceTypeMajsoul {
+			if d.parser.GetDataSourceType() == common.DataSourceTypeMajsoul {
 				color.HiYellow("（快醒醒，这是雀魂）")
 			}
 		}
