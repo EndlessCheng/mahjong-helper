@@ -22,16 +22,16 @@ func TestMessageReceiver(t *testing.T) {
 		var indexes []int
 		for i := 0; ; i++ {
 			select {
+			case msg := <-mr.orderedMessageQueue:
+				if _, ok := msg.Metadata.(*ws.Draw); ok {
+					indexes = append(indexes, i)
+				}
 			case <-done:
 				if assert.EqualValues(t, []int{3, 6, 8}, indexes) {
 					t.Log("DONE")
 				}
 				wg.Done()
 				return
-			case msg := <-mr.orderedMessageQueue:
-				if _, ok := msg.Metadata.(*ws.Draw); ok {
-					indexes = append(indexes, i)
-				}
 			}
 		}
 	}()
