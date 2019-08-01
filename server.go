@@ -20,6 +20,8 @@ import (
 	"github.com/EndlessCheng/mahjong-helper/platform/tenhou"
 	"github.com/EndlessCheng/mahjong-helper/platform/majsoul"
 	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
+	"github.com/EndlessCheng/mahjong-helper/platform/tenhou/ws"
+	"net/url"
 )
 
 const defaultPort = 12121
@@ -127,6 +129,19 @@ func (h *mjHandler) runAnalysisTenhouMessageTask() {
 		msg := h.tenhouMessageReceiver.Get()
 		if h.log != nil {
 			h.log.Info(msg.OriginJSON)
+		}
+
+		// 特殊处理用户登录
+		if meta, ok := msg.Metadata.(*ws.Helo); ok {
+			username, err := url.QueryUnescape(meta.UserName)
+			if err != nil {
+				h.logError(err)
+			}
+			if username != gameConf.currentActiveTenhouUsername {
+				color.HiGreen("%s 登录成功", username)
+				gameConf.currentActiveTenhouUsername = username
+			}
+			continue
 		}
 
 		h.tenhouRoundData.parser = msg
