@@ -19,7 +19,7 @@ type _logContent struct {
 	Message string `json:"message"`
 }
 
-func Test_mjHandler_runAnalysisTenhouMessageTask(t *testing.T) {
+func Test_mjHandler_handleTenhouMessage(t *testing.T) {
 	logFile := "log/gamedata-20190801-113014-c.log"
 	logData, err := ioutil.ReadFile(logFile)
 	if err != nil {
