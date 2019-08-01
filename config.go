@@ -15,7 +15,7 @@ type gameConfig struct {
 	MajsoulAccountIDs []int `json:"majsoul_account_ids"`
 
 	currentActiveMajsoulAccountID int    `json:"-"`
-	currentActiveTenhouUsername   string `json:"-"`
+	currentActiveTenhouUserName   string `json:"-"`
 }
 
 var gameConf = &gameConfig{

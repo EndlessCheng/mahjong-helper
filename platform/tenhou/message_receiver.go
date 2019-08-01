@@ -21,7 +21,7 @@ func NewMessageReceiver() *MessageReceiver {
 	return mr
 }
 
-// TODO: 合并短时间内的 AGARI 消息？（双响）
+// TODO: 合并短时间内的 AGARI 消息（双响）
 func (mr *MessageReceiver) run() {
 	for data := range mr.originMessageQueue {
 		msg, err := parse(data)
@@ -60,8 +60,4 @@ func (mr *MessageReceiver) Put(data []byte) {
 
 func (mr *MessageReceiver) Get() *Message {
 	return <-mr.orderedMessageQueue
-}
-
-func (mr *MessageReceiver) IsEmpty() bool {
-	return len(mr.originMessageQueue) == 0 && len(mr.orderedMessageQueue) == 0
 }

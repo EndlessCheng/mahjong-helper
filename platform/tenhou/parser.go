@@ -80,6 +80,7 @@ func parse(data []byte) (msg *Message, err error) {
 
 	mt := ws.MessageType(tag)
 	if mt == nil {
+		// 暂不需要处理此消息
 		return
 	}
 	messagePtr := reflect.New(mt.Elem())
@@ -289,14 +290,6 @@ func (m *Message) IsInit() bool {
 	return ok
 }
 
-// TODO: 重构至 core。parser 不要修改任何东西
-//if roundNumber == 0 && benNumber == 0 {
-//	if util.InStrings("0", strings.Split(meta.Ten, ",")) {
-//		d.playerNumber = 3
-//	} else {
-//		d.playerNumber = 4
-//	}
-//}
 func (m *Message) ParseInit() (roundNumber int, benNumber int, dealer int, doraIndicator int, handTiles []int, numRedFives []int) {
 	meta := m.Metadata.(*ws.Init)
 	roundNumber = meta.Seed[0]

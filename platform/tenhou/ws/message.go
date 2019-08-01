@@ -56,6 +56,17 @@ type UN struct {
 	Sexes Strings  `json:"sx"`   // List of sexes ("M" or "F") for each player.
 }
 
+//（三麻少一位玩家，其名字为空）
+func (m *UN) PlayerNumber() int {
+	c := 0
+	for _, n := range []string{m.N0, m.N1, m.N2, m.N3} {
+		if n != "" {
+			c++
+		}
+	}
+	return c
+}
+
 // Start of round
 type Taikyoku struct {
 	Dealer int `json:"oya,string"`

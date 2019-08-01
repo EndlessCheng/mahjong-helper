@@ -131,22 +131,24 @@ func (h *mjHandler) runAnalysisTenhouMessageTask() {
 			h.log.Info(msg.OriginJSON)
 		}
 
-		// 特殊处理用户登录
-		if meta, ok := msg.Metadata.(*ws.Helo); ok {
+		switch meta := msg.Metadata.(type) {
+		case *ws.Helo: // 用户登录
 			username, err := url.QueryUnescape(meta.UserName)
 			if err != nil {
 				h.logError(err)
 			}
-			if username != gameConf.currentActiveTenhouUsername {
+			if username != gameConf.currentActiveTenhouUserName {
 				color.HiGreen("%s 登录成功", username)
-				gameConf.currentActiveTenhouUsername = username
+				gameConf.currentActiveTenhouUserName = username
 			}
-			continue
-		}
-
-		h.tenhouRoundData.parser = msg
-		if err := h.tenhouRoundData.analysis(); err != nil {
-			h.logError(err)
+		case *ws.UN: // 对战前的各家用户信息
+			// 游戏配置：三麻/四麻
+			h.tenhouRoundData.playerNumber = meta.PlayerNumber()
+		default:
+			h.tenhouRoundData.parser = msg
+			if err := h.tenhouRoundData.analysis(); err != nil {
+				h.logError(err)
+			}
 		}
 	}
 }
