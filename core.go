@@ -469,15 +469,15 @@ func (d *roundData) analysis() error {
 		}()
 	}
 
-	if debugMode {
-		if msg := d.parser.GetMessage(); len(msg) > 0 {
-			const printLimit = 500
-			if len(msg) > printLimit {
-				msg = msg[:printLimit]
-			}
-			fmt.Println("收到", msg)
-		}
-	}
+	//if debugMode {
+	//	if msg := d.parser.GetMessage(); len(msg) > 0 {
+	//		const printLimit = 500
+	//		if len(msg) > printLimit {
+	//			msg = msg[:printLimit]
+	//		}
+	//		fmt.Println("收到", msg)
+	//	}
+	//}
 
 	// 先获取用户信息
 	if d.parser.IsLogin() {

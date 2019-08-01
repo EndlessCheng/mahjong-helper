@@ -9,16 +9,21 @@ import (
 type MessageReceiver struct {
 	originMessageQueue  chan []byte
 	orderedMessageQueue chan *Message
+
+	SkipOrderCheck bool
 }
 
-func NewMessageReceiver() *MessageReceiver {
-	const maxQueueSize = 100
+func NewMessageReceiverWithSize(maxQueueSize int) *MessageReceiver {
 	mr := &MessageReceiver{
 		originMessageQueue:  make(chan []byte, maxQueueSize),
 		orderedMessageQueue: make(chan *Message, maxQueueSize),
 	}
 	go mr.run()
 	return mr
+}
+
+func NewMessageReceiver() *MessageReceiver {
+	return NewMessageReceiverWithSize(100)
 }
 
 // TODO: 合并短时间内的 AGARI 消息（双响）
@@ -33,7 +38,7 @@ func (mr *MessageReceiver) run() {
 			continue
 		}
 
-		if !isSelfDraw(msg.Tag) {
+		if !isSelfDraw(msg.Tag) || mr.SkipOrderCheck {
 			mr.orderedMessageQueue <- msg
 			continue
 		}
@@ -60,4 +65,9 @@ func (mr *MessageReceiver) Put(data []byte) {
 
 func (mr *MessageReceiver) Get() *Message {
 	return <-mr.orderedMessageQueue
+}
+
+// read only
+func (mr *MessageReceiver) GetC() <-chan *Message {
+	return mr.orderedMessageQueue
 }

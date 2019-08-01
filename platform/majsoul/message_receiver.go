@@ -27,8 +27,7 @@ type MessageReceiver struct {
 	indexToMessageMap map[uint16]*Message
 }
 
-func NewMessageReceiver() *MessageReceiver {
-	const maxQueueSize = 100
+func NewMessageReceiverWithSize(maxQueueSize int) *MessageReceiver {
 	mr := &MessageReceiver{
 		originMessageQueue:  make(chan []byte, maxQueueSize),
 		orderedMessageQueue: make(chan *Message, maxQueueSize),
@@ -36,6 +35,10 @@ func NewMessageReceiver() *MessageReceiver {
 	}
 	go mr.run()
 	return mr
+}
+
+func NewMessageReceiver() *MessageReceiver {
+	return NewMessageReceiverWithSize(100)
 }
 
 func (mr *MessageReceiver) run() {
@@ -123,4 +126,9 @@ func (mr *MessageReceiver) Put(data []byte) {
 
 func (mr *MessageReceiver) Get() *Message {
 	return <-mr.orderedMessageQueue
+}
+
+// read only
+func (mr *MessageReceiver) GetC() <-chan *Message {
+	return mr.orderedMessageQueue
 }

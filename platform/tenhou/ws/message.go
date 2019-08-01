@@ -163,6 +163,7 @@ type Agari struct {
 
 // The hand ended with a draw
 // "{\"tag\":\"RYUUKYOKU\",\"type\":\"ron3\",\"ba\":\"1,1\",\"sc\":\"290,0,228,0,216,0,256,0\",\"hai0\":\"18,19,30,32,33,41,43,94,95,114,115,117,119\",\"hai2\":\"29,31,74,75\",\"hai3\":\"8,13,17,25,35,46,48,53,78,79\"}"
+// "{\"tag\":\"RYUUKYOKU\",\"ba\":\"5,0\",\"sc\":\"350,0,0,0,350,0,350,0\",\"owari\":\"350,-25.0,0,0.0,350,30.0,350,-5.0\"}"
 // TODO: add more example
 type Ryuukyoku struct {
 	// The type of draw:
@@ -172,6 +173,7 @@ type Ryuukyoku struct {
 	//     "kan4"   -> Four kans
 	//     "kaze4"  -> Same wind discard on first round
 	//     "nm"     -> Nagashi mangan.
+	//     ""       -> normal ends
 	Type string `json:"type"`
 
 	// TODO owari

@@ -20,8 +20,6 @@ import (
 	"github.com/EndlessCheng/mahjong-helper/platform/tenhou"
 	"github.com/EndlessCheng/mahjong-helper/platform/majsoul"
 	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
-	"github.com/EndlessCheng/mahjong-helper/platform/tenhou/ws"
-	"net/url"
 )
 
 const defaultPort = 12121
@@ -127,29 +125,7 @@ func (h *mjHandler) runAnalysisTenhouMessageTask() {
 
 	for {
 		msg := h.tenhouMessageReceiver.Get()
-		if h.log != nil {
-			h.log.Info(msg.OriginJSON)
-		}
-
-		switch meta := msg.Metadata.(type) {
-		case *ws.Helo: // 用户登录
-			username, err := url.QueryUnescape(meta.UserName)
-			if err != nil {
-				h.logError(err)
-			}
-			if username != gameConf.currentActiveTenhouUserName {
-				color.HiGreen("%s 登录成功", username)
-				gameConf.currentActiveTenhouUserName = username
-			}
-		case *ws.UN: // 对战前的各家用户信息
-			// 游戏配置：三麻/四麻
-			h.tenhouRoundData.playerNumber = meta.PlayerNumber()
-		default:
-			h.tenhouRoundData.parser = msg
-			if err := h.tenhouRoundData.analysis(); err != nil {
-				h.logError(err)
-			}
-		}
+		h.handleTenhouMessage(msg)
 	}
 }
 
@@ -202,25 +178,21 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 
 			if message.ResponseMessage != nil {
 				switch msg := message.ResponseMessage.(type) {
-				case *lq.ResLogin:
-					// 登录
+				case *lq.ResLogin: // 登录
 					accountID := int(msg.AccountId)
 					gameConf.addMajsoulAccountID(accountID)
 					if accountID != gameConf.currentActiveMajsoulAccountID {
 						gameConf.setMajsoulAccountID(accountID)
 						printAccountInfo(accountID)
 					}
-				case *lq.ResFriendList:
-					// 好友列表
+				case *lq.ResFriendList: // 好友列表
 					fmt.Println(lq.FriendList(msg.Friends))
-				case *lq.ResGameRecordList:
-					// 牌谱基本信息列表
+				case *lq.ResGameRecordList: // 牌谱基本信息列表
 					for _, record := range msg.RecordList {
 						h.majsoulRecordGameMap[record.Uuid] = record
 					}
 					color.HiGreen("收到 %2d 个雀魂牌谱（已收集 %d 个），请在网页上点击「查看」", len(msg.RecordList), len(h.majsoulRecordGameMap))
-				case *lq.ResGameRecord:
-					// 载入某个牌谱（含分享）
+				case *lq.ResGameRecord: // 载入某个牌谱（含分享）
 					// 处理基础信息
 					record := msg.Head
 					h.majsoulRecordGameMap[record.Uuid] = record
@@ -233,7 +205,7 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 				continue
 			}
 
-			switch msg := message.ResponseMessage.(type) {
+			switch msg := message.NotifyMessage.(type) {
 			case *lq.ActionPrototype:
 				// 这里注入 majsoulData
 				fmt.Println(msg.ParseData())

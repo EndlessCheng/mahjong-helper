@@ -22,7 +22,7 @@ func TestMessageReceiver(t *testing.T) {
 		var indexes []int
 		for i := 0; ; i++ {
 			select {
-			case msg := <-mr.orderedMessageQueue:
+			case msg := <-mr.GetC():
 				if _, ok := msg.Metadata.(*ws.Draw); ok {
 					indexes = append(indexes, i)
 				}

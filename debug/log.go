@@ -1,3 +1,3 @@
 package debug
 
-var Lo int
+var Lo = 0
