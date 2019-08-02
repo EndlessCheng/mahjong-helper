@@ -23,7 +23,7 @@ type WebSocketClient struct {
 	sync.Mutex
 
 	ws     *websocket.Conn
-	closed bool
+	closed bool // 也可以使用 channel，但就目前来说 bool 就足够了
 
 	messageIndex       uint16
 	respMessageChanMap *sync.Map // messageIndex -> chan proto.Message
@@ -126,6 +126,9 @@ func (c *WebSocketClient) heartbeat() {
 	for !c.closed {
 		// 吐槽：雀魂的开发把 heart 错写成了 heat
 		if _, err := c.Heatbeat(&lq.ReqHeatBeat{}); err != nil {
+			if c.closed {
+				return
+			}
 			fmt.Fprintln(os.Stderr, "heartbeat:", err)
 		}
 		time.Sleep(6 * time.Second)

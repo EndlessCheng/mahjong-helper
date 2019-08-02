@@ -13,17 +13,17 @@ type MessageReceiver struct {
 	SkipOrderCheck bool
 }
 
-func NewMessageReceiverWithSize(maxQueueSize int) *MessageReceiver {
+func NewMessageReceiverWithQueueSize(queueSize int) *MessageReceiver {
 	mr := &MessageReceiver{
-		originMessageQueue:  make(chan []byte, maxQueueSize),
-		orderedMessageQueue: make(chan *Message, maxQueueSize),
+		originMessageQueue:  make(chan []byte, queueSize),
+		orderedMessageQueue: make(chan *Message, queueSize),
 	}
 	go mr.run()
 	return mr
 }
 
 func NewMessageReceiver() *MessageReceiver {
-	return NewMessageReceiverWithSize(100)
+	return NewMessageReceiverWithQueueSize(100)
 }
 
 // TODO: 合并短时间内的 AGARI 消息（双响）

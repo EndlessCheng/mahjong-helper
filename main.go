@@ -94,7 +94,7 @@ func welcome() int {
 	color.HiGreen("已选择 - %s", platformName)
 
 	if choose == platformMajsoul {
-		if len(gameConf.MajsoulAccountIDs) == 0 {
+		if len(userConf.MajsoulAccountIDs) == 0 {
 			color.HiYellow(`提醒：若您是第一次使用助手，请重新登录游戏，或者开启一局人机对战
 该步骤用于获取您的账号 ID，便于在游戏开始时获取自风，否则程序将无法解析后续数据
 

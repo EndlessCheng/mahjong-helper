@@ -9,14 +9,6 @@ import (
 	"math"
 )
 
-func printAccountInfo(accountID int) {
-	fmt.Printf("您的账号 ID 为 ")
-	color.New(color.FgHiGreen).Printf("%d", accountID)
-	fmt.Printf("，该数字为雀魂服务器账号数据库中的 ID，该值越小表示您的注册时间越早\n")
-}
-
-//
-
 func (p *playerInfo) printDiscards() {
 	// TODO: 高亮不合理的舍牌或危险舍牌，如
 	// - 一开始就切中张

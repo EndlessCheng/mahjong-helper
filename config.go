@@ -11,14 +11,14 @@ const (
 	configFile = "config.json"
 )
 
-type gameConfig struct {
+type userConfig struct {
 	MajsoulAccountIDs []int `json:"majsoul_account_ids"`
 
 	currentActiveMajsoulAccountID int    `json:"-"`
 	currentActiveTenhouUserName   string `json:"-"`
 }
 
-var gameConf = &gameConfig{
+var userConf = &userConfig{
 	MajsoulAccountIDs:             []int{},
 	currentActiveMajsoulAccountID: -1,
 }
@@ -36,17 +36,15 @@ func init() {
 		return
 	}
 
-	if err := json.NewDecoder(bytes.NewReader(data)).Decode(gameConf); err != nil {
+	if err := json.NewDecoder(bytes.NewReader(data)).Decode(userConf); err != nil {
 		if debugMode {
 			panic(err)
 		}
 		return
 	}
-
-	//fmt.Println(*gameConf)
 }
 
-func (c *gameConfig) saveConfigToFile() error {
+func (c *userConfig) saveConfigToFile() error {
 	data, err := json.Marshal(c)
 	if err != nil {
 		return err
@@ -57,7 +55,7 @@ func (c *gameConfig) saveConfigToFile() error {
 	return nil
 }
 
-func (c *gameConfig) isIDExist(majsoulAccountID int) bool {
+func (c *userConfig) isIDExist(majsoulAccountID int) bool {
 	for _, id := range c.MajsoulAccountIDs {
 		if id == majsoulAccountID {
 			return true
@@ -66,14 +64,14 @@ func (c *gameConfig) isIDExist(majsoulAccountID int) bool {
 	return false
 }
 
-func (c *gameConfig) addMajsoulAccountID(majsoulAccountID int) error {
+func (c *userConfig) addMajsoulAccountID(majsoulAccountID int) error {
 	if c.isIDExist(majsoulAccountID) {
 		return nil
 	}
-	gameConf.MajsoulAccountIDs = append(gameConf.MajsoulAccountIDs, majsoulAccountID)
+	userConf.MajsoulAccountIDs = append(userConf.MajsoulAccountIDs, majsoulAccountID)
 	return c.saveConfigToFile()
 }
 
-func (c *gameConfig) setMajsoulAccountID(majsoulAccountID int) {
+func (c *userConfig) setMajsoulAccountID(majsoulAccountID int) {
 	c.currentActiveMajsoulAccountID = majsoulAccountID
 }

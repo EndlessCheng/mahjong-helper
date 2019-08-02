@@ -2,11 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/fatih/color"
 	"github.com/EndlessCheng/mahjong-helper/util"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 	"sort"
-	"time"
 	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
 	"github.com/EndlessCheng/mahjong-helper/platform/common"
 )
@@ -190,89 +188,57 @@ func (d *majsoulRoundData) GetSelfSeat() int {
 	return d.selfSeat
 }
 
-func (d *majsoulRoundData) GetMessage() string {
-	return d.originJSON
-}
-
-func (d *majsoulRoundData) SkipMessage() bool {
-	msg := d.msg
-
-	// 没有账号 skip
-	if gameConf.currentActiveMajsoulAccountID == -1 {
-		return true
-	}
-
-	// TODO: 重构
-	if msg.SeatList != nil {
-		// 特判古役模式
-		isGuyiMode := msg.GameConfig.IsGuyiMode()
-		util.SetConsiderOldYaku(isGuyiMode)
-		if isGuyiMode {
-			color.HiGreen("古役模式已开启")
-			time.Sleep(2 * time.Second)
-		}
-	} else {
-		// msg.SeatList 必须为 nil
-		if msg.ReadyIDList != nil {
-			// 打印准备信息
-			fmt.Printf("等待玩家准备 (%d/%d) %v\n", len(msg.ReadyIDList), d.playerNumber, msg.ReadyIDList)
-		}
-	}
-
-	return false
-}
-
-func (d *majsoulRoundData) IsLogin() bool {
-	msg := d.msg
-	return msg.AccountID > 0 || msg.SeatList != nil
-}
-
-func (d *majsoulRoundData) HandleLogin() {
-	msg := d.msg
-
-	if accountID := msg.AccountID; accountID > 0 {
-		gameConf.addMajsoulAccountID(accountID)
-		if accountID != gameConf.currentActiveMajsoulAccountID {
-			printAccountInfo(accountID)
-			gameConf.setMajsoulAccountID(accountID)
-		}
-		return
-	}
-
-	// 从对战 ID 列表中获取账号 ID
-	if seatList := msg.SeatList; seatList != nil {
-		// 尝试从中找到缓存账号 ID
-		for _, accountID := range seatList {
-			if accountID > 0 && gameConf.isIDExist(accountID) {
-				// 找到了，更新当前使用的账号 ID
-				if gameConf.currentActiveMajsoulAccountID != accountID {
-					printAccountInfo(accountID)
-					gameConf.setMajsoulAccountID(accountID)
-				}
-				return
-			}
-		}
-
-		// 未找到缓存 ID
-		if gameConf.currentActiveMajsoulAccountID > 0 {
-			color.HiRed("尚未获取到您的账号 ID，请您刷新网页，或开启一局人机对战（错误信息：您的账号 ID %d 不在对战列表 %v 中）", gameConf.currentActiveMajsoulAccountID, msg.SeatList)
-			return
-		}
-
-		// 判断是否为人机对战，若为人机对战，则获取账号 ID
-		if !util.InInts(0, msg.SeatList) {
-			return
-		}
-		for _, accountID := range msg.SeatList {
-			if accountID > 0 {
-				gameConf.addMajsoulAccountID(accountID)
-				printAccountInfo(accountID)
-				gameConf.setMajsoulAccountID(accountID)
-				return
-			}
-		}
-	}
-}
+//func (d *majsoulRoundData) IsLogin() bool {
+//	msg := d.msg
+//	return msg.AccountID > 0 || msg.SeatList != nil
+//}
+//
+//func (d *majsoulRoundData) HandleLogin() {
+//	msg := d.msg
+//
+//	if accountID := msg.AccountID; accountID > 0 {
+//		userConf.addMajsoulAccountID(accountID)
+//		if accountID != userConf.currentActiveMajsoulAccountID {
+//			printAccountInfo(accountID)
+//			userConf.setMajsoulAccountID(accountID)
+//		}
+//		return
+//	}
+//
+//	// 从对战 ID 列表中获取账号 ID
+//	if seatList := msg.SeatList; seatList != nil {
+//		// 尝试从中找到缓存账号 ID
+//		for _, accountID := range seatList {
+//			if accountID > 0 && userConf.isIDExist(accountID) {
+//				// 找到了，更新当前使用的账号 ID
+//				if userConf.currentActiveMajsoulAccountID != accountID {
+//					printAccountInfo(accountID)
+//					userConf.setMajsoulAccountID(accountID)
+//				}
+//				return
+//			}
+//		}
+//
+//		// 未找到缓存 ID
+//		if userConf.currentActiveMajsoulAccountID > 0 {
+//			color.HiRed("尚未获取到您的账号 ID，请您刷新网页，或开启一局人机对战（错误信息：您的账号 ID %d 不在对战列表 %v 中）", userConf.currentActiveMajsoulAccountID, msg.SeatList)
+//			return
+//		}
+//
+//		// 判断是否为人机对战，若为人机对战，则获取账号 ID
+//		if !util.InInts(0, msg.SeatList) {
+//			return
+//		}
+//		for _, accountID := range msg.SeatList {
+//			if accountID > 0 {
+//				userConf.addMajsoulAccountID(accountID)
+//				printAccountInfo(accountID)
+//				userConf.setMajsoulAccountID(accountID)
+//				return
+//			}
+//		}
+//	}
+//}
 
 func (d *majsoulRoundData) IsInit() bool {
 	msg := d.msg
@@ -287,7 +253,7 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, benNumber int, dealer i
 		d.playerNumber = playerNumber
 		// 获取自家初始座位：0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
 		for i, accountID := range msg.SeatList {
-			if accountID == gameConf.currentActiveMajsoulAccountID {
+			if accountID == userConf.currentActiveMajsoulAccountID {
 				d.selfSeat = i
 				break
 			}

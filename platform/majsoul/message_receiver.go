@@ -9,6 +9,7 @@ import (
 	"encoding/binary"
 	"strings"
 	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
+	"encoding/json"
 )
 
 // 若 NotifyMessage 不为空，这该消息为通知，RequestMessage 和 ResponseMessage 字段为空
@@ -20,6 +21,11 @@ type Message struct {
 	NotifyMessage   proto.Message `json:"notify_message,omitempty"`
 }
 
+func (m *Message) JSON() string {
+	data, _ := json.Marshal(m)
+	return string(data)
+}
+
 type MessageReceiver struct {
 	originMessageQueue  chan []byte   // 包含所有 WebSocket 发出的消息和收到的消息
 	orderedMessageQueue chan *Message // 整理后的 WebSocket 收到的消息（包含请求响应和通知）
@@ -27,10 +33,10 @@ type MessageReceiver struct {
 	indexToMessageMap map[uint16]*Message
 }
 
-func NewMessageReceiverWithSize(maxQueueSize int) *MessageReceiver {
+func NewMessageReceiverWithQueueSize(queueSize int) *MessageReceiver {
 	mr := &MessageReceiver{
-		originMessageQueue:  make(chan []byte, maxQueueSize),
-		orderedMessageQueue: make(chan *Message, maxQueueSize),
+		originMessageQueue:  make(chan []byte, queueSize),
+		orderedMessageQueue: make(chan *Message, queueSize),
 		indexToMessageMap:   map[uint16]*Message{},
 	}
 	go mr.run()
@@ -38,7 +44,7 @@ func NewMessageReceiverWithSize(maxQueueSize int) *MessageReceiver {
 }
 
 func NewMessageReceiver() *MessageReceiver {
-	return NewMessageReceiverWithSize(100)
+	return NewMessageReceiverWithQueueSize(100)
 }
 
 func (mr *MessageReceiver) run() {

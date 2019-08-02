@@ -43,7 +43,7 @@ type mjHandler struct {
 	tenhouRoundData       *roundData
 
 	majsoulMessageReceiver *majsoul.MessageReceiver
-	majsoulMessageQueue    chan []byte
+	majsoulUIMessageQueue  chan []byte
 	majsoulRoundData       *majsoulRoundData
 
 	majsoulRecordGameMap            map[string]*lq.RecordGame
@@ -113,19 +113,13 @@ func (h *mjHandler) saveTenhouWebSocketMessage(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-// 处理天凤数据
-func (h *mjHandler) runAnalysisTenhouMessageTask() {
-	if !debugMode {
-		defer func() {
-			if err := recover(); err != nil {
-				fmt.Println("内部错误：", err)
-			}
-		}()
-	}
-
+// 处理天凤 WebSocket 数据
+func (h *mjHandler) runAnalysisTenhouWebSocketMessageTask() {
 	for {
 		msg := h.tenhouMessageReceiver.Get()
-		h.handleTenhouMessage(msg)
+		if err := h.handleTenhouWebSocketMessage(msg); err != nil {
+			h.logError(fmt.Errorf("handleTenhouWebSocketMessage: %v", err))
+		}
 	}
 }
 
@@ -141,26 +135,25 @@ func (h *mjHandler) saveMajsoulWebSocketMessage(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-// 接收雀魂数据：牌谱点击事件等
-func (h *mjHandler) saveMajsoulMessage(c echo.Context) error {
+// 接收雀魂 UI 数据：牌谱点击事件等
+func (h *mjHandler) saveMajsoulUIMessage(c echo.Context) error {
 	data, err := ioutil.ReadAll(c.Request().Body)
 	if err != nil {
 		h.logError(err)
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	h.majsoulMessageQueue <- data
+	h.majsoulUIMessageQueue <- data
 	return c.NoContent(http.StatusOK)
 }
 
-// 处理雀魂数据
-func (h *mjHandler) runAnalysisMajsoulMessageTask() {
-	if !debugMode {
-		defer func() {
-			if err := recover(); err != nil {
-				fmt.Println("内部错误：", err)
-			}
-		}()
+// 处理雀魂 WebSocket 数据
+func (h *mjHandler) runAnalysisMajsoulWebSocketMessageTask() {
+	for {
+		msg := h.majsoulMessageReceiver.Get()
+		if err := h.handleMajsoulWebSocketMessage(msg); err != nil {
+			h.logError(fmt.Errorf("runAnalysisMajsoulWebSocketMessageTask: %v", err))
+		}
 	}
 
 	go func() {
@@ -180,9 +173,9 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 				switch msg := message.ResponseMessage.(type) {
 				case *lq.ResLogin: // 登录
 					accountID := int(msg.AccountId)
-					gameConf.addMajsoulAccountID(accountID)
-					if accountID != gameConf.currentActiveMajsoulAccountID {
-						gameConf.setMajsoulAccountID(accountID)
+					userConf.addMajsoulAccountID(accountID)
+					if accountID != userConf.currentActiveMajsoulAccountID {
+						userConf.setMajsoulAccountID(accountID)
 						printAccountInfo(accountID)
 					}
 				case *lq.ResFriendList: // 好友列表
@@ -213,7 +206,7 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 		}
 	}()
 
-	for msg := range h.majsoulMessageQueue {
+	for msg := range h.majsoulUIMessageQueue {
 		d := &majsoulMessage{}
 		if err := json.Unmarshal(msg, d); err != nil {
 			h.logError(err)
@@ -235,17 +228,17 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 				// 看的是分享的牌谱（先收到 CurrentRecordUUID 和 AccountID，然后收到 SharedRecordBaseInfo）
 				// 或者是比赛场的牌谱
 				// 记录主视角 ID（可能是 0）
-				gameConf.setMajsoulAccountID(d.AccountID)
+				userConf.setMajsoulAccountID(d.AccountID)
 				break
 			}
 
 			// 看的是自己的牌谱
 			// 更新当前使用的账号
-			gameConf.addMajsoulAccountID(d.AccountID)
-			if gameConf.currentActiveMajsoulAccountID != d.AccountID {
+			userConf.addMajsoulAccountID(d.AccountID)
+			if userConf.currentActiveMajsoulAccountID != d.AccountID {
 				fmt.Println()
 				printAccountInfo(d.AccountID)
-				gameConf.setMajsoulAccountID(d.AccountID)
+				userConf.setMajsoulAccountID(d.AccountID)
 			}
 		case len(d.RecordActions) > 0:
 			if h.majsoulCurrentRecordActionsList != nil {
@@ -264,14 +257,14 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 				break
 			}
 
-			selfAccountID := gameConf.currentActiveMajsoulAccountID
+			selfAccountID := userConf.currentActiveMajsoulAccountID
 			if selfAccountID == -1 {
 				h.logError(fmt.Errorf("错误：当前雀魂账号为空"))
 				break
 			}
 
 			h.majsoulRoundData.newGame()
-			h.majsoulRoundData.gameMode = gameModeRecord
+			h.majsoulRoundData.config.gameMode = gameModeRecord
 
 			// 获取并设置主视角初始座位
 			selfSeat, err := baseInfo.GetSelfSeat(selfAccountID)
@@ -307,10 +300,10 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			h._onRecordClick(d.RecordClickAction, d.RecordClickActionIndex, d.FastRecordTo)
 		case d.LiveBaseInfo != nil:
 			// 观战
-			gameConf.setMajsoulAccountID(1) // TODO: 重构
+			userConf.setMajsoulAccountID(1) // TODO: 重构
 			h.majsoulRoundData.newGame()
 			h.majsoulRoundData.selfSeat = 0 // 观战进来后看的是东起的玩家
-			h.majsoulRoundData.gameMode = gameModeLive
+			h.majsoulRoundData.config.gameMode = gameModeLive
 			clearConsole()
 			fmt.Printf("正在载入对战：%s", d.LiveBaseInfo.String())
 		case d.LiveFastAction != nil:
@@ -332,7 +325,7 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 			}
 
 			var actions majsoulRoundActions
-			if h.majsoulRoundData.gameMode == gameModeLive { // 观战
+			if h.majsoulRoundData.config.gameMode == gameModeLive { // 观战
 				actions = h.majsoulCurrentRoundActions
 			} else { // 牌谱
 				fullActions := h.majsoulCurrentRecordActionsList[h.majsoulCurrentRoundIndex]
@@ -356,11 +349,17 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 	}
 }
 
+// 处理雀魂 UI 数据
+func (h *mjHandler) runAnalysisMajsoulUIMessageTask() {
+}
+
 func (h *mjHandler) _loadMajsoulRecordBaseInfo(majsoulRecordUUID string) error {
 	baseInfo, ok := h.majsoulRecordGameMap[majsoulRecordUUID]
 	if !ok {
 		return fmt.Errorf("错误：找不到雀魂牌谱 %s", majsoulRecordUUID)
 	}
+
+	// TODO: 处理玩家个数
 
 	// 标记当前正在观看的牌谱
 	h.majsoulCurrentRecordUUID = majsoulRecordUUID
@@ -389,7 +388,7 @@ func (h *mjHandler) _loadLiveAction(action *majsoulRecordAction, isFast bool) er
 	}
 	h.majsoulCurrentRoundActions = newActions
 
-	h.majsoulRoundData.skipOutput = isFast
+	h.majsoulRoundData.config.skipOutput = isFast
 	h._analysisMajsoulRoundData(action.Action, "")
 	return nil
 }
@@ -410,12 +409,12 @@ func (h *mjHandler) _fastLoadActions(actions []*majsoulRecordAction) {
 		return
 	}
 	fastRecordEnd := util.MaxInt(0, len(actions)-3)
-	h.majsoulRoundData.skipOutput = true
+	h.majsoulRoundData.config.skipOutput = true
 	// 留最后三个刷新，这样确保会刷新界面
 	for _, action := range actions[:fastRecordEnd] {
 		h._analysisMajsoulRoundData(action.Action, "")
 	}
-	h.majsoulRoundData.skipOutput = false
+	h.majsoulRoundData.config.skipOutput = false
 	for _, action := range actions[fastRecordEnd:] {
 		h._analysisMajsoulRoundData(action.Action, "")
 	}
@@ -453,7 +452,7 @@ func (h *mjHandler) _onRecordClick(clickAction string, clickActionIndex int, fas
 			go analysisCache.runMajsoulRecordAnalysisTask(h.majsoulCurrentRecordActionsList[h.majsoulCurrentRoundIndex])
 		}
 
-		h.majsoulRoundData.skipOutput = true
+		h.majsoulRoundData.config.skipOutput = true
 		currentRoundActions := h.majsoulCurrentRecordActionsList[h.majsoulCurrentRoundIndex]
 		startActionIndex := 0
 		endActionIndex := fastRecordTo
@@ -469,7 +468,7 @@ func (h *mjHandler) _onRecordClick(clickAction string, clickActionIndex int, fas
 			}
 			h._analysisMajsoulRoundData(action.Action, "")
 		}
-		h.majsoulRoundData.skipOutput = false
+		h.majsoulRoundData.config.skipOutput = false
 
 		h.majsoulCurrentActionIndex = endActionIndex + 1
 	default:
@@ -512,7 +511,7 @@ func runServer(isHTTPS bool, port int) (err error) {
 	e.HideBanner = true
 	e.HidePort = true
 
-	// 默认是 log.ERROR
+	// 改成 INFO 等级（默认是 ERROR）
 	e.Logger.SetLevel(log.INFO)
 
 	// 设置日志输出到 log/gamedata-xxx.log
@@ -536,14 +535,15 @@ func runServer(isHTTPS bool, port int) (err error) {
 		tenhouRoundData:       newGame(nil),
 
 		majsoulMessageReceiver: majsoul.NewMessageReceiver(),
-		majsoulMessageQueue:    make(chan []byte, 100),
+		majsoulUIMessageQueue:  make(chan []byte, 100),
 		majsoulRoundData:       &majsoulRoundData{selfSeat: -1},
 		majsoulRecordGameMap:   map[string]*lq.RecordGame{},
 	}
 	h.majsoulRoundData.roundData = newGame(h.majsoulRoundData)
 
-	go h.runAnalysisTenhouMessageTask()
-	go h.runAnalysisMajsoulMessageTask()
+	go h.runAnalysisTenhouWebSocketMessageTask()
+	go h.runAnalysisMajsoulWebSocketMessageTask()
+	go h.runAnalysisMajsoulUIMessageTask()
 
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
@@ -552,6 +552,7 @@ func runServer(isHTTPS bool, port int) (err error) {
 	e.POST("/analysis", h.analysis)
 	e.POST("/tenhou/ws", h.saveTenhouWebSocketMessage)
 	e.POST("/majsoul/ws", h.saveMajsoulWebSocketMessage)
+	e.POST("/majsoul/ui", h.saveMajsoulUIMessage)
 
 	// code.js 也用的该端口
 	if port == 0 {
@@ -559,10 +560,8 @@ func runServer(isHTTPS bool, port int) (err error) {
 	}
 	addr := ":" + strconv.Itoa(port)
 	if !isHTTPS {
-		e.POST("/", h.saveTenhouWebSocketMessage)
 		err = e.Start(addr)
 	} else {
-		e.POST("/", h.saveMajsoulMessage)
 		err = startTLS(e, addr)
 	}
 	if err != nil {

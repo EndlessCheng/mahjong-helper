@@ -60,6 +60,17 @@ func (l FriendList) String() string {
 	return out
 }
 
+// 是否为人机对战
+func (m *ResAuthGame) IsComputer() bool {
+	// 为简单起见，通过检测是否有 ID 为 0 的玩家来判断
+	for _, seat := range m.SeatList {
+		if seat == 0 {
+			return true
+		}
+	}
+	return false
+}
+
 func (m *ActionPrototype) ParseData() (proto.Message, error) {
 	name := "lq." + m.Name
 	mt := proto.MessageType(name)

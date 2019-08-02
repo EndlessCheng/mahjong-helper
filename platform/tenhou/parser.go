@@ -264,27 +264,6 @@ func (m *Message) GetDataSourceType() int {
 	return common.DataSourceTypeTenhou
 }
 
-func (m *Message) GetSelfSeat() int {
-	return -1
-}
-
-func (m *Message) GetMessage() string {
-	return m.OriginJSON
-}
-
-func (m *Message) SkipMessage() bool {
-	return false
-}
-
-// TODO: remove this
-func (m *Message) IsLogin() bool {
-	return false
-}
-
-// TODO: remove this
-func (m *Message) HandleLogin() {
-}
-
 func (m *Message) IsInit() bool {
 	_, ok := m.Metadata.(*ws.Init)
 	return ok

@@ -10,20 +10,20 @@ import (
 	"github.com/EndlessCheng/mahjong-helper/debug"
 )
 
-func init() {
-	debugMode = true
-}
-
 type _logContent struct {
 	Level   string `json:"level"`
 	Message string `json:"message"`
 }
 
-func Test_mjHandler_handleTenhouMessage(t *testing.T) {
+var logs []_logContent
+
+func init() {
+	debugMode = true
+
 	logFile := "log/gamedata-20190801-113014-c.log"
 	logData, err := ioutil.ReadFile(logFile)
 	if err != nil {
-		t.Fatal(err)
+		panic(err)
 	}
 
 	// config
@@ -43,13 +43,8 @@ func Test_mjHandler_handleTenhouMessage(t *testing.T) {
 		endLo = len(lines)
 	}
 
-	h := &mjHandler{
-		tenhouRoundData: newGame(nil),
-	}
-
-	mr := tenhou.NewMessageReceiverWithSize(10000)
-	mr.SkipOrderCheck = true
-	for _, line := range lines[startLo-1 : endLo] {
+	lines = lines[startLo-1 : endLo]
+	for _, line := range lines {
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
@@ -57,19 +52,29 @@ func Test_mjHandler_handleTenhouMessage(t *testing.T) {
 
 		d := _logContent{}
 		if err := json.Unmarshal([]byte(line), &d); err != nil {
-			fmt.Println(err)
+			panic(err)
 			continue
 		}
+		logs = append(logs, d)
+	}
+}
 
-		if d.Level != "INFO" {
-			fmt.Println(d.Message)
+func Test_mjHandler_handleTenhouWebSocketMessage(t *testing.T) {
+	h := &mjHandler{
+		tenhouRoundData: newGame(nil),
+	}
+
+	mr := tenhou.NewMessageReceiverWithQueueSize(10000)
+	mr.SkipOrderCheck = true
+	for _, l := range logs {
+		if l.Level != "INFO" {
+			fmt.Println(l.Message)
 			continue
 		}
-
 		debug.Lo++
-		mr.Put([]byte(d.Message))
+		mr.Put([]byte(l.Message))
 		msg := mr.Get()
-		h.handleTenhouMessage(msg)
+		h.handleTenhouWebSocketMessage(msg)
 	}
 }
 
@@ -79,7 +84,7 @@ func Test_mjHandler_handleTenhouMessage(t *testing.T) {
 //	endLo := 33369
 //
 //	h := &mjHandler{
-//		majsoulMessageQueue:  make(chan []byte, 10000),
+//		majsoulUIMessageQueue:  make(chan []byte, 10000),
 //		majsoulRoundData:     &majsoulRoundData{},
 //		majsoulRecordGameMap: map[string]*lq.RecordGame{},
 //	}
@@ -108,13 +113,13 @@ func Test_mjHandler_handleTenhouMessage(t *testing.T) {
 //			//t.Fatal(s.Message)
 //			break
 //		}
-//		h.majsoulMessageQueue <- []byte([]byte(s.Message))
+//		h.majsoulUIMessageQueue <- []byte([]byte(s.Message))
 //	}
 //
-//	go h.runAnalysisMajsoulMessageTask()
+//	go h.runAnalysisMajsoulWebSocketMessageTask()
 //
 //	for {
-//		if len(h.majsoulMessageQueue) == 0 {
+//		if len(h.majsoulUIMessageQueue) == 0 {
 //			break
 //		}
 //		time.Sleep(time.Second)
