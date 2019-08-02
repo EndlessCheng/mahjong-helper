@@ -29,26 +29,29 @@ func TilesToTiles34(tiles []int) (tiles34 []int) {
 func StrToTile34(humanTile string) (tile34 int, isRedFive bool, err error) {
 	defer func() {
 		if er := recover(); er != nil {
-			err = fmt.Errorf("[StrToTile34] %#v 参数错误: %s", er, humanTile)
+			err = fmt.Errorf("参数错误: %v (%s)", er, humanTile)
 		}
 	}()
 
-	wrongHumanTileError := errors.New("[StrToTile34] 参数错误: " + humanTile)
+	wrongHumanTileError := errors.New("参数错误: " + humanTile)
 
 	humanTile = strings.TrimSpace(humanTile)
 	if len(humanTile) != 2 {
-		return -1, false, wrongHumanTileError
+		err = wrongHumanTileError
+		return
 	}
 
 	idx := ByteAtStr(Lower(humanTile[1]), "mpsz")
 	if idx == -1 {
-		return -1, false, wrongHumanTileError
+		err = wrongHumanTileError
+		return
 	}
 
 	i := humanTile[0]
 	if i == '0' {
 		if idx == 3 { // 没有 0z 这种东西
-			return -1, false, wrongHumanTileError
+			err = wrongHumanTileError
+			return
 		}
 		i = '5'
 		isRedFive = true
@@ -56,7 +59,8 @@ func StrToTile34(humanTile string) (tile34 int, isRedFive bool, err error) {
 
 	tile34 = 9*idx + int(i-'1')
 	if tile34 >= 34 {
-		return -1, false, wrongHumanTileError
+		err = wrongHumanTileError
+		return
 	}
 
 	return
@@ -77,7 +81,7 @@ func MustStrToTile34(humanTile string) int {
 func StrToTiles34(humanTiles string) (tiles34 []int, numRedFives []int, err error) {
 	defer func() {
 		if er := recover(); er != nil {
-			err = errors.New("[StrToTiles34] 参数错误: " + humanTiles)
+			err = fmt.Errorf("参数错误: %v (%s)", er, humanTiles)
 		}
 	}()
 
@@ -87,7 +91,8 @@ func StrToTiles34(humanTiles string) (tiles34 []int, numRedFives []int, err erro
 	}
 	humanTiles = strings.TrimSpace(humanTiles)
 	if humanTiles == "" {
-		return nil, nil, errors.New("[StrToTiles34] 参数错误: 处理的手牌不能为空")
+		err = fmt.Errorf("参数错误: 处理的手牌不能为空")
+		return
 	}
 
 	tiles34 = make([]int, 34)
@@ -98,18 +103,21 @@ func StrToTiles34(humanTiles string) (tiles34 []int, numRedFives []int, err erro
 			continue
 		}
 		if len(split) < 2 {
-			return nil, nil, errors.New("[StrToTiles34] 参数错误: " + humanTiles)
+			err = fmt.Errorf("参数错误: %s", humanTiles)
+			return
 		}
 		tileType := split[len(split)-1:]
 		for _, c := range split[:len(split)-1] {
 			tile := string(c) + tileType
 			tile34, isRedFive, er := StrToTile34(tile)
 			if er != nil {
-				return nil, nil, er
+				err = er
+				return
 			}
 			tiles34[tile34]++
 			if tiles34[tile34] > 4 {
-				return nil, nil, fmt.Errorf("[StrToTiles34] 参数错误: %s 有超过 4 张一样的牌", humanTiles)
+				err = fmt.Errorf("参数错误: %s 有超过 4 张一样的牌", humanTiles)
+				return
 			}
 			if isRedFive {
 				numRedFives[tile34/9]++

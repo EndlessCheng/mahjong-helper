@@ -7,11 +7,11 @@ import (
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 )
 
-func interact(humanTilesInfo *model.HumanTilesInfo) error {
+func interact(humanTilesInfo *model.HumanTilesInfo) (err error) {
 	if !debugMode {
 		defer func() {
-			if err := recover(); err != nil {
-				fmt.Println("内部错误：", err)
+			if er := recover(); er != nil {
+				err = fmt.Errorf("参数错误: %v (%v)", er, *humanTilesInfo)
 			}
 		}()
 	}
@@ -31,10 +31,10 @@ func interact(humanTilesInfo *model.HumanTilesInfo) error {
 		case 1:
 			fmt.Print("> 摸 ")
 			fmt.Scanf("%s\n", &tile)
-			tile, isRedFive, err := util.StrToTile34(tile)
-			if err != nil {
+			tile, isRedFive, er := util.StrToTile34(tile)
+			if er != nil {
 				// 让用户重新输入
-				fmt.Fprintln(os.Stderr, err)
+				fmt.Fprintln(os.Stderr, er)
 				continue
 			}
 			if tiles34[tile] == 4 {
@@ -50,10 +50,10 @@ func interact(humanTilesInfo *model.HumanTilesInfo) error {
 		case 2:
 			fmt.Print("> 切 ")
 			fmt.Scanf("%s\n", &tile)
-			tile, isRedFive, err := util.StrToTile34(tile)
-			if err != nil {
+			tile, isRedFive, er := util.StrToTile34(tile)
+			if er != nil {
 				// 让用户重新输入
-				fmt.Fprintln(os.Stderr, err)
+				fmt.Fprintln(os.Stderr, er)
 				continue
 			}
 			if tiles34[tile] == 0 {
@@ -67,8 +67,9 @@ func interact(humanTilesInfo *model.HumanTilesInfo) error {
 			tiles34[tile]--
 			playerInfo.DiscardTiles = append(playerInfo.DiscardTiles, tile) // 仅判断振听用
 		}
-		if err := analysisPlayerWithRisk(playerInfo, nil); err != nil {
-			fmt.Fprintln(os.Stderr, err)
+		if er := analysisPlayerWithRisk(playerInfo, nil); er != nil {
+			fmt.Fprintln(os.Stderr, er)
+			continue
 		}
 	}
 }

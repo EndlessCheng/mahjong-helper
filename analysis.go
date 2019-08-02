@@ -156,7 +156,7 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool
 func analysisHumanTiles(humanTilesInfo *model.HumanTilesInfo) (playerInfo *model.PlayerInfo, err error) {
 	defer func() {
 		if er := recover(); er != nil {
-			err = er.(error)
+			err = fmt.Errorf("参数错误: %v (%v)", er, *humanTilesInfo)
 		}
 	}()
 
