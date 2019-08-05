@@ -95,7 +95,7 @@ func (a *Action) ParseInit() (roundNumber int, benNumber int, dealer int, doraIn
 
 	roundNumber = int(4*(chang) + ju)
 	benNumber = int(ben)
-	dealer = -1 // TODO
+	dealer = -1
 	doraIndicator, _ = a.mustParseMajsoulTile(majsoulDora)
 	numRedFives = make([]int, 3)
 	for _, majsoulTile := range majsoulTiles {
@@ -209,7 +209,7 @@ func (a *Action) ParseOpen() (who int, meld *model.Meld, kanDoraIndicator int) {
 		if len(froms) > 0 {
 			meldType = common.MeldTypeMinkan // 大明杠
 		} else {
-			meldType = common.MeldTypeMinkan // 加杠
+			meldType = common.MeldTypeKakan // 加杠
 		}
 	case majsoulMeldTypeAnkan:
 		meldType = common.MeldTypeAnkan // 暗杠
