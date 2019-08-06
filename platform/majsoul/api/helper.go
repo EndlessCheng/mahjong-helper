@@ -25,14 +25,14 @@ func UnwrapData(rawData []byte) (methodName string, data []byte, err error) {
 	return wrapper.GetName(), wrapper.GetData(), nil
 }
 
-// TODO: auto UnwrapMessage by methodName
-
 func UnwrapMessage(rawData []byte, message proto.Message) error {
 	methodName, data, err := UnwrapData(rawData)
 	if err != nil {
 		return err
 	}
-	// TODO: assert methodName when its not empty
-	_ = methodName
+	if methodName != "" {
+		// TODO: assert equal
+		// methodName ==? proto.MessageName(message)
+	}
 	return proto.Unmarshal(data, message)
 }

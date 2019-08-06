@@ -156,56 +156,6 @@ func (h *mjHandler) runAnalysisMajsoulWebSocketMessageTask() {
 		}
 	}
 
-	go func() {
-		for {
-			message := h.majsoulMessageReceiver.Get()
-			fmt.Printf("%#v\n", message)
-			data, err := json.Marshal(message)
-			if err != nil {
-				h.logError(err)
-				continue
-			}
-			if h.log != nil {
-				h.log.Info(string(data))
-			}
-
-			if message.ResponseMessage != nil {
-				switch msg := message.ResponseMessage.(type) {
-				case *lq.ResLogin: // 登录
-					accountID := int(msg.AccountId)
-					userConf.addMajsoulAccountID(accountID)
-					if accountID != userConf.currentActiveMajsoulAccountID {
-						userConf.setMajsoulAccountID(accountID)
-						printAccountInfo(accountID)
-					}
-				case *lq.ResFriendList: // 好友列表
-					fmt.Println(lq.FriendList(msg.Friends))
-				case *lq.ResGameRecordList: // 牌谱基本信息列表
-					for _, record := range msg.RecordList {
-						h.majsoulRecordGameMap[record.Uuid] = record
-					}
-					color.HiGreen("收到 %2d 个雀魂牌谱（已收集 %d 个），请在网页上点击「查看」", len(msg.RecordList), len(h.majsoulRecordGameMap))
-				case *lq.ResGameRecord: // 载入某个牌谱（含分享）
-					// 处理基础信息
-					record := msg.Head
-					h.majsoulRecordGameMap[record.Uuid] = record
-					if err := h._loadMajsoulRecordBaseInfo(record.Uuid); err != nil {
-						h.logError(err)
-						break
-					}
-					// 处理东一局
-				}
-				continue
-			}
-
-			switch msg := message.NotifyMessage.(type) {
-			case *lq.ActionPrototype:
-				// 这里注入 majsoulData
-				fmt.Println(msg.ParseData())
-			}
-		}
-	}()
-
 	for msg := range h.majsoulUIMessageQueue {
 		d := &majsoulMessage{}
 		if err := json.Unmarshal(msg, d); err != nil {

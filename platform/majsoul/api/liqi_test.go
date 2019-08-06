@@ -30,8 +30,7 @@ func _genReqLogin(t *testing.T) *lq.ReqLogin {
 	// randomKey 最好是个固定值
 	randomKey, ok := os.LookupEnv("RANDOM_KEY")
 	if !ok {
-		rawRandomKey, _ := uuid.NewV4()
-		randomKey = rawRandomKey.String()
+		randomKey = uuid.NewV4().String()
 	}
 
 	version, err := tool.GetMajsoulVersion(tool.ApiGetVersionZH)
@@ -58,8 +57,7 @@ func _genReqLogin(t *testing.T) *lq.ReqLogin {
 func _genReqOauth2Login(t *testing.T, accessToken string) *lq.ReqOauth2Login {
 	randomKey, ok := os.LookupEnv("RANDOM_KEY")
 	if !ok {
-		rawRandomKey, _ := uuid.NewV4()
-		randomKey = rawRandomKey.String()
+		randomKey = uuid.NewV4().String()
 	}
 
 	version, err := tool.GetMajsoulVersion(tool.ApiGetVersionZH)
@@ -67,7 +65,8 @@ func _genReqOauth2Login(t *testing.T, accessToken string) *lq.ReqOauth2Login {
 		t.Fatal(err)
 	}
 	return &lq.ReqOauth2Login{
-		Type:        0, // ? 怀疑是账号/QQ/微信/微博
+		// Type = 3 为 QQ
+		Type:        0, // 账号/QQ/微信/微博
 		AccessToken: accessToken,
 		Reconnect:   false,
 		Device: &lq.ClientDeviceInfo{
