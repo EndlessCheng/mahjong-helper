@@ -6,11 +6,11 @@ import (
 )
 
 const (
-	MajsoulOriginURL = "https://majsoul.union-game.com"
+	MajsoulOriginURL = "https://www.majsoul.com"
 )
 
 const (
-	majsoulJSURLPrefixZH = "https://majsoul.union-game.com/0/"
+	majsoulJSURLPrefixZH = "https://www.majsoul.com/1/"
 	majsoulJSURLPrefixEN = "https://mahjongsoul.game.yo-star.com/"
 	majsoulJSURLPrefixJP = "https://game.mahjongsoul.com/"
 
