@@ -5,10 +5,12 @@ import (
 	"strconv"
 )
 
+// for WebSocket
 const (
 	MajsoulOriginURL = "https://www.majsoul.com"
 )
 
+// for normal requests
 const (
 	majsoulJSURLPrefixZH = "https://www.majsoul.com/1/"
 	majsoulJSURLPrefixEN = "https://mahjongsoul.game.yo-star.com/"
@@ -22,7 +24,7 @@ const (
 )
 
 func appendRandv(apiGetVersionURL string) string {
-	rand1 := rand.Intn(1e9)
-	rand2 := rand.Intn(1e9)
-	return apiGetVersionURL + "?randv" + strconv.Itoa(rand1) + strconv.Itoa(rand2)
+	randVal1 := rand.Intn(1e9)
+	randVal2 := rand.Intn(1e9)
+	return apiGetVersionURL + "?randv" + strconv.Itoa(randVal1) + strconv.Itoa(randVal2)
 }

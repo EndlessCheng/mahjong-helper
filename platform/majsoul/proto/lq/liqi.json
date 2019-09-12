@@ -217,6 +217,14 @@
               "rule": "repeated",
               "type": "TaskProgress",
               "id": 1
+            },
+            "max_daily_task_count": {
+              "type": "uint32",
+              "id": 2
+            },
+            "refresh_count": {
+              "type": "uint32",
+              "id": 3
             }
           }
         },
@@ -687,8 +695,16 @@
               "id": 14
             },
             "birthday": {
-              "type": "uint32",
+              "type": "int32",
               "id": 15
+            },
+            "phone": {
+              "type": "string",
+              "id": 16
+            },
+            "phone_verify": {
+              "type": "uint32",
+              "id": 17
             },
             "platform_diamond": {
               "rule": "repeated",
@@ -1291,6 +1307,35 @@
             }
           }
         },
+        "ItemGainRecord": {
+          "fields": {
+            "item_id": {
+              "type": "uint32",
+              "id": 1
+            },
+            "count": {
+              "type": "uint32",
+              "id": 2
+            }
+          }
+        },
+        "ItemGainRecords": {
+          "fields": {
+            "record_time": {
+              "type": "uint32",
+              "id": 1
+            },
+            "limit_source_id": {
+              "type": "uint32",
+              "id": 2
+            },
+            "records": {
+              "rule": "repeated",
+              "type": "ItemGainRecord",
+              "id": 3
+            }
+          }
+        },
         "Item": {
           "fields": {
             "item_id": {
@@ -1309,6 +1354,11 @@
               "rule": "repeated",
               "type": "Item",
               "id": 1
+            },
+            "daily_gain_record": {
+              "rule": "repeated",
+              "type": "ItemGainRecords",
+              "id": 2
             }
           }
         },
@@ -1318,6 +1368,11 @@
               "rule": "repeated",
               "type": "Item",
               "id": 1
+            },
+            "update_daily_gain_record": {
+              "rule": "repeated",
+              "type": "ItemGainRecords",
+              "id": 2
             }
           }
         },
@@ -1626,6 +1681,10 @@
             "customized_contest_statistic": {
               "type": "CustomizedContestStatistic",
               "id": 3
+            },
+            "leisure_match_statistic": {
+              "type": "AccountDetailStatistic",
+              "id": 4
             }
           },
           "nested": {
@@ -1975,6 +2034,22 @@
             }
           }
         },
+        "BillShortcut": {
+          "fields": {
+            "id": {
+              "type": "uint32",
+              "id": 1
+            },
+            "count": {
+              "type": "uint32",
+              "id": 2
+            },
+            "dealPrice": {
+              "type": "uint32",
+              "id": 3
+            }
+          }
+        },
         "BillingProduct": {
           "fields": {
             "goods": {
@@ -2088,6 +2163,22 @@
                   "id": 2
                 }
               }
+            }
+          }
+        },
+        "MonthTicketInfo": {
+          "fields": {
+            "id": {
+              "type": "uint32",
+              "id": 1
+            },
+            "end_time": {
+              "type": "uint32",
+              "id": 2
+            },
+            "last_pay_time": {
+              "type": "uint32",
+              "id": 3
             }
           }
         },
@@ -3376,6 +3467,14 @@
               "requestType": "ReqCommon",
               "responseType": "ResRefreshZHPShop"
             },
+            "fetchMonthTicketInfo": {
+              "requestType": "ReqCommon",
+              "responseType": "ResMonthTicketInfo"
+            },
+            "payMonthTicket": {
+              "requestType": "ReqPayMonthTicket",
+              "responseType": "ResPayMonthTicket"
+            },
             "exchangeCurrency": {
               "requestType": "ReqExchangeCurrency",
               "responseType": "ResCommon"
@@ -3435,6 +3534,10 @@
             "createJPDocomoOrder": {
               "requestType": "ReqCreateJPDocomoOrder",
               "responseType": "ResCreateJPDocomoOrder"
+            },
+            "createJPWebMoneyOrder": {
+              "requestType": "ReqCreateJPWebMoneyOrder",
+              "responseType": "ResCreateJPWebMoneyOrder"
             },
             "createJPSoftbankOrder": {
               "requestType": "ReqCreateJPSoftbankOrder",
@@ -3599,6 +3702,10 @@
             "code": {
               "type": "string",
               "id": 3
+            },
+            "type": {
+              "type": "uint32",
+              "id": 4
             }
           }
         },
@@ -3644,6 +3751,10 @@
               "rule": "repeated",
               "type": "uint32",
               "id": 8
+            },
+            "type": {
+              "type": "uint32",
+              "id": 9
             }
           }
         },
@@ -3778,9 +3889,13 @@
               "type": "string",
               "id": 1
             },
-            "secure_token": {
+            "phone": {
               "type": "string",
               "id": 2
+            },
+            "password": {
+              "type": "string",
+              "id": 3
             }
           }
         },
@@ -4015,7 +4130,7 @@
         "ReqModifyBirthday": {
           "fields": {
             "birthday": {
-              "type": "uint32",
+              "type": "int32",
               "id": 1
             }
           }
@@ -4833,6 +4948,14 @@
             "has_refresh_count": {
               "type": "bool",
               "id": 3
+            },
+            "max_daily_task_count": {
+              "type": "uint32",
+              "id": 4
+            },
+            "refresh_count": {
+              "type": "uint32",
+              "id": 5
             }
           }
         },
@@ -4853,6 +4976,10 @@
             "progress": {
               "type": "TaskProgress",
               "id": 2
+            },
+            "refresh_count": {
+              "type": "uint32",
+              "id": 3
             }
           }
         },
@@ -5527,6 +5654,42 @@
             }
           }
         },
+        "ReqCreateJPWebMoneyOrder": {
+          "fields": {
+            "goods_id": {
+              "type": "uint32",
+              "id": 1
+            },
+            "client_type": {
+              "type": "uint32",
+              "id": 2
+            },
+            "account_id": {
+              "type": "uint32",
+              "id": 3
+            },
+            "return_url": {
+              "type": "string",
+              "id": 4
+            },
+            "access_token": {
+              "type": "string",
+              "id": 5
+            }
+          }
+        },
+        "ResCreateJPWebMoneyOrder": {
+          "fields": {
+            "error": {
+              "type": "Error",
+              "id": 1
+            },
+            "order_id": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
         "ReqCreateJPSoftbankOrder": {
           "fields": {
             "goods_id": {
@@ -6036,6 +6199,15 @@
             "count": {
               "type": "uint32",
               "id": 2
+            },
+            "bill_short_cut": {
+              "rule": "repeated",
+              "type": "BillShortcut",
+              "id": 3
+            },
+            "deal_price": {
+              "type": "uint32",
+              "id": 4
             }
           }
         },
@@ -6064,6 +6236,30 @@
             }
           }
         },
+        "ReqPayMonthTicket": {
+          "fields": {
+            "ticket_id": {
+              "type": "uint32",
+              "id": 1
+            }
+          }
+        },
+        "ResPayMonthTicket": {
+          "fields": {
+            "error": {
+              "type": "Error",
+              "id": 1
+            },
+            "resource_id": {
+              "type": "uint32",
+              "id": 2
+            },
+            "resource_count": {
+              "type": "uint32",
+              "id": 3
+            }
+          }
+        },
         "ResRefreshZHPShop": {
           "fields": {
             "error": {
@@ -6073,6 +6269,15 @@
             "zhp": {
               "type": "ZHPShop",
               "id": 2
+            }
+          }
+        },
+        "ResMonthTicketInfo": {
+          "fields": {
+            "month_ticket_info": {
+              "rule": "repeated",
+              "type": "MonthTicketInfo",
+              "id": 1
             }
           }
         },

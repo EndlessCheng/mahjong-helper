@@ -711,6 +711,21 @@ func (c *WebSocketClient) CreateJPSoftbankOrder(req *lq.ReqCreateJPSoftbankOrder
 	return
 }
 
+func (c *WebSocketClient) CreateJPWebMoneyOrder(req *lq.ReqCreateJPWebMoneyOrder) (resp *lq.ResCreateJPWebMoneyOrder, err error) {
+	respChan := make(chan *lq.ResCreateJPWebMoneyOrder)
+	if err = c.send(".lq.Lobby.createJPWebMoneyOrder", req, respChan); err != nil {
+		return
+	}
+	resp = <-respChan
+	if resp == nil {
+		return nil, fmt.Errorf("empty response")
+	}
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
+	}
+	return
+}
+
 func (c *WebSocketClient) CreateNickname(req *lq.ReqCreateNickname) (resp *lq.ResCommon, err error) {
 	respChan := make(chan *lq.ResCommon)
 	if err = c.send(".lq.Lobby.createNickname", req, respChan); err != nil {
@@ -1497,6 +1512,18 @@ func (c *WebSocketClient) FetchModNicknameTime(req *lq.ReqCommon) (resp *lq.ResM
 	return
 }
 
+func (c *WebSocketClient) FetchMonthTicketInfo(req *lq.ReqCommon) (resp *lq.ResMonthTicketInfo, err error) {
+	respChan := make(chan *lq.ResMonthTicketInfo)
+	if err = c.send(".lq.Lobby.fetchMonthTicketInfo", req, respChan); err != nil {
+		return
+	}
+	resp = <-respChan
+	if resp == nil {
+		return nil, fmt.Errorf("empty response")
+	}
+	return
+}
+
 func (c *WebSocketClient) FetchMultiAccountBrief(req *lq.ReqMultiAccountId) (resp *lq.ResMultiAccountBrief, err error) {
 	respChan := make(chan *lq.ResMultiAccountBrief)
 	if err = c.send(".lq.Lobby.fetchMultiAccountBrief", req, respChan); err != nil {
@@ -2121,6 +2148,21 @@ func (c *WebSocketClient) OpenManualItem(req *lq.ReqOpenManualItem) (resp *lq.Re
 func (c *WebSocketClient) OpenRandomRewardItem(req *lq.ReqOpenRandomRewardItem) (resp *lq.ResOpenRandomRewardItem, err error) {
 	respChan := make(chan *lq.ResOpenRandomRewardItem)
 	if err = c.send(".lq.Lobby.openRandomRewardItem", req, respChan); err != nil {
+		return
+	}
+	resp = <-respChan
+	if resp == nil {
+		return nil, fmt.Errorf("empty response")
+	}
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
+	}
+	return
+}
+
+func (c *WebSocketClient) PayMonthTicket(req *lq.ReqPayMonthTicket) (resp *lq.ResPayMonthTicket, err error) {
+	respChan := make(chan *lq.ResPayMonthTicket)
+	if err = c.send(".lq.Lobby.payMonthTicket", req, respChan); err != nil {
 		return
 	}
 	resp = <-respChan

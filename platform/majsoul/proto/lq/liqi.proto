@@ -53,6 +53,7 @@ service Lobby {
 	rpc createJPDocomoOrder (ReqCreateJPDocomoOrder) returns (ResCreateJPDocomoOrder);
 	rpc createJPPaypalOrder (ReqCreateJPPaypalOrder) returns (ResCreateJPPaypalOrder);
 	rpc createJPSoftbankOrder (ReqCreateJPSoftbankOrder) returns (ResCreateJPSoftbankOrder);
+	rpc createJPWebMoneyOrder (ReqCreateJPWebMoneyOrder) returns (ResCreateJPWebMoneyOrder);
 	rpc createNickname (ReqCreateNickname) returns (ResCommon);
 	rpc createPhoneVerifyCode (ReqCreatePhoneVerifyCode) returns (ResCommon);
 	rpc createRoom (ReqCreateRoom) returns (ResCreateRoom);
@@ -106,6 +107,7 @@ service Lobby {
 	rpc fetchMailInfo (ReqCommon) returns (ResMailInfo);
 	rpc fetchMisc (ReqCommon) returns (ResMisc);
 	rpc fetchModNicknameTime (ReqCommon) returns (ResModNicknameTime);
+	rpc fetchMonthTicketInfo (ReqCommon) returns (ResMonthTicketInfo);
 	rpc fetchMultiAccountBrief (ReqMultiAccountId) returns (ResMultiAccountBrief);
 	rpc fetchPlatformProducts (ReqPlatformBillingProducts) returns (ResPlatformBillingProducts);
 	rpc fetchRankPointLeaderboard (ReqFetchRankPointLeaderboard) returns (ResFetchRankPointLeaderboard);
@@ -149,6 +151,7 @@ service Lobby {
 	rpc openChest (ReqOpenChest) returns (ResOpenChest);
 	rpc openManualItem (ReqOpenManualItem) returns (ResCommon);
 	rpc openRandomRewardItem (ReqOpenRandomRewardItem) returns (ResOpenRandomRewardItem);
+	rpc payMonthTicket (ReqPayMonthTicket) returns (ResPayMonthTicket);
 	rpc readAnnouncement (ReqReadAnnouncement) returns (ResCommon);
 	rpc readMail (ReqReadMail) returns (ResCommon);
 	rpc readyPlay (ReqRoomReady) returns (ResCommon);
@@ -204,7 +207,9 @@ message Account {
 	uint32 diamond = 12;
 	uint32 avatar_id = 13;
 	uint32 vip = 14;
-	uint32 birthday = 15;
+	int32 birthday = 15;
+	string phone = 16;
+	uint32 phone_verify = 17;
 	repeated PlatformDiamond platform_diamond = 18;
 	AccountLevel level = 21;
 	AccountLevel level3 = 22;
@@ -254,6 +259,7 @@ message AccountDetailStatisticV2 {
 	AccountDetailStatistic friend_room_statistic = 1;
 	RankStatistic rank_statistic = 2;
 	CustomizedContestStatistic customized_contest_statistic = 3;
+	AccountDetailStatistic leisure_match_statistic = 4;
 	message CustomizedContestStatistic {
 		AccountDetailStatistic total_statistic = 1;
 		AccountDetailStatistic month_statistic = 2;
@@ -560,10 +566,18 @@ message AntiAddiction {
 
 message Bag {
 	repeated Item items = 1;
+	repeated ItemGainRecords daily_gain_record = 2;
 }
 
 message BagUpdate {
 	repeated Item update_items = 1;
+	repeated ItemGainRecords update_daily_gain_record = 2;
+}
+
+message BillShortcut {
+	uint32 id = 1;
+	uint32 count = 2;
+	uint32 dealPrice = 3;
 }
 
 message BillingGoods {
@@ -1015,6 +1029,17 @@ message Item {
 	uint32 stack = 2;
 }
 
+message ItemGainRecord {
+	uint32 item_id = 1;
+	uint32 count = 2;
+}
+
+message ItemGainRecords {
+	uint32 record_time = 1;
+	uint32 limit_source_id = 2;
+	repeated ItemGainRecord records = 3;
+}
+
 message LiQiSuccess {
 	uint32 seat = 1;
 	int32 score = 2;
@@ -1031,6 +1056,12 @@ message Mail {
 	uint32 create_time = 7;
 	uint32 expire_time = 8;
 	uint32 reference_id = 9;
+}
+
+message MonthTicketInfo {
+	uint32 id = 1;
+	uint32 end_time = 2;
+	uint32 last_pay_time = 3;
 }
 
 message NetworkEndpoint {
@@ -1129,6 +1160,8 @@ message NotifyCustomContestSystemMsg {
 
 message NotifyDailyTaskUpdate {
 	repeated TaskProgress progresses = 1;
+	uint32 max_daily_task_count = 2;
+	uint32 refresh_count = 3;
 }
 
 message NotifyDeleteMail {
@@ -1517,7 +1550,8 @@ message ReqBindEmail {
 
 message ReqBindPhoneNumber {
 	string code = 1;
-	string secure_token = 2;
+	string phone = 2;
+	string password = 3;
 }
 
 message ReqBroadcastInGame {
@@ -1533,6 +1567,8 @@ message ReqBuyFromChestShop {
 message ReqBuyFromShop {
 	uint32 goods_id = 1;
 	uint32 count = 2;
+	repeated BillShortcut bill_short_cut = 3;
+	uint32 deal_price = 4;
 }
 
 message ReqBuyFromZHP {
@@ -1709,6 +1745,14 @@ message ReqCreateJPPaypalOrder {
 }
 
 message ReqCreateJPSoftbankOrder {
+	uint32 goods_id = 1;
+	uint32 client_type = 2;
+	uint32 account_id = 3;
+	string return_url = 4;
+	string access_token = 5;
+}
+
+message ReqCreateJPWebMoneyOrder {
 	uint32 goods_id = 1;
 	uint32 client_type = 2;
 	uint32 account_id = 3;
@@ -1910,13 +1954,14 @@ message ReqLogin {
 	string client_version = 6;
 	bool gen_access_token = 7;
 	repeated uint32 currency_platforms = 8;
+	uint32 type = 9;
 }
 
 message ReqLogout {
 }
 
 message ReqModifyBirthday {
-	uint32 birthday = 1;
+	int32 birthday = 1;
 }
 
 message ReqModifyNickname {
@@ -1984,6 +2029,10 @@ message ReqOpenManualItem {
 
 message ReqOpenRandomRewardItem {
 	uint32 item_id = 1;
+}
+
+message ReqPayMonthTicket {
+	uint32 ticket_id = 1;
 }
 
 message ReqPlatformBillingProducts {
@@ -2079,6 +2128,7 @@ message ReqSignupAccount {
 	string account = 1;
 	string password = 2;
 	string code = 3;
+	uint32 type = 4;
 }
 
 message ReqSolveGooglePlayOrder {
@@ -2354,6 +2404,11 @@ message ResCreateJPSoftbankOrder {
 	string order_id = 2;
 }
 
+message ResCreateJPWebMoneyOrder {
+	Error error = 1;
+	string order_id = 2;
+}
+
 message ResCreateRoom {
 	Error error = 1;
 	Room room = 2;
@@ -2397,6 +2452,8 @@ message ResDailyTask {
 	Error error = 1;
 	repeated TaskProgress progresses = 2;
 	bool has_refresh_count = 3;
+	uint32 max_daily_task_count = 4;
+	uint32 refresh_count = 5;
 }
 
 message ResEnterCustomizedContest {
@@ -2587,6 +2644,10 @@ message ResModNicknameTime {
 	uint32 last_mod_time = 1;
 }
 
+message ResMonthTicketInfo {
+	repeated MonthTicketInfo month_ticket_info = 1;
+}
+
 message ResMultiAccountBrief {
 	Error error = 1;
 	repeated PlayerBaseView players = 2;
@@ -2617,6 +2678,12 @@ message ResOpenRandomRewardItem {
 	repeated OpenResult results = 2;
 }
 
+message ResPayMonthTicket {
+	Error error = 1;
+	uint32 resource_id = 2;
+	uint32 resource_count = 3;
+}
+
 message ResPlatformBillingProducts {
 	Error error = 1;
 	repeated BillingProduct products = 2;
@@ -2625,6 +2692,7 @@ message ResPlatformBillingProducts {
 message ResRefreshDailyTask {
 	Error error = 1;
 	TaskProgress progress = 2;
+	uint32 refresh_count = 3;
 }
 
 message ResRefreshZHPShop {
