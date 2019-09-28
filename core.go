@@ -29,11 +29,11 @@ type DataParser interface {
 	// roundNumber: 场数（如东1为0，东2为1，...，南1为4，...，南4为7，...），对于三麻来说南1也是4
 	// benNumber: 本场数
 	// dealer: 庄家 0-3
-	// doraIndicator: 宝牌指示牌
+	// doraIndicators: 宝牌指示牌
 	// handTiles: 手牌
 	// numRedFives: 按照 mps 的顺序，赤5个数
 	IsInit() bool
-	ParseInit() (roundNumber int, benNumber int, dealer int, doraIndicator int, handTiles []int, numRedFives []int)
+	ParseInit() (roundNumber int, benNumber int, dealer int, doraIndicators []int, handTiles []int, numRedFives []int)
 
 	// 自家摸牌
 	// tile: 0-33
@@ -512,7 +512,7 @@ func (d *roundData) analysis() error {
 			clearConsole()
 		}
 
-		roundNumber, benNumber, dealer, doraIndicator, hands, numRedFives := d.parser.ParseInit()
+		roundNumber, benNumber, dealer, doraIndicators, hands, numRedFives := d.parser.ParseInit()
 		switch d.parser.GetDataSourceType() {
 		case dataSourceTypeTenhou:
 			d.reset(roundNumber, benNumber, dealer)
@@ -540,8 +540,10 @@ func (d *roundData) analysis() error {
 			currentRoundCache = analysisCache.wholeGameCache[d.roundNumber][d.benNumber]
 		}
 
-		d.doraIndicators = []int{doraIndicator}
-		d.descLeftCounts(doraIndicator)
+		d.doraIndicators = doraIndicators
+		for _, dora := range doraIndicators {
+			d.descLeftCounts(dora)
+		}
 		for _, tile := range hands {
 			d.counts[tile]++
 			d.descLeftCounts(tile)
@@ -568,7 +570,9 @@ func (d *roundData) analysis() error {
 		fmt.Printf("%d局开始，自风为", roundNumber%4+1)
 		color.New(color.FgHiGreen).Printf("%s", util.MahjongZH[d.players[0].selfWindTile])
 		fmt.Println()
-		color.HiYellow("宝牌指示牌是 %s", util.MahjongZH[doraIndicator])
+		info := fmt.Sprintln(util.TilesToMahjongZHInterface(d.doraIndicators)...)
+		info = info[:len(info)-1]
+		color.HiYellow("宝牌指示牌是 " + info)
 		fmt.Println()
 		// TODO: 显示地和概率
 		return analysisPlayerWithRisk(playerInfo, nil)

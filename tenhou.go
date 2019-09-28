@@ -438,7 +438,7 @@ func (d *tenhouRoundData) IsInit() bool {
 	return d.msg.Tag == "INIT" || d.msg.Tag == "REINIT"
 }
 
-func (d *tenhouRoundData) ParseInit() (roundNumber int, benNumber int, dealer int, doraIndicator int, handTiles []int, numRedFives []int) {
+func (d *tenhouRoundData) ParseInit() (roundNumber int, benNumber int, dealer int, doraIndicators []int, handTiles []int, numRedFives []int) {
 	d.isRoundEnd = false
 
 	seedSplits := strings.Split(d.msg.Seed, ",")
@@ -458,7 +458,8 @@ func (d *tenhouRoundData) ParseInit() (roundNumber int, benNumber int, dealer in
 	}
 
 	dealer, _ = strconv.Atoi(d.msg.Dealer)
-	doraIndicator, _ = d._parseTenhouTile(seedSplits[5])
+	doraIndicator, _ := d._parseTenhouTile(seedSplits[5])
+	doraIndicators = append(doraIndicators, doraIndicator)
 	numRedFives = make([]int, 3)
 	tenhouTiles := strings.Split(d.msg.Hai, ",")
 	for _, tenhouTile := range tenhouTiles {

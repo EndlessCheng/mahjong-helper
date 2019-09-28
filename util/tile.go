@@ -29,6 +29,20 @@ var MahjongZH = [...]string{
 
 var YaochuTiles = [...]int{0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33}
 
+func TilesToMahjongZH(tiles []int) (words []string) {
+	for _, tile := range tiles {
+		words = append(words, MahjongZH[tile])
+	}
+	return
+}
+
+func TilesToMahjongZHInterface(tiles []int) (words []interface{}) {
+	for _, tile := range tiles {
+		words = append(words, MahjongZH[tile])
+	}
+	return
+}
+
 // 进张
 // map[进张牌]剩余数
 type Waits map[int]int
