@@ -456,6 +456,21 @@ func (c *WebSocketClient) ClientMessage(req *lq.ReqClientMessage) (resp *lq.ResC
 	return
 }
 
+func (c *WebSocketClient) CompleteActivityFlipTask(req *lq.ReqCompleteActivityTask) (resp *lq.ResCommon, err error) {
+	respChan := make(chan *lq.ResCommon)
+	if err = c.send(".lq.Lobby.completeActivityFlipTask", req, respChan); err != nil {
+		return
+	}
+	resp = <-respChan
+	if resp == nil {
+		return nil, fmt.Errorf("empty response")
+	}
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
+	}
+	return
+}
+
 func (c *WebSocketClient) CompleteActivityTask(req *lq.ReqCompleteActivityTask) (resp *lq.ResCommon, err error) {
 	respChan := make(chan *lq.ResCommon)
 	if err = c.send(".lq.Lobby.completeActivityTask", req, respChan); err != nil {
@@ -831,6 +846,21 @@ func (c *WebSocketClient) DeleteMail(req *lq.ReqDeleteMail) (resp *lq.ResCommon,
 	return
 }
 
+func (c *WebSocketClient) DoActivitySignIn(req *lq.ReqDoActivitySignIn) (resp *lq.ResDoActivitySignIn, err error) {
+	respChan := make(chan *lq.ResDoActivitySignIn)
+	if err = c.send(".lq.Lobby.doActivitySignIn", req, respChan); err != nil {
+		return
+	}
+	resp = <-respChan
+	if resp == nil {
+		return nil, fmt.Errorf("empty response")
+	}
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
+	}
+	return
+}
+
 func (c *WebSocketClient) DoDailySignIn(req *lq.ReqCommon) (resp *lq.ResCommon, err error) {
 	respChan := make(chan *lq.ResCommon)
 	if err = c.send(".lq.Lobby.doDailySignIn", req, respChan); err != nil {
@@ -1019,6 +1049,18 @@ func (c *WebSocketClient) FetchAchievement(req *lq.ReqCommon) (resp *lq.ResAchie
 	}
 	if resp.Error != nil {
 		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
+	}
+	return
+}
+
+func (c *WebSocketClient) FetchActivityFlipInfo(req *lq.ReqFetchActivityFlipInfo) (resp *lq.ResFetchActivityFlipInfo, err error) {
+	respChan := make(chan *lq.ResFetchActivityFlipInfo)
+	if err = c.send(".lq.Lobby.fetchActivityFlipInfo", req, respChan); err != nil {
+		return
+	}
+	resp = <-respChan
+	if resp == nil {
+		return nil, fmt.Errorf("empty response")
 	}
 	return
 }
@@ -1935,6 +1977,21 @@ func (c *WebSocketClient) Login(req *lq.ReqLogin) (resp *lq.ResLogin, err error)
 	return
 }
 
+func (c *WebSocketClient) LoginBeat(req *lq.ReqLoginBeat) (resp *lq.ResCommon, err error) {
+	respChan := make(chan *lq.ResCommon)
+	if err = c.send(".lq.Lobby.loginBeat", req, respChan); err != nil {
+		return
+	}
+	resp = <-respChan
+	if resp == nil {
+		return nil, fmt.Errorf("empty response")
+	}
+	if resp.Error != nil {
+		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
+	}
+	return
+}
+
 func (c *WebSocketClient) Logout(req *lq.ReqLogout) (resp *lq.ResLogout, err error) {
 	respChan := make(chan *lq.ResLogout)
 	if err = c.send(".lq.Lobby.logout", req, respChan); err != nil {
@@ -2216,6 +2273,18 @@ func (c *WebSocketClient) ReadyPlay(req *lq.ReqRoomReady) (resp *lq.ResCommon, e
 	}
 	if resp.Error != nil {
 		err = fmt.Errorf("majsoul error: %s", resp.Error.String())
+	}
+	return
+}
+
+func (c *WebSocketClient) RecieveActivityFlipTask(req *lq.ReqRecieveActivityFlipTask) (resp *lq.ResRecieveActivityFlipTask, err error) {
+	respChan := make(chan *lq.ResRecieveActivityFlipTask)
+	if err = c.send(".lq.Lobby.recieveActivityFlipTask", req, respChan); err != nil {
+		return
+	}
+	resp = <-respChan
+	if resp == nil {
+		return nil, fmt.Errorf("empty response")
 	}
 	return
 }

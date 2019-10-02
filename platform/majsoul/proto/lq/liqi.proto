@@ -36,6 +36,7 @@ service Lobby {
 	rpc changeCommonView (ReqChangeCommonView) returns (ResCommon);
 	rpc changeMainCharacter (ReqChangeMainCharacter) returns (ResCommon);
 	rpc clientMessage (ReqClientMessage) returns (ResCommon);
+	rpc completeActivityFlipTask (ReqCompleteActivityTask) returns (ResCommon);
 	rpc completeActivityTask (ReqCompleteActivityTask) returns (ResCommon);
 	rpc composeShard (ReqComposeShard) returns (ResCommon);
 	rpc createAlipayAppOrder (ReqCreateAlipayAppOrder) returns (ResCreateAlipayAppOrder);
@@ -61,6 +62,7 @@ service Lobby {
 	rpc createWechatNativeOrder (ReqCreateWechatNativeOrder) returns (ResCreateWechatNativeOrder);
 	rpc deleteComment (ReqDeleteComment) returns (ResCommon);
 	rpc deleteMail (ReqDeleteMail) returns (ResCommon);
+	rpc doActivitySignIn (ReqDoActivitySignIn) returns (ResDoActivitySignIn);
 	rpc doDailySignIn (ReqCommon) returns (ResCommon);
 	rpc emailLogin (ReqEmailLogin) returns (ResLogin);
 	rpc enterCustomizedContest (ReqEnterCustomizedContest) returns (ResEnterCustomizedContest);
@@ -74,6 +76,7 @@ service Lobby {
 	rpc fetchAccountState (ReqAccountList) returns (ResAccountStates);
 	rpc fetchAccountStatisticInfo (ReqAccountStatisticInfo) returns (ResAccountStatisticInfo);
 	rpc fetchAchievement (ReqCommon) returns (ResAchievement);
+	rpc fetchActivityFlipInfo (ReqFetchActivityFlipInfo) returns (ResFetchActivityFlipInfo);
 	rpc fetchActivityList (ReqCommon) returns (ResActivityList);
 	rpc fetchAnnouncement (ReqCommon) returns (ResAnnouncement);
 	rpc fetchBagInfo (ReqCommon) returns (ResBagInfo);
@@ -136,6 +139,7 @@ service Lobby {
 	rpc leaveCustomizedContestChatRoom (ReqCommon) returns (ResCommon);
 	rpc leaveRoom (ReqCommon) returns (ResCommon);
 	rpc login (ReqLogin) returns (ResLogin);
+	rpc loginBeat (ReqLoginBeat) returns (ResCommon);
 	rpc logout (ReqLogout) returns (ResLogout);
 	rpc matchGame (ReqJoinMatchQueue) returns (ResCommon);
 	rpc matchShiLian (ReqCommon) returns (ResCommon);
@@ -155,6 +159,7 @@ service Lobby {
 	rpc readAnnouncement (ReqReadAnnouncement) returns (ResCommon);
 	rpc readMail (ReqReadMail) returns (ResCommon);
 	rpc readyPlay (ReqRoomReady) returns (ResCommon);
+	rpc recieveActivityFlipTask (ReqRecieveActivityFlipTask) returns (ResRecieveActivityFlipTask);
 	rpc refreshDailyTask (ReqRefreshDailyTask) returns (ResRefreshDailyTask);
 	rpc refreshZHPShop (ReqCommon) returns (ResRefreshZHPShop);
 	rpc removeCollectedGameRecord (ReqRemoveCollectedGameRecord) returns (ResRemoveCollectedGameRecord);
@@ -213,6 +218,7 @@ message Account {
 	repeated PlatformDiamond platform_diamond = 18;
 	AccountLevel level = 21;
 	AccountLevel level3 = 22;
+	uint32 avatar_frame = 23;
 	message PlatformDiamond {
 		uint32 id = 1;
 		uint32 count = 2;
@@ -241,6 +247,7 @@ message AccountCacheView {
 	AccountLevel level = 11;
 	AccountPlayingGame playing_game = 12;
 	AccountLevel level3 = 13;
+	uint32 avatar_frame = 14;
 }
 
 message AccountDetailStatistic {
@@ -401,8 +408,12 @@ message AccountUpdate {
 	TitleUpdate title = 7;
 	repeated uint32 new_recharged_list = 8;
 	ActivityTaskUpdate activity_task = 9;
+	ActivityFlipTaskUpdate activity_flip_task = 10;
 	message AchievementUpdate {
 		repeated AchievementProgress progresses = 1;
+	}
+	message ActivityFlipTaskUpdate {
+		repeated TaskProgress progresses = 1;
 	}
 	message ActivityTaskUpdate {
 		repeated TaskProgress progresses = 1;
@@ -519,6 +530,7 @@ message ActionNewRound {
 	bool al = 11;
 	string md5 = 12;
 	uint32 left_tile_count = 13;
+	repeated string doras = 14;
 }
 
 message ActionNoTile {
@@ -812,6 +824,7 @@ message GameDetailRule {
 	bool disable_multi_yukaman = 40;
 	uint32 fanfu = 41;
 	uint32 guyi_mode = 42;
+	uint32 dora3_mode = 43;
 }
 
 message GameEnd {
@@ -1375,6 +1388,7 @@ message PlayerBaseView {
 	string nickname = 4;
 	AccountLevel level = 5;
 	AccountLevel level3 = 6;
+	uint32 avatar_frame = 7;
 }
 
 message PlayerGameView {
@@ -1385,6 +1399,7 @@ message PlayerGameView {
 	AccountLevel level = 5;
 	Character character = 6;
 	AccountLevel level3 = 7;
+	uint32 avatar_frame = 8;
 }
 
 message RecordAnGangAddGang {
@@ -1457,6 +1472,7 @@ message RecordGame {
 		uint32 title = 6;
 		AccountLevel level = 7;
 		AccountLevel level3 = 8;
+		uint32 avatar_frame = 9;
 	}
 }
 
@@ -1495,6 +1511,7 @@ message RecordNewRound {
 	string md5 = 13;
 	string paishan = 14;
 	uint32 left_tile_count = 15;
+	repeated string doras = 16;
 	message TingPai {
 		uint32 seat = 1;
 		repeated TingPaiInfo tingpais1 = 2;
@@ -1803,6 +1820,10 @@ message ReqDeleteMail {
 	uint32 mail_id = 1;
 }
 
+message ReqDoActivitySignIn {
+	uint32 activity_id = 2;
+}
+
 message ReqEmailLogin {
 	string email = 1;
 	string password = 2;
@@ -1825,6 +1846,10 @@ message ReqExchangeActivityItem {
 message ReqExchangeCurrency {
 	uint32 id = 1;
 	uint32 count = 2;
+}
+
+message ReqFetchActivityFlipInfo {
+	uint32 activity_id = 1;
 }
 
 message ReqFetchCommentContent {
@@ -1957,6 +1982,10 @@ message ReqLogin {
 	uint32 type = 9;
 }
 
+message ReqLoginBeat {
+	string contract = 1;
+}
+
 message ReqLogout {
 }
 
@@ -2045,6 +2074,10 @@ message ReqReadAnnouncement {
 
 message ReqReadMail {
 	uint32 mail_id = 1;
+}
+
+message ReqRecieveActivityFlipTask {
+	uint32 task_id = 1;
 }
 
 message ReqRefreshDailyTask {
@@ -2202,6 +2235,12 @@ message ResAccountActivityData {
 	repeated TaskProgress task_progress_list = 3;
 	repeated ActivityAccumulatedPointData accumulated_point_list = 4;
 	repeated ActivityRankPointData rank_data_list = 5;
+	repeated TaskProgress flip_task_progress_list = 6;
+	repeated ActivitySignInData sign_in_data = 7;
+	message ActivitySignInData {
+		uint32 activity_id = 1;
+		uint32 sign_in_count = 2;
+	}
 }
 
 message ResAccountCharacterInfo {
@@ -2456,6 +2495,16 @@ message ResDailyTask {
 	uint32 refresh_count = 5;
 }
 
+message ResDoActivitySignIn {
+	Error error = 1;
+	repeated RewardData rewards = 2;
+	uint32 sign_in_count = 3;
+	message RewardData {
+		uint32 resource_id = 1;
+		uint32 count = 2;
+	}
+}
+
 message ResEnterCustomizedContest {
 	Error error = 1;
 	CustomizedContestDetail detail_info = 2;
@@ -2473,6 +2522,11 @@ message ResEnterGame {
 message ResExchangeActivityItem {
 	Error error = 1;
 	repeated ExecuteReward execute_reward = 2;
+}
+
+message ResFetchActivityFlipInfo {
+	repeated uint32 rewards = 1;
+	uint32 count = 2;
 }
 
 message ResFetchCommentContent {
@@ -2687,6 +2741,10 @@ message ResPayMonthTicket {
 message ResPlatformBillingProducts {
 	Error error = 1;
 	repeated BillingProduct products = 2;
+}
+
+message ResRecieveActivityFlipTask {
+	uint32 count = 1;
 }
 
 message ResRefreshDailyTask {

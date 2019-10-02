@@ -718,6 +718,10 @@
             "level3": {
               "type": "AccountLevel",
               "id": 22
+            },
+            "avatar_frame": {
+              "type": "uint32",
+              "id": 23
             }
           },
           "nested": {
@@ -783,6 +787,10 @@
             "activity_task": {
               "type": "ActivityTaskUpdate",
               "id": 9
+            },
+            "activity_flip_task": {
+              "type": "ActivityFlipTaskUpdate",
+              "id": 10
             }
           },
           "nested": {
@@ -840,6 +848,15 @@
               }
             },
             "ActivityTaskUpdate": {
+              "fields": {
+                "progresses": {
+                  "rule": "repeated",
+                  "type": "TaskProgress",
+                  "id": 1
+                }
+              }
+            },
+            "ActivityFlipTaskUpdate": {
               "fields": {
                 "progresses": {
                   "rule": "repeated",
@@ -935,6 +952,10 @@
             "level3": {
               "type": "AccountLevel",
               "id": 13
+            },
+            "avatar_frame": {
+              "type": "uint32",
+              "id": 14
             }
           }
         },
@@ -963,6 +984,10 @@
             "level3": {
               "type": "AccountLevel",
               "id": 6
+            },
+            "avatar_frame": {
+              "type": "uint32",
+              "id": 7
             }
           }
         },
@@ -995,6 +1020,10 @@
             "level3": {
               "type": "AccountLevel",
               "id": 7
+            },
+            "avatar_frame": {
+              "type": "uint32",
+              "id": 8
             }
           }
         },
@@ -1203,6 +1232,10 @@
             "guyi_mode": {
               "type": "uint32",
               "id": 42
+            },
+            "dora3_mode": {
+              "type": "uint32",
+              "id": 43
             }
           }
         },
@@ -2576,6 +2609,10 @@
                 "level3": {
                   "type": "AccountLevel",
                   "id": 8
+                },
+                "avatar_frame": {
+                  "type": "uint32",
+                  "id": 9
                 }
               }
             }
@@ -3083,6 +3120,10 @@
               "requestType": "ReqHeatBeat",
               "responseType": "ResCommon"
             },
+            "loginBeat": {
+              "requestType": "ReqLoginBeat",
+              "responseType": "ResCommon"
+            },
             "createNickname": {
               "requestType": "ReqCreateNickname",
               "responseType": "ResCommon"
@@ -3411,6 +3452,10 @@
               "requestType": "ReqCommon",
               "responseType": "ResCommon"
             },
+            "doActivitySignIn": {
+              "requestType": "ReqDoActivitySignIn",
+              "responseType": "ResDoActivitySignIn"
+            },
             "fetchCharacterInfo": {
               "requestType": "ReqCommon",
               "responseType": "ResCharacterInfo"
@@ -3662,6 +3707,18 @@
             "completeActivityTask": {
               "requestType": "ReqCompleteActivityTask",
               "responseType": "ResCommon"
+            },
+            "completeActivityFlipTask": {
+              "requestType": "ReqCompleteActivityTask",
+              "responseType": "ResCommon"
+            },
+            "recieveActivityFlipTask": {
+              "requestType": "ReqRecieveActivityFlipTask",
+              "responseType": "ResRecieveActivityFlipTask"
+            },
+            "fetchActivityFlipInfo": {
+              "requestType": "ReqFetchActivityFlipInfo",
+              "responseType": "ResFetchActivityFlipInfo"
             },
             "gainAccumulatedPointActivityReward": {
               "requestType": "ReqGainAccumulatedPointActivityReward",
@@ -4059,6 +4116,14 @@
           "fields": {
             "no_operation_counter": {
               "type": "uint32",
+              "id": 1
+            }
+          }
+        },
+        "ReqLoginBeat": {
+          "fields": {
+            "contract": {
+              "type": "string",
               "id": 1
             }
           }
@@ -5979,6 +6044,45 @@
             }
           }
         },
+        "ReqDoActivitySignIn": {
+          "fields": {
+            "activity_id": {
+              "type": "uint32",
+              "id": 2
+            }
+          }
+        },
+        "ResDoActivitySignIn": {
+          "fields": {
+            "error": {
+              "type": "Error",
+              "id": 1
+            },
+            "rewards": {
+              "rule": "repeated",
+              "type": "RewardData",
+              "id": 2
+            },
+            "sign_in_count": {
+              "type": "uint32",
+              "id": 3
+            }
+          },
+          "nested": {
+            "RewardData": {
+              "fields": {
+                "resource_id": {
+                  "type": "uint32",
+                  "id": 1
+                },
+                "count": {
+                  "type": "uint32",
+                  "id": 2
+                }
+              }
+            }
+          }
+        },
         "ResCharacterInfo": {
           "fields": {
             "error": {
@@ -6658,6 +6762,30 @@
               "rule": "repeated",
               "type": "ActivityRankPointData",
               "id": 5
+            },
+            "flip_task_progress_list": {
+              "rule": "repeated",
+              "type": "TaskProgress",
+              "id": 6
+            },
+            "sign_in_data": {
+              "rule": "repeated",
+              "type": "ActivitySignInData",
+              "id": 7
+            }
+          },
+          "nested": {
+            "ActivitySignInData": {
+              "fields": {
+                "activity_id": {
+                  "type": "uint32",
+                  "id": 1
+                },
+                "sign_in_count": {
+                  "type": "uint32",
+                  "id": 2
+                }
+              }
             }
           }
         },
@@ -6687,6 +6815,43 @@
             "task_id": {
               "type": "uint32",
               "id": 1
+            }
+          }
+        },
+        "ReqRecieveActivityFlipTask": {
+          "fields": {
+            "task_id": {
+              "type": "uint32",
+              "id": 1
+            }
+          }
+        },
+        "ResRecieveActivityFlipTask": {
+          "fields": {
+            "count": {
+              "type": "uint32",
+              "id": 1
+            }
+          }
+        },
+        "ReqFetchActivityFlipInfo": {
+          "fields": {
+            "activity_id": {
+              "type": "uint32",
+              "id": 1
+            }
+          }
+        },
+        "ResFetchActivityFlipInfo": {
+          "fields": {
+            "rewards": {
+              "rule": "repeated",
+              "type": "uint32",
+              "id": 1
+            },
+            "count": {
+              "type": "uint32",
+              "id": 2
             }
           }
         },
@@ -6821,6 +6986,11 @@
             "left_tile_count": {
               "type": "uint32",
               "id": 13
+            },
+            "doras": {
+              "rule": "repeated",
+              "type": "string",
+              "id": 14
             }
           }
         },
@@ -6891,6 +7061,11 @@
             "left_tile_count": {
               "type": "uint32",
               "id": 15
+            },
+            "doras": {
+              "rule": "repeated",
+              "type": "string",
+              "id": 16
             }
           },
           "nested": {
