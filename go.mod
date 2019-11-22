@@ -1,14 +1,17 @@
 module github.com/EndlessCheng/mahjong-helper
 
 require (
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fatih/color v1.7.0
-	github.com/labstack/echo v0.0.0-20180911044237-1abaa3049251
-	github.com/labstack/gommon v0.2.7
-	github.com/mattn/go-colorable v0.0.9
-	github.com/mattn/go-isatty v0.0.4
-	github.com/valyala/bytebufferpool v1.0.0
-	github.com/valyala/fasttemplate v0.0.0-20170224212429-dcecefd839c4
-	golang.org/x/crypto v0.0.0-20180910181607-0e37d006457b
-	golang.org/x/sys v0.0.0-20180926160741-c2ed4eda69e7
+	github.com/golang/protobuf v1.3.2
+	github.com/gorilla/websocket v1.4.1
+	github.com/labstack/echo/v4 v4.1.11
+	github.com/labstack/gommon v0.3.0
+	github.com/levigross/grequests v0.0.0-20190908174114-253788527a1a
+	github.com/satori/go.uuid v1.2.0
+	github.com/stretchr/testify v1.4.0
+	golang.org/x/lint v0.0.0-20190313153728-d0100b6bd8b3 // indirect
+	golang.org/x/net v0.0.0-20191119073136-fc4aabc6c914
+	golang.org/x/tools v0.0.0-20190524140312-2c0ae7006135 // indirect
+	google.golang.org/grpc v1.25.1
+	honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc // indirect
 )
