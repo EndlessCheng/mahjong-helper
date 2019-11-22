@@ -5,14 +5,14 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/api"
+	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
+	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/tool"
+	"github.com/golang/protobuf/proto"
+	"github.com/satori/go.uuid"
 	"io/ioutil"
 	"os"
 	"reflect"
-	"github.com/golang/protobuf/proto"
-	"github.com/satori/go.uuid"
-	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
-	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/tool"
-	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/api"
 )
 
 const (
@@ -33,8 +33,7 @@ func genReqLogin(username string, password string) (*lq.ReqLogin, error) {
 	// randomKey 最好是个固定值
 	randomKey, ok := os.LookupEnv("RANDOM_KEY")
 	if !ok {
-		rawRandomKey, _ := uuid.NewV4()
-		randomKey = rawRandomKey.String()
+		randomKey = uuid.NewV4().String()
 	}
 
 	version, err := tool.GetMajsoulVersion(tool.ApiGetVersionZH)
@@ -60,12 +59,8 @@ func genReqLogin(username string, password string) (*lq.ReqLogin, error) {
 
 // TODO: add token
 func DownloadRecords(username string, password string, recordType uint32) error {
-	endpoint, err := tool.GetMajsoulWebSocketURL()
-	if err != nil {
-		return err
-	}
 	c := api.NewWebSocketClient()
-	if err := c.Connect(endpoint, tool.MajsoulOriginURL); err != nil {
+	if err := c.ConnectMajsoul(); err != nil {
 		return err
 	}
 	defer c.Close()

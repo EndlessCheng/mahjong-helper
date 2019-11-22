@@ -3,14 +3,15 @@ package api
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
+	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/tool"
+	"github.com/golang/protobuf/proto"
+	"github.com/gorilla/websocket"
 	"net/http"
 	"os"
 	"reflect"
 	"sync"
 	"time"
-	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
-	"github.com/golang/protobuf/proto"
-	"github.com/gorilla/websocket"
 )
 
 const (
@@ -87,12 +88,21 @@ func (c *WebSocketClient) Connect(endpoint string, origin string) error {
 	return nil
 }
 
+func (c *WebSocketClient) ConnectMajsoul() error {
+	endpoint, err := tool.GetMajsoulWebSocketURL()
+	if err != nil {
+		return err
+	}
+	return c.Connect(endpoint, tool.MajsoulOriginURL)
+}
+
 func (c *WebSocketClient) Close() error {
 	c.closed = true
 	return c.ws.Close()
 }
 
 func (c *WebSocketClient) send(name string, reqMessage proto.Message, respMessageChan interface{}) error {
+	// 避免并发时同时读写 c.messageIndex 等变量
 	c.Lock()
 	defer c.Unlock()
 
