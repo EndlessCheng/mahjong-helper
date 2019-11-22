@@ -1,24 +1,25 @@
 package main
 
 import (
-	"github.com/labstack/echo"
-	"net/http"
-	"time"
-	"github.com/labstack/echo/middleware"
-	"io/ioutil"
-	"os"
-	"github.com/labstack/gommon/log"
-	"fmt"
-	"encoding/json"
 	"crypto/tls"
-	"net"
-	"github.com/fatih/color"
-	"github.com/EndlessCheng/mahjong-helper/util/model"
-	"github.com/EndlessCheng/mahjong-helper/util/debug"
+	"encoding/json"
+	"fmt"
+	"github.com/EndlessCheng/mahjong-helper/platform/tenhou"
 	"github.com/EndlessCheng/mahjong-helper/util"
+	"github.com/EndlessCheng/mahjong-helper/util/debug"
+	"github.com/EndlessCheng/mahjong-helper/util/model"
+	"github.com/fatih/color"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/gommon/log"
+	"io/ioutil"
+	stdLog "log"
+	"net"
+	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
-	"github.com/EndlessCheng/mahjong-helper/platform/tenhou"
+	"time"
 )
 
 const defaultPort = 12121
@@ -479,8 +480,11 @@ func getMajsoulCurrentRecordUUID() string {
 
 func runServer(isHTTPS bool, port int) (err error) {
 	e := echo.New()
+
+	// 移除 echo.Echo 和 http.Server 在控制台上打印的信息
 	e.HideBanner = true
 	e.HidePort = true
+	e.StdLogger = stdLog.New(ioutil.Discard, "", 0)
 
 	// 默认是 log.ERROR
 	e.Logger.SetLevel(log.INFO)
