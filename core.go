@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/fatih/color"
 	"github.com/EndlessCheng/mahjong-helper/util"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
+	"github.com/fatih/color"
 )
 
 type DataParser interface {
@@ -308,7 +308,10 @@ func (d *roundData) printDiscards() {
 func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
 	riList = make(riskInfoList, len(d.players))
 	for who := range riList {
-		riList[who].safeTiles34 = make([]bool, 34)
+		riList[who] = &riskInfo{
+			playerNumber: d.playerNumber,
+			safeTiles34:  make([]bool, 34),
+		}
 	}
 
 	// 先利用振听规则收集各家安牌
@@ -364,7 +367,11 @@ func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
 				riList[who].isTsumogiriRiichi = d.globalDiscardTiles[player.reachTileAtGlobal] < 0
 			}
 		} else {
-			riList[who].tenpaiRate = util.CalcTenpaiRate(player.melds, player.discardTiles, player.meldDiscardsAt)
+			rate := util.CalcTenpaiRate(player.melds, player.discardTiles, player.meldDiscardsAt)
+			if d.playerNumber == 3 {
+				rate = util.GetTenpaiRate3(rate)
+			}
+			riList[who].tenpaiRate = rate
 		}
 
 		// 估计该玩家荣和点数

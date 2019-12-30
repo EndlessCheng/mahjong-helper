@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"strings"
-	"github.com/fatih/color"
-	"sort"
 	"github.com/EndlessCheng/mahjong-helper/util"
+	"github.com/fatih/color"
 	"math"
+	"sort"
+	"strings"
 )
 
 func printAccountInfo(accountID int) {
@@ -130,6 +130,9 @@ func (t riskTable) getBestDefenceTile(tiles34 []int) (result int) {
 //
 
 type riskInfo struct {
+	// 三麻为 3，四麻为 4
+	playerNumber int
+
 	// 该玩家的听牌率（立直时为 100.0）
 	tenpaiRate float64
 
@@ -152,7 +155,7 @@ type riskInfo struct {
 	_ronPoint float64
 }
 
-type riskInfoList []riskInfo
+type riskInfoList []*riskInfo
 
 // 考虑了听牌率的综合危险度
 func (l riskInfoList) mixedRiskTable() riskTable {
@@ -160,6 +163,9 @@ func (l riskInfoList) mixedRiskTable() riskTable {
 	for i := range mixedRiskTable {
 		mixedRisk := 0.0
 		for _, ri := range l[1:] {
+			if ri.tenpaiRate <= 15 {
+				continue
+			}
 			_risk := ri.riskTable[i] * ri.tenpaiRate / 100
 			mixedRisk = mixedRisk + _risk - mixedRisk*_risk/100
 		}
@@ -169,14 +175,23 @@ func (l riskInfoList) mixedRiskTable() riskTable {
 }
 
 func (l riskInfoList) printWithHands(hands []int, leftCounts []int) {
-	const tenpaiRateLimit = 50.0
+	// 听牌率超过一定值就打印铳率
+	const (
+		minShownTenpaiRate4 = 50.0
+		minShownTenpaiRate3 = 20.0
+	)
+
+	minShownTenpaiRate := minShownTenpaiRate4
+	if l[0].playerNumber == 3 {
+		minShownTenpaiRate = minShownTenpaiRate3
+	}
+
 	dangerousPlayerCount := 0
 	// 打印安牌，危险牌
 	names := []string{"", "下家", "对家", "上家"}
 	for i := len(l) - 1; i >= 1; i-- {
-		// 听牌率超过 50% 就打印铳率
 		tenpaiRate := l[i].tenpaiRate
-		if len(l[i].riskTable) > 0 && (debugMode || tenpaiRate > tenpaiRateLimit) {
+		if len(l[i].riskTable) > 0 && (debugMode || tenpaiRate > minShownTenpaiRate) {
 			dangerousPlayerCount++
 			fmt.Print(names[i] + "安牌:")
 			//if debugMode {

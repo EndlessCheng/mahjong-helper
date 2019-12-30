@@ -14,5 +14,5 @@ func TestCalcTenpaiRate(t *testing.T) {
 	assert.Equal(100.0, CalcTenpaiRate([]*model.Meld{{}, {}, {}, {}}, nil, nil))
 	assert.InDelta(19.88, CalcTenpaiRate([]*model.Meld{{}}, []int{1, 2, 3, 4, 5}, []int{2}), eps)
 	assert.InDelta(23.24, CalcTenpaiRate([]*model.Meld{{}, {}}, []int{1, 2, 3, 4, 5}, []int{2, 4}), eps)
-	assert.InDelta(98.15, CalcTenpaiRate([]*model.Meld{{}, {}, {}}, []int{1, 2, 3, 4, 5, 23, 16, 12, -4, -6, 7, 2}, []int{2, 4, 6}), eps)
+	assert.InDelta(98.26, CalcTenpaiRate([]*model.Meld{{}, {}, {}}, []int{1, 2, 3, 4, 5, 23, 16, 12, -4, -6, 7, 2}, []int{2, 4, 6}), eps)
 }

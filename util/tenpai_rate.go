@@ -11,9 +11,11 @@ func CalcTenpaiRate(melds []*model.Meld, discardTiles []int, meldDiscardsAt []in
 			isNaki = true
 		}
 	}
-	// 暂时不防默听玩家
+
 	if !isNaki {
-		return 0
+		// 默听听牌率近似为巡目数
+		turn := len(discardTiles)
+		return float64(turn)
 	}
 
 	if len(melds) == 4 {
