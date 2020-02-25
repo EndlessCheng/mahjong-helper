@@ -228,6 +228,12 @@
 - 额外显示打点估计（-s 参数，支持一向听和两向听）
     
     `mahjong-helper -d=38p33m -s 34568m 5678p 23567s`
+    
+    特别说明，也可以直接用 `mahjong-helper -d` 启动助手，可以显示更多的信息（适合高分辨率的屏幕）
+
+- 帮助信息（-h 参数）
+
+    `mahjong-helper -h`
 
 
 ## 如何获取 WebSocket 收发的消息
