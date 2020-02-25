@@ -1,5 +1,6 @@
 # 日本麻将助手
 
+
 ## 主要功能
 
 - 对战时自动分析手牌，综合进张、打点等，给出推荐舍牌
@@ -16,6 +17,7 @@
 - 雀魂网页版（[国服](https://www.majsoul.com/1/)√ | [日服](https://game.mahjongsoul.com)√ | [国际服](https://mahjongsoul.game.yo-star.com)√）
 - 天凤 [Web 版](http://tenhou.net/3/)
 
+
 ## 导航
 
 - [安装](#安装)
@@ -27,6 +29,7 @@
 - [牌谱与观战](#牌谱与观战)
 - [其他功能说明](#其他功能说明)
 - [参与讨论](#参与讨论)
+
 
 ## 安装
 
@@ -68,10 +71,6 @@
 ### 注意事项
 
 终端有个小 bug，在使用中若鼠标点击到了空白处，可能会导致终端卡住，此时按下回车键就可以恢复正常。
-
-## 参与讨论
-
-吐槽本项目、日麻技术、麻将算法交流，欢迎加入 QQ 群 [375865038](https://jq.qq.com/?_wv=1027&k=5FyZOgH)
 
 
 ## 示例
@@ -275,6 +274,11 @@
 [record.go](https://github.com/EndlessCheng/mahjong-helper/blob/master/platform/majsoul/record.go) 展示了使用 WebSocket 登录和下载牌谱的例子。
 
 考虑到还有观看牌谱这种获取前端 UI 事件的情况，还需修改额外的代码。在网页控制台输入 `GameMgr._inRelease = 0`，开启调试模式，通过雀魂已有的日志可以看到相关代码在哪。具体修改了哪些内容可以对比雀魂的 code.js 和我修改后的 [code.js](https://jianyan.me/majsoul/code-v0.1.4.js)。
+
+
+## 参与讨论
+
+吐槽本项目、日麻技术、麻将算法交流，欢迎加入 QQ 群 [375865038](https://jq.qq.com/?_wv=1027&k=5FyZOgH)
 
 
 ## License
