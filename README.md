@@ -32,23 +32,21 @@
 
 分下面几步：
 
-1. 前往 [releases](https://github.com/EndlessCheng/mahjong-helper/releases/latest) 页面下载助手
+1. 前往 [releases](https://github.com/EndlessCheng/mahjong-helper/releases/latest) 页面下载助手。
 
-2. 雀魂需要浏览器允许本地证书。目前仅支持 Chrome 和 360 浏览器等使用了 Chrome 内核的浏览器：
+2. 雀魂需要浏览器允许本地证书，在浏览器地址栏中输入 `chrome://flags/#allow-insecure-localhost`，然后点击高亮那一项的「启用」按钮。该功能仅限基于 Chrome 内核开发的浏览器。
    
-   在浏览器中输入 `chrome://flags/#allow-insecure-localhost`，然后点击高亮那一项的「启用」按钮
+   （不同浏览器/版本的描述可能不一样，如果打开的页面是英文的话，高亮的就是 `Allow invalid certificates for resources loaded from localhost`，把它的 Disabled 改成 Enabled）
    
-   （不同浏览器/版本的描述可能不一样，如果是英文的话，高亮的是 `Allow invalid certificates for resources loaded from localhost`，把它的 Disabled 改成 Enabled）
-   
-   之后重启浏览器
+   之后重启浏览器。
 
-3. 安装浏览器扩展 Header Editor（[谷歌商城(需要翻墙)](https://chrome.google.com/webstore/detail/header-editor/eningockdidmgiojffjmkdblpjocbhgh?hl=zh) | [国内](https://www.chromefor.com/header-editor_v4-0-7/)）
+3. 安装浏览器扩展 Header Editor
    
-   （测试发现 Chrome 和 QQ 浏览器无法直接安装 .crx 文件，可以使用 360 浏览器打开 .crx 文件安装此扩展）
+   若能翻墙请前往 [谷歌商城](https://chrome.google.com/webstore/detail/header-editor/eningockdidmgiojffjmkdblpjocbhgh?hl=zh) 下载该扩展。或者 [手动安装该扩展](https://www.chromefor.com/header-editor_v4-0-7/)（若无法安装试试 360 浏览器）。
    
-   安装好扩展后点进该扩展的`管理`界面，点击`导入和导出`，在下载规则中填入 `https://jianyan.me/js/mahjong-helper.json`，点击右侧的下载按钮，然后点击下方的`保存`
+   安装好扩展后点进该扩展的`管理`界面，点击`导入和导出`，在下载规则中填入 `https://jianyan.me/js/mahjong-helper.json`，点击右侧的下载按钮，然后点击下方的`保存`。
 
-安装完成。请重新载入游戏页面。（注：可能需要较长时间才能加载完成，挂代理或使用手机热点可以解决此问题）
+安装完成。请重新载入游戏页面。若载入时一直黑屏，可能是下载 GitHub 文件过慢导致，请开启翻墙或者耐心等待。连接手机热点或可加快速度。
 
 在使用本助手前，建议先看一下本页面下方的[示例](#示例)。
 
