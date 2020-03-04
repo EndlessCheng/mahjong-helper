@@ -15,7 +15,7 @@
 ### 支持平台
 
 - 雀魂网页版（[国服](https://www.majsoul.com/1/)√ | [日服](https://game.mahjongsoul.com)√ | [国际服](https://mahjongsoul.game.yo-star.com)√）
-- 天凤 [Web 版](http://tenhou.net/3/)
+- 天凤 [Web 版](https://tenhou.net/3/)
 
 
 ## 导航
