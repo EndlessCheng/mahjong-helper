@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/EndlessCheng/mahjong-helper/util"
 	"fmt"
+	"io"
 	"strings"
 	"github.com/fatih/color"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
@@ -45,7 +46,7 @@ func humanHands(playerInfo *model.PlayerInfo) string {
 	return humanHands
 }
 
-func analysisPlayerWithRisk(playerInfo *model.PlayerInfo, mixedRiskTable riskTable) error {
+func analysisPlayerWithRisk(writer io.Writer, playerInfo *model.PlayerInfo, mixedRiskTable riskTable) error {
 	// 手牌
 	humanTiles := humanHands(playerInfo)
 	fmt.Println(humanTiles)
@@ -61,7 +62,7 @@ func analysisPlayerWithRisk(playerInfo *model.PlayerInfo, mixedRiskTable riskTab
 			result13:       result,
 			mixedRiskTable: mixedRiskTable,
 		}
-		r.printWaitsWithImproves13_oneRow()
+		r.printWaitsWithImproves13_oneRow(writer)
 	case 2:
 		// 分析手牌
 		shanten, results14, incShantenResults14 := util.CalculateShantenWithImproves14(playerInfo)
@@ -87,8 +88,8 @@ func analysisPlayerWithRisk(playerInfo *model.PlayerInfo, mixedRiskTable riskTab
 		// TODO: 接近流局时提示河底是哪家
 
 		// 何切分析结果
-		printResults14WithRisk(results14, mixedRiskTable)
-		printResults14WithRisk(incShantenResults14, mixedRiskTable)
+		printResults14WithRisk(writer, results14, mixedRiskTable)
+		printResults14WithRisk(writer, incShantenResults14, mixedRiskTable)
 	default:
 		err := fmt.Errorf("参数错误: %d 张牌", countOfTiles)
 		if debugMode {
@@ -107,7 +108,7 @@ func analysisPlayerWithRisk(playerInfo *model.PlayerInfo, mixedRiskTable riskTab
 // isRedFive: 此舍牌是否为赤5
 // allowChi: 是否能吃
 // mixedRiskTable: 危险度表
-func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool, allowChi bool, mixedRiskTable riskTable) error {
+func analysisMeld(writer io.Writer, playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool, allowChi bool, mixedRiskTable riskTable) error {
 	if handsCount := util.CountOfTiles34(playerInfo.HandTiles34); handsCount%3 != 1 {
 		return fmt.Errorf("手牌错误：%d 张牌 %v", handsCount, playerInfo.HandTiles34)
 	}
@@ -132,7 +133,7 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool
 		result13:       result,
 		mixedRiskTable: mixedRiskTable,
 	}
-	r.printWaitsWithImproves13_oneRow()
+	r.printWaitsWithImproves13_oneRow(writer)
 
 	// 提示信息
 	// TODO: 局收支相近时，提示：局收支相近，追求和率打xx，追求打点打xx
@@ -148,12 +149,12 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool
 	// TODO: 接近流局时提示河底是哪家
 
 	// 鸣牌何切分析结果
-	printResults14WithRisk(results14, mixedRiskTable)
-	printResults14WithRisk(incShantenResults14, mixedRiskTable)
+	printResults14WithRisk(writer, results14, mixedRiskTable)
+	printResults14WithRisk(writer, incShantenResults14, mixedRiskTable)
 	return nil
 }
 
-func analysisHumanTiles(humanTilesInfo *model.HumanTilesInfo) (playerInfo *model.PlayerInfo, err error) {
+func analysisHumanTiles(writer io.Writer, humanTilesInfo *model.HumanTilesInfo) (playerInfo *model.PlayerInfo, err error) {
 	defer func() {
 		if er := recover(); er != nil {
 			err = er.(error)
@@ -231,13 +232,13 @@ func analysisHumanTiles(humanTilesInfo *model.HumanTilesInfo) (playerInfo *model
 		if er != nil {
 			return nil, er
 		}
-		if er := analysisMeld(playerInfo, targetTile34, isRedFive, true, nil); er != nil {
+		if er := analysisMeld(writer, playerInfo, targetTile34, isRedFive, true, nil); er != nil {
 			return nil, er
 		}
 		return
 	}
 
 	playerInfo.IsTsumo = humanTilesInfo.IsTsumo
-	err = analysisPlayerWithRisk(playerInfo, nil)
+	err = analysisPlayerWithRisk(writer, playerInfo, nil)
 	return
 }

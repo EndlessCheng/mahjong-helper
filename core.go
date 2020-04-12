@@ -473,7 +473,11 @@ func (d *roundData) newModelPlayerInfo() *model.PlayerInfo {
 }
 
 func (d *roundData) analysis() error {
+	d.ApiData.Init()
+	writer := webapi.ApiDataConvertor{&d.ApiData}
+
 	defer func() {
+		d.ApiData.GetOutput()
 		d.ApiData.Counts = d.counts
 	}()
 
@@ -589,7 +593,7 @@ func (d *roundData) analysis() error {
 		color.HiYellow("宝牌指示牌是 " + info)
 		fmt.Println()
 		// TODO: 显示地和概率
-		return analysisPlayerWithRisk(playerInfo, nil)
+		return analysisPlayerWithRisk(writer, playerInfo, nil)
 	case d.parser.IsOpen():
 		// 某家鸣牌（含暗杠、加杠）
 		who, meld, kanDoraIndicator := d.parser.ParseOpen()
@@ -775,7 +779,7 @@ func (d *roundData) analysis() error {
 
 		// 打印何切推荐
 		// TODO: 根据是否听牌/一向听、打点、巡目、和率等进行攻守判断
-		return analysisPlayerWithRisk(playerInfo, mixedRiskTable)
+		return analysisPlayerWithRisk(writer, playerInfo, mixedRiskTable)
 	case d.parser.IsDiscard():
 		who, discardTile, isRedFive, isTsumogiri, isReach, canBeMeld, kanDoraIndicator := d.parser.ParseDiscard()
 
@@ -913,7 +917,7 @@ func (d *roundData) analysis() error {
 		// 为了方便解析牌谱，这里尽可能地解析副露
 		// TODO: 提醒: 消除海底/避免河底
 		allowChi := d.playerNumber != 3 && who == 3 && playerInfo.LeftDrawTilesCount > 0
-		return analysisMeld(playerInfo, discardTile, isRedFive, allowChi, mixedRiskTable)
+		return analysisMeld(writer, playerInfo, discardTile, isRedFive, allowChi, mixedRiskTable)
 	case d.parser.IsRoundWin():
 		// TODO: 解析天凤牌谱 - 注意 skipOutput
 

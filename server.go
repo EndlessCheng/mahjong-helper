@@ -103,7 +103,7 @@ func (h *mjHandler) analysis(c echo.Context) error {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	if _, err := analysisHumanTiles(model.NewSimpleHumanTilesInfo(d.Tiles)); err != nil {
+	if _, err := analysisHumanTiles(os.Stdout, model.NewSimpleHumanTilesInfo(d.Tiles)); err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusBadRequest, err.Error())
 	}
