@@ -538,6 +538,8 @@ func runServer(isHTTPS bool, port int) (err error) {
 	e.POST("/tenhou", h.analysisTenhou)
 	e.POST("/majsoul", h.analysisMajsoul)
 
+	e.Static("/web", "webapi")
+
 	// code.js 也用的该端口
 	if port == 0 {
 		port = defaultPort
