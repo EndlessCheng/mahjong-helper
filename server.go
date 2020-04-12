@@ -74,6 +74,17 @@ func (h *mjHandler) index(c echo.Context) error {
 	return c.String(http.StatusOK, time.Now().Format("2006-01-02 15:04:05"))
 }
 
+// 以 JSON 格式返回游戏相关信息
+func (h *mjHandler) apiGetStatus(c echo.Context) error {
+	data := h.tenhouRoundData.ApiData
+	b, err := json.Marshal(data)
+	if err != nil {
+        h.logError(err)
+		return c.String(http.StatusBadRequest, err.Error())
+    }
+	return c.String(http.StatusOK, string(b[:]))
+}
+
 // 打一摸一分析器
 func (h *mjHandler) analysis(c echo.Context) error {
 	if h.analysing {
@@ -521,6 +532,7 @@ func runServer(isHTTPS bool, port int) (err error) {
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 	e.GET("/", h.index)
+	e.GET("/api", h.apiGetStatus)
 	e.POST("/debug", h.index)
 	e.POST("/analysis", h.analysis)
 	e.POST("/tenhou", h.analysisTenhou)

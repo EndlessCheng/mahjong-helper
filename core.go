@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/EndlessCheng/mahjong-helper/webapi"
 	"github.com/EndlessCheng/mahjong-helper/util"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 	"github.com/fatih/color"
@@ -167,6 +168,8 @@ func (p *playerInfo) doraNum(doraList []int) (doraCount int) {
 //
 
 type roundData struct {
+	ApiData webapi.ApiData
+
 	parser DataParser
 
 	gameMode gameMode
@@ -470,6 +473,10 @@ func (d *roundData) newModelPlayerInfo() *model.PlayerInfo {
 }
 
 func (d *roundData) analysis() error {
+	defer func() {
+		d.ApiData.Counts = d.counts
+	}()
+
 	if !debugMode {
 		defer func() {
 			if err := recover(); err != nil {
@@ -854,6 +861,7 @@ func (d *roundData) analysis() error {
 		// 安全度分析
 		riskTables := d.analysisTilesRisk()
 		mixedRiskTable := riskTables.mixedRiskTable()
+		d.ApiData.RiskTable = mixedRiskTable
 
 		// 牌谱分析模式下，记录可能的鸣牌
 		if d.gameMode == gameModeRecordCache {
