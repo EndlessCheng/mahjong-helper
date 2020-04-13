@@ -42,38 +42,43 @@ function show_tiles(data) {
 
 function inline_img(line) {
 	function img_tag(index) {
-		return `<img src=${tile_img_url(index)} class="small-tile" />`
+		return `<img src=${tile_img_url(index)} class="small-tile" />`;
 	}
 
-	let pattern = [/(\d)万/g, /(\d)饼/g, /(\d)索/g, 
-		/ ()东/, / ()南/, / ()西/, / ()北/,
-		/ ()白/, / ()发/, / ()中/]
-	let offset = [-1, 8, 17, 27, 28, 29, 30, 31, 32, 33]
+	let pattern = [/ ()东/, / ()南/, / ()西/, / ()北/,
+		/ ()白/, / ()发/, / ()中/];
+	let offset_p = [27, 28, 29, 30, 31, 32, 33];
 
 	for (let i = 0; i < pattern.length; i++) {
 		line = line.replace(pattern[i], function(_, j) {
-			return img_tag(offset[i] + (parseInt(j) || 0))
+			return img_tag(offset_p[i] + (parseInt(j) || 0))
 		});
 	}
 	
+	let offset = {
+		'm': 0,
+		'p': 9,
+		's': 18,
+		'z': 27,
+		'万': 0,
+		'饼': 9,
+		'索': 18,
+	};
 
-	line = line.replace(/\[[\dmpsz ]*\]$/, function (s) {
-		let offset = {
-			'm': 0,
-			'p': 9,
-			's': 18,
-			'z': 27,
-		};
-		return s.replace(/(\d+)(\w)/g, function(_, s, t) {
-			var result = "";
-			for (var i = 0; i < s.length; i++) {
-				result += img_tag(parseInt(s[i]) - 1 + offset[t]);
-			}
-			return result;
-		})
+	var keys = "";
+	for (const [key, _] of Object.entries(offset)) {
+		keys = keys + key;
+	}
+
+	let reg = new RegExp(`(\\d+)([${keys}])`, 'g');
+
+	return line.replace(reg, function(_, s, t) {
+		var result = "";
+		for (var i = 0; i < s.length; i++) {
+			result += img_tag(parseInt(s[i]) - 1 + offset[t]);
+		}
+		return result;
 	});
-
-	return line;
 }
 
 function show_outputs(outputs) {
