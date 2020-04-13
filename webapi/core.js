@@ -154,15 +154,7 @@ function inline_img(line) {
 		return `<img src=${tile_img_url(index)} class="small-tile" />`;
 	}
 
-	let pattern = [/ ()东/, / ()南/, / ()西/, / ()北/,
-		/ ()白/, / ()发/, / ()中/];
-	let offset_p = [27, 28, 29, 30, 31, 32, 33];
-
-	for (let i = 0; i < pattern.length; i++) {
-		line = line.replace(pattern[i], function(_, j) {
-			return img_tag(offset_p[i] + (parseInt(j) || 0))
-		});
-	}
+	let z_tiles = "东南西北白发中";
 	
 	let offset = {
 		'm': 0,
@@ -179,9 +171,13 @@ function inline_img(line) {
 		keys = keys + key;
 	}
 
-	let reg = new RegExp(`(\\d+)([${keys}])`, 'g');
+	let reg = new RegExp(`(\\d+)([${keys}])| ([${z_tiles}])`, 'g');
 
-	return line.replace(reg, function(_, s, t) {
+	return line.replace(reg, function(_, s, t, z) {
+		if (z) {
+			return img_tag(27 + z_tiles.indexOf(z));
+		}
+
 		var result = "";
 		for (var i = 0; i < s.length; i++) {
 			result += img_tag(parseInt(s[i]) - 1 + offset[t]);
