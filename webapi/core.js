@@ -67,7 +67,7 @@ function inline_img(line) {
 		return s.replace(/(\d+)(\w)/g, function(_, s, t) {
 			var result = "";
 			for (var i = 0; i < s.length; i++) {
-				result += img_tag(parseInt(i) + offset[t]);
+				result += img_tag(parseInt(s[i]) + offset[t]);
 			}
 			return result;
 		})
