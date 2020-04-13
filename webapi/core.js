@@ -45,7 +45,7 @@ function inline_img(line) {
 		return `<img src=${tile_img_url(index)} class="small-tile" />`
 	}
 
-	let pattern = [/(\d)万/, /(\d)饼/, /(\d)索/, 
+	let pattern = [/(\d)万/g, /(\d)饼/g, /(\d)索/g, 
 		/ ()东/, / ()南/, / ()西/, / ()北/,
 		/ ()白/, / ()发/, / ()中/]
 	let offset = [-1, 8, 17, 27, 28, 29, 30, 31, 32, 33]
