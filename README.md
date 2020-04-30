@@ -43,7 +43,7 @@
    
    之后重启浏览器。
 
-3. 安装浏览器扩展 Header Editor
+3. 安装浏览器扩展 Header Editor，用于修改 code.js 文件，发送雀魂游戏中的玩家操作信息至本地运行的助手。
    
    若能翻墙请前往 [谷歌商城](https://chrome.google.com/webstore/detail/header-editor/eningockdidmgiojffjmkdblpjocbhgh?hl=zh) 下载该扩展。或者 [手动安装该扩展](https://www.chromefor.com/header-editor_v4-0-7/)（若无法安装试试 360 浏览器）。
    
