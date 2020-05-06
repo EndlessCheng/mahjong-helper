@@ -41,7 +41,7 @@
    
    （不同浏览器/版本的描述可能不一样，如果打开的页面是英文的话，高亮的就是 `Allow invalid certificates for resources loaded from localhost`，把它的 Disabled 改成 Enabled）
    
-   之后重启浏览器。
+   设置完成后**重启浏览器**。
 
 3. 安装浏览器扩展 Header Editor，用于修改 code.js 文件，发送雀魂游戏中的玩家操作信息至本地运行的助手。
    
@@ -49,7 +49,7 @@
    
    安装好扩展后点进该扩展的`管理`界面，点击`导入和导出`，在下载规则中填入 `https://endlesscheng.gitee.io/public/mahjong-helper.json`，点击右侧的下载按钮，然后点击下方的`保存`。
 
-安装完成。请重新载入游戏页面。**提醒：若助手无反应，请重启浏览器。先启动助手，再打开游戏页面。**
+安装完成。请重新载入游戏页面。（若您在安装完成后助手仍然无反应，可尝试安装 [CORS Unblock](https://chrome.google.com/webstore/detail/cors-unblock/lfhmikememgdcahcdlaciloancbhjino/related) 以解决此问题，见 [#57](https://github.com/EndlessCheng/mahjong-helper/issues/57)）
 
 在使用本助手前，建议先看一下本页面下方的[示例](#示例)。
 
