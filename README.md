@@ -35,7 +35,7 @@
 
 分下面几步：
 
-1. 前往 [releases](https://github.com/EndlessCheng/mahjong-helper/releases/latest) 页面下载助手。
+1. 前往 [releases](https://github.com/EndlessCheng/mahjong-helper/releases/latest) 页面下载助手。注意需要解压后才能正常运行。
 
 2. 雀魂需要浏览器允许本地证书，在浏览器地址栏中输入 `chrome://flags/#allow-insecure-localhost`，然后点击高亮那一项的「启用」按钮。该功能仅限基于 Chrome 内核开发的浏览器。
    
