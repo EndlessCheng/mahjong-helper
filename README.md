@@ -49,7 +49,7 @@
    
    安装好扩展后点进该扩展的`管理`界面，点击`导入和导出`，在下载规则中填入 `https://endlesscheng.gitee.io/public/mahjong-helper.json`，点击右侧的下载按钮，然后点击下方的`保存`。
 
-安装完成。请重新载入游戏页面。（若您在安装完成后助手仍然无反应，可尝试安装 [CORS Unblock](https://chrome.google.com/webstore/detail/cors-unblock/lfhmikememgdcahcdlaciloancbhjino/related) 以解决此问题，见 [#57](https://github.com/EndlessCheng/mahjong-helper/issues/57)）
+安装完成。请重新载入游戏页面。（若您在安装完成后助手仍然无反应，可尝试清除浏览器 cookie，或安装 [CORS Unblock](https://chrome.google.com/webstore/detail/cors-unblock/lfhmikememgdcahcdlaciloancbhjino/related) 以解决此问题，见 [#57](https://github.com/EndlessCheng/mahjong-helper/issues/57)）
 
 在使用本助手前，建议先看一下本页面下方的[示例](#示例)。
 
