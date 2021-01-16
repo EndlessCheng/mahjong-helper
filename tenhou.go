@@ -234,6 +234,14 @@ type tenhouRoundData struct {
 	isRoundEnd bool // 某人和牌或流局。初始值为 true
 }
 
+func (d *tenhouRoundData) ParseHuanSanZhang() (doraIndicators []int) {
+	panic("implement me")
+}
+
+func (d *tenhouRoundData) IsHuanSanZhang() bool {
+	panic("implement me")
+}
+
 func (*tenhouRoundData) _tenhouTileToTile34(tenhouTile int) int {
 	return tenhouTile / 4
 }

@@ -1,14 +1,12 @@
 package main
 
 import (
-	"strings"
-	"fmt"
-	"github.com/fatih/color"
-	"github.com/EndlessCheng/mahjong-helper/util/model"
-	"github.com/EndlessCheng/mahjong-helper/util"
-	"math/rand"
-	"time"
 	"flag"
+	"github.com/EndlessCheng/mahjong-helper/util"
+	"github.com/EndlessCheng/mahjong-helper/util/model"
+	"math/rand"
+	"strings"
+	"time"
 )
 
 var (
@@ -55,7 +53,7 @@ const (
 	platformTenhou  = 0
 	platformMajsoul = 1
 
-	defaultPlatform = platformMajsoul
+	defaultPlatform = platformTenhou
 )
 
 var platforms = map[int]string{
@@ -63,53 +61,13 @@ var platforms = map[int]string{
 	platformMajsoul: "雀魂",
 }
 
-const readmeURL = "https://github.com/EndlessCheng/mahjong-helper/blob/master/README.md"
 
 func welcome() int {
-	fmt.Println("使用说明：" + readmeURL)
-	fmt.Println("问题反馈：https://github.com/EndlessCheng/mahjong-helper/issues")
-	fmt.Println("吐槽群：375865038")
-	fmt.Println()
-
-	fmt.Println("请输入数字，以选择对应的平台：")
-	for i, cnt := 0, 0; cnt < len(platforms); i++ {
-		if platformName, ok := platforms[i]; ok {
-			fmt.Printf("%d - %s\n", i, platformName)
-			cnt++
-		}
-	}
-
-	choose := defaultPlatform
-	fmt.Scanf("%d", &choose)
-	platformName, ok := platforms[choose]
-	if !ok {
-		choose = defaultPlatform
-		platformName = platforms[choose]
-	}
-
-	clearConsole()
-	if choose == platformMajsoul {
-		platformName += "（水晶杠杠版）"
-	}
-	color.HiGreen("已选择 - %s", platformName)
-
-	if choose == platformMajsoul {
-		if len(gameConf.MajsoulAccountIDs) == 0 {
-			color.HiYellow(`提醒：若您是第一次使用助手，请重新登录游戏，或者开启一局人机对战
-该步骤用于获取您的账号 ID，便于在游戏开始时获取自风，否则程序将无法解析后续数据
-
-若助手无响应，请确认您已按步骤安装完成
-安装及使用说明：` + readmeURL)
-		}
-	}
-
-	return choose
+	return 0
 }
 
 func main() {
 	flag.Parse()
-
-	color.HiGreen("日本麻将助手 %s (by EndlessCheng)", version)
 	if version != versionDev {
 		go checkNewVersion(version)
 	}

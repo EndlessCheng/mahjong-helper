@@ -116,6 +116,13 @@ type majsoulMessage struct {
 	//Gameend      *bool `json:"gameend"`
 
 	// ActionBabei
+
+	//ActionChangeTile
+	// {"in_tiles":["9p","3s","2z"],"in_tile_states":[0,0,0],"out_tiles":["1s","2p","1p"],"out_tile_states":[0,0,0],"doras":["7s"],"change_type":2}
+	InTiles  interface{} `json:"in_tiles"`
+	OutTiles interface{} `json:"out_tiles"`
+
+	//{"hules":[{"seat":2,"hand_count":13,"hu_tile":"4s","zimo":false,"yiman":false,"count":6,"fans":[],"fu":40,"title_id":2},{"seat":3,"hand_count":10,"zimo":false,"yiman":false,"count":1],"old_scores":[24900,18100,27900,28100],"delta_scores":[-13300,0,13000,1300],"scores":[11600,18100,40900,29400],"zhenting":false}
 }
 
 const (
@@ -286,6 +293,46 @@ func (d *majsoulRoundData) IsInit() bool {
 	msg := d.msg
 	// ResAuthGame || ActionNewRound RecordNewRound
 	return msg.IsGameStart != nil || msg.MD5 != ""
+}
+
+func (d *majsoulRoundData) IsHuanSanZhang() bool {
+	msg := d.msg
+	// ResAuthGame || ActionNewRound RecordNewRound
+	return msg.InTiles != nil
+}
+func (d *majsoulRoundData) ParseHuanSanZhang() (doraIndicators []int, InhandTiles []int, OuthandTiles []int, numRedFives []int) {
+	msg := d.msg
+
+	for _, dora := range msg.Doras {
+		doraIndicator, _ := d.mustParseMajsoulTile(dora)
+		doraIndicators = append(doraIndicators, doraIndicator)
+	}
+
+	numRedFives = make([]int, 3)
+
+	var majsoulInTiles []string
+	var majsoulOutTiles []string
+
+	majsoulInTiles = d.normalTiles(msg.InTiles)
+	majsoulOutTiles = d.normalTiles(msg.OutTiles)
+
+	for _, majsoulInTile := range majsoulInTiles {
+		tile, isRedFive := d.mustParseMajsoulTile(majsoulInTile)
+		InhandTiles = append(InhandTiles, tile)
+		if isRedFive {
+			numRedFives[tile/9]++
+		}
+	}
+
+	for _, majsoulOutTile := range majsoulOutTiles {
+		tile, isRedFive := d.mustParseMajsoulTile(majsoulOutTile)
+		OuthandTiles = append(OuthandTiles, tile)
+		if isRedFive {
+			numRedFives[tile/9]--
+		}
+	}
+
+	return
 }
 
 func (d *majsoulRoundData) ParseInit() (roundNumber int, benNumber int, dealer int, doraIndicators []int, handTiles []int, numRedFives []int) {

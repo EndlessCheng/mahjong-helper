@@ -1,3 +1,7 @@
+魔改自：https://github.com/EndlessCheng/mahjong-helper
+支持换三张
+
+
 # 日本麻将助手
 
 
