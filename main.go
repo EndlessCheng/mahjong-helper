@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"time"
 	"flag"
+	"os"
 )
 
 var (
@@ -131,7 +132,7 @@ func main() {
 	case isInteractive: // 交互模式
 		err = interact(humanTilesInfo)
 	case len(flag.Args()) > 0: // 静态分析
-		_, err = analysisHumanTiles(humanTilesInfo)
+		_, err = analysisHumanTiles(os.Stdout, humanTilesInfo)
 	default: // 服务器模式
 		choose := welcome()
 		isHTTPS := choose == platformMajsoul

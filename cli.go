@@ -7,6 +7,7 @@ import (
 	"math"
 	"sort"
 	"strings"
+	"io"
 )
 
 func printAccountInfo(accountID int) {
@@ -464,7 +465,7 @@ type analysisResult struct {
 
 */
 // 打印何切分析结果（单行）
-func (r *analysisResult) printWaitsWithImproves13_oneRow() {
+func (r *analysisResult) printWaitsWithImproves13_oneRow(writer io.Writer) {
 	discardTile34 := r.discardTile34
 	openTiles34 := r.openTiles34
 	result13 := r.result13
@@ -474,19 +475,19 @@ func (r *analysisResult) printWaitsWithImproves13_oneRow() {
 	// 进张数
 	waitsCount := result13.Waits.AllCount()
 	c := getWaitsCountColor(shanten, float64(waitsCount))
-	color.New(c).Printf("%2d", waitsCount)
+	color.New(c).Fprintf(writer, "%2d", waitsCount)
 	// 改良进张均值
 	if len(result13.Improves) > 0 {
 		if r.highlightAvgImproveWaitsCount {
-			color.New(color.FgHiWhite).Printf("[%5.2f]", result13.AvgImproveWaitsCount)
+			color.New(color.FgHiWhite).Fprintf(writer, "[%5.2f]", result13.AvgImproveWaitsCount)
 		} else {
-			fmt.Printf("[%5.2f]", result13.AvgImproveWaitsCount)
+			fmt.Fprintf(writer, "[%5.2f]", result13.AvgImproveWaitsCount)
 		}
 	} else {
-		fmt.Print(strings.Repeat(" ", 7))
+		fmt.Fprint(writer, strings.Repeat(" ", 7))
 	}
 
-	fmt.Print(" ")
+	fmt.Fprint(writer, " ")
 
 	// 是否为3k+2张牌的何切分析
 	if discardTile34 != -1 {
@@ -496,14 +497,14 @@ func (r *analysisResult) printWaitsWithImproves13_oneRow() {
 			if openTiles34[0] == openTiles34[1] {
 				meldType = "碰"
 			}
-			color.New(color.FgHiWhite).Printf("%s%s", string([]rune(util.MahjongZH[openTiles34[0]])[:1]), util.MahjongZH[openTiles34[1]])
-			fmt.Printf("%s,", meldType)
+			color.New(color.FgHiWhite).Fprintf(writer, "%s%s", string([]rune(util.MahjongZH[openTiles34[0]])[:1]), util.MahjongZH[openTiles34[1]])
+			fmt.Fprintf(writer, "%s,", meldType)
 		}
 		// 舍牌
 		if r.isDiscardTileDora {
-			color.New(color.FgHiWhite).Print("ド")
+			color.New(color.FgHiWhite).Fprintf(writer, "ド")
 		} else {
-			fmt.Print("切")
+			fmt.Fprint(writer, "切")
 		}
 		tileZH := util.MahjongZH[discardTile34]
 		if discardTile34 >= 27 {
@@ -513,71 +514,71 @@ func (r *analysisResult) printWaitsWithImproves13_oneRow() {
 			// 若有实际危险度，则根据实际危险度来显示舍牌危险度
 			risk := r.mixedRiskTable[discardTile34]
 			if risk == 0 {
-				fmt.Print(tileZH)
+				fmt.Fprint(writer, tileZH)
 			} else {
-				color.New(getNumRiskColor(risk)).Print(tileZH)
+				color.New(getNumRiskColor(risk)).Fprint(writer, tileZH)
 			}
 		} else {
-			fmt.Print(tileZH)
+			fmt.Fprint(writer, tileZH)
 		}
 	}
 
-	fmt.Print(" => ")
+	fmt.Fprint(writer, " => ")
 
 	if shanten >= 1 {
 		// 前进后的进张数均值
 		incShanten := shanten - 1
 		c := getWaitsCountColor(incShanten, result13.AvgNextShantenWaitsCount)
-		color.New(c).Printf("%5.2f", result13.AvgNextShantenWaitsCount)
-		fmt.Printf("%s", util.NumberToChineseShanten(incShanten))
+		color.New(c).Fprintf(writer, "%5.2f", result13.AvgNextShantenWaitsCount)
+		fmt.Fprintf(writer, "%s", util.NumberToChineseShanten(incShanten))
 		if incShanten >= 1 {
-			//fmt.Printf("进张")
+			//fmt.Fprintf(writer, "进张")
 		} else { // incShanten == 0
-			fmt.Printf("数")
+			fmt.Fprintf(writer, "数")
 			//if showAgariAboveShanten1 {
-			//	fmt.Printf("（%.2f%% 参考和率）", result13.AvgAgariRate)
+			//	fmt.Fprintf(writer, "（%.2f%% 参考和率）", result13.AvgAgariRate)
 			//}
 		}
 	} else { // shanten == 0
 		// 前进后的和率
 		// 若振听或片听，则标红
 		if result13.FuritenRate == 1 || result13.IsPartWait {
-			color.New(color.FgHiRed).Printf("%5.2f%% 参考和率", result13.AvgAgariRate)
+			color.New(color.FgHiRed).Fprintf(writer, "%5.2f%% 参考和率", result13.AvgAgariRate)
 		} else {
-			fmt.Printf("%5.2f%% 参考和率", result13.AvgAgariRate)
+			fmt.Fprintf(writer, "%5.2f%% 参考和率", result13.AvgAgariRate)
 		}
 	}
 
 	// 手牌速度，用于快速过庄
 	if result13.MixedWaitsScore > 0 && shanten >= 1 && shanten <= 2 {
-		fmt.Print(" ")
+		fmt.Fprint(writer, " ")
 		if r.highlightMixedScore {
-			color.New(color.FgHiWhite).Printf("[%5.2f速度]", result13.MixedWaitsScore)
+			color.New(color.FgHiWhite).Fprintf(writer, "[%5.2f速度]", result13.MixedWaitsScore)
 		} else {
-			fmt.Printf("[%5.2f速度]", result13.MixedWaitsScore)
+			fmt.Fprintf(writer, "[%5.2f速度]", result13.MixedWaitsScore)
 		}
 	}
 
 	// 局收支
 	if showScore && result13.MixedRoundPoint != 0.0 {
-		fmt.Print(" ")
-		color.New(color.FgHiGreen).Printf("[局收支%4d]", int(math.Round(result13.MixedRoundPoint)))
+		fmt.Fprint(writer, " ")
+		color.New(color.FgHiGreen).Fprintf(writer, "[局收支%4d]", int(math.Round(result13.MixedRoundPoint)))
 	}
 
 	// (默听)荣和点数
 	if result13.DamaPoint > 0 {
-		fmt.Print(" ")
+		fmt.Fprint(writer, " ")
 		ronType := "荣和"
 		if !result13.IsNaki {
 			ronType = "默听"
 		}
-		color.New(color.FgHiGreen).Printf("[%s%d]", ronType, int(math.Round(result13.DamaPoint)))
+		color.New(color.FgHiGreen).Fprintf(writer, "[%s%d]", ronType, int(math.Round(result13.DamaPoint)))
 	}
 
 	// 立直点数，考虑了自摸、一发、里宝
 	if result13.RiichiPoint > 0 {
-		fmt.Print(" ")
-		color.New(color.FgHiGreen).Printf("[立直%d]", int(math.Round(result13.RiichiPoint)))
+		fmt.Fprint(writer, " ")
+		color.New(color.FgHiGreen).Fprintf(writer, "[立直%d]", int(math.Round(result13.RiichiPoint)))
 	}
 
 	if len(result13.YakuTypes) > 0 {
@@ -594,64 +595,64 @@ func (r *analysisResult) printWaitsWithImproves13_oneRow() {
 				}
 				if len(shownYakuTypes) > 0 {
 					sort.Ints(shownYakuTypes)
-					fmt.Print(" ")
-					color.New(color.FgHiGreen).Printf(util.YakuTypesToStr(shownYakuTypes))
+					fmt.Fprint(writer, " ")
+					color.New(color.FgHiGreen).Fprintf(writer, util.YakuTypesToStr(shownYakuTypes))
 				}
 			} else {
 				// debug
-				fmt.Print(" ")
-				color.New(color.FgHiGreen).Printf(util.YakuTypesWithDoraToStr(result13.YakuTypes, result13.DoraCount))
+				fmt.Fprint(writer, " ")
+				color.New(color.FgHiGreen).Fprintf(writer, util.YakuTypesWithDoraToStr(result13.YakuTypes, result13.DoraCount))
 			}
 			// 片听
 			if result13.IsPartWait {
-				fmt.Print(" ")
-				color.New(color.FgHiRed).Printf("[片听]")
+				fmt.Fprint(writer, " ")
+				color.New(color.FgHiRed).Fprintf(writer, "[片听]")
 			}
 		}
 	} else if result13.IsNaki && shanten >= 0 && shanten <= 2 {
 		// 鸣牌时的无役提示（从听牌到两向听）
-		fmt.Print(" ")
-		color.New(color.FgHiRed).Printf("[无役]")
+		fmt.Fprint(writer, " ")
+		color.New(color.FgHiRed).Fprintf(writer, "[无役]")
 	}
 
 	// 振听提示
 	if result13.FuritenRate > 0 {
-		fmt.Print(" ")
+		fmt.Fprint(writer, " ")
 		if result13.FuritenRate < 1 {
-			color.New(color.FgHiYellow).Printf("[可能振听]")
+			color.New(color.FgHiYellow).Fprintf(writer, "[可能振听]")
 		} else {
-			color.New(color.FgHiRed).Printf("[振听]")
+			color.New(color.FgHiRed).Fprintf(writer, "[振听]")
 		}
 	}
 
 	// 改良数
 	if showScore {
-		fmt.Print(" ")
+		fmt.Fprint(writer, " ")
 		if len(result13.Improves) > 0 {
-			fmt.Printf("[%2d改良]", len(result13.Improves))
+			fmt.Fprintf(writer, "[%2d改良]", len(result13.Improves))
 		} else {
-			fmt.Print(strings.Repeat(" ", 4))
-			fmt.Print(strings.Repeat("　", 2)) // 全角空格
+			fmt.Fprint(writer, strings.Repeat(" ", 4))
+			fmt.Fprint(writer, strings.Repeat("　", 2)) // 全角空格
 		}
 	}
 
 	// 进张类型
-	fmt.Print(" ")
+	fmt.Fprint(writer, " ")
 	waitTiles := result13.Waits.AvailableTiles()
-	fmt.Print(util.TilesToStrWithBracket(waitTiles))
+	fmt.Fprint(writer, util.TilesToStrWithBracket(waitTiles))
 
 	//
 
-	fmt.Println()
+	fmt.Fprintln(writer)
 
 	if showImproveDetail {
 		for tile, waits := range result13.Improves {
-			fmt.Printf("摸 %s 改良成 %s\n", util.Mahjong[tile], waits.String())
+			fmt.Fprintf(writer, "摸 %s 改良成 %s\n", util.Mahjong[tile], waits.String())
 		}
 	}
 }
 
-func printResults14WithRisk(results14 util.Hand14AnalysisResultList, mixedRiskTable riskTable) {
+func printResults14WithRisk(writer io.Writer, results14 util.Hand14AnalysisResultList, mixedRiskTable riskTable) {
 	if len(results14) == 0 {
 		return
 	}
@@ -705,6 +706,6 @@ func printResults14WithRisk(results14 util.Hand14AnalysisResultList, mixedRiskTa
 			result.Result13.AvgImproveWaitsCount == maxAvgImproveWaitsCount,
 			result.Result13.MixedWaitsScore == maxMixedScore,
 		}
-		r.printWaitsWithImproves13_oneRow()
+		r.printWaitsWithImproves13_oneRow(writer)
 	}
 }
