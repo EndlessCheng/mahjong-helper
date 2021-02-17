@@ -318,7 +318,7 @@ func alertBackwardToShanten2(results util.Hand14AnalysisResultList, incShantenRe
 
 // 需要提醒的役种
 var yakuTypesToAlert = []int{
-	//util.YakuKokushi,
+	util.YakuKokushi,
 	//util.YakuKokushi13,
 	util.YakuSuuAnkou,
 	util.YakuSuuAnkouTanki,
