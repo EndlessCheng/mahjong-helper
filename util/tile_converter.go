@@ -155,7 +155,7 @@ func Tiles34ToStr(tiles34 []int) (humanTiles string) {
 		for i, c := range tiles34[lowerIndex:upperIndex] {
 			for j := 0; j < c; j++ {
 				found = true
-				humanTiles += string('1' + i)
+				humanTiles += string('1' + byte(i))
 			}
 		}
 		if found {
