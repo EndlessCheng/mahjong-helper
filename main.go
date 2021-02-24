@@ -127,7 +127,7 @@ func main() {
 	case isMajsoul:
 		err = runServer(true, port)
 	case isTenhou || isAnalysis:
-		err = runServer(false, port)
+		err = runServer(true, port)
 	case isInteractive: // 交互模式
 		err = interact(humanTilesInfo)
 	case len(flag.Args()) > 0: // 静态分析
