@@ -1,14 +1,14 @@
 package main
 
 import (
-	"strings"
-	"fmt"
-	"github.com/fatih/color"
-	"github.com/EndlessCheng/mahjong-helper/util/model"
-	"github.com/EndlessCheng/mahjong-helper/util"
-	"math/rand"
-	"time"
 	"flag"
+	"fmt"
+	"github.com/EndlessCheng/mahjong-helper/util"
+	"github.com/EndlessCheng/mahjong-helper/util/model"
+	"github.com/fatih/color"
+	"math/rand"
+	"strings"
+	"time"
 )
 
 var (
@@ -58,48 +58,63 @@ const (
 	defaultPlatform = platformMajsoul
 )
 
-var platforms = map[int]string{
-	platformTenhou:  "天凤",
-	platformMajsoul: "雀魂",
+var platforms = map[int][]string{
+	platformTenhou: {
+		"天凤",
+		"Web",
+		"4K",
+	},
+	platformMajsoul: {
+		"雀魂",
+		"国际中文服",
+		"日服",
+		"国际服",
+	},
 }
 
 const readmeURL = "https://github.com/EndlessCheng/mahjong-helper/blob/master/README.md"
+const issueURL = "https://github.com/EndlessCheng/mahjong-helper/issues"
+const issueCommonQuestions = "https://github.com/EndlessCheng/mahjong-helper/issues/104"
+const qqGroupNum = "375865038"
 
 func welcome() int {
 	fmt.Println("使用说明：" + readmeURL)
-	fmt.Println("问题反馈：https://github.com/EndlessCheng/mahjong-helper/issues")
-	fmt.Println("吐槽群：375865038")
+	fmt.Println("问题反馈：" + issueURL)
+	fmt.Println("吐槽群：" + qqGroupNum)
 	fmt.Println()
 
-	fmt.Println("请输入数字，以选择对应的平台：")
+	fmt.Println("请输入数字，选择对应网站：")
 	for i, cnt := 0, 0; cnt < len(platforms); i++ {
-		if platformName, ok := platforms[i]; ok {
-			fmt.Printf("%d - %s\n", i, platformName)
+		if platformInfo, ok := platforms[i]; ok {
+			info := platformInfo[0] + " [" + strings.Join(platformInfo[1:], ",") + "]"
+			fmt.Printf("%d - %s\n", i, info)
 			cnt++
 		}
 	}
 
 	choose := defaultPlatform
-	fmt.Scanf("%d", &choose)
-	platformName, ok := platforms[choose]
+	fmt.Scanln(&choose) // 直接回车也无妨
+	platformInfo, ok := platforms[choose]
+	var platformName string
+	if ok {
+		platformName = platformInfo[0]
+	}
 	if !ok {
 		choose = defaultPlatform
-		platformName = platforms[choose]
+		platformName = platforms[choose][0]
 	}
 
 	clearConsole()
-	if choose == platformMajsoul {
-		platformName += "（水晶杠杠版）"
-	}
 	color.HiGreen("已选择 - %s", platformName)
 
 	if choose == platformMajsoul {
 		if len(gameConf.MajsoulAccountIDs) == 0 {
-			color.HiYellow(`提醒：若您是第一次使用助手，请重新登录游戏，或者开启一局人机对战
-该步骤用于获取您的账号 ID，便于在游戏开始时获取自风，否则程序将无法解析后续数据
+			color.HiYellow(`
+提醒：首次启用时，请开启一局人机对战，或者重登游戏。
+该步骤用于获取您的账号 ID，便于在游戏开始时获取自风，否则程序将无法解析后续数据。
 
-若助手无响应，请确认您已按步骤安装完成
-安装及使用说明：` + readmeURL)
+若助手无响应，请确认您已按步骤安装完成。
+相关链接 ` + issueCommonQuestions)
 		}
 	}
 
