@@ -50,7 +50,7 @@
 
 4. 如果您的浏览器之前打开过雀魂网页，需要清除缓存：打开雀魂网页，按下 F12，右键地址栏左侧的刷新按钮，选择「清空缓存并进行硬刷新」。这一操作只需要首次使用时做一次。
 
-安装完成。请重新载入游戏页面。（如遇问题见 [#104](https://github.com/EndlessCheng/mahjong-helper/issues/104)）
+安装完成。（如遇问题见 [#104](https://github.com/EndlessCheng/mahjong-helper/issues/104)）
 
 在使用本助手前，建议先看一下本页面下方的[示例](#示例)。
 
