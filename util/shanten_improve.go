@@ -2,9 +2,9 @@ package util
 
 import (
 	"fmt"
-	"sort"
-	"math"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
+	"math"
+	"sort"
 )
 
 // map[改良牌]进张（选择进张数最大的）
@@ -615,8 +615,8 @@ func (l Hand14AnalysisResultList) Sort(improveFirst bool) {
 			if !Equal(ri.AvgAgariRate, rj.AvgAgariRate) {
 				return ri.AvgAgariRate > rj.AvgAgariRate
 			}
-		case 1, 2:
-			// 一向听和两向听：进张*局收支
+		case 1:
+			// 一向听：进张*局收支
 			var riScore, rjScore float64
 			if shanten >= 2 && improveFirst {
 				// 对于两向听，若需要改良的话以改良为主
@@ -642,7 +642,7 @@ func (l Hand14AnalysisResultList) Sort(improveFirst bool) {
 		}
 
 		if shanten >= 2 {
-			// 两向听及以上时单独比较浮牌
+			// 两向听及以上时，若存在幺九浮牌，则根据价值来单独比较浮牌
 			if l[i].isIsolatedYaochuDiscardTile && l[j].isIsolatedYaochuDiscardTile {
 				// 优先切掉价值最低的浮牌，这里直接比较浮点数
 				if l[i].DiscardTileValue != l[j].DiscardTileValue {
@@ -655,12 +655,12 @@ func (l Hand14AnalysisResultList) Sort(improveFirst bool) {
 			}
 		}
 
-		if improveFirst {
-			// 优先按照 AvgImproveWaitsCount 排序
-			if !Equal(ri.AvgImproveWaitsCount, rj.AvgImproveWaitsCount) {
-				return ri.AvgImproveWaitsCount > rj.AvgImproveWaitsCount
-			}
-		}
+		//if improveFirst {
+		//	// 优先按照 AvgImproveWaitsCount 排序
+		//	if !Equal(ri.AvgImproveWaitsCount, rj.AvgImproveWaitsCount) {
+		//		return ri.AvgImproveWaitsCount > rj.AvgImproveWaitsCount
+		//	}
+		//}
 
 		// 排序规则：综合评分（速度） - 进张 - 前进后的进张 - 和率 - 改良 - 价值低 - 好牌先走
 		// 必须注意到的一点是，随着游戏的进行，进张会被他家打出，所以进张是有减少的趋势的
@@ -782,26 +782,27 @@ func (n *shantenSearchNode14) analysis(playerInfo *model.PlayerInfo, considerImp
 		playerInfo.UndoDiscardTile(discardTile, isRedFive)
 	}
 
-	improveFirst := func(l []*Hand14AnalysisResult) bool {
-		if !considerImprove || len(l) <= 1 {
-			return false
-		}
+	// 下面这一逻辑被「综合速度」取代
+	//improveFirst := func(l []*Hand14AnalysisResult) bool {
+	//	if !considerImprove || len(l) <= 1 {
+	//		return false
+	//	}
+	//
+	//	shanten := l[0].Result13.Shanten
+	//	// 一向听及以下着眼于进张，改良其次
+	//	if shanten <= 1 {
+	//		return false
+	//	}
+	//
+	//	// 判断七对和一般型的向听数是否相同，若七对更小则改良优先
+	//	tiles34 := playerInfo.HandTiles34
+	//	shantenChiitoi := CalculateShantenOfChiitoi(tiles34)
+	//	shantenNormal := CalculateShantenOfNormal(tiles34, CountOfTiles34(tiles34))
+	//	return shantenChiitoi < shantenNormal
+	//}
+	//improveFst := improveFirst(results)
 
-		shanten := l[0].Result13.Shanten
-		// 一向听及以下着眼于进张，改良其次
-		if shanten <= 1 {
-			return false
-		}
-
-		// 判断七对和一般型的向听数是否相同，若七对更小则改良优先
-		tiles34 := playerInfo.HandTiles34
-		shantenChiitoi := CalculateShantenOfChiitoi(tiles34)
-		shantenNormal := CalculateShantenOfNormal(tiles34, CountOfTiles34(tiles34))
-		return shantenChiitoi < shantenNormal
-	}
-
-	improveFst := improveFirst(results)
-	results.Sort(improveFst)
+	results.Sort(false)
 
 	return
 }
