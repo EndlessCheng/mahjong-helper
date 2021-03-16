@@ -9,8 +9,6 @@
 - 助手带你看牌谱，推荐每一打的进攻和防守选择（雀魂√ | 天凤开发中）
 - 支持四人麻将和三人麻将
 
-详见后面的图文[示例](#示例)
-
 ### 支持平台
 
 - 雀魂网页版（[国际中文服](https://game.maj-soul.com/1/)√ | [日服](https://game.mahjongsoul.com)√ | [国际服](https://mahjongsoul.game.yo-star.com)√）
