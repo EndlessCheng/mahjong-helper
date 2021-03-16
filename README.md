@@ -10,8 +10,8 @@
 
 ### 支持平台
 
-- 雀魂网页版（[国际中文服](https://game.maj-soul.com/1/)√ | [日服](https://game.mahjongsoul.com)√ | [国际服](https://mahjongsoul.game.yo-star.com)√）
-- 天凤 [Desktop4K 版](https://tenhou.net/4/)
+- 雀魂网页版（[国际中文服](https://game.maj-soul.com/1/) | [日服](https://game.mahjongsoul.com) | [国际服](https://mahjongsoul.game.yo-star.com)）
+- 天凤（[Web](https://tenhou.net/3/) | [4K](https://tenhou.net/4/)）
 
 
 ## 导航
