@@ -824,6 +824,11 @@ func (d *roundData) analysis() error {
 			player.discardedRedFiveAt = append(player.discardedRedFiveAt, isRedFive)
 			player.latestDiscardAtGlobal = len(d.globalDiscardTiles) - 1
 
+			if player.isReached && player.reachTileAtGlobal == -1 {
+				player.reachTileAtGlobal = len(d.globalDiscardTiles) - 1
+				player.reachTileAt = len(player.discardTiles) - 1
+			}
+
 			// for visualizer
 			d.broadcastDiscards()
 
@@ -857,9 +862,6 @@ func (d *roundData) analysis() error {
 		player.discardedRedFiveAt = append(player.discardedRedFiveAt, isRedFive)
 		player.latestDiscardAtGlobal = len(d.globalDiscardTiles) - 1
 
-		// for visualizer
-		d.broadcastDiscards()
-
 		// 标记外侧牌
 		if !player.isReached && len(player.discardTiles) <= 5 {
 			player.earlyOutsideTiles = append(player.earlyOutsideTiles, util.OutsideTiles(discardTile)...)
@@ -880,6 +882,9 @@ func (d *roundData) analysis() error {
 			player.meldDiscardsAt = append(player.meldDiscardsAt, len(player.discardTiles)-1)
 			player.meldDiscardsAtGlobal = append(player.meldDiscardsAtGlobal, len(d.globalDiscardTiles)-1)
 		}
+
+		// for visualizer
+		d.broadcastDiscards()
 
 		// 若玩家在立直后摸牌舍牌，则没有一发
 		if player.reachTileAt < len(player.discardTiles)-1 {
