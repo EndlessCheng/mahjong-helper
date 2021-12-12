@@ -1,7 +1,7 @@
 <template>
   <div :style="`
     transform: rotate(${rotation}deg);
-    height: ${height};
+    height: 202px;
     width: 202px;
   `">
     <el-row
@@ -47,9 +47,6 @@ export default {
       }
       return ret
     },
-    height: function() {
-      return this.rotation % 180 == 0 ? "150px" : "200px"
-    }
   }
 }
 </script>

@@ -55,7 +55,7 @@ export default {
       return this.rotation % 180 == 0 ? "0" : "5px 0"
     },
     background: function() {
-      return this.dim ? "#909399" : ""
+      return this.dim ? "#A2A2A2" : "#EBEBEB"
     }
   }
 }
