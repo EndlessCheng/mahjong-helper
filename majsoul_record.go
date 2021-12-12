@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/EndlessCheng/mahjong-helper/util"
+	"sort"
 	"strconv"
 	"time"
-	"sort"
 )
 
 type _majsoulRecordAccount struct {

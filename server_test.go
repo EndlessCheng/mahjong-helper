@@ -1,13 +1,13 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+	"github.com/EndlessCheng/mahjong-helper/util/debug"
+	"io/ioutil"
+	"strings"
 	"testing"
 	"time"
-	"fmt"
-	"encoding/json"
-	"strings"
-	"io/ioutil"
-	"github.com/EndlessCheng/mahjong-helper/util/debug"
 )
 
 func Test_mjHandler_runAnalysisMajsoulMessageTask(t *testing.T) {

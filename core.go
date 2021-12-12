@@ -95,9 +95,10 @@ type playerInfo struct {
 	isNaki               bool // 是否鸣牌（暗杠不算鸣牌）
 
 	// 注意负数（自摸切）要^
-	discardTiles          []int // 该玩家的舍牌
-	latestDiscardAtGlobal int   // 该玩家最近一次舍牌在 globalDiscardTiles 中的下标，初始为 -1
-	earlyOutsideTiles     []int // 立直前的1-5巡的外侧牌
+	discardTiles          []int  // 该玩家的舍牌
+	discardedRedFiveAt    []bool // 该玩家的舍牌
+	latestDiscardAtGlobal int    // 该玩家最近一次舍牌在 globalDiscardTiles 中的下标，初始为 -1
+	earlyOutsideTiles     []int  // 立直前的1-5巡的外侧牌
 
 	isReached  bool // 是否立直
 	canIppatsu bool // 是否有一发
@@ -292,6 +293,30 @@ func (d *roundData) newDora(kanDoraIndicator int) {
 // 根据宝牌指示牌计算出宝牌
 func (d *roundData) doraList() (dl []int) {
 	return model.DoraList(d.doraIndicators, d.playerNumber == 3)
+}
+
+func (d *roundData) broadcastDiscards() {
+	// for visualizer
+	if len(d.players) == 4 {
+		dis := make([][]Discard, 4)
+		for i, player := range d.players {
+			dis[i] = make([]Discard, 0)
+			for j, disTile := range player.discardTiles {
+				isTsumogiri := false
+				if disTile < 0 {
+					isTsumogiri = true
+					disTile = ^disTile
+				}
+				dis[i] = append(dis[i], Discard{
+					Tile:        util.Mahjong[disTile],
+					IsTsumogiri: isTsumogiri,
+					IsRiichi:    j == player.reachTileAt,
+					IsRedFive:   player.discardedRedFiveAt[j],
+				})
+			}
+		}
+		broadcast <- Message{Discards: dis}
+	}
 }
 
 func (d *roundData) printDiscards() {
@@ -790,9 +815,17 @@ func (d *roundData) analysis() error {
 			// 自家（从手牌 d.counts）舍牌（至牌河 d.globalDiscardTiles）
 			d.counts[discardTile]--
 
-			d.globalDiscardTiles = append(d.globalDiscardTiles, discardTile)
-			player.discardTiles = append(player.discardTiles, discardTile)
+			_disTile := discardTile
+			if isTsumogiri {
+				_disTile = ^_disTile
+			}
+			d.globalDiscardTiles = append(d.globalDiscardTiles, _disTile)
+			player.discardTiles = append(player.discardTiles, _disTile)
+			player.discardedRedFiveAt = append(player.discardedRedFiveAt, isRedFive)
 			player.latestDiscardAtGlobal = len(d.globalDiscardTiles) - 1
+
+			// for visualizer
+			d.broadcastDiscards()
 
 			if isRedFive {
 				d.numRedFives[discardTile/9]--
@@ -821,7 +854,11 @@ func (d *roundData) analysis() error {
 		}
 		d.globalDiscardTiles = append(d.globalDiscardTiles, _disTile)
 		player.discardTiles = append(player.discardTiles, _disTile)
+		player.discardedRedFiveAt = append(player.discardedRedFiveAt, isRedFive)
 		player.latestDiscardAtGlobal = len(d.globalDiscardTiles) - 1
+
+		// for visualizer
+		d.broadcastDiscards()
 
 		// 标记外侧牌
 		if !player.isReached && len(player.discardTiles) <= 5 {

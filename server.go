@@ -526,6 +526,14 @@ func runServer(isHTTPS bool, port int) (err error) {
 	e.POST("/tenhou", h.analysisTenhou)
 	e.POST("/majsoul", h.analysisMajsoul)
 
+	// for visualizer
+	ws := echo.New()
+	ws.Use(middleware.Logger())
+	ws.Use(middleware.Recover())
+	ws.GET("/ws", handleConnections)
+	go handleMessages()
+	go ws.Start(":4000")
+
 	// code.js 也用的该端口
 	if port == 0 {
 		port = defaultPort

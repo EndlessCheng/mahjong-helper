@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/fatih/color"
+	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
 	"github.com/EndlessCheng/mahjong-helper/util"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
+	"github.com/fatih/color"
 	"sort"
 	"time"
-	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
 )
 
 type majsoulMessage struct {

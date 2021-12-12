@@ -1,9 +1,9 @@
 package main
 
 import (
-	"io/ioutil"
-	"encoding/json"
 	"bytes"
+	"encoding/json"
+	"io/ioutil"
 	"os"
 )
 

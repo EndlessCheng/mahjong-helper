@@ -1,11 +1,11 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+	"github.com/fatih/color"
 	"net/http"
 	"time"
-	"fmt"
-	"encoding/json"
-	"github.com/fatih/color"
 )
 
 const versionDev = "dev"

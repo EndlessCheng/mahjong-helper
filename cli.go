@@ -40,6 +40,9 @@ func (p *playerInfo) printDiscards() {
 		fgColor := color.FgWhite
 		var tile string
 		if disTile >= 0 { // 手切
+			if disTile >= 34 { // RedFive
+				disTile -= 34
+			}
 			tile = util.Mahjong[disTile]
 			if disTile >= 27 {
 				tile = util.MahjongU[disTile] // 关注字牌的手切
@@ -53,6 +56,9 @@ func (p *playerInfo) printDiscards() {
 			}
 		} else { // 摸切
 			disTile = ^disTile
+			if disTile >= 34 { // RedFive
+				disTile -= 34
+			}
 			tile = util.Mahjong[disTile]
 			fgColor = color.FgHiBlack // 暗色显示
 		}
