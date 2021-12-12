@@ -45,7 +45,6 @@ export default {
       for (var i = 0; i < this.discards.length; i+=6) {
         ret.push(this.discards.slice(i, i+6))
       }
-      console.log('ret:', ret)
       return ret
     },
     height: function() {

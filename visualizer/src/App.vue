@@ -29,15 +29,11 @@ export default {
     this.ws = new WebSocket(`ws://${location.host}/ws`);
 
     this.ws.onmessage = (event) => {
-      console.log(event);
-      console.log(event.data);
-      //this.$set('discards', JSON.parse(event.data).discards)
       this.discards = JSON.parse(event.data).discards
-      //vm.$set(this.discards, JSON.parse(event.data).discards)
     }
 
+    // eslint-disable-next-line no-unused-vars
     this.ws.onopen = (event) => {
-      console.log(event)
       console.log("Successfully connected")
     }
   }
