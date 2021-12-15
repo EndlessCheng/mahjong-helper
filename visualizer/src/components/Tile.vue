@@ -4,16 +4,17 @@
     :style="`
         border: 1px solid var(--el-border-color-base);
         border-radius: var(--el-border-radius-base);
-        width: ${width};
-        height: ${height};
+        width: 30px;
+        height: 40px;
         margin: ${margin};
         background-color: ${background};
+        transform: rotate(${rotation}deg);
       `">
     <img
       :src="img_src"
       :style="`
-        width: ${width};
-        height: ${height};
+        width: 30px;
+        height: 40px;
       `"
     >
   </div>
@@ -38,12 +39,7 @@ export default {
   },
   computed: {
     img_src: function() {
-      if (this.rotation == 0) {
-        return require(`../assets/${IMGFILE[this.tile]}.svg`)
-      } else {
-        return require(
-          `../assets/${IMGFILE[this.tile]}-90.svg`)
-      }
+      return require(`../assets/${IMGFILE[this.tile]}.svg`)
     },
     width: function() {
       return this.rotation % 180 == 0 ? "30px" : "40px"
@@ -52,7 +48,7 @@ export default {
       return this.rotation % 180 == 0 ? "40px" : "30px"
     },
     margin: function() {
-      return this.rotation % 180 == 0 ? "0" : "5px 0"
+      return this.rotation % 180 == 0 ? "0" : "0 5px"
     },
     background: function() {
       return this.dim ? "#A2A2A2" : "#EBEBEB"
@@ -99,6 +95,3 @@ const IMGFILE = {
   "7z": "Chun",
 }
 </script>
-
-<style scoped>
-</style>

@@ -8,13 +8,13 @@
       v-for="(discards_in_row,index) in discards_aligned"
       :key="index"
     >
-        <Tile
-          v-for="(discard,index) in discards_in_row"
-          :tile="discard.tile + (discard.isRedFive ? '-dora' : '')"
-          :rotation="discard.isRiichi ? 90 : 0"
-          :dim="discard.isTsumogiri"
-          :key="index"
-        />
+      <Tile
+        v-for="(discard,index) in discards_in_row"
+        :tile="discard.tile + (discard.isRedFive ? '-dora' : '')"
+        :rotation="discard.isRiichi ? 90 : 0"
+        :dim="discard.isTsumogiri"
+        :key="index"
+      />
     </el-row>
   </div>
 </template>
@@ -50,9 +50,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.el-card {
-  width: 250px;
-}
-</style>
