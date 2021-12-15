@@ -524,9 +524,9 @@ func (d *roundData) analysis() error {
 
 	// 若自家立直，则进入看戏模式
 	// TODO: 见逃判断
-	if !d.parser.IsInit() && !d.parser.IsRoundWin() && !d.parser.IsRyuukyoku() && d.players[0].isReached {
-		return nil
-	}
+	// if !d.parser.IsInit() && !d.parser.IsRoundWin() && !d.parser.IsRyuukyoku() && d.players[0].isReached {
+	// 	return nil
+	// }
 
 	if debugMode {
 		fmt.Println("当前座位为", d.parser.GetSelfSeat())
