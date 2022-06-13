@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/EndlessCheng/mahjong-helper/util"
-	"github.com/fatih/color"
 	"math"
 	"sort"
 	"strings"
+
+	"github.com/EndlessCheng/mahjong-helper/util"
+	"github.com/fatih/color"
 )
 
 func printAccountInfo(accountID int) {
@@ -421,11 +422,11 @@ func printWaitsWithImproves13_twoRows(result13 *util.Hand13AnalysisResult, disca
 			fmt.Printf("进张")
 		} else { // shanten == 1
 			fmt.Printf("数")
-			if showAgariAboveShanten1 {
+			if ShowAgariAboveShanten1 {
 				fmt.Printf("（%.2f%% 参考和率）", result13.AvgAgariRate)
 			}
 		}
-		if showScore {
+		if ShowScore {
 			mixedScore := result13.MixedWaitsScore
 			//for i := 2; i <= shanten; i++ {
 			//	mixedScore /= 4
@@ -559,7 +560,7 @@ func (r *analysisResult) printWaitsWithImproves13_oneRow() {
 	}
 
 	// 局收支
-	if showScore && result13.MixedRoundPoint != 0.0 {
+	if ShowScore && result13.MixedRoundPoint != 0.0 {
 		fmt.Print(" ")
 		color.New(color.FgHiGreen).Printf("[局收支%4d]", int(math.Round(result13.MixedRoundPoint)))
 	}
@@ -583,7 +584,7 @@ func (r *analysisResult) printWaitsWithImproves13_oneRow() {
 	if len(result13.YakuTypes) > 0 {
 		// 役种（两向听以内开启显示）
 		if result13.Shanten <= 2 {
-			if !showAllYakuTypes && !debugMode {
+			if !ShowAllYakuTypes && !debugMode {
 				shownYakuTypes := []int{}
 				for yakuType := range result13.YakuTypes {
 					for _, yt := range yakuTypesToAlert {
@@ -625,7 +626,7 @@ func (r *analysisResult) printWaitsWithImproves13_oneRow() {
 	}
 
 	// 改良数
-	if showScore {
+	if ShowScore {
 		fmt.Print(" ")
 		if len(result13.Improves) > 0 {
 			fmt.Printf("[%2d改良]", len(result13.Improves))
@@ -644,7 +645,7 @@ func (r *analysisResult) printWaitsWithImproves13_oneRow() {
 
 	fmt.Println()
 
-	if showImproveDetail {
+	if ShowImproveDetail {
 		for tile, waits := range result13.Improves {
 			fmt.Printf("摸 %s 改良成 %s\n", util.Mahjong[tile], waits.String())
 		}
