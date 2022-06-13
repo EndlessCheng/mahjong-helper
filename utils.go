@@ -1,13 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
+
 	"github.com/fatih/color"
-	"bufio"
 )
 
-func errorExit(args ...interface{}) {
+func ErrorExit(args ...interface{}) {
 	fmt.Fprintln(os.Stderr, args...)
 	fmt.Println("按任意键退出...")
 	bufio.NewReader(os.Stdin).ReadByte()
@@ -21,7 +22,7 @@ func getWaitsCountColor(shanten int, waitsCount float64) color.Attribute {
 	_getWaitsCountColor := func(fixedWaitsCount float64) color.Attribute {
 		switch {
 		case fixedWaitsCount < 13: // 4.3*3
-			return color.FgHiCyan  // FgHiBlue FgHiCyan
+			return color.FgHiCyan // FgHiBlue FgHiCyan
 		case fixedWaitsCount <= 18: // 6*3
 			return color.FgHiYellow
 		default: // >6*3

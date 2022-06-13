@@ -108,7 +108,7 @@ RenterPlatform: // wrong enter goto label
 	choose := MahJongSoul
 	fmt.Scanln(&choose)
 
-	clearConsole()
+	ClearConsole()
 	if choose == Tenhou { // choose TenHou
 		color.HiGreen("已選擇 - %s", Platforms[0].Name)
 	} else if choose == MahJongSoul { // choose MahJongSoul
@@ -132,35 +132,35 @@ RenterPlatform: // wrong enter goto label
 func main() {
 	flag.Parse()
 
-	color.HiGreen("日本麻将助手 %s (by EndlessCheng)", version)
-	if version != versionDev {
-		go checkNewVersion(version)
+	color.HiGreen("日本麻将助手 %s (by EndlessCheng)", Version)
+	if Version != VersionDev {
+		go CheckNewVersion(Version)
 	}
 
 	util.SetConsiderOldYaku(ConsiderOldYaku)
 
-	humanTiles := strings.Join(flag.Args(), " ")
-	humanTilesInfo := &model.HumanTilesInfo{
-		HumanTiles:     humanTiles,
+	HumanTiles := strings.Join(flag.Args(), " ")
+	HumanTilesInfo := &model.HumanTilesInfo{
+		HumanTiles:     HumanTiles,
 		HumanDoraTiles: HumanDoraTiles,
 	}
 
 	var err error
 	switch {
 	case IsMajsoul:
-		err = runServer(true, Port)
+		err = RunServer(true, Port)
 	case IsTenhou || IsAnalysis:
-		err = runServer(true, Port)
+		err = RunServer(true, Port)
 	case IsInteractive: // 交互模式
-		err = interact(humanTilesInfo)
+		err = Interact(HumanTilesInfo)
 	case len(flag.Args()) > 0: // 静态分析
-		_, err = analysisHumanTiles(humanTilesInfo)
+		_, err = AnalysisHumanTiles(HumanTilesInfo)
 	default: // 服务器模式
 		choose := welcome()
-		isHTTPS := choose == MahJongSoul
-		err = runServer(isHTTPS, Port)
+		IsHTTPS := choose == MahJongSoul
+		err = RunServer(IsHTTPS, Port)
 	}
 	if err != nil {
-		errorExit(err)
+		ErrorExit(err)
 	}
 }

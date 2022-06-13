@@ -2,12 +2,13 @@ package main
 
 import (
 	"testing"
+
 	"github.com/EndlessCheng/mahjong-helper/util"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 )
 
 func Test_parseTenhouMeld(t *testing.T) {
-	d := &tenhouRoundData{}
+	d := &TenHouRoundData{}
 	for _, s := range []string{
 		"43595",
 		"17511",
@@ -17,9 +18,9 @@ func Test_parseTenhouMeld(t *testing.T) {
 }
 
 func TestAnalysisTilesRisk(t *testing.T) {
-	debugMode = true
+	DebugMode = true
 
-	d := newGame(&tenhouRoundData{})
+	d := NewGame(&TenHouRoundData{})
 	handsTiles34, _, err := util.StrToTiles34("123456789m 123456789p 123456789s 1234567z")
 	if err != nil {
 		t.Fatal(err)
@@ -64,27 +65,27 @@ func TestAnalysisTilesRisk(t *testing.T) {
 }
 
 func TestReg(t *testing.T) {
-	d := &tenhouRoundData{
-		msg: &tenhouMessage{
+	d := &TenHouRoundData{
+		Msg: &TenhouMessage{
 			Tag: "T123",
 		},
 	}
 	t.Log(d.IsSelfDraw() == true)
-	d.msg.Tag = "TATA"
+	d.Msg.Tag = "TATA"
 	t.Log(d.IsSelfDraw() == false)
-	d.msg.Tag = "T"
+	d.Msg.Tag = "T"
 	t.Log(d.IsSelfDraw() == false)
-	d.msg.Tag = "T1234"
+	d.Msg.Tag = "T1234"
 	t.Log(d.IsSelfDraw() == false)
 
-	d.msg.Tag = "D123"
+	d.Msg.Tag = "D123"
 	t.Log(d.IsDiscard() == true)
-	d.msg.Tag = "E123"
+	d.Msg.Tag = "E123"
 	t.Log(d.IsDiscard() == true)
-	d.msg.Tag = "EAAA"
+	d.Msg.Tag = "EAAA"
 	t.Log(d.IsDiscard() == false)
-	d.msg.Tag = "E"
+	d.Msg.Tag = "E"
 	t.Log(d.IsDiscard() == false)
-	d.msg.Tag = "E123123"
+	d.Msg.Tag = "E123123"
 	t.Log(d.IsDiscard() == false)
 }

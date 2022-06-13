@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/EndlessCheng/mahjong-helper/util"
 	"fmt"
 	"strings"
-	"github.com/fatih/color"
+
+	"github.com/EndlessCheng/mahjong-helper/util"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
+	"github.com/fatih/color"
 )
 
 func simpleBestDiscardTile(playerInfo *model.PlayerInfo) int {
@@ -91,7 +92,7 @@ func analysisPlayerWithRisk(playerInfo *model.PlayerInfo, mixedRiskTable riskTab
 		printResults14WithRisk(incShantenResults14, mixedRiskTable)
 	default:
 		err := fmt.Errorf("参数错误: %d 张牌", countOfTiles)
-		if debugMode {
+		if DebugMode {
 			panic(err)
 		}
 		return err
@@ -153,7 +154,7 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool
 	return nil
 }
 
-func analysisHumanTiles(humanTilesInfo *model.HumanTilesInfo) (playerInfo *model.PlayerInfo, err error) {
+func AnalysisHumanTiles(humanTilesInfo *model.HumanTilesInfo) (playerInfo *model.PlayerInfo, err error) {
 	defer func() {
 		if er := recover(); er != nil {
 			err = er.(error)

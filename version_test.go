@@ -2,11 +2,12 @@ package main
 
 import (
 	"testing"
+
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_checkNewVersion(t *testing.T) {
-	latestVersionTag, err := fetchLatestVersionTag()
+	latestVersionTag, err := FetchLatestVersionTag()
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -1,14 +1,15 @@
 package main
 
 import (
-	"strings"
-	"strconv"
 	"fmt"
-	"regexp"
-	"github.com/EndlessCheng/mahjong-helper/util/model"
-	"sort"
-	"github.com/EndlessCheng/mahjong-helper/util"
 	"net/url"
+	"regexp"
+	"sort"
+	"strconv"
+	"strings"
+
+	"github.com/EndlessCheng/mahjong-helper/util"
+	"github.com/EndlessCheng/mahjong-helper/util/model"
 	"github.com/fatih/color"
 )
 
@@ -142,7 +143,7 @@ const (
 	redFiveSou = 88
 )
 
-type tenhouMessage struct {
+type TenhouMessage struct {
 	Tag string `json:"tag" xml:"-"`
 
 	//Name string `json:"name"` // id
@@ -225,16 +226,16 @@ type tenhouMessage struct {
 
 //
 
-type tenhouRoundData struct {
-	*roundData
+type TenHouRoundData struct {
+	*RoundData
 
-	originJSON string
-	msg        *tenhouMessage
+	OriginJSON string
+	Msg        *TenhouMessage
 
-	isRoundEnd bool // 某人和牌或流局。初始值为 true
+	IsRoundEnd bool // 某人和牌或流局。初始值为 true
 }
 
-func (*tenhouRoundData) _tenhouTileToTile34(tenhouTile int) int {
+func (*TenHouRoundData) _tenhouTileToTile34(tenhouTile int) int {
 	return tenhouTile / 4
 }
 
@@ -242,7 +243,7 @@ func (*tenhouRoundData) _tenhouTileToTile34(tenhouTile int) int {
 // 36-71 p
 // 72-107 s
 // 108- z
-func (d *tenhouRoundData) _parseTenhouTile(tenhouTile string) (tile int, isRedFive bool) {
+func (d *TenHouRoundData) _parseTenhouTile(tenhouTile string) (tile int, isRedFive bool) {
 	t, err := strconv.Atoi(tenhouTile)
 	if err != nil {
 		panic(err)
@@ -274,7 +275,7 @@ CHI
     Called:
         Which tile out of the three was called.
 */
-func (*tenhouRoundData) _parseChi(data int) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
+func (*TenHouRoundData) _parseChi(data int) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
 	// 吃
 	meldType = meldTypeChi
 	t0, t1, t2 := (data>>3)&0x3, (data>>5)&0x3, (data>>7)&0x3
@@ -314,7 +315,7 @@ PON or KAKAN
     Called:
         Which tile out of the three was called.
 */
-func (*tenhouRoundData) _parsePonOrKakan(data int) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
+func (*TenHouRoundData) _parsePonOrKakan(data int) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
 	t4 := (data >> 5) & 0x3
 	_t := [4][3]int{{1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2}}[t4]
 	t0, t1, t2 := _t[0], _t[1], _t[2]
@@ -354,7 +355,7 @@ KAN
     Called:
         Which tile out of the four was called.
 */
-func (*tenhouRoundData) _parseKan(data int) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
+func (*TenHouRoundData) _parseKan(data int) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
 	baseAndCalled := data >> 8
 	base, called := baseAndCalled/4, baseAndCalled%4
 	tenhouMeldTiles = []int{4 * base, 1 + 4*base, 2 + 4*base, 3 + 4*base}
@@ -369,7 +370,7 @@ func (*tenhouRoundData) _parseKan(data int) (meldType int, tenhouMeldTiles []int
 	return
 }
 
-func (d *tenhouRoundData) _parseTenhouMeld(data string) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
+func (d *TenHouRoundData) _parseTenhouMeld(data string) (meldType int, tenhouMeldTiles []int, tenhouCalledTile int) {
 	bits, err := strconv.Atoi(data)
 	if err != nil {
 		panic(err)
@@ -388,11 +389,11 @@ func (d *tenhouRoundData) _parseTenhouMeld(data string) (meldType int, tenhouMel
 	}
 }
 
-func (*tenhouRoundData) isRedFive(tenhouTile int) bool {
+func (*TenHouRoundData) isRedFive(tenhouTile int) bool {
 	return tenhouTile == redFiveMan || tenhouTile == redFivePin || tenhouTile == redFiveSou
 }
 
-func (d *tenhouRoundData) containRedFive(tenhouTiles []int) bool {
+func (d *TenHouRoundData) containRedFive(tenhouTiles []int) bool {
 	for _, tenhouTile := range tenhouTiles {
 		if d.isRedFive(tenhouTile) {
 			return true
@@ -401,32 +402,32 @@ func (d *tenhouRoundData) containRedFive(tenhouTiles []int) bool {
 	return false
 }
 
-func (d *tenhouRoundData) GetDataSourceType() int {
+func (d *TenHouRoundData) GetDataSourceType() int {
 	return dataSourceTypeTenhou
 }
 
-func (d *tenhouRoundData) GetSelfSeat() int {
+func (d *TenHouRoundData) GetSelfSeat() int {
 	return -1
 }
 
-func (d *tenhouRoundData) GetMessage() string {
-	return d.originJSON
+func (d *TenHouRoundData) GetMessage() string {
+	return d.OriginJSON
 }
 
-func (d *tenhouRoundData) SkipMessage() bool {
+func (d *TenHouRoundData) SkipMessage() bool {
 	// 注意：即使没有获取到用户名也能正常进行游戏
 	return false
 }
 
-func (d *tenhouRoundData) IsLogin() bool {
+func (d *TenHouRoundData) IsLogin() bool {
 	// TODO: 重连时要填入 gameConf.currentActiveTenhouUsername
-	return d.msg.Tag == "HELO"
+	return d.Msg.Tag == "HELO"
 }
 
-func (d *tenhouRoundData) HandleLogin() {
-	username, err := url.QueryUnescape(d.msg.UserName)
+func (d *TenHouRoundData) HandleLogin() {
+	username, err := url.QueryUnescape(d.Msg.UserName)
 	if err != nil {
-		h.logError(err)
+		handler.LogError(err)
 	}
 	if username != gameConf.currentActiveTenhouUsername {
 		color.HiGreen("%s 登录成功", username)
@@ -434,34 +435,34 @@ func (d *tenhouRoundData) HandleLogin() {
 	}
 }
 
-func (d *tenhouRoundData) IsInit() bool {
-	return d.msg.Tag == "INIT" || d.msg.Tag == "REINIT"
+func (d *TenHouRoundData) IsInit() bool {
+	return d.Msg.Tag == "INIT" || d.Msg.Tag == "REINIT"
 }
 
-func (d *tenhouRoundData) ParseInit() (roundNumber int, benNumber int, dealer int, doraIndicators []int, handTiles []int, numRedFives []int) {
-	d.isRoundEnd = false
+func (d *TenHouRoundData) ParseInit() (roundNumber int, benNumber int, dealer int, doraIndicators []int, handTiles []int, numRedFives []int) {
+	d.IsRoundEnd = false
 
-	seedSplits := strings.Split(d.msg.Seed, ",")
+	seedSplits := strings.Split(d.Msg.Seed, ",")
 	if len(seedSplits) != 6 {
-		panic(fmt.Sprintln("seed 解析失败", d.msg.Seed))
+		panic(fmt.Sprintln("seed 解析失败", d.Msg.Seed))
 	}
 
 	roundNumber, _ = strconv.Atoi(seedSplits[0])
 	benNumber, _ = strconv.Atoi(seedSplits[1])
 	// TODO: 重构至 core。parser 不要修改任何东西
 	if roundNumber == 0 && benNumber == 0 {
-		if util.InStrings("0", strings.Split(d.msg.Ten, ",")) {
+		if util.InStrings("0", strings.Split(d.Msg.Ten, ",")) {
 			d.playerNumber = 3
 		} else {
 			d.playerNumber = 4
 		}
 	}
 
-	dealer, _ = strconv.Atoi(d.msg.Dealer)
+	dealer, _ = strconv.Atoi(d.Msg.Dealer)
 	doraIndicator, _ := d._parseTenhouTile(seedSplits[5])
 	doraIndicators = append(doraIndicators, doraIndicator)
 	numRedFives = make([]int, 3)
-	tenhouTiles := strings.Split(d.msg.Hai, ",")
+	tenhouTiles := strings.Split(d.Msg.Hai, ",")
 	for _, tenhouTile := range tenhouTiles {
 		tile, isRedFive := d._parseTenhouTile(tenhouTile)
 		handTiles = append(handTiles, tile)
@@ -478,12 +479,12 @@ func isTenhouSelfDraw(tag string) bool {
 	return _selfDrawReg.MatchString(tag)
 }
 
-func (d *tenhouRoundData) IsSelfDraw() bool {
-	return isTenhouSelfDraw(d.msg.Tag)
+func (d *TenHouRoundData) IsSelfDraw() bool {
+	return isTenhouSelfDraw(d.Msg.Tag)
 }
 
-func (d *tenhouRoundData) ParseSelfDraw() (tile int, isRedFive bool, kanDoraIndicator int) {
-	rawTile := d.msg.Tag[1:]
+func (d *TenHouRoundData) ParseSelfDraw() (tile int, isRedFive bool, kanDoraIndicator int) {
+	rawTile := d.Msg.Tag[1:]
 	tile, isRedFive = d._parseTenhouTile(rawTile)
 	kanDoraIndicator = -1
 	return
@@ -491,24 +492,24 @@ func (d *tenhouRoundData) ParseSelfDraw() (tile int, isRedFive bool, kanDoraIndi
 
 var _discardReg = regexp.MustCompile("^[DEFGefg][0-9]{1,3}$")
 
-func (d *tenhouRoundData) IsDiscard() bool {
-	return _discardReg.MatchString(d.msg.Tag)
+func (d *TenHouRoundData) IsDiscard() bool {
+	return _discardReg.MatchString(d.Msg.Tag)
 }
 
-func (d *tenhouRoundData) ParseDiscard() (who int, discardTile int, isRedFive bool, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int) {
+func (d *TenHouRoundData) ParseDiscard() (who int, discardTile int, isRedFive bool, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int) {
 	// D=自家, e/E=下家, f/F=对家, g/G=上家
-	who = int(util.Lower(d.msg.Tag[0]) - 'd')
-	rawTile := d.msg.Tag[1:]
+	who = int(util.Lower(d.Msg.Tag[0]) - 'd')
+	rawTile := d.Msg.Tag[1:]
 	discardTile, isRedFive = d._parseTenhouTile(rawTile)
-	if d.msg.Tag[0] != 'D' {
-		isTsumogiri = d.msg.Tag[0] >= 'a'
-		canBeMeld = d.msg.T != ""
+	if d.Msg.Tag[0] != 'D' {
+		isTsumogiri = d.Msg.Tag[0] >= 'a'
+		canBeMeld = d.Msg.T != ""
 	}
 	kanDoraIndicator = -1
 	return
 }
 
-func (*tenhouRoundData) isNukiOperator(data string) bool {
+func (*TenHouRoundData) isNukiOperator(data string) bool {
 	bits, err := strconv.Atoi(data)
 	if err != nil {
 		panic(err)
@@ -516,18 +517,18 @@ func (*tenhouRoundData) isNukiOperator(data string) bool {
 	return bits&0x4 == 0 && bits&0x18 == 0 && bits&0x20 > 0
 }
 
-func (d *tenhouRoundData) IsOpen() bool {
-	if d.msg.Tag != "N" {
+func (d *TenHouRoundData) IsOpen() bool {
+	if d.Msg.Tag != "N" {
 		return false
 	}
 
 	// 除去拔北
-	return !d.isNukiOperator(d.msg.Meld)
+	return !d.isNukiOperator(d.Msg.Meld)
 }
 
-func (d *tenhouRoundData) ParseOpen() (who int, meld *model.Meld, kanDoraIndicator int) {
-	who, _ = strconv.Atoi(d.msg.Who)
-	meldType, tenhouMeldTiles, tenhouCalledTile := d._parseTenhouMeld(d.msg.Meld)
+func (d *TenHouRoundData) ParseOpen() (who int, meld *model.Meld, kanDoraIndicator int) {
+	who, _ = strconv.Atoi(d.Msg.Who)
+	meldType, tenhouMeldTiles, tenhouCalledTile := d._parseTenhouMeld(d.Msg.Meld)
 	meldTiles := make([]int, len(tenhouMeldTiles))
 	for i, tenhouTile := range tenhouMeldTiles {
 		meldTiles[i] = d._tenhouTileToTile34(tenhouTile)
@@ -546,30 +547,30 @@ func (d *tenhouRoundData) ParseOpen() (who int, meld *model.Meld, kanDoraIndicat
 	return
 }
 
-func (d *tenhouRoundData) IsReach() bool {
+func (d *TenHouRoundData) IsReach() bool {
 	// Step == "1" 立直宣告
 	// Step == "2" 立直成功，扣1000点
-	return d.msg.Tag == "REACH" && d.msg.Step == "1"
+	return d.Msg.Tag == "REACH" && d.Msg.Step == "1"
 }
 
-func (d *tenhouRoundData) ParseReach() (who int) {
-	who, _ = strconv.Atoi(d.msg.Who)
+func (d *TenHouRoundData) ParseReach() (who int) {
+	who, _ = strconv.Atoi(d.Msg.Who)
 	return
 }
 
-func (d *tenhouRoundData) IsFuriten() bool {
-	return d.msg.Tag == "FURITEN"
+func (d *TenHouRoundData) IsFuriten() bool {
+	return d.Msg.Tag == "FURITEN"
 }
 
-func (d *tenhouRoundData) IsRoundWin() bool {
-	return d.msg.Tag == "AGARI"
+func (d *TenHouRoundData) IsRoundWin() bool {
+	return d.Msg.Tag == "AGARI"
 }
 
-func (d *tenhouRoundData) ParseRoundWin() (whos []int, points []int) {
-	d.isRoundEnd = true
+func (d *TenHouRoundData) ParseRoundWin() (whos []int, points []int) {
+	d.IsRoundEnd = true
 
-	who, _ := strconv.Atoi(d.msg.Who)
-	splits := strings.Split(d.msg.Ten, ",")
+	who, _ := strconv.Atoi(d.Msg.Who)
+	splits := strings.Split(d.Msg.Ten, ",")
 	if len(splits) < 2 {
 		return
 	}
@@ -577,37 +578,37 @@ func (d *tenhouRoundData) ParseRoundWin() (whos []int, points []int) {
 	return []int{who}, []int{point}
 }
 
-func (d *tenhouRoundData) IsRyuukyoku() bool {
-	return d.msg.Tag == "RYUUKYOKU"
+func (d *TenHouRoundData) IsRyuukyoku() bool {
+	return d.Msg.Tag == "RYUUKYOKU"
 }
 
 // "{\"tag\":\"RYUUKYOKU\",\"type\":\"ron3\",\"ba\":\"1,1\",\"sc\":\"290,0,228,0,216,0,256,0\",\"hai0\":\"18,19,30,32,33,41,43,94,95,114,115,117,119\",\"hai2\":\"29,31,74,75\",\"hai3\":\"8,13,17,25,35,46,48,53,78,79\"}"
-func (d *tenhouRoundData) ParseRyuukyoku() (type_ int, whos []int, points []int) {
-	d.isRoundEnd = true
+func (d *TenHouRoundData) ParseRyuukyoku() (type_ int, whos []int, points []int) {
+	d.IsRoundEnd = true
 
 	// TODO
 	return
 }
 
-func (d *tenhouRoundData) IsNukiDora() bool {
-	if d.msg.Tag != "N" {
+func (d *TenHouRoundData) IsNukiDora() bool {
+	if d.Msg.Tag != "N" {
 		return false
 	}
 
-	return d.isNukiOperator(d.msg.Meld)
+	return d.isNukiOperator(d.Msg.Meld)
 }
 
-func (d *tenhouRoundData) ParseNukiDora() (who int, isTsumogiri bool) {
+func (d *TenHouRoundData) ParseNukiDora() (who int, isTsumogiri bool) {
 	// TODO: isTsumogiri
-	who, _ = strconv.Atoi(d.msg.Who)
+	who, _ = strconv.Atoi(d.Msg.Who)
 	return
 }
 
-func (d *tenhouRoundData) IsNewDora() bool {
-	return d.msg.Tag == "DORA"
+func (d *TenHouRoundData) IsNewDora() bool {
+	return d.Msg.Tag == "DORA"
 }
 
-func (d *tenhouRoundData) ParseNewDora() (kanDoraIndicator int) {
-	kanDoraIndicator, _ = d._parseTenhouTile(d.msg.Hai)
+func (d *TenHouRoundData) ParseNewDora() (kanDoraIndicator int) {
+	kanDoraIndicator, _ = d._parseTenhouTile(d.Msg.Hai)
 	return
 }

@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/EndlessCheng/mahjong-helper/util"
+	"sort"
 	"strconv"
 	"time"
-	"sort"
+
+	"github.com/EndlessCheng/mahjong-helper/util"
 )
 
 type _majsoulRecordAccount struct {
@@ -16,7 +17,7 @@ type _majsoulRecordAccount struct {
 }
 
 // 牌谱基本信息
-type majsoulRecordBaseInfo struct {
+type MahJongSoulRecordBaseInfo struct {
 	UUID      string `json:"uuid"`
 	StartTime int64  `json:"start_time"`
 	EndTime   int64  `json:"end_time"`
@@ -26,7 +27,7 @@ type majsoulRecordBaseInfo struct {
 	Accounts []_majsoulRecordAccount `json:"accounts"`
 }
 
-func (i *majsoulRecordBaseInfo) sort() {
+func (i *MahJongSoulRecordBaseInfo) sort() {
 	sort.Slice(i.Accounts, func(i_, j int) bool {
 		return i.Accounts[i_].Seat < i.Accounts[j].Seat
 	})
@@ -34,7 +35,7 @@ func (i *majsoulRecordBaseInfo) sort() {
 
 var seatNameZH = []string{"东", "南", "西", "北"}
 
-func (i *majsoulRecordBaseInfo) String() string {
+func (i *MahJongSoulRecordBaseInfo) String() string {
 	i.sort()
 
 	const timeFormat = "2006-01-02 15:04:05"
@@ -51,7 +52,7 @@ func (i *majsoulRecordBaseInfo) String() string {
 	return output
 }
 
-func (i *majsoulRecordBaseInfo) getSelfSeat(accountID int) (int, error) {
+func (i *MahJongSoulRecordBaseInfo) getSelfSeat(accountID int) (int, error) {
 	if len(i.Accounts) == 0 {
 		return -1, fmt.Errorf("牌谱基本信息为空")
 	}
@@ -67,21 +68,21 @@ func (i *majsoulRecordBaseInfo) getSelfSeat(accountID int) (int, error) {
 //
 
 // 牌谱、观战中的单个操作信息
-type majsoulRecordAction struct {
-	Name   string          `json:"name"`
-	Action *majsoulMessage `json:"data"`
+type MahJongSoulRecordAction struct {
+	Name   string             `json:"name"`
+	Action *MaJongSoulMessage `json:"data"`
 }
 
-type majsoulRoundActions []*majsoulRecordAction
+type MahJongSoulRoundActions []*MahJongSoulRecordAction
 
-func (l majsoulRoundActions) append(action *majsoulRecordAction) (majsoulRoundActions, error) {
+func (l MahJongSoulRoundActions) Append(action *MahJongSoulRecordAction) (MahJongSoulRoundActions, error) {
 	if action == nil {
 		return nil, fmt.Errorf("数据异常：拿到的操作内容为空")
 	}
 	newL := l
 
 	if action.Name == "RecordNewRound" {
-		newL = majsoulRoundActions{action}
+		newL = MahJongSoulRoundActions{action}
 	} else {
 		if len(newL) == 0 {
 			return nil, fmt.Errorf("数据异常：未收到 RecordNewRound")
@@ -92,18 +93,18 @@ func (l majsoulRoundActions) append(action *majsoulRecordAction) (majsoulRoundAc
 	return newL, nil
 }
 
-func parseMajsoulRecordAction(actions []*majsoulRecordAction) (roundActionsList []majsoulRoundActions, err error) {
+func parseMajsoulRecordAction(actions []*MahJongSoulRecordAction) (roundActionsList []MahJongSoulRoundActions, err error) {
 	if len(actions) == 0 {
 		return nil, fmt.Errorf("数据异常：拿到的牌谱内容为空")
 	}
 
-	var currentRoundActions majsoulRoundActions
+	var currentRoundActions MahJongSoulRoundActions
 	for _, action := range actions {
 		if action.Name == "RecordNewRound" {
 			if len(currentRoundActions) > 0 {
 				roundActionsList = append(roundActionsList, currentRoundActions)
 			}
-			currentRoundActions = []*majsoulRecordAction{action}
+			currentRoundActions = []*MahJongSoulRecordAction{action}
 		} else {
 			if len(currentRoundActions) == 0 {
 				return nil, fmt.Errorf("数据异常：未收到 RecordNewRound")

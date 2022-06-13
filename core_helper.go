@@ -1,6 +1,6 @@
 package main
 
-var debugMode = false
+var DebugMode = false
 
 type gameMode int
 
@@ -8,7 +8,7 @@ const (
 	// TODO: 感觉有点杂乱需要重构
 	gameModeMatch       gameMode = iota // 对战 - IsInit
 	gameModeRecord                      // 解析牌谱
-	gameModeRecordCache                 // 解析牌谱 - runMajsoulRecordAnalysisTask
+	GameModeRecordCache                 // 解析牌谱 - runMajsoulRecordAnalysisTask
 	gameModeLive                        // 解析观战
 )
 

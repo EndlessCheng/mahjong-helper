@@ -192,7 +192,7 @@ func (l riskInfoList) printWithHands(hands []int, leftCounts []int) {
 	names := []string{"", "下家", "对家", "上家"}
 	for i := len(l) - 1; i >= 1; i-- {
 		tenpaiRate := l[i].tenpaiRate
-		if len(l[i].riskTable) > 0 && (debugMode || tenpaiRate > minShownTenpaiRate) {
+		if len(l[i].riskTable) > 0 && (DebugMode || tenpaiRate > minShownTenpaiRate) {
 			dangerousPlayerCount++
 			fmt.Print(names[i] + "安牌:")
 			//if debugMode {
@@ -584,7 +584,7 @@ func (r *analysisResult) printWaitsWithImproves13_oneRow() {
 	if len(result13.YakuTypes) > 0 {
 		// 役种（两向听以内开启显示）
 		if result13.Shanten <= 2 {
-			if !ShowAllYakuTypes && !debugMode {
+			if !ShowAllYakuTypes && !DebugMode {
 				shownYakuTypes := []int{}
 				for yakuType := range result13.YakuTypes {
 					for _, yt := range yakuTypesToAlert {

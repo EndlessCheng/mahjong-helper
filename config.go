@@ -1,9 +1,9 @@
 package main
 
 import (
-	"io/ioutil"
-	"encoding/json"
 	"bytes"
+	"encoding/json"
+	"io/ioutil"
 	"os"
 )
 
@@ -30,14 +30,14 @@ func init() {
 
 	data, err := ioutil.ReadFile(configFile)
 	if err != nil {
-		if debugMode {
+		if DebugMode {
 			panic(err)
 		}
 		return
 	}
 
 	if err := json.NewDecoder(bytes.NewReader(data)).Decode(gameConf); err != nil {
-		if debugMode {
+		if DebugMode {
 			panic(err)
 		}
 		return

@@ -1,28 +1,29 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"strings"
 	"testing"
 	"time"
-	"fmt"
-	"encoding/json"
-	"strings"
-	"io/ioutil"
+
 	"github.com/EndlessCheng/mahjong-helper/util/debug"
 )
 
 func Test_mjHandler_runAnalysisMajsoulMessageTask(t *testing.T) {
-	debugMode = true
+	DebugMode = true
 
 	logFile := "log/gamedata.log"
 	startLo := 33020
 	endLo := 33369
 
-	h := &mjHandler{
-		majsoulMessageQueue: make(chan []byte, 10000),
-		majsoulRoundData:    &majsoulRoundData{},
-		majsoulRecordMap:    map[string]*majsoulRecordBaseInfo{},
+	h := &MahJongHandler{
+		majsoulMessageQueue:  make(chan []byte, 10000),
+		MahJongSoulRoundData: &MahJongSoulRoundData{},
+		MahJongSoulRecordMap: map[string]*MahJongSoulRecordBaseInfo{},
 	}
-	h.majsoulRoundData.roundData = newGame(h.majsoulRoundData)
+	h.MahJongSoulRoundData.RoundData = NewGame(h.MahJongSoulRoundData)
 
 	s := struct {
 		Level   string `json:"level"`
@@ -50,7 +51,7 @@ func Test_mjHandler_runAnalysisMajsoulMessageTask(t *testing.T) {
 		h.majsoulMessageQueue <- []byte([]byte(s.Message))
 	}
 
-	go h.runAnalysisMajsoulMessageTask()
+	go h.RunAnalysisMahJongSoulMessageTask()
 
 	for {
 		if len(h.majsoulMessageQueue) == 0 {

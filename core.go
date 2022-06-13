@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/EndlessCheng/mahjong-helper/util"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 	"github.com/fatih/color"
@@ -166,12 +167,12 @@ func (p *playerInfo) doraNum(doraList []int) (doraCount int) {
 
 //
 
-type roundData struct {
+type RoundData struct {
 	parser DataParser
 
-	gameMode gameMode
+	GameMode gameMode
 
-	skipOutput bool
+	SkipOutput bool
 
 	// 玩家数，3 为三麻，4 为四麻
 	playerNumber int
@@ -211,7 +212,7 @@ type roundData struct {
 	players []*playerInfo
 }
 
-func newRoundData(parser DataParser, roundNumber int, benNumber int, dealer int) *roundData {
+func newRoundData(parser DataParser, roundNumber int, benNumber int, dealer int) *RoundData {
 	// 无论是三麻还是四麻，都视作四个人
 	const playerNumber = 4
 	roundWindTile := 27 + roundNumber/playerNumber
@@ -219,7 +220,7 @@ func newRoundData(parser DataParser, roundNumber int, benNumber int, dealer int)
 	for i := 0; i < playerNumber; i++ {
 		playerWindTile[i] = 27 + (playerNumber-dealer+i)%playerNumber
 	}
-	return &roundData{
+	return &RoundData{
 		parser:      parser,
 		roundNumber: roundNumber,
 		benNumber:   benNumber,
@@ -238,18 +239,18 @@ func newRoundData(parser DataParser, roundNumber int, benNumber int, dealer int)
 	}
 }
 
-func newGame(parser DataParser) *roundData {
+func NewGame(parser DataParser) *RoundData {
 	return newRoundData(parser, 0, 0, 0)
 }
 
 // 新的一局
-func (d *roundData) reset(roundNumber int, benNumber int, dealer int) {
-	skipOutput := d.skipOutput
-	gameMode := d.gameMode
+func (d *RoundData) reset(roundNumber int, benNumber int, dealer int) {
+	skipOutput := d.SkipOutput
+	gameMode := d.GameMode
 	playerNumber := d.playerNumber
 	newData := newRoundData(d.parser, roundNumber, benNumber, dealer)
-	newData.skipOutput = skipOutput
-	newData.gameMode = gameMode
+	newData.SkipOutput = skipOutput
+	newData.GameMode = gameMode
 	newData.playerNumber = playerNumber
 	if playerNumber == 3 {
 		// 三麻没有 2-8m
@@ -261,15 +262,15 @@ func (d *roundData) reset(roundNumber int, benNumber int, dealer int) {
 	*d = *newData
 }
 
-func (d *roundData) newGame() {
+func (d *RoundData) newGame() {
 	d.reset(0, 0, 0)
 }
 
-func (d *roundData) descLeftCounts(tile int) {
+func (d *RoundData) descLeftCounts(tile int) {
 	d.leftCounts[tile]--
 	if d.leftCounts[tile] < 0 {
 		info := fmt.Sprintf("数据异常: %s 数量为 %d", util.MahjongZH[tile], d.leftCounts[tile])
-		if debugMode {
+		if DebugMode {
 			panic(info)
 		} else {
 			fmt.Println(info)
@@ -278,11 +279,11 @@ func (d *roundData) descLeftCounts(tile int) {
 }
 
 // 杠！
-func (d *roundData) newDora(kanDoraIndicator int) {
+func (d *RoundData) newDora(kanDoraIndicator int) {
 	d.doraIndicators = append(d.doraIndicators, kanDoraIndicator)
 	d.descLeftCounts(kanDoraIndicator)
 
-	if d.skipOutput {
+	if d.SkipOutput {
 		return
 	}
 
@@ -290,11 +291,11 @@ func (d *roundData) newDora(kanDoraIndicator int) {
 }
 
 // 根据宝牌指示牌计算出宝牌
-func (d *roundData) doraList() (dl []int) {
+func (d *RoundData) doraList() (dl []int) {
 	return model.DoraList(d.doraIndicators, d.playerNumber == 3)
 }
 
-func (d *roundData) printDiscards() {
+func (d *RoundData) printDiscards() {
 	// 三麻的北家是不需要打印的
 	for i := len(d.players) - 1; i >= 1; i-- {
 		if player := d.players[i]; d.playerNumber != 3 || player.selfWindTile != 30 {
@@ -305,7 +306,7 @@ func (d *roundData) printDiscards() {
 
 // 分析34种牌的危险度
 // 可以用来判断自家手牌的安全度，以及他家是否在进攻（多次切出危险度高的牌）
-func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
+func (d *RoundData) analysisTilesRisk() (riList riskInfoList) {
 	riList = make(riskInfoList, len(d.players))
 	for who := range riList {
 		riList[who] = &riskInfo{
@@ -415,7 +416,7 @@ func (d *roundData) analysisTilesRisk() (riList riskInfoList) {
 }
 
 // TODO: 特殊处理w立直
-func (d *roundData) isPlayerDaburii(who int) bool {
+func (d *RoundData) isPlayerDaburii(who int) bool {
 	// w立直成立的前提是没有任何玩家副露
 	for _, p := range d.players {
 		if len(p.melds) > 0 {
@@ -430,7 +431,7 @@ func (d *roundData) isPlayerDaburii(who int) bool {
 }
 
 // 自家的 PlayerInfo
-func (d *roundData) newModelPlayerInfo() *model.PlayerInfo {
+func (d *RoundData) newModelPlayerInfo() *model.PlayerInfo {
 	const wannpaiTilesCount = 14
 	leftDrawTilesCount := util.CountOfTiles34(d.leftCounts) - (wannpaiTilesCount - len(d.doraIndicators))
 	for _, player := range d.players[1:] {
@@ -469,8 +470,8 @@ func (d *roundData) newModelPlayerInfo() *model.PlayerInfo {
 	}
 }
 
-func (d *roundData) analysis() error {
-	if !debugMode {
+func (d *RoundData) Analysis() error {
+	if !DebugMode {
 		defer func() {
 			if err := recover(); err != nil {
 				fmt.Println("内部错误：", err)
@@ -478,7 +479,7 @@ func (d *roundData) analysis() error {
 		}()
 	}
 
-	if debugMode {
+	if DebugMode {
 		if msg := d.parser.GetMessage(); len(msg) > 0 {
 			const printLimit = 500
 			if len(msg) > printLimit {
@@ -503,32 +504,32 @@ func (d *roundData) analysis() error {
 		return nil
 	}
 
-	if debugMode {
+	if DebugMode {
 		fmt.Println("当前座位为", d.parser.GetSelfSeat())
 	}
 
-	var currentRoundCache *roundAnalysisCache
-	if analysisCache := getAnalysisCache(d.parser.GetSelfSeat()); analysisCache != nil {
-		currentRoundCache = analysisCache.wholeGameCache[d.roundNumber][d.benNumber]
+	var currentRoundCache *RoundAnalysisCache
+	if analysisCache := GetAnalysisCache(d.parser.GetSelfSeat()); analysisCache != nil {
+		currentRoundCache = analysisCache.WholeGameCache[d.roundNumber][d.benNumber]
 	}
 
 	switch {
 	case d.parser.IsInit():
 		// round 开始/重连
-		if !debugMode && !d.skipOutput {
-			clearConsole()
+		if !DebugMode && !d.SkipOutput {
+			ClearConsole()
 		}
 
 		roundNumber, benNumber, dealer, doraIndicators, hands, numRedFives := d.parser.ParseInit()
 		switch d.parser.GetDataSourceType() {
 		case dataSourceTypeTenhou:
 			d.reset(roundNumber, benNumber, dealer)
-			d.gameMode = gameModeMatch // TODO: 牌谱模式？
+			d.GameMode = gameModeMatch // TODO: 牌谱模式？
 		case dataSourceTypeMajsoul:
 			if dealer != -1 { // 先就坐，还没洗牌呢~
 				// 设置第一局的 dealer
 				d.reset(0, 0, dealer)
-				d.gameMode = gameModeMatch
+				d.GameMode = gameModeMatch
 				fmt.Printf("游戏即将开始，您分配到的座位是：")
 				color.HiGreen(util.MahjongZH[d.players[0].selfWindTile])
 				return nil
@@ -543,8 +544,8 @@ func (d *roundData) analysis() error {
 		}
 
 		// 由于 reset 了，重新获取 currentRoundCache
-		if analysisCache := getAnalysisCache(d.parser.GetSelfSeat()); analysisCache != nil {
-			currentRoundCache = analysisCache.wholeGameCache[d.roundNumber][d.benNumber]
+		if analysisCache := GetAnalysisCache(d.parser.GetSelfSeat()); analysisCache != nil {
+			currentRoundCache = analysisCache.WholeGameCache[d.roundNumber][d.benNumber]
 		}
 
 		d.doraIndicators = doraIndicators
@@ -560,17 +561,17 @@ func (d *roundData) analysis() error {
 		playerInfo := d.newModelPlayerInfo()
 
 		// 牌谱分析模式下，记录舍牌推荐
-		if d.gameMode == gameModeRecordCache && len(hands) == 14 {
-			currentRoundCache.addAIDiscardTileWhenDrawTile(simpleBestDiscardTile(playerInfo), -1, 0, 0)
+		if d.GameMode == GameModeRecordCache && len(hands) == 14 {
+			currentRoundCache.AddAIDiscardTileWhenDrawTile(simpleBestDiscardTile(playerInfo), -1, 0, 0)
 		}
 
-		if d.skipOutput {
+		if d.SkipOutput {
 			return nil
 		}
 
 		// 牌谱模式下，打印舍牌推荐
-		if d.gameMode == gameModeRecord {
-			currentRoundCache.print()
+		if d.GameMode == gameModeRecord {
+			currentRoundCache.Print()
 		}
 
 		color.New(color.FgHiGreen).Printf("%s", util.MahjongZH[d.roundWindTile])
@@ -618,8 +619,8 @@ func (d *roundData) analysis() error {
 				// 由于均为自家操作，宝牌数是不变的
 
 				// 牌谱分析模式下，记录加杠操作
-				if d.gameMode == gameModeRecordCache {
-					currentRoundCache.addKan(meldType)
+				if d.GameMode == GameModeRecordCache {
+					currentRoundCache.AddKan(meldType)
 				}
 			}
 			// 修改原副露
@@ -633,7 +634,7 @@ func (d *roundData) analysis() error {
 				}
 			}
 
-			if debugMode {
+			if DebugMode {
 				if who == 0 {
 					if handsCount := util.CountOfTiles34(d.counts); handsCount%3 != 1 {
 						return fmt.Errorf("手牌错误：%d 张牌 %v", handsCount, d.counts)
@@ -662,8 +663,8 @@ func (d *roundData) analysis() error {
 				d.counts[meldTiles[0]] = 0
 
 				// 牌谱分析模式下，记录暗杠操作
-				if d.gameMode == gameModeRecordCache {
-					currentRoundCache.addKan(meldType)
+				if d.GameMode == GameModeRecordCache {
+					currentRoundCache.AddKan(meldType)
 				}
 			} else {
 				d.counts[calledTile]++
@@ -676,12 +677,12 @@ func (d *roundData) analysis() error {
 				}
 
 				// 牌谱分析模式下，记录吃碰明杠操作
-				if d.gameMode == gameModeRecordCache {
-					currentRoundCache.addChiPonKan(meldType)
+				if d.GameMode == GameModeRecordCache {
+					currentRoundCache.AddChiPonKan(meldType)
 				}
 			}
 
-			if debugMode {
+			if DebugMode {
 				if meldType == meldTypeMinkan || meldType == meldTypeAnkan {
 					if handsCount := util.CountOfTiles34(d.counts); handsCount%3 != 1 {
 						return fmt.Errorf("手牌错误：%d 张牌 %v", handsCount, d.counts)
@@ -709,7 +710,7 @@ func (d *roundData) analysis() error {
 		//	// 重连
 	case d.parser.IsFuriten():
 		// 振听
-		if d.skipOutput {
+		if d.SkipOutput {
 			return nil
 		}
 		color.HiYellow("振听")
@@ -718,8 +719,8 @@ func (d *roundData) analysis() error {
 		//case "HELO", "RANKING", "TAIKYOKU", "UN", "LN", "SAIKAI":
 		//	// 其他
 	case d.parser.IsSelfDraw():
-		if !debugMode && !d.skipOutput {
-			clearConsole()
+		if !DebugMode && !d.SkipOutput {
+			ClearConsole()
 		}
 		// 自家（从牌山 d.leftCounts）摸牌（至手牌 d.counts）
 		tile, isRedFive, kanDoraIndicator := d.parser.ParseSelfDraw()
@@ -739,7 +740,7 @@ func (d *roundData) analysis() error {
 		mixedRiskTable := riskTables.mixedRiskTable()
 
 		// 牌谱分析模式下，记录舍牌推荐
-		if d.gameMode == gameModeRecordCache {
+		if d.GameMode == GameModeRecordCache {
 			bestAttackDiscardTile := simpleBestDiscardTile(playerInfo)
 			bestDefenceDiscardTile := mixedRiskTable.getBestDefenceTile(playerInfo.HandTiles34)
 			bestAttackDiscardTileRisk, bestDefenceDiscardTileRisk := 0.0, 0.0
@@ -747,16 +748,16 @@ func (d *roundData) analysis() error {
 				bestAttackDiscardTileRisk = mixedRiskTable[bestAttackDiscardTile]
 				bestDefenceDiscardTileRisk = mixedRiskTable[bestDefenceDiscardTile]
 			}
-			currentRoundCache.addAIDiscardTileWhenDrawTile(bestAttackDiscardTile, bestDefenceDiscardTile, bestAttackDiscardTileRisk, bestDefenceDiscardTileRisk)
+			currentRoundCache.AddAIDiscardTileWhenDrawTile(bestAttackDiscardTile, bestDefenceDiscardTile, bestAttackDiscardTileRisk, bestDefenceDiscardTileRisk)
 		}
 
-		if d.skipOutput {
+		if d.SkipOutput {
 			return nil
 		}
 
 		// 牌谱模式下，打印舍牌推荐
-		if d.gameMode == gameModeRecord {
-			currentRoundCache.print()
+		if d.GameMode == gameModeRecord {
+			currentRoundCache.Print()
 		}
 
 		// 打印他家舍牌信息
@@ -799,11 +800,11 @@ func (d *roundData) analysis() error {
 			}
 
 			// 牌谱分析模式下，记录自家舍牌
-			if d.gameMode == gameModeRecordCache {
-				currentRoundCache.addSelfDiscardTile(discardTile, mixedRiskTable[discardTile], isReach)
+			if d.GameMode == GameModeRecordCache {
+				currentRoundCache.AddSelfDiscardTile(discardTile, mixedRiskTable[discardTile], isReach)
 			}
 
-			if debugMode {
+			if DebugMode {
 				if handsCount := util.CountOfTiles34(d.counts); handsCount%3 != 1 {
 					return fmt.Errorf("手牌错误：%d 张牌 %v", handsCount, d.counts)
 				}
@@ -833,7 +834,7 @@ func (d *roundData) analysis() error {
 			player.reachTileAtGlobal = len(d.globalDiscardTiles) - 1
 			player.reachTileAt = len(player.discardTiles) - 1
 			// 若该玩家摸切立直，打印提示信息
-			if isTsumogiri && !d.skipOutput {
+			if isTsumogiri && !d.SkipOutput {
 				color.HiYellow("%s 摸切立直！", player.name)
 			}
 		} else if len(player.meldDiscardsAt) != len(player.melds) {
@@ -856,7 +857,7 @@ func (d *roundData) analysis() error {
 		mixedRiskTable := riskTables.mixedRiskTable()
 
 		// 牌谱分析模式下，记录可能的鸣牌
-		if d.gameMode == gameModeRecordCache {
+		if d.GameMode == GameModeRecordCache {
 			allowChi := who == 3
 			_, results14, incShantenResults14 := util.CalculateMeld(playerInfo, discardTile, isRedFive, allowChi)
 			bestAttackDiscardTile := -1
@@ -871,11 +872,11 @@ func (d *roundData) analysis() error {
 				if bestDefenceDiscardTile >= 0 {
 					bestAttackDiscardTileRisk = mixedRiskTable[bestAttackDiscardTile]
 				}
-				currentRoundCache.addPossibleChiPonKan(bestAttackDiscardTile, bestAttackDiscardTileRisk)
+				currentRoundCache.AddPossibleChiPonKan(bestAttackDiscardTile, bestAttackDiscardTileRisk)
 			}
 		}
 
-		if d.skipOutput {
+		if d.SkipOutput {
 			return nil
 		}
 
@@ -884,13 +885,13 @@ func (d *roundData) analysis() error {
 		//	return nil
 		//}
 
-		if !debugMode {
-			clearConsole()
+		if !DebugMode {
+			ClearConsole()
 		}
 
 		// 牌谱模式下，打印舍牌推荐
-		if d.gameMode == gameModeRecord {
-			currentRoundCache.print()
+		if d.GameMode == gameModeRecord {
+			currentRoundCache.Print()
 		}
 
 		// 打印他家舍牌信息
@@ -898,7 +899,7 @@ func (d *roundData) analysis() error {
 		fmt.Println()
 		riskTables.printWithHands(d.counts, d.leftCounts)
 
-		if d.gameMode == gameModeMatch && !canBeMeld {
+		if d.GameMode == gameModeMatch && !canBeMeld {
 			return nil
 		}
 
@@ -909,8 +910,8 @@ func (d *roundData) analysis() error {
 	case d.parser.IsRoundWin():
 		// TODO: 解析天凤牌谱 - 注意 skipOutput
 
-		if !debugMode {
-			clearConsole()
+		if !DebugMode {
+			ClearConsole()
 		}
 		fmt.Println("和牌，本局结束")
 		whos, points := d.parser.ParseRoundWin()
