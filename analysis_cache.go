@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/EndlessCheng/mahjong-helper/Console"
 	"github.com/EndlessCheng/mahjong-helper/util"
 	"github.com/fatih/color"
 )
@@ -26,7 +27,7 @@ type AnalysisCache struct {
 	isRiichiWhenDiscard bool
 	meldType            int
 
-	// 用手牌中的什么牌去鸣牌，空就是跳过不鸣
+	// 用手牌中的什么牌去鳴牌，空就是跳过不鸣
 	selfOpenTiles []int
 
 	aiAttackDiscardTile      int
@@ -83,7 +84,7 @@ func (roundAnalysisCache *RoundAnalysisCache) Print() {
 		if info == EmptyInfo || risk < 5 {
 			fmt.Print(info)
 		} else {
-			color.New(getNumRiskColor(risk)).Print(info)
+			color.New(GetNumRiskColor(risk)).Print(info)
 		}
 		fmt.Print(suffix)
 	}
@@ -103,7 +104,7 @@ func (roundAnalysisCache *RoundAnalysisCache) Print() {
 	}
 	fmt.Println()
 
-	fmt.Print("进攻推荐")
+	fmt.Print("進攻推薦")
 	if done {
 		for _, c := range roundAnalysisCache.Cache {
 			printTileInfo(c.aiAttackDiscardTile, c.aiAttackDiscardTileRisk, "")
@@ -111,7 +112,7 @@ func (roundAnalysisCache *RoundAnalysisCache) Print() {
 	}
 	fmt.Println()
 
-	fmt.Print("防守推荐")
+	fmt.Print("防守推薦")
 	if done {
 		for _, c := range roundAnalysisCache.Cache {
 			printTileInfo(c.aiDefenceDiscardTile, c.aiDefenceDiscardTileRisk, "")
@@ -122,7 +123,7 @@ func (roundAnalysisCache *RoundAnalysisCache) Print() {
 	fmt.Println()
 }
 
-// （摸牌后、鸣牌后的）实际舍牌
+// （摸牌后、鳴牌后的）实际舍牌
 func (rc *RoundAnalysisCache) AddSelfDiscardTile(tile int, risk float64, isRiichiWhenDiscard bool) {
 	latestCache := rc.Cache[len(rc.Cache)-1]
 	latestCache.selfDiscardTile = tile
@@ -270,8 +271,8 @@ func (cache *GameAnalysisCache) RunMahJongSoulRecordAnalysisTask(actions MahJong
 
 	// 遍历自家舍牌，找到舍牌前的操作
 	// 若为摸牌操作，计算出此时的 AI 进攻舍牌和防守舍牌
-	// 若为鸣牌操作，计算出此时的 AI 进攻舍牌（无进攻舍牌则设为 -1），防守舍牌设为 -1
-	// TODO: 玩家跳过，但是 AI 觉得应鸣牌？
+	// 若为鳴牌操作，计算出此时的 AI 进攻舍牌（无进攻舍牌则设为 -1），防守舍牌设为 -1
+	// TODO: 玩家跳过，但是 AI 觉得应鳴牌？
 	majsoulRoundData := &MahJongSoulRoundData{SelfSeat: cache.SelfSeat} // 注意这里是用的一个新的 majsoulRoundData 去计算的，不会有数据冲突
 	majsoulRoundData.RoundData = NewGame(majsoulRoundData)
 	majsoulRoundData.RoundData.GameMode = GameModeRecordCache
@@ -299,7 +300,7 @@ func (cache *GameAnalysisCache) RunMahJongSoulRecordAnalysisTask(actions MahJong
 		return nil
 	}
 
-	ClearConsole()
+	Console.ClearScreen()
 	roundCache.Print()
 
 	return nil

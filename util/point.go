@@ -146,7 +146,7 @@ func CalcPoint(playerInfo *model.PlayerInfo) (result *PointResult) {
 func CalcAvgPoint(playerInfo model.PlayerInfo, waits Waits) (avgPoint float64, pointResults []*PointResult) {
 	isFuriten := playerInfo.IsFuriten(waits)
 	if isFuriten {
-		// 振听只能自摸，但是振听立直时考虑了这一点，所以只在默听或鸣牌时考虑
+		// 振听只能自摸，但是振听立直时考虑了这一点，所以只在默听或鳴牌时考虑
 		if !playerInfo.IsRiichi {
 			playerInfo.IsTsumo = true
 		}
@@ -186,7 +186,7 @@ func CalcAvgPoint(playerInfo model.PlayerInfo, waits Waits) (avgPoint float64, p
 }
 
 // 计算立直时的平均点数（考虑自摸、一发和里宝）和各种侍牌下的对应点数
-// 已鸣牌时返回 0
+// 已鳴牌时返回 0
 // TODO: 剩余不到 4 张无法立直
 // TODO: 不足 1000 点无法立直
 func CalcAvgRiichiPoint(playerInfo model.PlayerInfo, waits Waits) (avgRiichiPoint float64, pointResults []*PointResult) {

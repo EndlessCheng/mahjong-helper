@@ -33,13 +33,13 @@ func (i *MahJongSoulRecordBaseInfo) sort() {
 	})
 }
 
-var seatNameZH = []string{"东", "南", "西", "北"}
+var seatNameZH = []string{"東", "南", "西", "北"}
 
 func (i *MahJongSoulRecordBaseInfo) String() string {
 	i.sort()
 
 	const timeFormat = "2006-01-02 15:04:05"
-	output := fmt.Sprintf("%s\n从 %s\n到 %s\n\n", i.UUID, time.Unix(i.StartTime, 0).Format(timeFormat), time.Unix(i.EndTime, 0).Format(timeFormat))
+	output := fmt.Sprintf("%s\n從 %s\n到 %s\n\n", i.UUID, time.Unix(i.StartTime, 0).Format(timeFormat), time.Unix(i.EndTime, 0).Format(timeFormat))
 
 	maxAccountID := 0
 	for _, account := range i.Accounts {

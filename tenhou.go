@@ -430,7 +430,7 @@ func (d *TenHouRoundData) HandleLogin() {
 		handler.LogError(err)
 	}
 	if username != gameConf.currentActiveTenhouUsername {
-		color.HiGreen("%s 登录成功", username)
+		color.HiGreen("%s 登入成功", username)
 		gameConf.currentActiveTenhouUsername = username
 	}
 }

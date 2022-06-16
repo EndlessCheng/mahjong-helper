@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/EndlessCheng/mahjong-helper/Console"
 	"github.com/EndlessCheng/mahjong-helper/platform/tenhou"
 	"github.com/EndlessCheng/mahjong-helper/util"
 	"github.com/EndlessCheng/mahjong-helper/util/debug"
@@ -288,8 +289,8 @@ func (handler *MahJongHandler) RunAnalysisMahJongSoulMessageTask() {
 			handler.MahJongSoulRoundData.newGame()
 			handler.MahJongSoulRoundData.SelfSeat = 0 // 观战进来后看的是东起的玩家
 			handler.MahJongSoulRoundData.GameMode = gameModeLive
-			ClearConsole()
-			fmt.Printf("正在载入对战：%s", d.LiveBaseInfo.String())
+			Console.ClearScreen()
+			fmt.Printf("正在載入對戰：%s", d.LiveBaseInfo.String())
 		case d.LiveFastAction != nil:
 			if err := handler.loadLiveAction(d.LiveFastAction, true); err != nil {
 				handler.LogError(err)
@@ -342,7 +343,7 @@ func (handler *MahJongHandler) loadMahJongSoulRecordBaseInfo(mahjongsoulRecordUU
 
 	// 标记当前正在观看的牌谱
 	handler.MahJongSoulCurrentRecordUUID = mahjongsoulRecordUUID
-	ClearConsole()
+	Console.ClearScreen()
 	fmt.Printf("正在解析雀魂牌谱：%s", baseInfo.String())
 
 	// 标记古役模式
@@ -350,7 +351,7 @@ func (handler *MahJongHandler) loadMahJongSoulRecordBaseInfo(mahjongsoulRecordUU
 	util.SetConsiderOldYaku(isOldYaKuMode)
 	if isOldYaKuMode {
 		fmt.Println()
-		color.HiGreen("古役模式已开启")
+		color.HiGreen("古役模式已開啟")
 	}
 
 	return nil

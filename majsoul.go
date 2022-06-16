@@ -453,7 +453,7 @@ func (d *MahJongSoulRoundData) ParseOpen() (who int, meld *model.Meld, kanDoraIn
 	} else if len(meldTiles) == 4 {
 		meldType = meldTypeMinkan // 大明杠
 	} else {
-		panic("鸣牌数据解析失败！")
+		panic("鳴牌数据解析失败！")
 	}
 	meld = &model.Meld{
 		MeldType:          meldType,

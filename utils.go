@@ -57,20 +57,28 @@ func getOtherDiscardAlertColor(index int) color.Attribute {
 	}
 }
 
-// 铳率高低
-func getNumRiskColor(risk float64) color.Attribute {
+/* 铳率高低
+以紅橙黃綠藍紫反方向做警示
+現物表示白色，
+青色表示<3%，
+藍色表示<5%，
+綠色表示<10%，
+黃色表示<15%，
+紅色表示>15%。
+*/
+func GetNumRiskColor(risk float64) color.Attribute {
 	switch {
-	//case risk < 3:
-	//	return color.FgHiBlue
-	case risk < 5:
+	case risk < 3:
 		return color.FgHiCyan
+	case risk < 5:
+		return color.FgHiBlue
 		//case risk < 7.5:
 		//	return color.FgYellow
 	case risk < 10:
-		return color.FgHiYellow
+		return color.FgHiGreen
 	case risk < 15:
-		return color.FgHiRed
+		return color.FgHiYellow
 	default:
-		return color.FgRed
+		return color.FgHiRed
 	}
 }

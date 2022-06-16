@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/EndlessCheng/mahjong-helper/Console"
+
 	"github.com/EndlessCheng/mahjong-helper/util"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 	"github.com/fatih/color"
@@ -14,7 +16,7 @@ import (
 
 // Enum
 const (
-	Tenhou int = iota
+	TenHou int = iota
 	MahJongSoul
 )
 
@@ -51,14 +53,14 @@ var (
 			Type: []string{
 				"Web",
 				"4K"},
-			Code: Tenhou,
+			Code: TenHou,
 		},
 		{
 			Name: "雀魂",
 			Type: []string{
 				"國際中文服",
 				"日服",
-				"国际服"},
+				"國際服"},
 			Code: MahJongSoul,
 		},
 	}
@@ -67,6 +69,8 @@ var (
 func init() {
 	rand.Seed(time.Now().UnixNano())
 
+	// this program can run different mode by command-line with argument "old, majsoul, tenhou, analysis, interactive,
+	// i detail agari, a, score, s, yaku, y, dora, d, port and p" to use different mode"
 	flag.BoolVar(&ConsiderOldYaku, "old", false, "允许古役")
 	flag.BoolVar(&IsMajsoul, "majsoul", false, "雀魂助手")
 	flag.BoolVar(&IsTenhou, "tenhou", false, "天凤助手")
@@ -86,30 +90,29 @@ func init() {
 	flag.IntVar(&Port, "p", 12121, "同 -port")
 }
 
-const readmeURL = "https://github.com/EndlessCheng/mahjong-helper/blob/master/README.md"
-const issueURL = "https://github.com/EndlessCheng/mahjong-helper/issues"
-const issueCommonQuestions = "https://github.com/EndlessCheng/mahjong-helper/issues/104"
-const qqGroupNum = "375865038"
-
+// Print description of README, question issues, and community and 
+// let player can choose witch platform and reminder
 func welcome() int {
-	fmt.Println("使用说明：" + readmeURL)
-	fmt.Println("问题反馈：" + issueURL)
-	fmt.Println("吐槽群：" + qqGroupNum)
+	fmt.Println("使用说明：" + "https://github.com/EndlessCheng/mahjong-helper/blob/master/README.md")
+	fmt.Println("问题反馈：" + "https://github.com/EndlessCheng/mahjong-helper/issues")
+	fmt.Println("吐槽群：" + "375865038")
 	fmt.Println()
 
 RenterPlatform: // wrong enter goto label
 	// print platforms
 	for _, element := range Platforms {
-		fmt.Printf("%d - %s %v\n", element.Code, element.Name, element.Type)
+		
+		fmt.Printf("%d - %s %v\n\n", element.Code, element.Name, "[" + strings.Join(element.Type,`,` ) +"]")
 	}
 	fmt.Print("請選擇對應的網站(0或1)，如未選擇則預設雀魂(1): ")
 
 	// set default value to int MahJongSoul(1) can exclude not int type
-	choose := MahJongSoul
+	choose := TenHou
+	// choose := MahJongSoul
 	fmt.Scanln(&choose)
 
-	ClearConsole()
-	if choose == Tenhou { // choose TenHou
+	Console.ClearScreen()
+	if choose == TenHou { // choose TenHou
 		color.HiGreen("已選擇 - %s", Platforms[0].Name)
 	} else if choose == MahJongSoul { // choose MahJongSoul
 		color.HiGreen("已選擇 - %s", Platforms[1].Name)
@@ -119,7 +122,7 @@ RenterPlatform: // wrong enter goto label
 该步骤用于获取您的账号 ID，便于在游戏开始时获取自风，否则程序将无法解析后续数据。
 
 若助手无响应，请确认您已按步骤安装完成。
-相关链接 ` + issueCommonQuestions)
+相关链接 https://github.com/EndlessCheng/mahjong-helper/issues/104`)
 		}
 	} else { // the choice not in selection
 		fmt.Printf("輸入錯誤，請重新輸入選擇\n\n")
@@ -130,13 +133,16 @@ RenterPlatform: // wrong enter goto label
 }
 
 func main() {
+	Console.ClearScreen()
 	flag.Parse()
 
-	color.HiGreen("日本麻将助手 %s (by EndlessCheng)", Version)
+	// print text with green color
+	color.HiGreen("日本麻将助手 ver.%s (by EndlessCheng)", Version)
 	if Version != VersionDev {
 		go CheckNewVersion(Version)
 	}
 
+	// set consider old yaku to false
 	util.SetConsiderOldYaku(ConsiderOldYaku)
 
 	HumanTiles := strings.Join(flag.Args(), " ")
@@ -146,6 +152,7 @@ func main() {
 	}
 
 	var err error
+	// switch to different mode by command-line argument
 	switch {
 	case IsMajsoul:
 		err = RunServer(true, Port)

@@ -102,7 +102,7 @@ func TestLogin(t *testing.T) {
 	if err != nil {
 		t.Skip("登录失败:", err)
 	}
-	t.Log("登录成功:", respLogin)
+	t.Log("登入成功:", respLogin)
 	t.Log(respLogin.AccessToken)
 
 	time.Sleep(time.Second)
@@ -150,7 +150,7 @@ func TestReLogin(t *testing.T) {
 	if err != nil {
 		t.Skip("登录失败:", err)
 	}
-	t.Log("登录成功:", respLogin)
+	t.Log("登入成功:", respLogin)
 	t.Log(respLogin.AccessToken)
 
 	time.Sleep(time.Second)

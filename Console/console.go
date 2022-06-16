@@ -1,4 +1,4 @@
-package main
+package Console
 
 import (
 	"os"
@@ -23,7 +23,7 @@ func init() {
 	}
 }
 
-func ClearConsole() {
+func ClearScreen() {
 	if clearFunc, ok := clearFuncMap[runtime.GOOS]; ok {
 		clearFunc()
 	}

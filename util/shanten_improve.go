@@ -2,9 +2,10 @@ package util
 
 import (
 	"fmt"
-	"github.com/EndlessCheng/mahjong-helper/util/model"
 	"math"
 	"sort"
+
+	"github.com/EndlessCheng/mahjong-helper/util/model"
 )
 
 // map[改良牌]进张（选择进张数最大的）
@@ -18,7 +19,7 @@ type Hand13AnalysisResult struct {
 	// 剩余牌
 	LeftTiles34 []int
 
-	// 是否已鸣牌（非门清状态）
+	// 是否已鳴牌（非门清状态）
 	// 用于判断是否无役等
 	IsNaki bool
 
@@ -33,7 +34,7 @@ type Hand13AnalysisResult struct {
 	// 默听时的进张
 	DamaWaits Waits
 
-	// TODO: 鸣牌进张：他家打出这张牌，可以鸣牌，且能让向听数前进
+	// TODO: 鳴牌进张：他家打出这张牌，可以鳴牌，且能让向听数前进
 	//MeldWaits Waits
 
 	// map[进张牌]向听前进后的(最大)进张数
@@ -67,7 +68,7 @@ type Hand13AnalysisResult struct {
 	// 役种
 	YakuTypes map[int]struct{}
 
-	// （鸣牌时）是否片听
+	// （鳴牌时）是否片听
 	IsPartWait bool
 
 	// 宝牌个数（手牌+副露）
@@ -116,7 +117,7 @@ func (r *Hand13AnalysisResult) mixedRoundPoint() float64 {
 
 // 调试用
 func (r *Hand13AnalysisResult) String() string {
-	s := fmt.Sprintf("%d 进张 %s\n%.2f 改良进张 [%d(%d) 种]",
+	s := fmt.Sprintf("%d 進張 %s\n%.2f 改良進張 [%d(%d) 種]",
 		r.Waits.AllCount(),
 		//r.Waits.AllCount()+r.MeldWaits.AllCount(),
 		TilesToStrWithBracket(r.Waits.indexes()),
@@ -125,14 +126,14 @@ func (r *Hand13AnalysisResult) String() string {
 		r.ImproveWayCount,
 	)
 	if len(r.DamaWaits) > 0 {
-		s += fmt.Sprintf("（默听进张 %s）", TilesToStrWithBracket(r.DamaWaits.indexes()))
+		s += fmt.Sprintf("（默聽進張 %s）", TilesToStrWithBracket(r.DamaWaits.indexes()))
 	}
 	if r.Shanten >= 1 {
 		mixedScore := r.MixedWaitsScore
 		//for i := 2; i <= r.Shanten; i++ {
 		//	mixedScore /= 4
 		//}
-		s += fmt.Sprintf(" %.2f %s进张（%.2f 综合分）",
+		s += fmt.Sprintf(" %.2f %s進張（%.2f 综合分）",
 			r.AvgNextShantenWaitsCount,
 			NumberToChineseShanten(r.Shanten-1),
 			mixedScore,
@@ -145,7 +146,7 @@ func (r *Hand13AnalysisResult) String() string {
 		s += fmt.Sprintf(" [局收支%d]", int(math.Round(r.MixedRoundPoint)))
 	}
 	if r.DamaPoint > 0 {
-		s += fmt.Sprintf("[默听%d]", int(math.Round(r.DamaPoint)))
+		s += fmt.Sprintf("[默聽%d]", int(math.Round(r.DamaPoint)))
 	}
 	if r.RiichiPoint > 0 {
 		s += fmt.Sprintf("[立直%d]", int(math.Round(r.RiichiPoint)))
@@ -153,9 +154,9 @@ func (r *Hand13AnalysisResult) String() string {
 	if r.Shanten >= 0 && r.Shanten <= 1 {
 		if r.FuritenRate > 0 {
 			if r.FuritenRate < 1 {
-				s += "[可能振听]"
+				s += "[可能振聽]"
 			} else {
-				s += "[振听]"
+				s += "[振聽]"
 			}
 		}
 	}
@@ -822,7 +823,7 @@ func CalculateShantenWithImproves14(playerInfo *model.PlayerInfo) (shanten int, 
 	return
 }
 
-// 计算最小向听数，鸣牌方式
+// 计算最小向听数，鳴牌方式
 func calculateMeldShanten(tiles34 []int, calledTile int, isRedFive bool, allowChi bool) (minShanten int, meldCombinations []model.Meld) {
 	// 是否能碰
 	if tiles34[calledTile] >= 2 {
@@ -861,7 +862,7 @@ func calculateMeldShanten(tiles34 []int, calledTile int, isRedFive bool, allowCh
 		}
 	}
 
-	// 计算所有鸣牌下的最小向听数
+	// 计算所有鳴牌下的最小向听数
 	minShanten = 99
 	for _, c := range meldCombinations {
 		tiles34[c.SelfTiles[0]]--
@@ -874,11 +875,11 @@ func calculateMeldShanten(tiles34 []int, calledTile int, isRedFive bool, allowCh
 	return
 }
 
-// TODO 鸣牌的情况判断（待重构）
+// TODO 鳴牌的情况判断（待重构）
 // 编程时注意他家切掉的这张牌是否算到剩余数中
 //if isOpen {
 //if newShanten, combinations, shantens := calculateMeldShanten(tiles34, i, true); newShanten < shanten {
-//	// 向听前进了，说明鸣牌成功，则换的这张牌为鸣牌进张
+//	// 向听前进了，说明鳴牌成功，则换的这张牌为鳴牌进张
 //	// 计算进张数：若能碰则 =剩余数*3，否则 =剩余数
 //	meldWaits[i] = leftTile - tiles34[i]
 //	for i, comb := range combinations {
@@ -890,7 +891,7 @@ func calculateMeldShanten(tiles34 []int, calledTile int, isRedFive bool, allowCh
 //}
 //}
 
-// 计算鸣牌下的何切分析
+// 计算鳴牌下的何切分析
 // calledTile 他家出的牌，尝试鸣这张牌
 // isRedFive 这张牌是否为赤5
 // allowChi 是否允许吃这张牌
