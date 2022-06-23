@@ -31,19 +31,19 @@
 
 分下面几步：
 
-1. 前往 [releases](https://github.com/EndlessCheng/mahjong-helper/releases/latest) 页面下载助手。解压到本地后打开。
-
-2. 雀魂需要浏览器允许本地证书，在浏览器地址栏中输入 `chrome://flags/#allow-insecure-localhost`，然后点击高亮那一项的「启用」按钮（[若没有该项见此](https://github.com/EndlessCheng/mahjong-helper/issues/108)）。该功能仅限基于 Chrome 内核开发的浏览器。
+1. 雀魂需要浏览器允许本地证书，在浏览器地址栏中输入 `chrome://flags/#allow-insecure-localhost`，然后点击高亮那一项的「启用」按钮（[若没有该项见此](https://github.com/EndlessCheng/mahjong-helper/issues/108)）。该功能仅限基于 Chrome 内核开发的浏览器。
    
    （不同浏览器/版本的描述可能不一样，如果打开的页面是英文的话，高亮的就是 `Allow invalid certificates for resources loaded from localhost`，把它的 Disabled 改成 Enabled）
    
    设置完成后**重启浏览器**。
 
-3. 安装浏览器扩展 Header Editor，用于修改 code.js 文件，发送雀魂游戏中的玩家操作信息至本地运行的助手。
+2. 安装浏览器扩展 Header Editor，用于修改 code.js 文件，发送雀魂游戏中的玩家操作信息至本地运行的助手。
    
    若能翻墙请前往 [谷歌商城](https://chrome.google.com/webstore/detail/header-editor/eningockdidmgiojffjmkdblpjocbhgh?hl=zh) 下载该扩展。或者 [从 CRX 安装该扩展](https://www.chromefor.com/header-editor_v4-0-7/)（若无法安装试试 360 浏览器）。
    
    安装好扩展后点进该扩展的`管理`界面，点击`导入和导出`，在下载规则中填入 `https://endlesscheng.gitee.io/public/mahjong-helper.json`，点击右侧的下载按钮，然后点击下方的`保存`。（如果您是海外用户，请在下载规则中填入 `https://mjhelper.github.io/mahjong-helper.json` 以获得更好的加载速度。）
+
+3. 前往 [releases](https://github.com/EndlessCheng/mahjong-helper/releases/latest) 页面下载助手。解压到本地后打开。
 
 4. 如果您的浏览器之前打开过雀魂网页，需要清除缓存：打开雀魂网页，按下 F12，右键地址栏左侧的刷新按钮，选择「清空缓存并进行硬刷新」。这一操作只需要首次使用时做一次。如遇问题，请参考 [#104](https://github.com/EndlessCheng/mahjong-helper/issues/104)。
 
