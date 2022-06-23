@@ -4,12 +4,13 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"fmt"
-	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
-	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/tool"
-	"github.com/satori/go.uuid"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
+	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/tool"
+	uuid "github.com/satori/go.uuid"
 )
 
 func _genReqLogin(t *testing.T) *lq.ReqLogin {
@@ -30,7 +31,8 @@ func _genReqLogin(t *testing.T) *lq.ReqLogin {
 	// randomKey 最好是个固定值
 	randomKey, ok := os.LookupEnv("RANDOM_KEY")
 	if !ok {
-		rawRandomKey, _ := uuid.NewV4()
+		// delete _
+		rawRandomKey := uuid.NewV4()
 		randomKey = rawRandomKey.String()
 	}
 
@@ -58,7 +60,8 @@ func _genReqLogin(t *testing.T) *lq.ReqLogin {
 func _genReqOauth2Login(t *testing.T, accessToken string) *lq.ReqOauth2Login {
 	randomKey, ok := os.LookupEnv("RANDOM_KEY")
 	if !ok {
-		rawRandomKey, _ := uuid.NewV4()
+		// delete _
+		rawRandomKey := uuid.NewV4()
 		randomKey = rawRandomKey.String()
 	}
 
@@ -99,7 +102,7 @@ func TestLogin(t *testing.T) {
 	if err != nil {
 		t.Skip("登录失败:", err)
 	}
-	t.Log("登录成功:", respLogin)
+	t.Log("登入成功:", respLogin)
 	t.Log(respLogin.AccessToken)
 
 	time.Sleep(time.Second)
@@ -147,7 +150,7 @@ func TestReLogin(t *testing.T) {
 	if err != nil {
 		t.Skip("登录失败:", err)
 	}
-	t.Log("登录成功:", respLogin)
+	t.Log("登入成功:", respLogin)
 	t.Log(respLogin.AccessToken)
 
 	time.Sleep(time.Second)

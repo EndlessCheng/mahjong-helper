@@ -1,14 +1,15 @@
 package main
 
 import (
-	"github.com/EndlessCheng/mahjong-helper/util"
 	"fmt"
 	"os"
+
+	"github.com/EndlessCheng/mahjong-helper/util"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 )
 
-func interact(humanTilesInfo *model.HumanTilesInfo) error {
-	if !debugMode {
+func Interact(humanTilesInfo *model.HumanTilesInfo) error {
+	if !DebugMode {
 		defer func() {
 			if err := recover(); err != nil {
 				fmt.Println("内部错误：", err)
@@ -16,7 +17,7 @@ func interact(humanTilesInfo *model.HumanTilesInfo) error {
 		}()
 	}
 
-	playerInfo, err := analysisHumanTiles(humanTilesInfo)
+	playerInfo, err := AnalysisHumanTiles(humanTilesInfo)
 	if err != nil {
 		return err
 	}

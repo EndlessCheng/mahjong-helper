@@ -1,17 +1,18 @@
 package main
 
 import (
-	"testing"
+	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"strings"
-	"fmt"
-	"encoding/json"
+	"testing"
+
 	"github.com/EndlessCheng/mahjong-helper/util/debug"
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_majsoul_analysis(t *testing.T) {
-	debugMode = true
+	DebugMode = true
 
 	logFile := "log/gamedata-x.log"
 	logData, err := ioutil.ReadFile(logFile)
@@ -28,8 +29,8 @@ func Test_majsoul_analysis(t *testing.T) {
 	startLo := -1
 	endLo := -1
 
-	majsoulRoundData := &majsoulRoundData{}
-	majsoulRoundData.roundData = newGame(majsoulRoundData)
+	majsoulRoundData := &MahJongSoulRoundData{}
+	majsoulRoundData.RoundData = NewGame(majsoulRoundData)
 
 	lines := strings.Split(string(logData), "\n")
 	if startLo == -1 {
@@ -63,22 +64,22 @@ func Test_majsoul_analysis(t *testing.T) {
 		}
 
 		msg := s.Message
-		d := majsoulMessage{}
+		d := MaJongSoulMessage{}
 		if err := json.Unmarshal([]byte(msg), &d); err != nil {
 			fmt.Println(err)
 			continue
 		}
 
-		majsoulRoundData.msg = &d
-		majsoulRoundData.originJSON = msg
-		if err := majsoulRoundData.analysis(); err != nil {
+		majsoulRoundData.Message = &d
+		majsoulRoundData.OriginJSON = msg
+		if err := majsoulRoundData.Analysis(); err != nil {
 			fmt.Println("错误：", err)
 		}
 	}
 }
 
 func Test_tenhou_analysis(t *testing.T) {
-	debugMode = true
+	DebugMode = true
 
 	logFile := "log/gamedata-20190715-201349.log"
 	logData, err := ioutil.ReadFile(logFile)
@@ -95,8 +96,8 @@ func Test_tenhou_analysis(t *testing.T) {
 	startLo := -1
 	endLo := -1
 
-	tenhouRoundData := &tenhouRoundData{isRoundEnd: true}
-	tenhouRoundData.roundData = newGame(tenhouRoundData)
+	tenhouRoundData := &TenHouRoundData{IsRoundEnd: true}
+	tenhouRoundData.RoundData = NewGame(tenhouRoundData)
 
 	lines := strings.Split(string(logData), "\n")
 	if startLo == -1 {
@@ -130,15 +131,15 @@ func Test_tenhou_analysis(t *testing.T) {
 		}
 
 		msg := s.Message
-		d := tenhouMessage{}
+		d := TenhouMessage{}
 		if err := json.Unmarshal([]byte(msg), &d); err != nil {
 			fmt.Println(err)
 			continue
 		}
 
-		tenhouRoundData.msg = &d
-		tenhouRoundData.originJSON = msg
-		if err := tenhouRoundData.analysis(); err != nil {
+		tenhouRoundData.Msg = &d
+		tenhouRoundData.OriginJSON = msg
+		if err := tenhouRoundData.Analysis(); err != nil {
 			fmt.Println("错误：", err)
 		}
 	}

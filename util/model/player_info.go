@@ -104,7 +104,7 @@ func (pi *PlayerInfo) CountDora() (count int) {
 //	return float64(len(pi.DoraTiles)*sum) / float64(weight)
 //}
 
-// 是否已鸣牌（暗杠不算）
+// 是否已鳴牌（暗杠不算）
 // 可以用来判断该玩家能否立直，计算门清加符、役种番数等
 func (pi *PlayerInfo) IsNaki() bool {
 	for _, meld := range pi.Melds {
@@ -165,7 +165,7 @@ func (pi *PlayerInfo) UndoDiscardTile(tile int, isRedFive bool) {
 //}
 
 func (pi *PlayerInfo) AddMeld(meld Meld) {
-	// 用手牌中的牌去鸣牌
+	// 用手牌中的牌去鳴牌
 	// 原有的宝牌数量并未发生变化
 	for _, tile := range meld.SelfTiles {
 		pi.HandTiles34[tile]--
@@ -178,7 +178,7 @@ func (pi *PlayerInfo) AddMeld(meld Meld) {
 }
 
 func (pi *PlayerInfo) UndoAddMeld() {
-	// 复原鸣牌动作
+	// 复原鳴牌动作
 	latestMeld := pi.Melds[len(pi.Melds)-1]
 	for _, tile := range latestMeld.SelfTiles {
 		pi.HandTiles34[tile]++

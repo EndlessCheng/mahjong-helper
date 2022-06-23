@@ -9,11 +9,11 @@ const (
 )
 
 type Meld struct {
-	MeldType int // 鸣牌类型（吃、碰、暗杠、大明杠、加杠）
+	MeldType int // 鳴牌类型（吃、碰、暗杠、大明杠、加杠）
 
 	// Tiles == sort(SelfTiles + CalledTile)
 	Tiles      []int // 副露的牌
-	SelfTiles  []int // 手牌中组成副露的牌（用于鸣牌分析）
+	SelfTiles  []int // 手牌中组成副露的牌（用于鳴牌分析）
 	CalledTile int   // 被鸣的牌
 
 	// TODO: 重构 ContainRedFive RedFiveFromOthers

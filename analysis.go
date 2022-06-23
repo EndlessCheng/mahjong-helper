@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/EndlessCheng/mahjong-helper/util"
 	"fmt"
 	"strings"
-	"github.com/fatih/color"
+
+	"github.com/EndlessCheng/mahjong-helper/util"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
+	"github.com/fatih/color"
 )
 
 func simpleBestDiscardTile(playerInfo *model.PlayerInfo) int {
@@ -18,7 +19,7 @@ func simpleBestDiscardTile(playerInfo *model.PlayerInfo) int {
 	} else {
 		return -1
 	}
-	if shanten == 1 && len(playerInfo.DiscardTiles) < 9 && len(results14) > 0 && len(incShantenResults14) > 0 && !playerInfo.IsNaki() { // 鸣牌时的向听倒退暂不考虑
+	if shanten == 1 && len(playerInfo.DiscardTiles) < 9 && len(results14) > 0 && len(incShantenResults14) > 0 && !playerInfo.IsNaki() { // 鳴牌时的向听倒退暂不考虑
 		if results14[0].Result13.Waits.AllCount() < 9 && results14[0].Result13.MixedWaitsScore < incShantenResults14[0].Result13.MixedWaitsScore {
 			bestAttackDiscardTile = incShantenResults14[0].DiscardTile
 		}
@@ -45,6 +46,7 @@ func humanHands(playerInfo *model.PlayerInfo) string {
 	return humanHands
 }
 
+// analysis player hand risk
 func analysisPlayerWithRisk(playerInfo *model.PlayerInfo, mixedRiskTable riskTable) error {
 	// 手牌
 	humanTiles := humanHands(playerInfo)
@@ -55,13 +57,13 @@ func analysisPlayerWithRisk(playerInfo *model.PlayerInfo, mixedRiskTable riskTab
 	switch countOfTiles % 3 {
 	case 1:
 		result := util.CalculateShantenWithImproves13(playerInfo)
-		fmt.Println("当前" + util.NumberToChineseShanten(result.Shanten) + "：")
-		r := &analysisResult{
+		fmt.Println("當前" + util.NumberToChineseShanten(result.Shanten) + "：")
+		r := &AnalysisResult{
 			discardTile34:  -1,
 			result13:       result,
-			mixedRiskTable: mixedRiskTable,
+			MixedRiskTable: mixedRiskTable,
 		}
-		r.printWaitsWithImproves13_oneRow()
+		r.PrintWaitsWithImproves13_oneRow()
 	case 2:
 		// 分析手牌
 		shanten, results14, incShantenResults14 := util.CalculateShantenWithImproves14(playerInfo)
@@ -73,7 +75,7 @@ func analysisPlayerWithRisk(playerInfo *model.PlayerInfo, mixedRiskTable riskTab
 			if len(results14) > 0 {
 				r13 := results14[0].Result13
 				if r13.RiichiPoint > 0 && r13.FuritenRate == 0 && r13.DamaPoint >= 5200 && r13.DamaWaits.AllCount() == r13.Waits.AllCount() {
-					color.HiGreen("默听打点充足：追求和率默听，追求打点立直")
+					color.HiGreen("默聽打點充足，若追求和率可以默聽，追求打點可以選擇立直")
 				}
 				// 局收支相近时，提示：局收支相近，追求和率打xx，追求打点打xx
 			}
@@ -87,11 +89,11 @@ func analysisPlayerWithRisk(playerInfo *model.PlayerInfo, mixedRiskTable riskTab
 		// TODO: 接近流局时提示河底是哪家
 
 		// 何切分析结果
-		printResults14WithRisk(results14, mixedRiskTable)
-		printResults14WithRisk(incShantenResults14, mixedRiskTable)
+		PrintResults14WithRisk(results14, mixedRiskTable)
+		PrintResults14WithRisk(incShantenResults14, mixedRiskTable)
 	default:
 		err := fmt.Errorf("参数错误: %d 张牌", countOfTiles)
-		if debugMode {
+		if DebugMode {
 			panic(err)
 		}
 		return err
@@ -101,7 +103,7 @@ func analysisPlayerWithRisk(playerInfo *model.PlayerInfo, mixedRiskTable riskTab
 	return nil
 }
 
-// 分析鸣牌
+// 分析鳴牌
 // playerInfo: 自家信息
 // targetTile34: 他家舍牌
 // isRedFive: 此舍牌是否为赤5
@@ -119,27 +121,27 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool
 		return nil // fmt.Errorf("输入错误：无法鸣这张牌")
 	}
 
-	// 鸣牌
+	// 鳴牌
 	humanTiles := humanHands(playerInfo)
 	handsTobeNaki := humanTiles + " " + model.SepTargetTile + " " + util.Tile34ToStr(targetTile34) + "?"
 	fmt.Println(handsTobeNaki)
 	fmt.Println(strings.Repeat("=", len(handsTobeNaki)))
 
 	// 原始手牌分析结果
-	fmt.Println("当前" + util.NumberToChineseShanten(result.Shanten) + "：")
-	r := &analysisResult{
+	fmt.Println("當前" + util.NumberToChineseShanten(result.Shanten) + "：")
+	r := &AnalysisResult{
 		discardTile34:  -1,
 		result13:       result,
-		mixedRiskTable: mixedRiskTable,
+		MixedRiskTable: mixedRiskTable,
 	}
-	r.printWaitsWithImproves13_oneRow()
+	r.PrintWaitsWithImproves13_oneRow()
 
 	// 提示信息
 	// TODO: 局收支相近时，提示：局收支相近，追求和率打xx，追求打点打xx
 	if shanten == -1 {
 		color.HiRed("【已和牌】")
 	} else if shanten <= 1 {
-		// 鸣牌后听牌或一向听，提示型听
+		// 鳴牌后听牌或一向听，提示型听
 		if len(results14) > 0 && results14[0].LeftDrawTilesCount > 0 && results14[0].LeftDrawTilesCount <= 16 {
 			color.HiGreen("考虑型听？")
 		}
@@ -147,13 +149,13 @@ func analysisMeld(playerInfo *model.PlayerInfo, targetTile34 int, isRedFive bool
 
 	// TODO: 接近流局时提示河底是哪家
 
-	// 鸣牌何切分析结果
-	printResults14WithRisk(results14, mixedRiskTable)
-	printResults14WithRisk(incShantenResults14, mixedRiskTable)
+	// 鳴牌何切分析结果
+	PrintResults14WithRisk(results14, mixedRiskTable)
+	PrintResults14WithRisk(incShantenResults14, mixedRiskTable)
 	return nil
 }
 
-func analysisHumanTiles(humanTilesInfo *model.HumanTilesInfo) (playerInfo *model.PlayerInfo, err error) {
+func AnalysisHumanTiles(humanTilesInfo *model.HumanTilesInfo) (playerInfo *model.PlayerInfo, err error) {
 	defer func() {
 		if er := recover(); er != nil {
 			err = er.(error)

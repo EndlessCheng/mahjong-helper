@@ -7,6 +7,7 @@ import (
 
 var considerOldYaku bool
 
+// encapsulation
 func SetConsiderOldYaku(b bool) {
 	considerOldYaku = b
 }
@@ -90,36 +91,36 @@ const (
 var YakuNameMap = map[int]string{
 	// Special criteria
 	YakuRiichi:  "立直",
-	YakuChiitoi: "七对",
+	YakuChiitoi: "七對",
 
 	// Yaku based on luck
 	YakuTsumo: "自摸",
-	//YakuIppatsu: "一发",
-	//YakuHaitei:  "海底",
-	//YakuHoutei:  "河底",
-	//YakuRinshan: "岭上",
-	//YakuChankan: "抢杠",
-	YakuDaburii: "w立",
+	//YakuIppatsu: "一發",
+	//YakuHaitei:  "海底撈月",
+	//YakuHoutei:  "河底撈魚",
+	//YakuRinshan: "嶺上開花",
+	//YakuChankan: "搶槓",
+	YakuDaburii: "雙立直",
 
 	// Yaku based on sequences
 	YakuPinfu:          "平和",
-	YakuRyanpeikou:     "两杯口",
-	YakuIipeikou:       "一杯口",
-	YakuSanshokuDoujun: "三色",
-	YakuIttsuu:         "一通", // 一气
+	YakuRyanpeikou:     "二盃口",
+	YakuIipeikou:       "一盃口",
+	YakuSanshokuDoujun: "三色同順",
+	YakuIttsuu:         "一氣貫通", // 一气
 
 	// Yaku based on triplets and/or quads
-	YakuToitoi:         "对对",
+	YakuToitoi:         "對對和",
 	YakuSanAnkou:       "三暗刻",
 	YakuSanshokuDoukou: "三色同刻",
-	YakuSanKantsu:      "三杠子",
+	YakuSanKantsu:      "三槓子",
 
 	// Yaku based on terminal or honor tiles
-	YakuTanyao:     "断幺",
+	YakuTanyao:     "断么",
 	YakuYakuhai:    "役牌",
-	YakuChanta:     "混全",
-	YakuJunchan:    "纯全",
-	YakuHonroutou:  "混老头", // 七对也算
+	YakuChanta:     "混全帶么九",
+	YakuJunchan:    "纯全帶么九",
+	YakuHonroutou:  "混老頭", // 七对也算
 	YakuShousangen: "小三元",
 
 	// Yaku based on suits
@@ -135,11 +136,11 @@ var YakuNameMap = map[int]string{
 	YakuShousuushii:   "小四喜",
 	YakuDaisuushii:    "大四喜",
 	YakuTsuuiisou:     "字一色",
-	YakuChinroutou:    "清老头",
+	YakuChinroutou:    "清老頭",
 	YakuRyuuiisou:     "绿一色",
-	YakuChuuren:       "九莲",
-	YakuChuuren9:      "纯正九莲",
-	YakuSuuKantsu:     "四杠子",
+	YakuChuuren:       "九蓮寶燈",
+	YakuChuuren9:      "纯正九蓮寶燈",
+	YakuSuuKantsu:     "四槓子",
 	//YakuTenhou:        "天和",
 	//YakuChiihou:       "地和",
 }
@@ -193,7 +194,7 @@ func YakuTypesWithDoraToStr(yakuTypes map[int]struct{}, numDora int) string {
 	}
 	// TODO: old yaku
 	if numDora > 0 {
-		names = append(names, fmt.Sprintf("宝牌%d", numDora))
+		names = append(names, fmt.Sprintf("寶牌%d", numDora))
 	}
 	return fmt.Sprint(names)
 }

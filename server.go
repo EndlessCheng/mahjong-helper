@@ -4,14 +4,6 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/EndlessCheng/mahjong-helper/platform/tenhou"
-	"github.com/EndlessCheng/mahjong-helper/util"
-	"github.com/EndlessCheng/mahjong-helper/util/debug"
-	"github.com/EndlessCheng/mahjong-helper/util/model"
-	"github.com/fatih/color"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	"github.com/labstack/gommon/log"
 	"io/ioutil"
 	stdLog "log"
 	"net"
@@ -20,11 +12,21 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+
+	"github.com/EndlessCheng/mahjong-helper/Console"
+	"github.com/EndlessCheng/mahjong-helper/platform/tenhou"
+	"github.com/EndlessCheng/mahjong-helper/util"
+	"github.com/EndlessCheng/mahjong-helper/util/debug"
+	"github.com/EndlessCheng/mahjong-helper/util/model"
+	"github.com/fatih/color"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/gommon/log"
 )
 
-const defaultPort = 12121
+const DefaultPort = 12121
 
-func newLogFilePath() (filePath string, err error) {
+func NewLogFilePath() (filePath string, err error) {
 	const logDir = "log"
 	if err = os.MkdirAll(logDir, os.ModePerm); err != nil {
 		return
@@ -34,85 +36,88 @@ func newLogFilePath() (filePath string, err error) {
 	return filepath.Abs(filePath)
 }
 
-type mjHandler struct {
-	log echo.Logger
+type MahJongHandler struct {
+	Log echo.Logger
 
-	analysing bool
+	Analysing bool
 
-	tenhouMessageReceiver *tenhou.MessageReceiver
-	tenhouRoundData       *tenhouRoundData
+	TenhouMessageReceiver *tenhou.MessageReceiver
+	TenHouRoundData       *TenHouRoundData
 
-	majsoulMessageQueue chan []byte
-	majsoulRoundData    *majsoulRoundData
+	majsoulMessageQueue  chan []byte
+	MahJongSoulRoundData *MahJongSoulRoundData
 
-	majsoulRecordMap                map[string]*majsoulRecordBaseInfo
-	majsoulCurrentRecordUUID        string
-	majsoulCurrentRecordActionsList []majsoulRoundActions
-	majsoulCurrentRoundIndex        int
-	majsoulCurrentActionIndex       int
+	MahJongSoulRecordMap                map[string]*MahJongSoulRecordBaseInfo
+	MahJongSoulCurrentRecordUUID        string
+	MahJongSoulCurrentRecordActionsList []MahJongSoulRoundActions
+	MahJongSoulCurrentRoundIndex        int
+	MahJongSoulCurrentActionIndex       int
 
-	majsoulCurrentRoundActions majsoulRoundActions
+	MahJongSoulCurrentRoundActions MahJongSoulRoundActions
 }
 
-func (h *mjHandler) logError(err error) {
+// write error to log
+func (handler *MahJongHandler) LogError(err error) {
 	fmt.Fprintln(os.Stderr, err)
-	if !debugMode {
-		h.log.Error(err)
+	if !DebugMode {
+		handler.Log.Error(err)
 	}
 }
 
 // 调试用
-func (h *mjHandler) index(c echo.Context) error {
-	data, err := ioutil.ReadAll(c.Request().Body)
+func (handler *MahJongHandler) Index(echo_context echo.Context) error {
+	data, err := ioutil.ReadAll(echo_context.Request().Body)
 	if err != nil {
-		h.log.Error("[mjHandler.index.ioutil.ReadAll]", err)
-		return c.NoContent(http.StatusInternalServerError)
+		handler.Log.Error("[MahJongHandler.index.ioutil.ReadAll]", err)
+		return echo_context.NoContent(http.StatusInternalServerError)
 	}
 
 	fmt.Println(data, string(data))
-	h.log.Info(data)
-	return c.String(http.StatusOK, time.Now().Format("2006-01-02 15:04:05"))
+	handler.Log.Info(data)
+	return echo_context.String(http.StatusOK, time.Now().Format("2006-01-02 15:04:05"))
 }
 
 // 打一摸一分析器
-func (h *mjHandler) analysis(c echo.Context) error {
-	if h.analysing {
-		return c.NoContent(http.StatusForbidden)
+func (handler *MahJongHandler) Analysis(echo_context echo.Context) error {
+	if handler.Analysing {
+		return echo_context.NoContent(http.StatusForbidden)
 	}
 
-	h.analysing = true
-	defer func() { h.analysing = false }()
+	handler.Analysing = true
+	defer func() { handler.Analysing = false }()
 
-	d := struct {
+	data := struct {
 		Reset bool   `json:"reset"`
 		Tiles string `json:"tiles"`
 	}{}
-	if err := c.Bind(&d); err != nil {
+	if err := echo_context.Bind(&data); err != nil {
 		fmt.Println(err)
-		return c.String(http.StatusBadRequest, err.Error())
+		return echo_context.String(http.StatusBadRequest, err.Error())
 	}
 
-	if _, err := analysisHumanTiles(model.NewSimpleHumanTilesInfo(d.Tiles)); err != nil {
+	if _, err := AnalysisHumanTiles(model.NewSimpleHumanTilesInfo(data.Tiles)); err != nil {
 		fmt.Println(err)
-		return c.String(http.StatusBadRequest, err.Error())
+		return echo_context.String(http.StatusBadRequest, err.Error())
 	}
 
-	return c.NoContent(http.StatusOK)
+	return echo_context.NoContent(http.StatusOK)
 }
 
 // 分析天凤 WebSocket 数据
-func (h *mjHandler) analysisTenhou(c echo.Context) error {
-	data, err := ioutil.ReadAll(c.Request().Body)
+func (handler *MahJongHandler) AnalysisTenHou(echo_context echo.Context) error {
+	data, err := ioutil.ReadAll(echo_context.Request().Body)
 	if err != nil {
-		h.logError(err)
-		return c.String(http.StatusBadRequest, err.Error())
+		handler.LogError(err)
+		return echo_context.String(http.StatusBadRequest, err.Error())
 	}
 
-	h.tenhouMessageReceiver.Put(data)
-	return c.NoContent(http.StatusOK)
+	handler.TenhouMessageReceiver.Put(data)
+	return echo_context.NoContent(http.StatusOK)
 }
-func (h *mjHandler) runAnalysisTenhouMessageTask() {
-	if !debugMode {
+
+// run analysis TenHou Message
+func (handler *MahJongHandler) RunAnalysisTenHouMessageTask() {
+	if !DebugMode {
 		defer func() {
 			if err := recover(); err != nil {
 				fmt.Println("内部错误：", err)
@@ -121,39 +126,41 @@ func (h *mjHandler) runAnalysisTenhouMessageTask() {
 	}
 
 	for {
-		msg := h.tenhouMessageReceiver.Get()
-		d := tenhouMessage{}
-		if err := json.Unmarshal(msg, &d); err != nil {
-			h.logError(err)
+		msg := handler.TenhouMessageReceiver.Get()
+		data := TenhouMessage{}
+		if err := json.Unmarshal(msg, &data); err != nil {
+			handler.LogError(err)
 			continue
 		}
 
 		originJSON := string(msg)
-		if h.log != nil {
-			h.log.Info(originJSON)
+		if handler.Log != nil {
+			handler.Log.Info(originJSON)
 		}
 
-		h.tenhouRoundData.msg = &d
-		h.tenhouRoundData.originJSON = originJSON
-		if err := h.tenhouRoundData.analysis(); err != nil {
-			h.logError(err)
+		handler.TenHouRoundData.Msg = &data
+		handler.TenHouRoundData.OriginJSON = originJSON
+		if err := handler.TenHouRoundData.Analysis(); err != nil {
+			handler.LogError(err)
 		}
 	}
 }
 
 // 分析雀魂 WebSocket 数据
-func (h *mjHandler) analysisMajsoul(c echo.Context) error {
-	data, err := ioutil.ReadAll(c.Request().Body)
+func (handler *MahJongHandler) AnalysisMajsoul(echo_context echo.Context) error {
+	data, err := ioutil.ReadAll(echo_context.Request().Body)
 	if err != nil {
-		h.logError(err)
-		return c.String(http.StatusBadRequest, err.Error())
+		handler.LogError(err)
+		return echo_context.String(http.StatusBadRequest, err.Error())
 	}
 
-	h.majsoulMessageQueue <- data
-	return c.NoContent(http.StatusOK)
+	handler.majsoulMessageQueue <- data
+	return echo_context.NoContent(http.StatusOK)
 }
-func (h *mjHandler) runAnalysisMajsoulMessageTask() {
-	if !debugMode {
+
+// run analysis MahJongSoul Message
+func (handler *MahJongHandler) RunAnalysisMahJongSoulMessageTask() {
+	if !DebugMode {
 		defer func() {
 			if err := recover(); err != nil {
 				fmt.Println("内部错误：", err)
@@ -161,16 +168,16 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 		}()
 	}
 
-	for msg := range h.majsoulMessageQueue {
-		d := &majsoulMessage{}
+	for msg := range handler.majsoulMessageQueue {
+		d := &MaJongSoulMessage{}
 		if err := json.Unmarshal(msg, d); err != nil {
-			h.logError(err)
+			handler.LogError(err)
 			continue
 		}
 
 		originJSON := string(msg)
-		if h.log != nil && debug.Lo == 0 {
-			h.log.Info(originJSON)
+		if handler.Log != nil && debug.Lo == 0 {
+			handler.Log.Info(originJSON)
 		} else {
 			if len(originJSON) > 500 {
 				originJSON = originJSON[:500]
@@ -185,24 +192,24 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 		case len(d.RecordBaseInfoList) > 0:
 			// 牌谱基本信息列表
 			for _, record := range d.RecordBaseInfoList {
-				h.majsoulRecordMap[record.UUID] = record
+				handler.MahJongSoulRecordMap[record.UUID] = record
 			}
-			color.HiGreen("收到 %2d 个雀魂牌谱（已收集 %d 个），请在网页上点击「查看」", len(d.RecordBaseInfoList), len(h.majsoulRecordMap))
+			color.HiGreen("收到 %2d 个雀魂牌谱（已收集 %d 个），请在网页上点击「查看」", len(d.RecordBaseInfoList), len(handler.MahJongSoulRecordMap))
 		case d.SharedRecordBaseInfo != nil:
 			// 处理分享的牌谱基本信息
 			// FIXME: 观看自己的牌谱也会有 d.SharedRecordBaseInfo
 			record := d.SharedRecordBaseInfo
-			h.majsoulRecordMap[record.UUID] = record
-			if err := h._loadMajsoulRecordBaseInfo(record.UUID); err != nil {
-				h.logError(err)
+			handler.MahJongSoulRecordMap[record.UUID] = record
+			if err := handler.loadMahJongSoulRecordBaseInfo(record.UUID); err != nil {
+				handler.LogError(err)
 				break
 			}
 		case d.CurrentRecordUUID != "":
 			// 载入某个牌谱
-			resetAnalysisCache()
-			h.majsoulCurrentRecordActionsList = nil
+			ResetAnalysisCache()
+			handler.MahJongSoulCurrentRecordActionsList = nil
 
-			if err := h._loadMajsoulRecordBaseInfo(d.CurrentRecordUUID); err != nil {
+			if err := handler.loadMahJongSoulRecordBaseInfo(d.CurrentRecordUUID); err != nil {
 				// 看的是分享的牌谱（先收到 CurrentRecordUUID 和 AccountID，然后收到 SharedRecordBaseInfo）
 				// 或者是比赛场的牌谱
 				// 记录主视角 ID（可能是 0）
@@ -219,278 +226,292 @@ func (h *mjHandler) runAnalysisMajsoulMessageTask() {
 				gameConf.setMajsoulAccountID(d.AccountID)
 			}
 		case len(d.RecordActions) > 0:
-			if h.majsoulCurrentRecordActionsList != nil {
+			if handler.MahJongSoulCurrentRecordActionsList != nil {
 				// TODO: 网页发送更恰当的信息？
 				break
 			}
 
-			if h.majsoulCurrentRecordUUID == "" {
-				h.logError(fmt.Errorf("错误：程序未收到所观看的雀魂牌谱的 UUID"))
+			if handler.MahJongSoulCurrentRecordUUID == "" {
+				handler.LogError(fmt.Errorf("错误：程序未收到所观看的雀魂牌谱的 UUID"))
 				break
 			}
 
-			baseInfo, ok := h.majsoulRecordMap[h.majsoulCurrentRecordUUID]
+			baseInfo, ok := handler.MahJongSoulRecordMap[handler.MahJongSoulCurrentRecordUUID]
 			if !ok {
-				h.logError(fmt.Errorf("错误：找不到雀魂牌谱 %s", h.majsoulCurrentRecordUUID))
+				handler.LogError(fmt.Errorf("错误：找不到雀魂牌谱 %s", handler.MahJongSoulCurrentRecordUUID))
 				break
 			}
 
 			selfAccountID := gameConf.currentActiveMajsoulAccountID
 			if selfAccountID == -1 {
-				h.logError(fmt.Errorf("错误：当前雀魂账号为空"))
+				handler.LogError(fmt.Errorf("错误：当前雀魂账号为空"))
 				break
 			}
 
-			h.majsoulRoundData.newGame()
-			h.majsoulRoundData.gameMode = gameModeRecord
+			handler.MahJongSoulRoundData.newGame()
+			handler.MahJongSoulRoundData.GameMode = gameModeRecord
 
 			// 获取并设置主视角初始座位
 			selfSeat, err := baseInfo.getSelfSeat(selfAccountID)
 			if err != nil {
-				h.logError(err)
+				handler.LogError(err)
 				break
 			}
-			h.majsoulRoundData.selfSeat = selfSeat
+			handler.MahJongSoulRoundData.SelfSeat = selfSeat
 
 			// 准备分析……
 			majsoulCurrentRecordActions, err := parseMajsoulRecordAction(d.RecordActions)
 			if err != nil {
-				h.logError(err)
+				handler.LogError(err)
 				break
 			}
-			h.majsoulCurrentRecordActionsList = majsoulCurrentRecordActions
-			h.majsoulCurrentRoundIndex = 0
-			h.majsoulCurrentActionIndex = 0
+			handler.MahJongSoulCurrentRecordActionsList = majsoulCurrentRecordActions
+			handler.MahJongSoulCurrentRoundIndex = 0
+			handler.MahJongSoulCurrentActionIndex = 0
 
-			actions := h.majsoulCurrentRecordActionsList[h.majsoulCurrentRoundIndex]
+			actions := handler.MahJongSoulCurrentRecordActionsList[handler.MahJongSoulCurrentRoundIndex]
 
 			// 创建分析任务
-			analysisCache := newGameAnalysisCache(h.majsoulCurrentRecordUUID, selfSeat)
-			setAnalysisCache(analysisCache)
-			go analysisCache.runMajsoulRecordAnalysisTask(actions)
+			analysisCache := newGameAnalysisCache(handler.MahJongSoulCurrentRecordUUID, selfSeat)
+			SetAnalysisCache(analysisCache)
+			go analysisCache.RunMahJongSoulRecordAnalysisTask(actions)
 
 			// 分析第一局的起始信息
 			data := actions[0].Action
-			h._analysisMajsoulRoundData(data, originJSON)
+			handler.analysisMahJongSoulRoundData(data, originJSON)
 		case d.RecordClickAction != "":
 			// 处理网页上的牌谱点击：上一局/跳到某局/下一局/上一巡/跳到某巡/下一巡/上一步/播放/暂停/下一步/点击桌面
 			// 暂不能分析他家手牌
-			h._onRecordClick(d.RecordClickAction, d.RecordClickActionIndex, d.FastRecordTo)
+			handler.onRecordClick(d.RecordClickAction, d.RecordClickActionIndex, d.FastRecordTo)
 		case d.LiveBaseInfo != nil:
 			// 观战
 			gameConf.setMajsoulAccountID(1) // TODO: 重构
-			h.majsoulRoundData.newGame()
-			h.majsoulRoundData.selfSeat = 0 // 观战进来后看的是东起的玩家
-			h.majsoulRoundData.gameMode = gameModeLive
-			clearConsole()
-			fmt.Printf("正在载入对战：%s", d.LiveBaseInfo.String())
+			handler.MahJongSoulRoundData.newGame()
+			handler.MahJongSoulRoundData.SelfSeat = 0 // 观战进来后看的是东起的玩家
+			handler.MahJongSoulRoundData.GameMode = gameModeLive
+			Console.ClearScreen()
+			fmt.Printf("正在載入對戰：%s", d.LiveBaseInfo.String())
 		case d.LiveFastAction != nil:
-			if err := h._loadLiveAction(d.LiveFastAction, true); err != nil {
-				h.logError(err)
+			if err := handler.loadLiveAction(d.LiveFastAction, true); err != nil {
+				handler.LogError(err)
 				break
 			}
 		case d.LiveAction != nil:
-			if err := h._loadLiveAction(d.LiveAction, false); err != nil {
-				h.logError(err)
+			if err := handler.loadLiveAction(d.LiveAction, false); err != nil {
+				handler.LogError(err)
 				break
 			}
 		case d.ChangeSeatTo != nil:
 			// 切换座位
 			changeSeatTo := *(d.ChangeSeatTo)
-			h.majsoulRoundData.selfSeat = changeSeatTo
-			if debugMode {
+			handler.MahJongSoulRoundData.SelfSeat = changeSeatTo
+			if DebugMode {
 				fmt.Println("座位已切换至", changeSeatTo)
 			}
 
-			var actions majsoulRoundActions
-			if h.majsoulRoundData.gameMode == gameModeLive { // 观战
-				actions = h.majsoulCurrentRoundActions
+			var actions MahJongSoulRoundActions
+			if handler.MahJongSoulRoundData.GameMode == gameModeLive { // 观战
+				actions = handler.MahJongSoulCurrentRoundActions
 			} else { // 牌谱
-				fullActions := h.majsoulCurrentRecordActionsList[h.majsoulCurrentRoundIndex]
-				actions = fullActions[:h.majsoulCurrentActionIndex+1]
-				analysisCache := getAnalysisCache(changeSeatTo)
+				fullActions := handler.MahJongSoulCurrentRecordActionsList[handler.MahJongSoulCurrentRoundIndex]
+				actions = fullActions[:handler.MahJongSoulCurrentActionIndex+1]
+				analysisCache := GetAnalysisCache(changeSeatTo)
 				if analysisCache == nil {
-					analysisCache = newGameAnalysisCache(h.majsoulCurrentRecordUUID, changeSeatTo)
+					analysisCache = newGameAnalysisCache(handler.MahJongSoulCurrentRecordUUID, changeSeatTo)
 				}
-				setAnalysisCache(analysisCache)
+				SetAnalysisCache(analysisCache)
 				// 创建分析任务
-				go analysisCache.runMajsoulRecordAnalysisTask(fullActions)
+				go analysisCache.RunMahJongSoulRecordAnalysisTask(fullActions)
 			}
 
-			h._fastLoadActions(actions)
+			handler.fastLoadActions(actions)
 		case len(d.SyncGameActions) > 0:
-			h._fastLoadActions(d.SyncGameActions)
+			handler.fastLoadActions(d.SyncGameActions)
 		default:
 			// 其他：AI 分析
-			h._analysisMajsoulRoundData(d, originJSON)
+			handler.analysisMahJongSoulRoundData(d, originJSON)
 		}
 	}
 }
 
-func (h *mjHandler) _loadMajsoulRecordBaseInfo(majsoulRecordUUID string) error {
-	baseInfo, ok := h.majsoulRecordMap[majsoulRecordUUID]
+// private function to load MahJongSoul record base information
+func (handler *MahJongHandler) loadMahJongSoulRecordBaseInfo(mahjongsoulRecordUUID string) error {
+	baseInfo, ok := handler.MahJongSoulRecordMap[mahjongsoulRecordUUID]
 	if !ok {
-		return fmt.Errorf("错误：找不到雀魂牌谱 %s", majsoulRecordUUID)
+		return fmt.Errorf("错误：找不到雀魂牌谱 %s", mahjongsoulRecordUUID)
 	}
 
 	// 标记当前正在观看的牌谱
-	h.majsoulCurrentRecordUUID = majsoulRecordUUID
-	clearConsole()
+	handler.MahJongSoulCurrentRecordUUID = mahjongsoulRecordUUID
+	Console.ClearScreen()
 	fmt.Printf("正在解析雀魂牌谱：%s", baseInfo.String())
 
 	// 标记古役模式
-	isGuyiMode := baseInfo.Config.isGuyiMode()
-	util.SetConsiderOldYaku(isGuyiMode)
-	if isGuyiMode {
+	isOldYaKuMode := baseInfo.Config.isGuyiMode()
+	util.SetConsiderOldYaku(isOldYaKuMode)
+	if isOldYaKuMode {
 		fmt.Println()
-		color.HiGreen("古役模式已开启")
+		color.HiGreen("古役模式已開啟")
 	}
 
 	return nil
 }
 
-func (h *mjHandler) _loadLiveAction(action *majsoulRecordAction, isFast bool) error {
-	if debugMode {
+// private function to load live action
+func (handler *MahJongHandler) loadLiveAction(action *MahJongSoulRecordAction, isFast bool) error {
+	if DebugMode {
 		fmt.Println("[_loadLiveAction] 收到", action, isFast)
 	}
 
-	newActions, err := h.majsoulCurrentRoundActions.append(action)
+	newActions, err := handler.MahJongSoulCurrentRoundActions.Append(action)
 	if err != nil {
 		return err
 	}
-	h.majsoulCurrentRoundActions = newActions
+	handler.MahJongSoulCurrentRoundActions = newActions
 
-	h.majsoulRoundData.skipOutput = isFast
-	h._analysisMajsoulRoundData(action.Action, "")
+	handler.MahJongSoulRoundData.SkipOutput = isFast
+	handler.analysisMahJongSoulRoundData(action.Action, "")
 	return nil
 }
 
-func (h *mjHandler) _analysisMajsoulRoundData(data *majsoulMessage, originJSON string) {
+// private function analysis MahJongSoul Round Data
+func (handler *MahJongHandler) analysisMahJongSoulRoundData(data *MaJongSoulMessage, originJSON string) {
 	//if originJSON == "{}" {
 	//	return
 	//}
-	h.majsoulRoundData.msg = data
-	h.majsoulRoundData.originJSON = originJSON
-	if err := h.majsoulRoundData.analysis(); err != nil {
-		h.logError(err)
+	handler.MahJongSoulRoundData.Message = data
+	handler.MahJongSoulRoundData.OriginJSON = originJSON
+	if err := handler.MahJongSoulRoundData.Analysis(); err != nil {
+		handler.LogError(err)
 	}
 }
 
-func (h *mjHandler) _fastLoadActions(actions []*majsoulRecordAction) {
+// private function fast load actions
+func (handler *MahJongHandler) fastLoadActions(actions []*MahJongSoulRecordAction) {
 	if len(actions) == 0 {
 		return
 	}
 	fastRecordEnd := util.MaxInt(0, len(actions)-3)
-	h.majsoulRoundData.skipOutput = true
+	handler.MahJongSoulRoundData.SkipOutput = true
 	// 留最后三个刷新，这样确保会刷新界面
 	for _, action := range actions[:fastRecordEnd] {
-		h._analysisMajsoulRoundData(action.Action, "")
+		handler.analysisMahJongSoulRoundData(action.Action, "")
 	}
-	h.majsoulRoundData.skipOutput = false
+	handler.MahJongSoulRoundData.SkipOutput = false
 	for _, action := range actions[fastRecordEnd:] {
-		h._analysisMajsoulRoundData(action.Action, "")
+		handler.analysisMahJongSoulRoundData(action.Action, "")
 	}
 }
 
-func (h *mjHandler) _onRecordClick(clickAction string, clickActionIndex int, fastRecordTo int) {
-	if debugMode {
+// private function on Record Click
+func (handler *MahJongHandler) onRecordClick(clickAction string, clickActionIndex int, fastRecordTo int) {
+	if DebugMode {
 		fmt.Println("[_onRecordClick] 收到", clickAction, clickActionIndex, fastRecordTo)
 	}
 
-	analysisCache := getCurrentAnalysisCache()
+	analysisCache := GetCurrentAnalysisCache()
 
 	switch clickAction {
 	case "nextStep", "update":
-		newActionIndex := h.majsoulCurrentActionIndex + 1
-		if newActionIndex >= len(h.majsoulCurrentRecordActionsList[h.majsoulCurrentRoundIndex]) {
+		newActionIndex := handler.MahJongSoulCurrentActionIndex + 1
+		if newActionIndex >= len(handler.MahJongSoulCurrentRecordActionsList[handler.MahJongSoulCurrentRoundIndex]) {
 			return
 		}
-		h.majsoulCurrentActionIndex = newActionIndex
+		handler.MahJongSoulCurrentActionIndex = newActionIndex
 	case "nextRound":
-		h.majsoulCurrentRoundIndex = (h.majsoulCurrentRoundIndex + 1) % len(h.majsoulCurrentRecordActionsList)
-		h.majsoulCurrentActionIndex = 0
-		go analysisCache.runMajsoulRecordAnalysisTask(h.majsoulCurrentRecordActionsList[h.majsoulCurrentRoundIndex])
+		handler.MahJongSoulCurrentRoundIndex = (handler.MahJongSoulCurrentRoundIndex + 1) %
+			len(handler.MahJongSoulCurrentRecordActionsList)
+		handler.MahJongSoulCurrentActionIndex = 0
+		go analysisCache.RunMahJongSoulRecordAnalysisTask(
+			handler.MahJongSoulCurrentRecordActionsList[handler.MahJongSoulCurrentRoundIndex])
 	case "preRound":
-		h.majsoulCurrentRoundIndex = (h.majsoulCurrentRoundIndex - 1 + len(h.majsoulCurrentRecordActionsList)) % len(h.majsoulCurrentRecordActionsList)
-		h.majsoulCurrentActionIndex = 0
-		go analysisCache.runMajsoulRecordAnalysisTask(h.majsoulCurrentRecordActionsList[h.majsoulCurrentRoundIndex])
+		handler.MahJongSoulCurrentRoundIndex = (handler.MahJongSoulCurrentRoundIndex - 1 +
+			len(handler.MahJongSoulCurrentRecordActionsList)) % len(handler.MahJongSoulCurrentRecordActionsList)
+		handler.MahJongSoulCurrentActionIndex = 0
+		go analysisCache.RunMahJongSoulRecordAnalysisTask(
+			handler.MahJongSoulCurrentRecordActionsList[handler.MahJongSoulCurrentRoundIndex])
 	case "jumpRound":
-		h.majsoulCurrentRoundIndex = clickActionIndex % len(h.majsoulCurrentRecordActionsList)
-		h.majsoulCurrentActionIndex = 0
-		go analysisCache.runMajsoulRecordAnalysisTask(h.majsoulCurrentRecordActionsList[h.majsoulCurrentRoundIndex])
+		handler.MahJongSoulCurrentRoundIndex = clickActionIndex % len(handler.MahJongSoulCurrentRecordActionsList)
+		handler.MahJongSoulCurrentActionIndex = 0
+		go analysisCache.RunMahJongSoulRecordAnalysisTask(
+			handler.MahJongSoulCurrentRecordActionsList[handler.MahJongSoulCurrentRoundIndex])
 	case "nextXun", "preXun", "jumpXun", "preStep", "jumpToLastRoundXun":
 		if clickAction == "jumpToLastRoundXun" {
-			h.majsoulCurrentRoundIndex = (h.majsoulCurrentRoundIndex - 1 + len(h.majsoulCurrentRecordActionsList)) % len(h.majsoulCurrentRecordActionsList)
-			go analysisCache.runMajsoulRecordAnalysisTask(h.majsoulCurrentRecordActionsList[h.majsoulCurrentRoundIndex])
+			handler.MahJongSoulCurrentRoundIndex = (handler.MahJongSoulCurrentRoundIndex - 1 + len(
+				handler.MahJongSoulCurrentRecordActionsList)) % len(handler.MahJongSoulCurrentRecordActionsList)
+			go analysisCache.RunMahJongSoulRecordAnalysisTask(
+				handler.MahJongSoulCurrentRecordActionsList[handler.MahJongSoulCurrentRoundIndex])
 		}
 
-		h.majsoulRoundData.skipOutput = true
-		currentRoundActions := h.majsoulCurrentRecordActionsList[h.majsoulCurrentRoundIndex]
+		handler.MahJongSoulRoundData.SkipOutput = true
+		currentRoundActions := handler.MahJongSoulCurrentRecordActionsList[handler.MahJongSoulCurrentRoundIndex]
 		startActionIndex := 0
 		endActionIndex := fastRecordTo
 		if clickAction == "nextXun" {
-			startActionIndex = h.majsoulCurrentActionIndex + 1
+			startActionIndex = handler.MahJongSoulCurrentActionIndex + 1
 		}
-		if debugMode {
-			fmt.Printf("快速处理牌谱中的操作：局 %d 动作 %d-%d\n", h.majsoulCurrentRoundIndex, startActionIndex, endActionIndex)
+		if DebugMode {
+			fmt.Printf("快速处理牌谱中的操作：局 %d 动作 %d-%d\n", handler.MahJongSoulCurrentRoundIndex,
+				startActionIndex, endActionIndex)
 		}
 		for i, action := range currentRoundActions[startActionIndex : endActionIndex+1] {
-			if debugMode {
-				fmt.Printf("快速处理牌谱中的操作：局 %d 动作 %d\n", h.majsoulCurrentRoundIndex, startActionIndex+i)
+			if DebugMode {
+				fmt.Printf("快速处理牌谱中的操作：局 %d 动作 %d\n", handler.MahJongSoulCurrentRoundIndex,
+					startActionIndex+i)
 			}
-			h._analysisMajsoulRoundData(action.Action, "")
+			handler.analysisMahJongSoulRoundData(action.Action, "")
 		}
-		h.majsoulRoundData.skipOutput = false
+		handler.MahJongSoulRoundData.SkipOutput = false
 
-		h.majsoulCurrentActionIndex = endActionIndex + 1
+		handler.MahJongSoulCurrentActionIndex = endActionIndex + 1
 	default:
 		return
 	}
 
-	if debugMode {
-		fmt.Printf("处理牌谱中的操作：局 %d 动作 %d\n", h.majsoulCurrentRoundIndex, h.majsoulCurrentActionIndex)
+	if DebugMode {
+		fmt.Printf("处理牌谱中的操作：局 %d 动作 %d\n", handler.MahJongSoulCurrentRoundIndex, handler.MahJongSoulCurrentActionIndex)
 	}
-	action := h.majsoulCurrentRecordActionsList[h.majsoulCurrentRoundIndex][h.majsoulCurrentActionIndex]
-	h._analysisMajsoulRoundData(action.Action, "")
+	action := handler.MahJongSoulCurrentRecordActionsList[handler.MahJongSoulCurrentRoundIndex][handler.MahJongSoulCurrentActionIndex]
+	handler.analysisMahJongSoulRoundData(action.Action, "")
 
 	if action.Name == "RecordHule" || action.Name == "RecordLiuJu" || action.Name == "RecordNoTile" {
 		// 播放和牌/流局动画，进入下一局或显示终局动画
-		h.majsoulCurrentRoundIndex++
-		h.majsoulCurrentActionIndex = 0
-		if h.majsoulCurrentRoundIndex == len(h.majsoulCurrentRecordActionsList) {
-			h.majsoulCurrentRoundIndex = 0
+		handler.MahJongSoulCurrentRoundIndex++
+		handler.MahJongSoulCurrentActionIndex = 0
+		if handler.MahJongSoulCurrentRoundIndex == len(handler.MahJongSoulCurrentRecordActionsList) {
+			handler.MahJongSoulCurrentRoundIndex = 0
 			return
 		}
 
 		time.Sleep(time.Second)
 
-		actions := h.majsoulCurrentRecordActionsList[h.majsoulCurrentRoundIndex]
-		go analysisCache.runMajsoulRecordAnalysisTask(actions)
+		actions := handler.MahJongSoulCurrentRecordActionsList[handler.MahJongSoulCurrentRoundIndex]
+		go analysisCache.RunMahJongSoulRecordAnalysisTask(actions)
 		// 分析下一局的起始信息
-		data := actions[h.majsoulCurrentActionIndex].Action
-		h._analysisMajsoulRoundData(data, "")
+		data := actions[handler.MahJongSoulCurrentActionIndex].Action
+		handler.analysisMahJongSoulRoundData(data, "")
 	}
 }
 
-var h *mjHandler
+var handler *MahJongHandler
 
-func getMajsoulCurrentRecordUUID() string {
-	return h.majsoulCurrentRecordUUID
+func GetMajsoulCurrentRecordUUID() string {
+	return handler.MahJongSoulCurrentRecordUUID
 }
 
-func runServer(isHTTPS bool, port int) (err error) {
-	e := echo.New()
+func RunServer(isHTTPS bool, port int) (err error) {
+	echo := echo.New()
 
 	// 移除 echo.Echo 和 http.Server 在控制台上打印的信息
-	e.HideBanner = true
-	e.HidePort = true
-	e.StdLogger = stdLog.New(ioutil.Discard, "", 0)
+	echo.HideBanner = true
+	echo.HidePort = true
+	echo.StdLogger = stdLog.New(ioutil.Discard, "", 0)
 
 	// 默认是 log.ERROR
-	e.Logger.SetLevel(log.INFO)
+	echo.Logger.SetLevel(log.INFO)
 
 	// 设置日志输出到 log/gamedata-xxx.log
-	filePath, err := newLogFilePath()
+	filePath, err := NewLogFilePath()
 	if err != nil {
 		return
 	}
@@ -498,45 +519,45 @@ func runServer(isHTTPS bool, port int) (err error) {
 	if err != nil {
 		return
 	}
-	e.Logger.SetOutput(logFile)
+	echo.Logger.SetOutput(logFile)
 
-	e.Logger.Info("============================================================================================")
-	e.Logger.Info("服务启动")
+	echo.Logger.Info("============================================================================================")
+	echo.Logger.Info("服务启动")
 
-	h = &mjHandler{
-		log: e.Logger,
+	handler = &MahJongHandler{
+		Log: echo.Logger,
 
-		tenhouMessageReceiver: tenhou.NewMessageReceiver(),
-		tenhouRoundData:       &tenhouRoundData{isRoundEnd: true},
+		TenhouMessageReceiver: tenhou.NewMessageReceiver(),
+		TenHouRoundData:       &TenHouRoundData{IsRoundEnd: true},
 		majsoulMessageQueue:   make(chan []byte, 100),
-		majsoulRoundData:      &majsoulRoundData{selfSeat: -1},
-		majsoulRecordMap:      map[string]*majsoulRecordBaseInfo{},
+		MahJongSoulRoundData:  &MahJongSoulRoundData{SelfSeat: -1},
+		MahJongSoulRecordMap:  map[string]*MahJongSoulRecordBaseInfo{},
 	}
-	h.tenhouRoundData.roundData = newGame(h.tenhouRoundData)
-	h.majsoulRoundData.roundData = newGame(h.majsoulRoundData)
+	handler.TenHouRoundData.RoundData = NewGame(handler.TenHouRoundData)
+	handler.MahJongSoulRoundData.RoundData = NewGame(handler.MahJongSoulRoundData)
 
-	go h.runAnalysisTenhouMessageTask()
-	go h.runAnalysisMajsoulMessageTask()
+	go handler.RunAnalysisTenHouMessageTask()
+	go handler.RunAnalysisMahJongSoulMessageTask()
 
-	e.Use(middleware.Recover())
-	e.Use(middleware.CORS())
-	e.GET("/", h.index)
-	e.POST("/debug", h.index)
-	e.POST("/analysis", h.analysis)
-	e.POST("/tenhou", h.analysisTenhou)
-	e.POST("/majsoul", h.analysisMajsoul)
+	echo.Use(middleware.Recover())
+	echo.Use(middleware.CORS())
+	echo.GET("/", handler.Index)
+	echo.POST("/debug", handler.Index)
+	echo.POST("/analysis", handler.Analysis)
+	echo.POST("/tenhou", handler.AnalysisTenHou)
+	echo.POST("/majsoul", handler.AnalysisMajsoul)
 
 	// code.js 也用的该端口
 	if port == 0 {
-		port = defaultPort
+		port = DefaultPort
 	}
 	addr := ":" + strconv.Itoa(port)
 	if !isHTTPS {
-		e.POST("/", h.analysisTenhou)
-		err = e.Start(addr)
+		echo.POST("/", handler.AnalysisTenHou)
+		err = echo.Start(addr)
 	} else {
-		e.POST("/", h.analysisMajsoul)
-		err = startTLS(e, addr)
+		echo.POST("/", handler.AnalysisMajsoul)
+		err = StartTLS(echo, addr)
 	}
 	if err != nil {
 		// 检查是否为端口占用错误
@@ -603,7 +624,7 @@ Y5quoWDnJFfyYohaUAC7OAKR
 `
 )
 
-func startTLS(e *echo.Echo, address string) (err error) {
+func StartTLS(e *echo.Echo, address string) (err error) {
 	s := e.TLSServer
 	s.TLSConfig = new(tls.Config)
 	s.TLSConfig.Certificates = make([]tls.Certificate, 1)

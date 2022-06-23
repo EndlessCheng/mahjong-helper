@@ -2,15 +2,16 @@ package main
 
 import (
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/EndlessCheng/mahjong-helper/util"
-	"github.com/EndlessCheng/mahjong-helper/util/model"
 	"sort"
 	"time"
+
 	"github.com/EndlessCheng/mahjong-helper/platform/majsoul/proto/lq"
+	"github.com/EndlessCheng/mahjong-helper/util"
+	"github.com/EndlessCheng/mahjong-helper/util/model"
+	"github.com/fatih/color"
 )
 
-type majsoulMessage struct {
+type MaJongSoulMessage struct {
 	// 对应到服务器用户数据库中的ID，该值越小表示您的注册时间越早
 	AccountID int `json:"account_id"`
 
@@ -18,16 +19,16 @@ type majsoulMessage struct {
 	Friends lq.FriendList `json:"friends"`
 
 	// 新获取到的牌谱基本信息列表
-	RecordBaseInfoList []*majsoulRecordBaseInfo `json:"record_list"`
+	RecordBaseInfoList []*MahJongSoulRecordBaseInfo `json:"record_list"`
 
 	// 分享的牌谱基本信息
-	SharedRecordBaseInfo *majsoulRecordBaseInfo `json:"shared_record_base_info"`
+	SharedRecordBaseInfo *MahJongSoulRecordBaseInfo `json:"shared_record_base_info"`
 
 	// 当前正在观看的牌谱的 UUID
 	CurrentRecordUUID string `json:"current_record_uuid"`
 
 	// 当前正在观看的牌谱的全部操作
-	RecordActions []*majsoulRecordAction `json:"record_actions"`
+	RecordActions []*MahJongSoulRecordAction `json:"record_actions"`
 
 	// 玩家在网页上的（点击）操作（网页响应了的）
 	RecordClickAction      string `json:"record_click_action"`
@@ -36,14 +37,14 @@ type majsoulMessage struct {
 
 	// 观战
 	LiveBaseInfo   *majsoulLiveRecordBaseInfo `json:"live_head"`
-	LiveFastAction *majsoulRecordAction       `json:"live_fast_action"`
-	LiveAction     *majsoulRecordAction       `json:"live_action"`
+	LiveFastAction *MahJongSoulRecordAction   `json:"live_fast_action"`
+	LiveAction     *MahJongSoulRecordAction   `json:"live_action"`
 
 	// 座位变更
 	ChangeSeatTo *int `json:"change_seat_to"`
 
 	// 游戏重连时收到的数据
-	SyncGameActions []*majsoulRecordAction `json:"sync_game_actions"`
+	SyncGameActions []*MahJongSoulRecordAction `json:"sync_game_actions"`
 
 	// ResAuthGame
 	// {"seat_list":[x,x,x,x],"is_game_start":false,"game_config":{"category":1,"mode":{"mode":1,"ai":true,"detail_rule":{"time_fixed":60,"time_add":0,"dora_count":3,"shiduan":1,"init_point":25000,"fandian":30000,"bianjietishi":true,"ai_level":1,"fanfu":1}},"meta":{"room_id":18269}},"ready_id_list":[0,0,0]}
@@ -125,20 +126,20 @@ const (
 	majsoulMeldTypeAnkan
 )
 
-type majsoulRoundData struct {
-	*roundData
+type MahJongSoulRoundData struct {
+	*RoundData
 
-	originJSON string
-	msg        *majsoulMessage
+	OriginJSON string
+	Message    *MaJongSoulMessage
 
-	selfSeat int // 自家初始座位：0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
+	SelfSeat int // 自家初始座位：0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
 }
 
-func (d *majsoulRoundData) fatalParse(info string, msg string) {
+func (d *MahJongSoulRoundData) fatalParse(info string, msg string) {
 	panic(fmt.Sprintln(info, len(msg), msg, []byte(msg)))
 }
 
-func (d *majsoulRoundData) normalTiles(tiles interface{}) (majsoulTiles []string) {
+func (d *MahJongSoulRoundData) normalTiles(tiles interface{}) (majsoulTiles []string) {
 	_tiles, ok := tiles.([]interface{})
 	if !ok {
 		_tile, ok := tiles.(string)
@@ -159,14 +160,14 @@ func (d *majsoulRoundData) normalTiles(tiles interface{}) (majsoulTiles []string
 	return majsoulTiles
 }
 
-func (d *majsoulRoundData) parseWho(seat int) int {
+func (d *MahJongSoulRoundData) parseWho(seat int) int {
 	// 转换成 0=自家, 1=下家, 2=对家, 3=上家
 	// 对三麻四麻均适用
 	who := (seat + d.dealer - d.roundNumber%4 + 4) % 4
 	return who
 }
 
-func (d *majsoulRoundData) mustParseMajsoulTile(humanTile string) (tile34 int, isRedFive bool) {
+func (d *MahJongSoulRoundData) mustParseMajsoulTile(humanTile string) (tile34 int, isRedFive bool) {
 	tile34, isRedFive, err := util.StrToTile34(humanTile)
 	if err != nil {
 		panic(err)
@@ -174,7 +175,7 @@ func (d *majsoulRoundData) mustParseMajsoulTile(humanTile string) (tile34 int, i
 	return
 }
 
-func (d *majsoulRoundData) mustParseMajsoulTiles(majsoulTiles []string) (tiles []int, numRedFive int) {
+func (d *MahJongSoulRoundData) mustParseMajsoulTiles(majsoulTiles []string) (tiles []int, numRedFive int) {
 	tiles = make([]int, len(majsoulTiles))
 	for i, majsoulTile := range majsoulTiles {
 		var isRedFive bool
@@ -186,24 +187,24 @@ func (d *majsoulRoundData) mustParseMajsoulTiles(majsoulTiles []string) (tiles [
 	return
 }
 
-func (d *majsoulRoundData) isNewDora(doras []string) bool {
+func (d *MahJongSoulRoundData) isNewDora(doras []string) bool {
 	return len(doras) > len(d.doraIndicators)
 }
 
-func (d *majsoulRoundData) GetDataSourceType() int {
+func (d *MahJongSoulRoundData) GetDataSourceType() int {
 	return dataSourceTypeMajsoul
 }
 
-func (d *majsoulRoundData) GetSelfSeat() int {
-	return d.selfSeat
+func (d *MahJongSoulRoundData) GetSelfSeat() int {
+	return d.SelfSeat
 }
 
-func (d *majsoulRoundData) GetMessage() string {
-	return d.originJSON
+func (d *MahJongSoulRoundData) GetMessage() string {
+	return d.OriginJSON
 }
 
-func (d *majsoulRoundData) SkipMessage() bool {
-	msg := d.msg
+func (d *MahJongSoulRoundData) SkipMessage() bool {
+	msg := d.Message
 
 	// 没有账号 skip
 	if gameConf.currentActiveMajsoulAccountID == -1 {
@@ -230,13 +231,13 @@ func (d *majsoulRoundData) SkipMessage() bool {
 	return false
 }
 
-func (d *majsoulRoundData) IsLogin() bool {
-	msg := d.msg
+func (d *MahJongSoulRoundData) IsLogin() bool {
+	msg := d.Message
 	return msg.AccountID > 0 || msg.SeatList != nil
 }
 
-func (d *majsoulRoundData) HandleLogin() {
-	msg := d.msg
+func (d *MahJongSoulRoundData) HandleLogin() {
+	msg := d.Message
 
 	if accountID := msg.AccountID; accountID > 0 {
 		gameConf.addMajsoulAccountID(accountID)
@@ -282,26 +283,26 @@ func (d *majsoulRoundData) HandleLogin() {
 	}
 }
 
-func (d *majsoulRoundData) IsInit() bool {
-	msg := d.msg
+func (d *MahJongSoulRoundData) IsInit() bool {
+	msg := d.Message
 	// ResAuthGame || ActionNewRound RecordNewRound
 	return msg.IsGameStart != nil || msg.MD5 != ""
 }
 
-func (d *majsoulRoundData) ParseInit() (roundNumber int, benNumber int, dealer int, doraIndicators []int, handTiles []int, numRedFives []int) {
-	msg := d.msg
+func (d *MahJongSoulRoundData) ParseInit() (roundNumber int, benNumber int, dealer int, doraIndicators []int, handTiles []int, numRedFives []int) {
+	msg := d.Message
 
 	if playerNumber := len(msg.SeatList); playerNumber >= 3 {
 		d.playerNumber = playerNumber
 		// 获取自家初始座位：0-第一局的东家 1-第一局的南家 2-第一局的西家 3-第一局的北家
 		for i, accountID := range msg.SeatList {
 			if accountID == gameConf.currentActiveMajsoulAccountID {
-				d.selfSeat = i
+				d.SelfSeat = i
 				break
 			}
 		}
 		// dealer: 0=自家, 1=下家, 2=对家, 3=上家
-		dealer = (4 - d.selfSeat) % 4
+		dealer = (4 - d.SelfSeat) % 4
 		return
 	} else if len(msg.Tiles2) > 0 {
 		if len(msg.Tiles3) > 0 {
@@ -329,7 +330,7 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, benNumber int, dealer i
 	if msg.Tiles != nil { // 实战
 		majsoulTiles = d.normalTiles(msg.Tiles)
 	} else { // 牌谱、观战
-		majsoulTiles = [][]string{msg.Tiles0, msg.Tiles1, msg.Tiles2, msg.Tiles3}[d.selfSeat]
+		majsoulTiles = [][]string{msg.Tiles0, msg.Tiles1, msg.Tiles2, msg.Tiles3}[d.SelfSeat]
 	}
 	for _, majsoulTile := range majsoulTiles {
 		tile, isRedFive := d.mustParseMajsoulTile(majsoulTile)
@@ -342,14 +343,14 @@ func (d *majsoulRoundData) ParseInit() (roundNumber int, benNumber int, dealer i
 	return
 }
 
-func (d *majsoulRoundData) IsSelfDraw() bool {
-	msg := d.msg
+func (d *MahJongSoulRoundData) IsSelfDraw() bool {
+	msg := d.Message
 	// ActionDealTile RecordDealTile
 	return msg.Seat != nil && msg.Tile != "" && msg.Moqie == nil && d.parseWho(*msg.Seat) == 0
 }
 
-func (d *majsoulRoundData) ParseSelfDraw() (tile int, isRedFive bool, kanDoraIndicator int) {
-	msg := d.msg
+func (d *MahJongSoulRoundData) ParseSelfDraw() (tile int, isRedFive bool, kanDoraIndicator int) {
+	msg := d.Message
 	tile, isRedFive = d.mustParseMajsoulTile(msg.Tile)
 	kanDoraIndicator = -1
 	if d.isNewDora(msg.Doras) {
@@ -358,14 +359,14 @@ func (d *majsoulRoundData) ParseSelfDraw() (tile int, isRedFive bool, kanDoraInd
 	return
 }
 
-func (d *majsoulRoundData) IsDiscard() bool {
-	msg := d.msg
+func (d *MahJongSoulRoundData) IsDiscard() bool {
+	msg := d.Message
 	// ActionDiscardTile RecordDiscardTile
 	return msg.IsLiqi != nil
 }
 
-func (d *majsoulRoundData) ParseDiscard() (who int, discardTile int, isRedFive bool, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int) {
-	msg := d.msg
+func (d *MahJongSoulRoundData) ParseDiscard() (who int, discardTile int, isRedFive bool, isTsumogiri bool, isReach bool, canBeMeld bool, kanDoraIndicator int) {
+	msg := d.Message
 	who = d.parseWho(*msg.Seat)
 	discardTile, isRedFive = d.mustParseMajsoulTile(msg.Tile)
 	isTsumogiri = *msg.Moqie
@@ -381,14 +382,14 @@ func (d *majsoulRoundData) ParseDiscard() (who int, discardTile int, isRedFive b
 	return
 }
 
-func (d *majsoulRoundData) IsOpen() bool {
-	msg := d.msg
+func (d *MahJongSoulRoundData) IsOpen() bool {
+	msg := d.Message
 	// ActionChiPengGang RecordChiPengGang || ActionAnGangAddGang RecordAnGangAddGang
 	return msg.Tiles != nil && len(d.normalTiles(msg.Tiles)) <= 4
 }
 
-func (d *majsoulRoundData) ParseOpen() (who int, meld *model.Meld, kanDoraIndicator int) {
-	msg := d.msg
+func (d *MahJongSoulRoundData) ParseOpen() (who int, meld *model.Meld, kanDoraIndicator int) {
+	msg := d.Message
 
 	who = d.parseWho(*msg.Seat)
 
@@ -452,7 +453,7 @@ func (d *majsoulRoundData) ParseOpen() (who int, meld *model.Meld, kanDoraIndica
 	} else if len(meldTiles) == 4 {
 		meldType = meldTypeMinkan // 大明杠
 	} else {
-		panic("鸣牌数据解析失败！")
+		panic("鳴牌数据解析失败！")
 	}
 	meld = &model.Meld{
 		MeldType:          meldType,
@@ -464,26 +465,26 @@ func (d *majsoulRoundData) ParseOpen() (who int, meld *model.Meld, kanDoraIndica
 	return
 }
 
-func (d *majsoulRoundData) IsReach() bool {
+func (d *MahJongSoulRoundData) IsReach() bool {
 	return false
 }
 
-func (d *majsoulRoundData) ParseReach() (who int) {
+func (d *MahJongSoulRoundData) ParseReach() (who int) {
 	return 0
 }
 
-func (d *majsoulRoundData) IsFuriten() bool {
+func (d *MahJongSoulRoundData) IsFuriten() bool {
 	return false
 }
 
-func (d *majsoulRoundData) IsRoundWin() bool {
-	msg := d.msg
+func (d *MahJongSoulRoundData) IsRoundWin() bool {
+	msg := d.Message
 	// ActionHule RecordHule
 	return msg.Hules != nil
 }
 
-func (d *majsoulRoundData) ParseRoundWin() (whos []int, points []int) {
-	msg := d.msg
+func (d *MahJongSoulRoundData) ParseRoundWin() (whos []int, points []int) {
+	msg := d.Message
 
 	for _, result := range msg.Hules {
 		who := d.parseWho(result.Seat)
@@ -505,38 +506,38 @@ func (d *majsoulRoundData) ParseRoundWin() (whos []int, points []int) {
 	return
 }
 
-func (d *majsoulRoundData) IsRyuukyoku() bool {
+func (d *MahJongSoulRoundData) IsRyuukyoku() bool {
 	// TODO
 	// ActionLiuJu RecordLiuJu
 	return false
 }
 
-func (d *majsoulRoundData) ParseRyuukyoku() (type_ int, whos []int, points []int) {
+func (d *MahJongSoulRoundData) ParseRyuukyoku() (type_ int, whos []int, points []int) {
 	// TODO
 	return
 }
 
 // 拔北宝牌
-func (d *majsoulRoundData) IsNukiDora() bool {
-	msg := d.msg
+func (d *MahJongSoulRoundData) IsNukiDora() bool {
+	msg := d.Message
 	// ActionBaBei RecordBaBei
 	return msg.Seat != nil && msg.Moqie != nil && msg.Tile == ""
 }
 
-func (d *majsoulRoundData) ParseNukiDora() (who int, isTsumogiri bool) {
-	msg := d.msg
+func (d *MahJongSoulRoundData) ParseNukiDora() (who int, isTsumogiri bool) {
+	msg := d.Message
 	return d.parseWho(*msg.Seat), *msg.Moqie
 }
 
 // 在最后处理该项
-func (d *majsoulRoundData) IsNewDora() bool {
-	msg := d.msg
+func (d *MahJongSoulRoundData) IsNewDora() bool {
+	msg := d.Message
 	// ActionDealTile
 	return d.isNewDora(msg.Doras)
 }
 
-func (d *majsoulRoundData) ParseNewDora() (kanDoraIndicator int) {
-	msg := d.msg
+func (d *MahJongSoulRoundData) ParseNewDora() (kanDoraIndicator int) {
+	msg := d.Message
 
 	kanDoraIndicator, _ = d.mustParseMajsoulTile(msg.Doras[len(msg.Doras)-1])
 	return

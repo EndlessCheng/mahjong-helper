@@ -50,7 +50,7 @@ func (m *Friend) CLIString() string {
 type FriendList []*Friend
 
 func (l FriendList) String() string {
-	out := "好友账号ID   好友上次登录时间        好友上次登出时间       好友昵称\n"
+	out := "好友帳號ID   好友上次登入時間        好友上次登出时间       好友暱稱\n"
 	for _, friend := range l {
 		out += friend.CLIString() + "\n"
 	}

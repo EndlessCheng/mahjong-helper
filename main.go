@@ -3,156 +3,171 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/EndlessCheng/mahjong-helper/util"
-	"github.com/EndlessCheng/mahjong-helper/util/model"
-	"github.com/fatih/color"
 	"math/rand"
 	"strings"
 	"time"
+
+	"github.com/EndlessCheng/mahjong-helper/Console"
+
+	"github.com/EndlessCheng/mahjong-helper/util"
+	"github.com/EndlessCheng/mahjong-helper/util/model"
+	"github.com/fatih/color"
 )
 
+// Enum
+const (
+	TenHou int = iota
+	MahJongSoul
+)
+
+// define Platform Class parameter
+type Platform struct {
+	Name string
+	Type []string
+	Code int
+}
+
+// declare variable
 var (
-	considerOldYaku bool
+	// bool
+	ConsiderOldYaku        bool = false
+	IsMajsoul              bool = false
+	IsTenhou               bool = false
+	IsAnalysis             bool = false
+	IsInteractive          bool = false
+	ShowImproveDetail      bool = false
+	ShowAgariAboveShanten1 bool = false
+	ShowScore              bool = false
+	ShowAllYakuTypes       bool = false
 
-	isMajsoul     bool
-	isTenhou      bool
-	isAnalysis    bool
-	isInteractive bool
+	//int
+	Port int = 0
 
-	showImproveDetail      bool
-	showAgariAboveShanten1 bool
-	showScore              bool
-	showAllYakuTypes       bool
+	// string
+	HumanDoraTiles string = ""
 
-	humanDoraTiles string
-
-	port int
+	// struct
+	Platforms []Platform = []Platform{
+		{
+			Name: "天鳳",
+			Type: []string{
+				"Web",
+				"4K"},
+			Code: TenHou,
+		},
+		{
+			Name: "雀魂",
+			Type: []string{
+				"國際中文服",
+				"日服",
+				"國際服"},
+			Code: MahJongSoul,
+		},
+	}
 )
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
 
-	flag.BoolVar(&considerOldYaku, "old", false, "允许古役")
-	flag.BoolVar(&isMajsoul, "majsoul", false, "雀魂助手")
-	flag.BoolVar(&isTenhou, "tenhou", false, "天凤助手")
-	flag.BoolVar(&isAnalysis, "analysis", false, "分析模式")
-	flag.BoolVar(&isInteractive, "interactive", false, "交互模式")
-	flag.BoolVar(&isInteractive, "i", false, "同 -interactive")
-	flag.BoolVar(&showImproveDetail, "detail", false, "显示改良细节")
-	flag.BoolVar(&showAgariAboveShanten1, "agari", false, "显示听牌前的估计和率")
-	flag.BoolVar(&showAgariAboveShanten1, "a", false, "同 -agari")
-	flag.BoolVar(&showScore, "score", false, "显示局收支")
-	flag.BoolVar(&showScore, "s", false, "同 -score")
-	flag.BoolVar(&showAllYakuTypes, "yaku", false, "显示所有役种")
-	flag.BoolVar(&showAllYakuTypes, "y", false, "同 -yaku")
-	flag.StringVar(&humanDoraTiles, "dora", "", "指定哪些牌是宝牌")
-	flag.StringVar(&humanDoraTiles, "d", "", "同 -dora")
-	flag.IntVar(&port, "port", 12121, "指定服务端口")
-	flag.IntVar(&port, "p", 12121, "同 -port")
+	// this program can run different mode by command-line with argument "old, majsoul, tenhou, analysis, interactive,
+	// i detail agari, a, score, s, yaku, y, dora, d, port and p" to use different mode"
+	flag.BoolVar(&ConsiderOldYaku, "old", false, "允许古役")
+	flag.BoolVar(&IsMajsoul, "majsoul", false, "雀魂助手")
+	flag.BoolVar(&IsTenhou, "tenhou", false, "天凤助手")
+	flag.BoolVar(&IsAnalysis, "analysis", false, "分析模式")
+	flag.BoolVar(&IsInteractive, "interactive", false, "交互模式")
+	flag.BoolVar(&IsInteractive, "i", false, "同 -interactive")
+	flag.BoolVar(&ShowImproveDetail, "detail", false, "显示改良细节")
+	flag.BoolVar(&ShowAgariAboveShanten1, "agari", false, "显示听牌前的估计和率")
+	flag.BoolVar(&ShowAgariAboveShanten1, "a", false, "同 -agari")
+	flag.BoolVar(&ShowScore, "score", false, "显示局收支")
+	flag.BoolVar(&ShowScore, "s", false, "同 -score")
+	flag.BoolVar(&ShowAllYakuTypes, "yaku", false, "显示所有役种")
+	flag.BoolVar(&ShowAllYakuTypes, "y", false, "同 -yaku")
+	flag.StringVar(&HumanDoraTiles, "dora", "", "指定哪些牌是宝牌")
+	flag.StringVar(&HumanDoraTiles, "d", "", "同 -dora")
+	flag.IntVar(&Port, "port", 12121, "指定服务端口")
+	flag.IntVar(&Port, "p", 12121, "同 -port")
 }
 
-const (
-	platformTenhou  = 0
-	platformMajsoul = 1
-
-	defaultPlatform = platformMajsoul
-)
-
-var platforms = map[int][]string{
-	platformTenhou: {
-		"天凤",
-		"Web",
-		"4K",
-	},
-	platformMajsoul: {
-		"雀魂",
-		"国际中文服",
-		"日服",
-		"国际服",
-	},
-}
-
-const readmeURL = "https://github.com/EndlessCheng/mahjong-helper/blob/master/README.md"
-const issueURL = "https://github.com/EndlessCheng/mahjong-helper/issues"
-const issueCommonQuestions = "https://github.com/EndlessCheng/mahjong-helper/issues/104"
-const qqGroupNum = "375865038"
-
+// Print description of README, question issues, and community and 
+// let player can choose witch platform and reminder
 func welcome() int {
-	fmt.Println("使用说明：" + readmeURL)
-	fmt.Println("问题反馈：" + issueURL)
-	fmt.Println("吐槽群：" + qqGroupNum)
+	fmt.Println("使用说明：" + "https://github.com/EndlessCheng/mahjong-helper/blob/master/README.md")
+	fmt.Println("问题反馈：" + "https://github.com/EndlessCheng/mahjong-helper/issues")
+	fmt.Println("吐槽群：" + "375865038")
 	fmt.Println()
 
-	fmt.Println("请输入数字，选择对应网站：")
-	for i, cnt := 0, 0; cnt < len(platforms); i++ {
-		if platformInfo, ok := platforms[i]; ok {
-			info := platformInfo[0] + " [" + strings.Join(platformInfo[1:], ",") + "]"
-			fmt.Printf("%d - %s\n", i, info)
-			cnt++
-		}
+RenterPlatform: // wrong enter goto label
+	// print platforms
+	for _, element := range Platforms {
+		
+		fmt.Printf("%d - %s %v\n\n", element.Code, element.Name, "[" + strings.Join(element.Type,`,` ) +"]")
 	}
+	fmt.Print("請選擇對應的網站(0或1)，如未選擇則預設雀魂(1): ")
 
-	choose := defaultPlatform
-	fmt.Scanln(&choose) // 直接回车也无妨
-	platformInfo, ok := platforms[choose]
-	var platformName string
-	if ok {
-		platformName = platformInfo[0]
-	}
-	if !ok {
-		choose = defaultPlatform
-		platformName = platforms[choose][0]
-	}
+	// set default value to int MahJongSoul(1) can exclude not int type
+	choose := TenHou
+	// choose := MahJongSoul
+	fmt.Scanln(&choose)
 
-	clearConsole()
-	color.HiGreen("已选择 - %s", platformName)
-
-	if choose == platformMajsoul {
+	Console.ClearScreen()
+	if choose == TenHou { // choose TenHou
+		color.HiGreen("已選擇 - %s", Platforms[0].Name)
+	} else if choose == MahJongSoul { // choose MahJongSoul
+		color.HiGreen("已選擇 - %s", Platforms[1].Name)
 		if len(gameConf.MajsoulAccountIDs) == 0 {
 			color.HiYellow(`
 提醒：首次启用时，请开启一局人机对战，或者重登游戏。
 该步骤用于获取您的账号 ID，便于在游戏开始时获取自风，否则程序将无法解析后续数据。
 
 若助手无响应，请确认您已按步骤安装完成。
-相关链接 ` + issueCommonQuestions)
+相关链接 https://github.com/EndlessCheng/mahjong-helper/issues/104`)
 		}
+	} else { // the choice not in selection
+		fmt.Printf("輸入錯誤，請重新輸入選擇\n\n")
+		// goto RenterPlatform label
+		goto RenterPlatform
 	}
-
 	return choose
 }
 
 func main() {
+	Console.ClearScreen()
 	flag.Parse()
 
-	color.HiGreen("日本麻将助手 %s (by EndlessCheng)", version)
-	if version != versionDev {
-		go checkNewVersion(version)
+	// print text with green color
+	color.HiGreen("日本麻将助手 ver.%s (by EndlessCheng)", Version)
+	if Version != VersionDev {
+		go CheckNewVersion(Version)
 	}
 
-	util.SetConsiderOldYaku(considerOldYaku)
+	// set consider old yaku to false
+	util.SetConsiderOldYaku(ConsiderOldYaku)
 
-	humanTiles := strings.Join(flag.Args(), " ")
-	humanTilesInfo := &model.HumanTilesInfo{
-		HumanTiles:     humanTiles,
-		HumanDoraTiles: humanDoraTiles,
+	HumanTiles := strings.Join(flag.Args(), " ")
+	HumanTilesInfo := &model.HumanTilesInfo{
+		HumanTiles:     HumanTiles,
+		HumanDoraTiles: HumanDoraTiles,
 	}
 
 	var err error
+	// switch to different mode by command-line argument
 	switch {
-	case isMajsoul:
-		err = runServer(true, port)
-	case isTenhou || isAnalysis:
-		err = runServer(true, port)
-	case isInteractive: // 交互模式
-		err = interact(humanTilesInfo)
+	case IsMajsoul:
+		err = RunServer(true, Port)
+	case IsTenhou || IsAnalysis:
+		err = RunServer(true, Port)
+	case IsInteractive: // 交互模式
+		err = Interact(HumanTilesInfo)
 	case len(flag.Args()) > 0: // 静态分析
-		_, err = analysisHumanTiles(humanTilesInfo)
+		_, err = AnalysisHumanTiles(HumanTilesInfo)
 	default: // 服务器模式
 		choose := welcome()
-		isHTTPS := choose == platformMajsoul
-		err = runServer(isHTTPS, port)
+		IsHTTPS := choose == MahJongSoul
+		err = RunServer(IsHTTPS, Port)
 	}
 	if err != nil {
-		errorExit(err)
+		ErrorExit(err)
 	}
 }

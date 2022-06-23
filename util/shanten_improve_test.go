@@ -1,10 +1,11 @@
 package util
 
 import (
+	"strings"
 	"testing"
+
 	"github.com/EndlessCheng/mahjong-helper/util/model"
 	"github.com/stretchr/testify/assert"
-	"strings"
 )
 
 func Test_calculateIsolatedTileValue(t *testing.T) {
@@ -218,11 +219,11 @@ func TestCalculateMeld(t *testing.T) {
 	tile = "3s"
 	tile = "7z"
 	shanten, results, incShantenResults := CalculateMeld(pi, MustStrToTile34(tile), false, true)
-	t.Log("鸣牌后" + NumberToChineseShanten(shanten))
+	t.Log("鳴牌后" + NumberToChineseShanten(shanten))
 	for _, result := range results {
 		t.Log(result)
 	}
-	t.Log("鸣牌后" + NumberToChineseShanten(shanten+1))
+	t.Log("鳴牌后" + NumberToChineseShanten(shanten+1))
 	for _, result := range incShantenResults {
 		t.Log(result)
 	}
