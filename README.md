@@ -45,7 +45,7 @@
 
 3. 前往 [releases](https://github.com/EndlessCheng/mahjong-helper/releases/latest) 页面下载助手。解压到本地后打开。
 
-4. 如果您的浏览器之前打开过雀魂网页，需要清除缓存：打开雀魂网页，按下 F12，右键地址栏左侧的刷新按钮，选择「清空缓存并进行硬刷新」。这一操作只需要首次使用时做一次。如遇问题，请参考 [#104](https://github.com/EndlessCheng/mahjong-helper/issues/104)。
+4. 如果您的浏览器之前打开过雀魂网页，需要清除缓存：打开雀魂网页，按下 F12，右键地址栏左侧的刷新按钮，选择「清空缓存并进行硬刷新」。如遇问题，请参考 [#104](https://github.com/EndlessCheng/mahjong-helper/issues/104)。
 
 #### 安装完成！在使用助手前，请先阅读本页面下方的[示例](#示例)，以了解助手输出信息的含义。
 
